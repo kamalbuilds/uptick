@@ -22,6 +22,15 @@ function useWidth<T extends HTMLElement>() {
   return [ref, w] as const;
 }
 
+/** Round price ticks (1, 2, 2.5, 5 times a power of ten) inside [min, max]. */
+function niceTicks(min: number, max: number, want: number): number[] {
+  const raw = (max - min) / want, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = ([1, 2, 2.5, 5, 10].find((m) => m * mag >= raw) ?? 10) * mag;
+  const out: number[] = [];
+  for (let v = Math.ceil(min / step) * step; v <= max; v += step) out.push(+v.toFixed(6));
+  return out;
+}
+
 const bandAt = (c: PriceChart, t: number) => c.bands.find((b) => t >= b.from && t < b.to) ?? c.bands[c.bands.length - 1];
 
 /** The pool price against the strategy band: the band steps to the oracle price at each NYSE open, the line is the pool price. */
@@ -51,7 +60,7 @@ export function BandChart({ symbol, chart, compact = false }: { symbol: string; 
   });
   if (run.length) outRuns.push(run.join(""));
 
-  const ticks = Array.from({ length: 4 }, (_, i) => lo + ((hi - lo) * i) / 3);
+  const ticks = niceTicks(lo - pad, hi + pad, 4);
   const every = width < 520 ? 3 : 2;
   const dayTicks: number[] = [];
   for (let t = Math.ceil(t0 / DAY) * DAY, i = 0; t < t1 - DAY / 2; t += DAY, i++) if (i % every === 0) dayTicks.push(t);
@@ -135,7 +144,7 @@ export function BandReadout({ chart }: { chart: PriceChart }) {
     chart.inBand ? ["Room to the nearest edge", `${room.toFixed(1)}%`] : ["Position", "Outside the band"],
   ];
   return (
-    <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+    <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4">
       {rows.map(([k, v]) => (
         <div key={k}>
           <dt className="text-sm text-body">{k}</dt>

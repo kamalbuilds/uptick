@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { BandChart } from "./band-chart";
 import { FetchError, Skeleton } from "./status";
 import { useVaultStats } from "@/lib/hooks";
 import { pct, usd } from "@/lib/format";
@@ -34,14 +35,25 @@ export function FeaturedVaultCard({ cfg }: { cfg: VaultConfig }) {
         <div className="mt-6 space-y-3"><Skeleton className="h-20 w-48" /><Skeleton className="h-5 w-72" /><Skeleton className="h-24 w-full" /></div>
       ) : (
         <>
-          <p className="display mt-5 text-[clamp(4.5rem,13vw,7rem)] text-ink" aria-label={`Fee APR ${pct(q.data.feeAprPct)}`}>
-            {pct(q.data.feeAprPct)}
-            <span className="ml-2 align-baseline text-lg font-semibold tracking-normal text-body" style={{ fontFamily: "var(--font-sans)" }}>fee APR</span>
+          <p className="mt-5 flex items-baseline gap-3 whitespace-nowrap" aria-label={`Fee APR ${pct(q.data.feeAprPct)}`}>
+            <span className="display text-[clamp(3.75rem,13vw,5.5rem)] text-ink">{pct(q.data.feeAprPct)}</span>
+            <span className="text-lg font-semibold text-body">fee APR</span>
           </p>
           <p className="mt-2 text-sm text-body">
             {q.data.source === "replay" ? "Replay: " : ""}
             <strong className="font-semibold text-ink">{sourceLabel(q.data)}</strong>.
           </p>
+          {q.data.chart ? (
+            <div className="mt-6 border-t border-sage-line pt-4">
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <p className="font-semibold text-ink">{cfg.symbol} price and its band, 14 days</p>
+                <p className="figure text-body">{q.data.chart.inBand ? "In band" : "Outside band"}</p>
+              </div>
+              <div className="mt-2"><BandChart symbol={cfg.symbol} chart={q.data.chart} compact /></div>
+            </div>
+          ) : (
+            <p className="mt-6 border-t border-sage-line pt-4 text-sm text-body">The price chart is waiting on the pool and Chainlink reads.</p>
+          )}
         </>
       )}
       <Button asChild size="lg" className="mt-6 w-full">

@@ -36,3 +36,13 @@ test("parseVaultStats rejects malformed input", () => {
   assert.throws(() => parseVaultStats({ ...good, source: "guess" }));
   assert.throws(() => parseVaultStats({ ...good, tvl_usd: "1" }));
 });
+
+test("parseVaultStats reads the keeper price chart and rejects a malformed one", () => {
+  const raw = fx("vault-nvda-chart.json");
+  const c = parseVaultStats(raw).chart!;
+  assert.ok(c.history.length > 300);
+  assert.ok(c.bands.length >= 5);
+  assert.ok(c.band!.lower < c.poolUsd && c.poolUsd < c.band!.upper === c.inBand);
+  assert.equal(parseVaultStats({ ...raw, chart: null }).chart, null);
+  assert.throws(() => parseVaultStats({ ...raw, chart: { ...raw.chart, history: [] } }), /no series/);
+});

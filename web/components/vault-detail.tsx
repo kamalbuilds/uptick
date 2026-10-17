@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowSquareOut, CopySimple } from "@phosphor-icons/react";
 import { useState } from "react";
+import { BandChart, BandReadout } from "./band-chart";
 import { DepositPanel } from "./deposit-panel";
 import { VaultStatus } from "./vault-card";
 import { FetchError, Skeleton } from "./status";
@@ -72,6 +73,23 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
                 <p className="display text-[clamp(5rem,16vw,10rem)]">{pct(q.data.feeAprPct)}</p>
                 <p className="mt-2 text-body">{q.data.source === "replay" ? "Replay. " : ""}{sourceLabel(q.data)}.</p>
               </>
+            )}
+          </section>
+
+          <section aria-labelledby="band">
+            <h2 id="band" className="text-3xl leading-none">The band follows the price</h2>
+            <p className="mt-2 max-w-xl text-body">The vault holds {cfg.symbol} inside a band around the Chainlink price and re-centres it at each NYSE open. Fees accrue while the pool price is inside.</p>
+            {q.isError ? (
+              <div className="mt-4"><FetchError what={cfg.symbol} onRetry={() => q.refetch()} /></div>
+            ) : !q.data ? (
+              <Skeleton className="mt-4 h-80 w-full" />
+            ) : q.data.chart ? (
+              <div className="mt-4 rounded-xl bg-canvas p-4 sm:p-6">
+                <BandChart symbol={cfg.symbol} chart={q.data.chart} />
+                <BandReadout chart={q.data.chart} />
+              </div>
+            ) : (
+              <p className="mt-4 rounded-lg bg-sage p-4 text-body">The price chart is waiting on the pool and Chainlink reads.</p>
             )}
           </section>
 

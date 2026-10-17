@@ -186,8 +186,10 @@ contract StockVaultTest is Base {
     function test_repeatedRebalancesNeverRevert() public {
         _instant();
         _deposit(alice, 300e18);
+        uint256 t = block.timestamp; // via-IR may reuse block.timestamp across loop iterations after a warp
         for (uint256 i; i < 6; ++i) {
-            vm.warp(block.timestamp + 6 hours + 1);
+            t += 6 hours + 1;
+            vm.warp(t);
             _setFeed(_feedPrice());
             vm.prank(keeper);
             vault.rebalance();
