@@ -196,7 +196,7 @@ contract UptickHookTest is Test {
         assertEq(f, WEEKEND);
     }
 
-    function test_holidayIsOffHours_swapFresh() public {
+    function test_holidayIsOffHours_swap() public {
         vm.warp(1795705200); // Thanksgiving 2026-11-26 15:00 UTC, inside EST trading hours on any other Thursday
         _mockFeed(A0, block.timestamp);
         (UptickHook.Session s,,, uint24 f,) = _swapFresh(true, BUY);
@@ -256,7 +256,7 @@ contract UptickHookTest is Test {
         _chk(1806094800, W);
     }
 
-    function test_allTwentyHolidaysAreOffHours_andTwoWeeksAfterIsRegular() public view {
+    function test_allTwentyHolidaysAreOffHours_andThreeWeeksAfterIsRegular() public view {
         uint256[20] memory h = [
             uint256(1767279600), 1768834800, 1771254000, 1775228400, 1779721200, 1781881200, 1783090800, 1788793200,
             1795705200, 1798210800, 1798815600, 1800284400, 1802703600, 1806073200, 1811775600, 1813330800,
@@ -265,7 +265,7 @@ contract UptickHookTest is Test {
         for (uint256 i; i < h.length; ++i) {
             // 15:00 UTC sits inside regular hours in both EDT and EST
             _chk(h[i], UptickHook.Session.OffHours);
-            _chk(h[i] + 14 days, UptickHook.Session.Regular);
+            _chk(h[i] + 21 days, UptickHook.Session.Regular);
         }
     }
 
