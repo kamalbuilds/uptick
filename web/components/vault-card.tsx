@@ -5,6 +5,7 @@ import { ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { BandChart } from "./band-chart";
 import { FetchError, Skeleton } from "./status";
+import { FeeNow } from "./fee-now";
 import { useVaultStats } from "@/lib/hooks";
 import { pct, usd } from "@/lib/format";
 import { sourceLabel } from "@/lib/keeper";
@@ -56,6 +57,7 @@ export function FeaturedVaultCard({ cfg }: { cfg: VaultConfig }) {
           )}
         </>
       )}
+      <FeeNow compact />
       <Button asChild size="lg" className="mt-6 w-full">
         <Link href={`/vault/${cfg.id}`}>Open the {cfg.symbol} vault <ArrowRight size={20} weight="bold" aria-hidden /></Link>
       </Button>

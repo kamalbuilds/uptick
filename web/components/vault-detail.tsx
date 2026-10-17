@@ -7,6 +7,7 @@ import { BandChart, BandReadout } from "./band-chart";
 import { DepositPanel } from "./deposit-panel";
 import { VaultStatus } from "./vault-card";
 import { FetchError, Skeleton } from "./status";
+import { FeeNow } from "./fee-now";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
 import { pct, shortAddress, usd } from "@/lib/format";
@@ -74,6 +75,12 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
                 <p className="mt-2 text-body">{q.data.source === "replay" ? "Replay. " : ""}{sourceLabel(q.data)}.</p>
               </>
             )}
+          </section>
+
+          <section aria-labelledby="fee">
+            <h2 id="fee" className="text-3xl leading-none">The fee moves with the session</h2>
+            <p className="mt-2 max-w-xl text-body">The Uptick hook sets the swap fee from the NYSE session, in the same transaction as the swap.</p>
+            <div className="mt-4 rounded-xl bg-sage p-1"><FeeNow /></div>
           </section>
 
           <section aria-labelledby="band">
