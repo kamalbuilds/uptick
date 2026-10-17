@@ -13,6 +13,12 @@ export type VaultConfig = {
   feed: Address;
   /** Deployed vault address; undefined while the vault is opening. */
   vault: Address | undefined;
+  /** Deposits open when the lower kept APR of the replay's two halves clears the keeper's floor. */
+  open: boolean;
+  /** 30-day fee APR of the chosen pool, percent. */
+  feeAprPct: number;
+  /** Kept APR (fees less losses to informed traders and rebalancing cost) over the held-out 15 days, percent. */
+  keptAprPct: number;
 };
 
 const asAddress = (v: string | undefined): Address | undefined =>
@@ -38,7 +44,7 @@ const fromEnv: Record<string, string | undefined> = {
   SPCX: process.env.NEXT_PUBLIC_VAULT_SPCX ?? mapped.SPCX,
 };
 
-/** Every Stock Token the keeper's eligibility rule admits, best 30-day fee APR first (web/lib/vault-universe.json). */
+/** Every Stock Token the keeper's eligibility rule admits, best 30-day fee APR first, each with its open or closed gate (web/lib/vault-universe.json). */
 export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   id: v.id,
   symbol: v.symbol,
@@ -48,6 +54,9 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   feeTier: v.feeTier,
   feed: v.feed as Address,
   vault: asAddress(fromEnv[v.symbol]),
+  open: v.open,
+  feeAprPct: v.feeAprPct,
+  keptAprPct: v.keptAprPct,
 }));
 
 export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";

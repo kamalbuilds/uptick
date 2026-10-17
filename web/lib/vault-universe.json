@@ -11,7 +11,10 @@
       "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
       "feeTierPips": 3000,
       "feeTier": "0.3%",
-      "feed": "0x6652eDf64bA3731C4F2D3ce821A0Fb1f1f6b482a"
+      "feed": "0x6652eDf64bA3731C4F2D3ce821A0Fb1f1f6b482a",
+      "open": false,
+      "feeAprPct": 170.65065052813173,
+      "keptAprPct": -116.78258498940441
     },
     {
       "id": "spcx",
@@ -21,7 +24,10 @@
       "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
       "feeTierPips": 500,
       "feeTier": "0.05%",
-      "feed": "0xB265810950ba6c5C0Ff821c9963014a56fD8Bffb"
+      "feed": "0xB265810950ba6c5C0Ff821c9963014a56fD8Bffb",
+      "open": false,
+      "feeAprPct": 86.89222399922379,
+      "keptAprPct": -98.23298884233273
     },
     {
       "id": "nvda",
@@ -31,7 +37,10 @@
       "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
       "feeTierPips": 500,
       "feeTier": "0.05%",
-      "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15"
+      "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+      "open": true,
+      "feeAprPct": 40.5574193924729,
+      "keptAprPct": -0.41611426355074616
     },
     {
       "id": "googl",
@@ -41,7 +50,10 @@
       "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
       "feeTierPips": 500,
       "feeTier": "0.05%",
-      "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b"
+      "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
+      "open": true,
+      "feeAprPct": 38.78232498320464,
+      "keptAprPct": 2.513195536046313
     }
   ]
 }

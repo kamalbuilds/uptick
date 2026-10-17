@@ -1,13 +1,14 @@
 /** Writes web/lib/vault-universe.json: the eligible Stock Tokens with the pool the replay chose, sorted by 30-day fee APR.
  *  The web app builds its routes and vault list from this file. Run: bun scripts/export-web.ts */
 import { writeFileSync } from "node:fs";
-import { feeLabel, replayFeeApr } from "../src/evidence.ts";
+import { buildEvidence, feeLabel, replayFeeApr } from "../src/evidence.ts";
 import { eligibleTickers, readReplay, readUniverse } from "../src/registry.ts";
 
 const universe = readUniverse(), replay = readReplay();
 const vaults = eligibleTickers(universe, replay)
   .map((t) => {
-    return { id: t.id, symbol: t.symbol, name: t.name, token: t.stock, pool: t.pool, feeTierPips: t.feeTier, feeTier: feeLabel(t.feeTier), feed: t.feed, _apr: replayFeeApr(replay.tokens[t.symbol]) ?? -1 };
+    const ev: any = buildEvidence(replay.tokens[t.symbol], replay);
+    return { id: t.id, symbol: t.symbol, name: t.name, token: t.stock, pool: t.pool, feeTierPips: t.feeTier, feeTier: feeLabel(t.feeTier), feed: t.feed, open: ev?.open ?? false, feeAprPct: ev?.keep.fee_apr_pct ?? null, keptAprPct: ev?.keep.kept_second_half ?? null, _apr: replayFeeApr(replay.tokens[t.symbol]) ?? -1 };
   })
   .sort((a, b) => b._apr - a._apr)
   .map(({ _apr, ...v }) => v);

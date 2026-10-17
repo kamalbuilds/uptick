@@ -2,7 +2,7 @@
 
 import { FetchError, Skeleton } from "./status";
 import { useEvidence, type Evidence, type SessionKey } from "@/lib/evidence";
-import { pct } from "@/lib/format";
+import { pct, signed } from "@/lib/format";
 
 const SESSIONS: { key: SessionKey; label: string; compact: string }[] = [
   { key: "regular", label: "NYSE hours", compact: "in NYSE hours" },
@@ -22,8 +22,8 @@ function Bars({ e }: { e: Evidence }) {
       {e.pools.map((p) => {
         const chosen = p.pool === e.chosenPool;
         return (
-          <li key={p.pool} className="grid grid-cols-[4.5rem_1fr_4rem] items-center gap-3 text-sm">
-            <span className={chosen ? "font-semibold text-ink" : "text-body"}>{tier(p.feeTier)} pool</span>
+          <li key={p.pool} className="grid grid-cols-[8rem_1fr_4rem] items-center gap-3 text-sm">
+            <span className={chosen ? "font-semibold text-ink" : "text-body"}>{p.label} pool</span>
             <span className="h-3 rounded-full bg-sage" aria-hidden>
               <span className={`block h-3 rounded-full ${chosen ? "bg-primary" : "bg-mute"}`} style={{ width: `${Math.max(2, (p.feeAprPct / max) * 100)}%` }} />
             </span>
@@ -32,6 +32,26 @@ function Bars({ e }: { e: Evidence }) {
         );
       })}
     </ul>
+  );
+}
+
+function Kept({ e }: { e: Evidence }) {
+  const rows: [string, string][] = [
+    ["Fees earned", pct(e.keep.feeAprPct)],
+    ["Lost to informed traders (1h markout)", `-${pct(e.keep.markoutAprPct)}`],
+    ["Rebalancing cost", `-${pct(e.keep.costAprPct)}`],
+    ["Kept (30 days)", signed(e.keep.keptAprPct)],
+    ["Kept (held-out 15 days)", signed(e.keep.keptSecondHalf)],
+  ];
+  return (
+    <dl className="mt-3 divide-y divide-sage-line border-y border-sage-line">
+      {rows.map(([k, v]) => (
+        <div key={k} className="flex items-baseline justify-between gap-4 py-2">
+          <dt className="text-body">{k}</dt>
+          <dd className="figure font-medium text-ink">{v}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -94,6 +114,10 @@ export function WhyThisPool({ id, symbol, compact = false }: { id: string; symbo
           <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-body" style={{ fontFamily: "var(--font-sans)", fontStretch: "100%", letterSpacing: "0.08em" }}>Fees earned per $1 lost to informed traders</h3>
           <Sessions e={e} />
         </div>
+      </div>
+      <div className="mt-8">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-body" style={{ fontFamily: "var(--font-sans)", fontStretch: "100%", letterSpacing: "0.08em" }}>What LPs keep, annualised</h3>
+        <Kept e={e} />
       </div>
       <Foot e={e} />
       <p className="mt-2 text-sm text-body">{FEE_CAP_LINE}</p>

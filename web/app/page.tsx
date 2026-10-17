@@ -9,7 +9,7 @@ const nvda = getVault("nvda")!;
 
 const steps = [
   { title: "Deposit your Stock Token", body: "You send a Stock Token and receive vault shares. The vault keeps your deposit in one pool, inside a price band around the Chainlink price." },
-  { title: "Uptick picks the pool the data says pays", body: "Every swap on every pool for that token is replayed. The vault goes where fees beat the losses to informed traders." },
+  { title: "Uptick shows what LPs keep", body: "Every swap on every pool for that token is replayed. Each vault page shows fee APR next to what liquidity keeps after informed traders, and deposits open where the kept figure holds in both halves of the replay." },
   { title: "Fees come back to you", body: "Swap fees accrue to your shares. Pools are checked against an on-chain declared fee cap. Uptick only deposits into pools without fee-taking hooks or with a declared on-chain cap." },
 ];
 
@@ -22,7 +22,7 @@ export default function Home() {
             Stock Token yield,<br />chosen by the chain&rsquo;s own data.
           </h1>
           <p className="rise mt-6 max-w-md text-xl text-body" style={{ ["--i" as string]: 2 }}>
-            We replay every swap on every pool for each Stock Token and put your deposit where liquidity earns more than it loses.
+            Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.
           </p>
           <div className="rise mt-8" style={{ ["--i" as string]: 3 }}>
             <Button asChild size="lg">
@@ -37,8 +37,8 @@ export default function Home() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="how">
         <div className="rounded-xl bg-ink p-6 text-sage sm:p-10">
-          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">Yield chosen by the chain&rsquo;s own data</h2>
-          <p className="mt-3 max-w-2xl text-sage">We replay every swap on every pool for each Stock Token and put your deposit where liquidity earns more than it loses.</p>
+          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">Fee APR beside what LPs keep</h2>
+          <p className="mt-3 max-w-2xl text-sage">Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.</p>
           <ol className="relative mt-10 grid gap-8 border-t border-sage/25 pt-8 md:grid-cols-3 md:gap-10">
             {steps.map((s, i) => (
               <li key={s.title} className="relative">

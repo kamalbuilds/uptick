@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import { FetchError, Skeleton } from "./status";
 import { VaultStatus } from "./vault-card";
-import { pct } from "@/lib/format";
+import { pct, signed } from "@/lib/format";
 import { sourceLabel, type VaultStats } from "@/lib/keeper";
 import { useVaultList } from "@/lib/vault-list";
 import { countLine, filterVaults, tiersOf } from "@/lib/vault-filter";
@@ -19,7 +19,7 @@ function Row({ cfg, stats, pending }: { cfg: VaultConfig; stats: VaultStats | un
     <li>
       <Link
         href={`/vault/${cfg.id}`}
-        className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 rounded-lg px-4 py-4 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[1.4fr_1fr_0.7fr_9.5rem]"
+        className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 rounded-lg px-4 py-4 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[1.4fr_1fr_1fr_9.5rem]"
       >
         <div>
           <p className="display text-3xl">{cfg.symbol}</p>
@@ -27,11 +27,11 @@ function Row({ cfg, stats, pending }: { cfg: VaultConfig; stats: VaultStats | un
         </div>
         <p className="figure text-right text-xl font-medium sm:text-left">
           {stats ? pct(stats.feeAprPct) : pending ? <Skeleton className="inline-block h-6 w-16 align-middle" /> : "Unavailable"}
-          <span className="block text-xs font-normal text-body">{stats ? `fee APR, ${stats.aprWindowDays}-day ${stats.source}` : "fee APR"}</span>
+          <span className="block text-xs font-normal text-body">Fees 30d</span>
         </p>
         <p className="figure hidden text-xl font-medium sm:block">
-          {cfg.feeTier}
-          <span className="block text-xs font-normal text-body">pool fee tier</span>
+          {signed(cfg.keptAprPct)}
+          <span className="block text-xs font-normal text-body">Kept, held-out</span>
         </p>
         <span className="col-span-2 justify-self-start sm:col-span-1 sm:justify-self-end"><VaultStatus cfg={cfg} /></span>
       </Link>

@@ -11,7 +11,7 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", dis
 
 export const metadata: Metadata = {
   title: "Uptick: your Stock Tokens earn the swap fees",
-  description: "Deposit NVDA or SPCX on Robinhood Chain. The vault places it in the USDG pool inside a price band and keeps the swap fees for you.",
+  description: "Fee APR beside what LPs keep for every Stock Token vault on Robinhood Chain. Deposits open where the kept figure holds in both halves of the replay.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -7,11 +7,12 @@ import { BandChart } from "./band-chart";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
-import { pct } from "@/lib/format";
+import { pct, signed } from "@/lib/format";
 import { sourceLabel } from "@/lib/keeper";
 import type { VaultConfig } from "@/lib/vaults";
 
 export function VaultStatus({ cfg }: { cfg: VaultConfig }) {
+  if (!cfg.open) return <span className="rounded-full bg-sage px-3 py-1 text-sm font-semibold text-body">Closed</span>;
   return cfg.vault ? (
     <span className="rounded-full bg-primary-pale px-3 py-1 text-sm font-semibold text-positive-deep">Open for deposits</span>
   ) : (
@@ -38,7 +39,10 @@ export function FeaturedVaultCard({ cfg }: { cfg: VaultConfig }) {
         <>
           <p className="mt-5 flex items-baseline gap-3 whitespace-nowrap" aria-label={`Fee APR ${pct(q.data.feeAprPct)}`}>
             <span className="display text-[clamp(3.75rem,13vw,5.5rem)] text-ink">{pct(q.data.feeAprPct)}</span>
-            <span className="text-lg font-semibold text-body">fee APR</span>
+            <span className="text-lg font-semibold text-body">fee APR 30d</span>
+          </p>
+          <p className="figure mt-2 text-sm text-body">
+            Kept, held-out <span className="font-medium text-ink">{signed(cfg.keptAprPct)}</span>
           </p>
           <p className="mt-2 text-sm text-body">
             {q.data.source === "replay" ? "Replay: " : ""}

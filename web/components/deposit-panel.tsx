@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
-import { num } from "@/lib/format";
+import { num, pct } from "@/lib/format";
 import { errMessage, waitForReceipt } from "@/lib/tx";
 import type { VaultConfig } from "@/lib/vaults";
 
@@ -173,7 +173,9 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
       </div>
 
       <div className="mt-4">
-        {!vault ? (
+        {!cfg.open ? (
+          <Button size="lg" className="w-full" disabled>Deposits closed</Button>
+        ) : !vault ? (
           <Button size="lg" className="w-full" disabled>Vault opening</Button>
         ) : !isConnected ? (
           <div className="[&>div>button]:w-full [&>button]:w-full"><WalletButton /></div>
@@ -187,7 +189,10 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
       </div>
 
       <TxStatus tx={tx} />
-      {!vault && (
+      {!cfg.open && (
+        <p className="mt-3 text-sm text-body">Fees {pct(cfg.feeAprPct)}, kept {pct(cfg.keptAprPct)} over the held-out 15 days. Deposits open when kept APR stays above -20 in both halves.</p>
+      )}
+      {cfg.open && !vault && (
         <p className="mt-3 text-sm text-body">The {cfg.symbol} vault is opening. Deposits unlock here the moment its address is live on Robinhood Chain.</p>
       )}
     </div>

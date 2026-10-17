@@ -29,6 +29,9 @@ test("each list entry's evidence parses and names a pool that is in its own tabl
     assert.ok(e.pools.length >= 1);
     assert.ok(e.pools.some((p: { pool: string }) => p.pool === e.chosenPool));
     assert.equal(e.chosenPool, v.pool);
+    assert.equal(e.open, v.open);
+    assert.ok(e.pools.every((p: { label: string }) => p.label.length > 0));
+    assert.equal(e.open, Math.min(e.keep.keptFirstHalf, e.keep.keptSecondHalf) >= -20);
     assert.ok(e.swapsReplayed > 10_000);
   }
 });

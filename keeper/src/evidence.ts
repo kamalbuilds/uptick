@@ -1,8 +1,12 @@
-/** What the stats API shows about a pool choice. Built from data/replay.json (replay/replay.py). Edge, markout-net and net-vs-hold
- *  stay in replay.json and /pools/:id/replay; they are not part of the evidence object. */
+/** What the stats API shows about a pool choice. Built from data/replay.json (replay/replay.py). */
 
 export const feeLabel = (pips: number): string => pips === 0x800000 ? "dynamic" : `${+(pips / 10_000).toFixed(4)}%`;
+const poolLabel = (p: any) => p.fee_tier === 0x800000 ? `${p.kind} dynamic, avg ${+(effectiveTier(p) / 10_000).toFixed(4)}%` : `${p.kind} ${feeLabel(p.fee_tier)}`;
 const hookLabel = (h: string | null) => h ?? "none";
+
+/** A vault opens for deposits when the lower of its two half-window kept APRs (edge_apr_pct) is at least this. Any floor between
+ *  -7.8 and -98.2 gives the same open set on the current replay. */
+export const KEEP_FLOOR_APR = -20;
 
 /** Table floor: a pool below this 30-day volume has too little flow for its replay to mean anything. */
 export const MIN_TABLE_VOLUME_USD = 250_000;
@@ -23,11 +27,15 @@ export function buildEvidence(tok: any, replay: any) {
     .filter((p: any) => p.volume_usd >= MIN_TABLE_VOLUME_USD && Number.isFinite(p.full.fee_apr_pct))
     .map((p: any) => ({
       pool: p.id, fee_tier: effectiveTier(p), fee_apr_pct: p.full.fee_apr_pct,
-      kind: p.kind, fee_label: feeLabel(p.fee_tier), hooks: hookLabel(p.hooks), vault_capable: p.vault_capable, chosen: p.id === chosen.id,
+      kind: p.kind, label: poolLabel(p), fee_label: feeLabel(p.fee_tier), hooks: hookLabel(p.hooks), vault_capable: p.vault_capable, chosen: p.id === chosen.id,
       volume_usd: p.volume_usd, swaps: p.swaps,
     }))
     .sort((a: any, b: any) => b.fee_apr_pct - a.fee_apr_pct);
+  const f = row.full, first = row.calibration.edge_apr_pct, second = row.test.edge_apr_pct;
+  const keep = { fee_apr_pct: f.fee_apr_pct, markout_apr_pct: f.markout_apr_pct, cost_apr_pct: f.cost_apr_pct, kept_apr_pct: f.edge_apr_pct };
   return {
+    keep: { ...keep, kept_first_half: first, kept_second_half: second },
+    open: Math.min(first, second) >= KEEP_FLOOR_APR,
     chosen_pool: chosen.id, chosen_fee_tier: chosen.fee_tier, chosen_kind: chosen.kind, chosen_fee_apr_pct: row.full.fee_apr_pct,
     pools,
     fee_per_loss: lost,

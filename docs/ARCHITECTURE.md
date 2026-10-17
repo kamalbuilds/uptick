@@ -1,6 +1,6 @@
 # Architecture
 
-Uptick has three layers on Robinhood Chain (4663): an evidence engine that measures where Stock Token liquidity earns the most, a vault layer that deposits there in one click, and a cap standard that bounds what the pools under the vault can take.
+Uptick has three layers on Robinhood Chain (4663): an evidence engine that measures what Stock Token liquidity earns and what it keeps after informed traders, a vault layer that opens deposits in one click only where the kept figure holds in both replay halves, and a cap standard that bounds what the pools under the vault can take.
 
 ```
  chain swap history --> Evidence engine --> pool/tier pick per token --> keeper (daily refresh)

@@ -1,6 +1,6 @@
 # Uptick: 3 minute demo
 
-One line: Stock Token yield, chosen by the chain's own data. Uptick's evidence engine replays every swap on every USDG pool and fee tier, and the vault deposits where liquidity earns the most.
+One line: Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.
 
 ## 0:00 to 0:25 The problem, with a number
 

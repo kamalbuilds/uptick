@@ -61,6 +61,7 @@ function replayVault(t: Ticker) {
     fee_apr_pct: { replay_30d: replayFeeApr(tok) },
     replay: { strategy: replay.strategy, capital_usd: replay.capital_usd, window: replay.window },
     evidence: buildEvidence(tok, replay),
+    open: buildEvidence(tok, replay)?.open ?? false,
   };
 }
 
@@ -75,7 +76,7 @@ async function vaultBase(t: Ticker) {
   const rep = replayVault(t);
   if (!t.vault) return rep;
   const on = await cached(`v:${t.id}`, 30_000, () => onchainVault(t));
-  return { ...on, name: rep.name, fee_apr_pct: { ...on.fee_apr_pct, replay_30d: rep.fee_apr_pct.replay_30d }, replay: rep.replay, evidence: rep.evidence };
+  return { ...on, name: rep.name, fee_apr_pct: { ...on.fee_apr_pct, replay_30d: rep.fee_apr_pct.replay_30d }, replay: rep.replay, evidence: rep.evidence, open: rep.open };
 }
 const vaultView = async (t: Ticker) => ({ ...(await vaultBase(t)), chart: await cached(`c:${t.id}`, 60_000, () => chartFor(t)) });
 const byApr = (a: { fee_apr_pct: { replay_30d: number | null } }, b: typeof a) => (b.fee_apr_pct.replay_30d ?? -1) - (a.fee_apr_pct.replay_30d ?? -1);

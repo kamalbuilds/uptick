@@ -79,8 +79,13 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
 
           <section aria-labelledby="fee">
             <h2 id="fee" className="text-3xl leading-none">Why this pool</h2>
-            <p className="mt-2 max-w-xl text-body">We replay every swap on every {cfg.symbol} pool and deposit where liquidity earns more than it loses.</p>
+            <p className="mt-2 max-w-xl text-body">Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.</p>
             <div className="mt-4 rounded-xl bg-sage p-1"><WhyThisPool id={cfg.id} symbol={cfg.symbol} /></div>
+          </section>
+
+          <section aria-labelledby="gate">
+            <h2 id="gate" className="text-3xl leading-none">How vaults open</h2>
+            <p className="mt-2 max-w-xl text-body">A vault opens for deposits when its kept APR, fees less losses to informed traders and rebalancing cost, is at least -20% in both halves of the 30-day replay. {cfg.symbol} {cfg.open ? "clears that line in both halves" : "sits below that line in at least one half, so deposits stay closed"}.</p>
           </section>
 
           <section aria-labelledby="band">

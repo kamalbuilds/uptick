@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { MIN_TABLE_VOLUME_USD, buildEvidence, feeLabel, replayFeeApr } from "../src/evidence.ts";
+import { KEEP_FLOOR_APR, MIN_TABLE_VOLUME_USD, buildEvidence, feeLabel, replayFeeApr } from "../src/evidence.ts";
 import { readReplay } from "../src/registry.ts";
 
 const replay = readReplay();
@@ -41,11 +41,19 @@ describe("evidence built from data/replay.json", () => {
       expect(Date.parse(ev.out_of_sample.window.start)).toBe(Date.parse(ev.window.start) + 15 * 86400_000);
     });
 
-    test(`${sym}: edge, markout, cost and net-vs-hold stay out of the evidence`, () => {
-      const text = JSON.stringify(buildEvidence(replay.tokens[sym], replay));
-      expect(text).not.toMatch(/edge|net_vs_hold|markout_apr|cost_apr/);
+    test(`${sym}: keep figures are finite and pool labels are unique`, () => {
+      const ev: any = buildEvidence(replay.tokens[sym], replay);
+      for (const v of Object.values(ev.keep)) expect(Number.isFinite(v)).toBe(true);
+      const labels = ev.pools.map((p: any) => p.label);
+      expect(new Set(labels).size).toBe(labels.length);
+      expect(ev.open).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half) >= KEEP_FLOOR_APR);
     });
   }
+
+  test("the open set is exactly NVDA and GOOGL", () => {
+    const open = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).open).sort();
+    expect(open).toEqual(["GOOGL", "NVDA"]);
+  });
 
   test("a token whose session split has no loss to divide by yields no evidence rather than a null ratio", () => {
     const tok = structuredClone(replay.tokens[syms[0]]);

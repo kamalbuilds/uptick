@@ -15,6 +15,9 @@ export function pct(percent: number, digits = 1): string {
   return `${percent.toFixed(digits)}%`;
 }
 
+/** Percent with an explicit plus on gains: 2.513 renders as +2.5%. */
+export const signed = (percent: number, digits = 1): string => `${percent > 0 ? "+" : ""}${pct(percent, digits)}`;
+
 export function shortAddress(a: string): string {
   return a.length > 12 ? `${a.slice(0, 6)}...${a.slice(-4)}` : a;
 }
