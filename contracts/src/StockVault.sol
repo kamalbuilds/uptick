@@ -559,7 +559,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         (uint256 fStock, uint256 fUsdg) = _orient(f0, f1);
         lifetimeFeesStock += fStock;
         lifetimeFeesUsdg += fUsdg;
-        uint256 feeValue = fStock + _usdgToStock(fUsdg, s.price);
+        uint256 feeValue = fStock + _usdgToStock(fUsdg, _navPrice(s));
         uint256 cut = feeValue.mulDiv(params.perfFeeBps, 1e4);
         uint256 minted;
         if (cut > 0) {
@@ -758,10 +758,19 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
             (uint256 f0, uint256 f1) = _uncollectedFees();
             (v.feeStock, v.feeUsdg) = _orient(f0, f1);
         }
+        uint256 px = _navPrice(s);
         uint256 usdgTotal = v.idleUsdg + v.posUsdg + v.feeUsdg;
-        v.gross = v.idleStock + v.posStock + v.feeStock + _usdgToStock(usdgTotal, s.price);
-        uint256 feeValue = v.feeStock + _usdgToStock(v.feeUsdg, s.price);
+        v.gross = v.idleStock + v.posStock + v.feeStock + _usdgToStock(usdgTotal, px);
+        uint256 feeValue = v.feeStock + _usdgToStock(v.feeUsdg, px);
         v.net = v.gross - feeValue.mulDiv(params.perfFeeBps, 1e4);
+    }
+
+    /// @dev USD price at which the USDG leg is valued: the lower of Chainlink and the pool TWAP. When the feed lags
+    /// above the pool, valuing USDG at the feed underprices it against what an in-kind exit hands back and what the
+    /// pool pays for it, so a deposit would buy shares below their redeemable value. The TWAP, not spot, so a
+    /// same-block push cannot move it.
+    function _navPrice(Snapshot memory s) private view returns (uint256) {
+        return Math.min(s.price, _sqrtToUsd(s.sqrtTwap));
     }
 
     function _amounts(uint160 sqrtP, int24 tl, int24 tu, uint128 liq) internal pure returns (uint256 a0, uint256 a1) {

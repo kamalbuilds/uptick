@@ -265,18 +265,20 @@ contract StockVaultSafetyTest is Base {
     function test_exitCannotHarvestPoolOracleGap() public {
         _instant();
         uint256 shares = _deposit(alice, 100e18);
+        // NAV with the feed at the pool price: the reference an exit may be paid at
+        uint256 atPool = vault.convertToAssets(shares);
         // Chainlink 0.4% above the pool: NVDA is cheap in the pool, so swapping the USDG leg back into NVDA
         // returns more than the oracle value (inside the 1% bound, so the gate is open)
         _setFeed(_poolPrice() * 10_040 / 10_000);
         (StockVault.Status st,,,,,) = vault.health();
         assertEq(uint8(st), uint8(StockVault.Status.Ok));
         uint256 fair = vault.convertToAssets(shares);
+        // the USDG leg is valued at the pool TWAP when that is below the feed, so the lagging feed does not move NAV
+        _assertClose(fair, atPool, 2, "NAV ignores a feed above the pool");
         vm.prank(alice);
         uint256 got = vault.redeem(shares, alice, alice);
         assertLe(got, fair, "redeem never pays more than NAV");
         assertGe(got, fair * 9_970 / 10_000, "and not less than the exit buffer allows");
-        // the swap earned more than NAV, and that surplus stayed in the vault instead of leaving with the redeemer
-        assertGt(IERC20(NVDA).balanceOf(address(vault)), 1e16, "gap stayed with the vault");
     }
 
     // ------------------------------------------------------- slippage (minOut)

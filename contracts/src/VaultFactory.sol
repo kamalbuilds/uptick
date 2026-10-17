@@ -11,7 +11,7 @@ import {IUniswapV3Pool} from "./interfaces/IUniswapV3.sol";
 /// @notice Deploys one StockVault per (Stock Token, pool, Chainlink feed) and keeps the registry the app and the
 /// keeper read. The factory pins the keccak256 of StockVault's creation code, so the only contract it can ever
 /// register is the audited build.
-/// @dev StockVault's runtime is 24,085 bytes and its creation code 28,464, so a factory cannot embed it. The owner
+/// @dev StockVault's runtime is 24,132 bytes and its creation code 28,511, so a factory cannot embed it. The owner
 /// passes the creation code with each call; the factory checks it against `vaultCodeHash`, appends the constructor
 /// arguments itself and deploys with CREATE2. Pin the hash with
 /// `forge inspect StockVault bytecode | cast keccak`.

@@ -67,7 +67,7 @@ Scope: `src/StockVault.sol`. Every guard below says what the contract does when 
 
 ## Bytecode size
 
-Runtime code is 24,085 bytes against the EIP-170 limit of 24,576 (built with `via_ir` and `optimizer_runs = 1`); `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
+Runtime code is 24,132 bytes against the EIP-170 limit of 24,576 (built with `via_ir` and `optimizer_runs = 1`); `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
 
 ## Test and mutation evidence
 
