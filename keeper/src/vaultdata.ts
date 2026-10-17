@@ -22,7 +22,7 @@ class EventStore {
     ]);
     const seen = new Set(col.map((l) => l.transactionHash));
     const rows = [
-      ...col.map((l: any) => ({ l, a0: l.args.amount0 as bigint, a1: l.args.amount1 as bigint, kind: "FeesCollected" })),
+      ...col.map((l: any) => ({ l, a0: l.args.fees0 as bigint, a1: l.args.fees1 as bigint, kind: "FeesCollected" })),
       ...reb.filter((l) => !seen.has(l.transactionHash)).map((l: any) => ({ l, a0: l.args.fees0 as bigint, a1: l.args.fees1 as bigint, kind: "Rebalanced" })),
     ];
     for (const r of rows) this.events.push({ ts: await blockTs(r.l.blockNumber!), amount0: r.a0, amount1: r.a1, tx: r.l.transactionHash!, kind: r.kind });

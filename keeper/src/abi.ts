@@ -8,9 +8,7 @@ export const vaultAbi = parseAbi([
   "function currentRange() view returns (int24, int24)",
   "function pricePerShare() view returns (uint256)",
   "event Rebalanced(int24 tickLower, int24 tickUpper, uint256 fees0, uint256 fees1)",
-  "event FeesCollected(uint256 amount0, uint256 amount1)",
-  "event Deposited(address indexed user, uint256 amount, uint256 shares)",
-  "event Withdrawn(address indexed user, uint256 amount, uint256 shares)",
+  "event FeesCollected(uint256 fees0, uint256 fees1, uint256 feeValueInStock, uint256 treasuryShares)",
 ]);
 
 export const poolAbi = parseAbi([
