@@ -6,8 +6,8 @@ Anvil fork of chain 4663 at http://127.0.0.1:8545. Only anvil default dev accoun
 
 | Item | Value |
 |---|---|
-| StockVault (svNVDA) | 0x74156A1F9736307b7AD34e3691f3A5B54A0B3Eb8 |
-| Deploy block | 90694013 |
+| StockVault (svNVDA) | 0xB8357F7f41125d4b24AD052c1b7288BeF5C43446 |
+| Deploy block | 90902388 |
 | NVDA token | 0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC |
 | NVDA/USDG pool (0.05%) | 0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3 |
 | Chainlink NVDA feed | 0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15 |
@@ -16,11 +16,11 @@ Anvil fork of chain 4663 at http://127.0.0.1:8545. Only anvil default dev accoun
 
 | Step | Hash |
 |---|---|
-| Deploy StockVault | 0x27ea07a4ec536e2ea2389e3e294c57aadf24987262f426cf279f8815bf72febd |
-| setInstantDeploy(true) | 0x7c883562f02b45c8e05f1b9abd42e936b965b9875686cf022ce8a574129aa82d |
-| NVDA approve | 0xd00c1477de35b8fc5d10759cfdbab0340f7bd3103ef60887df101cfe17759dec |
-| deposit 233 NVDA | 0xc283446f59ec736221f1de8ef0f6ccd70b11dd5c45be7b233d57c4a7f5b5e9b8 |
-| rebalance() as keeper | 0x79e8a18d1b115f5e46c5f00184ab02e72668596a440f970831315fce070fa066 |
+| Deploy StockVault | 0xd99de35fd391c4ffeb1acfbfbe875d0d425d8256eb969ce8f2ebda6413c2e976 |
+| setInstantDeploy(true) | 0x8443f5f7fd0dee6a34bf2e3f56cd7a2de10e071d8f54b3e815c8e8da26ce1cb1 |
+| NVDA approve | 0x88c2341c7b076255465aca6f83c213c40c9d5c60e95c90b77ed64d4a721f7ea0 |
+| deposit 233 NVDA | 0x6e14a7d395dbdb7c0aab279bd8e9ca8f07189a0e962d5c426de1c1640d560f41 |
+| rebalance() as keeper | 0xae2543c68c71e1b7e399573e860aaa305ad67ef45a3faa0174d569d6ad956a5c |
 
 ## Reproduce
 
@@ -30,10 +30,10 @@ Anvil fork of chain 4663 at http://127.0.0.1:8545. Only anvil default dev accoun
 
 ## Read-back
 
-- totalAssets: 232862021130775724690 (232.86 NVDA)
+- totalAssets: 233045833757492660535 (233.05 NVDA)
 - totalSupply: 233000000000000000000000000
-- currentRange: ticks 222140 to 223150, $203.80 to $225.46 around Chainlink $214.59
-- Stats API `GET localhost:8790/vaults/nvda`: source "onchain", tvl_usd 49968.98, in_range true
+- Strategy band: $205.73 to $227.39 around center $216.56, Chainlink $214.59, in band
+- Stats API `GET localhost:8790/vaults/nvda`: source "onchain", tvl_usd 50008.42, in_band true
 
 ## App wiring
 
