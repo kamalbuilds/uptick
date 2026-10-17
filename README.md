@@ -1,6 +1,8 @@
 # Uptick
 
-Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own. Every vault page shows fee APR next to what LPs keep.
+Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own. 
+
+Every vault page shows fee APR next to what LPs keep.
 
 Robinhood Chain (chain 4663) lists 189,012 NVDA holders and 114,550 SPCX holders. Their tokens sit idle, and holders cannot see which pool or fee tier pays liquidity providers best.[^1] Uptick publishes that calibration and routes the deposit by it.
 
@@ -10,9 +12,11 @@ Liquidity economics on a stock token differ by session and by pool and tier. Fee
 
 | Session | Fee earned per $1 lost to informed flow |
 |---|---|
-| NYSE regular hours | 0.78 to 1.21 |
-| Weeknights | 1.23 to 3.02 |
-| Weekends | 3.83 to 19.53 |
+| NYSE regular hours | 1.03 to 1.35 |
+| Weeknights | 1.30 to 3.90 |
+| Weekends | 3.94 to 33.27 |
+
+Pooled across the three pools, weekends pay 13.64 and NYSE hours 1.16, and the weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
 
 The spread between pools and tiers is as large as the spread between sessions. The evidence engine measures it per token and selects the pool and tier with the best out-of-sample result.
 

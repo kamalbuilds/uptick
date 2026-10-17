@@ -61,9 +61,9 @@ def mark(x, y, size, bg=True):
 
 
 POOLS = [  # (pool, fee tier, NYSE hours, weeknights, weekends)
-    ("NVDA", "0.05% pool", 1.21, 1.23, 3.83),
-    ("SPCX", "0.05% pool", 0.78, 3.02, 7.07),
-    ("TSLA", "0.3% pool", 0.80, 2.07, 19.53),
+    ("NVDA", "0.05% pool", 1.29, 1.30, 3.94),
+    ("SPCX", "0.05% pool", 1.03, 3.90, 7.78),
+    ("TSLA", "0.3% pool", 1.35, 3.70, 33.27),
 ]
 SESS = {k: (min(p[i] for p in POOLS), max(p[i] for p in POOLS)) for i, k in [(2, "reg"), (3, "night"), (4, "weekend")]}
 
@@ -92,7 +92,7 @@ def banner():
     """Desktop profile: the avatar covers x 35..401 from y 311 down (1500x500 terms), so the left column ends by y 280."""
     W, H = 1500, 500
     x0, x1, yt, yb = 708, 1436, 40, 396
-    lo, hi = math.log10(0.6), math.log10(25)
+    lo, hi = math.log10(0.6), math.log10(40)
     Y = lambda v: yb - (math.log10(v) - lo) / (hi - lo) * (yb - yt)
     X = lambda hr: x0 + hr / 168 * (x1 - x0)
     fill = {"reg": C["ink"], "night": C["card"], "weekend": C["lime"]}
@@ -114,14 +114,14 @@ def banner():
         b.append(t(X(24 * d + 12), yb + 40, name, 20, "m", C["body"], "middle"))
     # NYSE hours callout over Tuesday, leader to Tuesday's NYSE block
     mx = X(24 + 16.75)
-    b.append(f'<line x1="{mx:.1f}" x2="{mx:.1f}" y1="{Y(1.21) - 4:.1f}" y2="{Y(3.02) - 34:.1f}" stroke="{C["ink"]}" stroke-width="1.5"/>')
+    b.append(f'<line x1="{mx:.1f}" x2="{mx:.1f}" y1="{Y(1.35) - 4:.1f}" y2="{Y(3.90) - 34:.1f}" stroke="{C["ink"]}" stroke-width="1.5"/>')
     b.append(t(mx - 4, 116, "NYSE hours", 26, "t", C["ink"], weight=600))
-    b.append(t(mx - 6, 160, "$0.78 to $1.21", 38, "d"))
+    b.append(t(mx - 6, 160, "$1.03 to $1.35", 38, "d"))
     # weekend figure inside the lime block
     wx = X(116) + 14
-    b.append(t(wx, Y(19.53) + 36, "Weekends", 26, "t", C["ink"], weight=600))
-    b.append(t(wx - 2, Y(19.53) + 82, "$3.83 to", 42, "d"))
-    b.append(t(wx - 2, Y(19.53) + 126, "$19.53", 42, "d"))
+    b.append(t(wx, Y(33.27) + 36, "Weekends", 26, "t", C["ink"], weight=600))
+    b.append(t(wx - 2, Y(33.27) + 82, "$3.94 to", 42, "d"))
+    b.append(t(wx - 2, Y(33.27) + 126, "$33.27", 42, "d"))
     return doc(W, H, "\n".join(b) + "\n</g>", C["canvas"])
 
 
@@ -135,7 +135,7 @@ def og():
     b.append(t(62, 206, "Stock Token yield,", 74, "d", C["canvas"]))
     b.append(t(62, 277, "chosen by the chain’s own data.", 74, "d", C["canvas"]))
     b.append(f'<line x1="64" x2="1136" y1="318" y2="318" stroke="{C["rule_dark"]}" stroke-width="1.5"/>')
-    for x, label, fig, col in [(64, "NYSE hours", "$0.78 to $1.21", C["canvas"]), (620, "Weekends", "$3.83 to $19.53", C["lime"])]:
+    for x, label, fig, col in [(64, "NYSE hours", "$1.03 to $1.35", C["canvas"]), (620, "Weekends", "$3.94 to $33.27", C["lime"])]:
         b.append(t(x, 374, label, 30, "t", C["canvas"], weight=600))
         b.append(t(x - 2, 442, fig, 60, "d", col))
         b.append(t(x, 484, "fees per $1 lost to informed traders", 28, "t", C["mute_dark"]))
@@ -152,12 +152,12 @@ def dot(x, y, session, r=11):
 
 def post_sessions():
     W, H = 1600, 900
-    x0, x1 = 470, 1250
-    lo, hi = math.log10(0.5), math.log10(25)
+    x0, x1 = 470, 1180
+    lo, hi = math.log10(0.5), math.log10(40)
     X = lambda v: x0 + (math.log10(v) - lo) / (hi - lo) * (x1 - x0)
     b = ['<g data-within="60 40 1560 870">']
-    b.append(t(78, 112, "Weekends are the best time", 64, "d"))
-    b.append(t(78, 112 + HEAD_STEP, "to be a Stock Token LP", 64, "d"))
+    b.append(t(78, 112, "Weekends pay LPs most", 64, "d"))
+    b.append(t(78, 112 + HEAD_STEP + 8, "per dollar lost", 64, "d"))
     b.append(t(80, 222, "Fees per $1 lost to informed traders (1h markout), static ±2% position.", 30, "t", C["body"]))
     lx = 92
     for i, name in enumerate(["NYSE hours", "Weeknights", "Weekends"]):

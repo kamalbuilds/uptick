@@ -15,19 +15,19 @@
 <text x="64.0" y="264.0" class="m" font-size="22" fill="#454745" text-anchor="start" >5.1M swaps · 54 days · Robinhood Chain</text>
 </g>
 <g data-within="680 30 1470 482">
-<rect x="709.0" y="241.7" width="56.5" height="85.7" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
-<rect x="767.5" y="329.0" width="26.2" height="41.9" rx="3" fill="#0e0f0c"/>
-<rect x="795.7" y="241.7" width="73.8" height="85.7" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
-<rect x="871.5" y="329.0" width="26.2" height="41.9" rx="3" fill="#0e0f0c"/>
-<rect x="899.7" y="241.7" width="73.8" height="85.7" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
-<rect x="975.5" y="329.0" width="26.2" height="41.9" rx="3" fill="#0e0f0c"/>
-<rect x="1003.7" y="241.7" width="73.8" height="85.7" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
-<rect x="1079.5" y="329.0" width="26.2" height="41.9" rx="3" fill="#0e0f0c"/>
-<rect x="1107.7" y="241.7" width="73.8" height="85.7" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
-<rect x="1183.5" y="329.0" width="26.2" height="41.9" rx="3" fill="#0e0f0c"/>
-<rect x="1211.7" y="63.6" width="223.3" height="155.5" rx="3" fill="#9fe870"/>
-<line x1="708" x2="1436" y1="347.2" y2="347.2" stroke="#0e0f0c" stroke-width="2" stroke-dasharray="6 5"/>
-<text x="1436.0" y="335.2" class="m" font-size="22" fill="#0e0f0c" text-anchor="end" >$1 = break-even</text>
+<rect x="709.0" y="237.3" width="56.5" height="93.1" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
+<rect x="767.5" y="327.3" width="26.2" height="22.9" rx="3" fill="#0e0f0c"/>
+<rect x="795.7" y="237.3" width="73.8" height="93.1" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
+<rect x="871.5" y="327.3" width="26.2" height="22.9" rx="3" fill="#0e0f0c"/>
+<rect x="899.7" y="237.3" width="73.8" height="93.1" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
+<rect x="975.5" y="327.3" width="26.2" height="22.9" rx="3" fill="#0e0f0c"/>
+<rect x="1003.7" y="237.3" width="73.8" height="93.1" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
+<rect x="1079.5" y="327.3" width="26.2" height="22.9" rx="3" fill="#0e0f0c"/>
+<rect x="1107.7" y="237.3" width="73.8" height="93.1" rx="3" fill="#ffffff" stroke="#0e0f0c" stroke-width="1.5"/>
+<rect x="1183.5" y="327.3" width="26.2" height="22.9" rx="3" fill="#0e0f0c"/>
+<rect x="1211.7" y="55.6" width="223.3" height="180.9" rx="3" fill="#9fe870"/>
+<line x1="708" x2="1436" y1="352.7" y2="352.7" stroke="#0e0f0c" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="1436.0" y="340.7" class="m" font-size="22" fill="#0e0f0c" text-anchor="end" >$1 = break-even</text>
 <line x1="708" x2="1436" y1="404" y2="404" stroke="#0e0f0c" stroke-width="1.5"/>
 <line x1="708.0" x2="708.0" y1="404" y2="412" stroke="#0e0f0c" stroke-width="1.5"/>
 <text x="760.0" y="436.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >MON</text>
@@ -43,11 +43,11 @@
 <text x="1280.0" y="436.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >SAT</text>
 <line x1="1332.0" x2="1332.0" y1="404" y2="412" stroke="#0e0f0c" stroke-width="1.5"/>
 <text x="1384.0" y="436.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >SUN</text>
-<line x1="884.6" x2="884.6" y1="325.0" y2="207.7" stroke="#0e0f0c" stroke-width="1.5"/>
+<line x1="884.6" x2="884.6" y1="323.3" y2="203.3" stroke="#0e0f0c" stroke-width="1.5"/>
 <text x="880.6" y="116.0" class="t" font-size="26" fill="#0e0f0c" text-anchor="start" font-weight="600" >NYSE hours</text>
-<text x="878.6" y="160.0" class="d" font-size="38" fill="#0e0f0c" text-anchor="start" >$0.78 to $1.21</text>
-<text x="1224.7" y="99.6" class="t" font-size="26" fill="#0e0f0c" text-anchor="start" font-weight="600" >Weekends</text>
-<text x="1222.7" y="145.6" class="d" font-size="42" fill="#0e0f0c" text-anchor="start" >$3.83 to</text>
-<text x="1222.7" y="189.6" class="d" font-size="42" fill="#0e0f0c" text-anchor="start" >$19.53</text>
+<text x="878.6" y="160.0" class="d" font-size="38" fill="#0e0f0c" text-anchor="start" >$1.03 to $1.35</text>
+<text x="1224.7" y="91.6" class="t" font-size="26" fill="#0e0f0c" text-anchor="start" font-weight="600" >Weekends</text>
+<text x="1222.7" y="137.6" class="d" font-size="42" fill="#0e0f0c" text-anchor="start" >$3.94 to</text>
+<text x="1222.7" y="181.6" class="d" font-size="42" fill="#0e0f0c" text-anchor="start" >$33.27</text>
 </g>
 </svg>

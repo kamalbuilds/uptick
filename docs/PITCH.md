@@ -5,14 +5,18 @@ One line: Uptick replays every Robinhood Chain swap to show what Stock Token liq
 ## 0:00 to 0:25 The problem, with a number
 
 Screen: NVDA / USDG pools on Robinhood Chain.
-Say: "189,012 people hold NVDA on this chain. Their tokens earn nothing, and nobody publishes which pool pays a liquidity provider best. We replayed 5.1 million swaps over 54 days on every pool. During NYSE hours a pool earns about one dollar of fees for each dollar it loses to informed traders. On weekends it earns four to nineteen. The pool and the fee tier move that number as much as the clock does."
+Say: "189,012 people hold NVDA on this chain. Their tokens earn nothing, and nobody publishes which pool pays a liquidity provider best. We replayed 5.1 million swaps over 54 days on every pool. 
 
-Show the session table (README): 0.78 to 1.21, 1.23 to 3.02, 3.83 to 19.53.
+During NYSE hours a pool earns about 1 dollar of fees for each dollar it loses to informed traders.
+On weekends it earns four to thirty-three. The pool and the fee tier move that number as much as the clock does."
+
+Show the session table (README): 1.03 to 1.35, 1.30 to 3.90, 3.94 to 33.27.
 
 ## 0:25 to 1:25 Killer moment 1: the app shows the evidence, then a deposit
 
 Screen: web app, NVDA vault.
 Say: "This is NVDA. Every USDG pool and fee tier, measured on the chain's own swaps." Open the tier comparison: fee per dollar of 1 hour markout for each tier, out-of-sample. Open the session evidence: NYSE hours, weeknights, weekends for the selected pool.
+
 Say: "The engine picked this pool and tier on the first half of the window and scored it on the second. That is the number the vault acts on." Connect, deposit NVDA in one click, show shares minted and the position range around the Chainlink price.
 Open the stats panel: fees lifetime, 24 h, 7 d, share price. "The NVDA vault replays at 40.6 percent fee APR over 30 days, recentred every morning at the NYSE open."
 

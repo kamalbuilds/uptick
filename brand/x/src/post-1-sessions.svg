@@ -9,8 +9,8 @@
 </style>
 <rect width="1600" height="900" fill="#e8ebe6"/>
 <g data-within="60 40 1560 870">
-<text x="78.0" y="112.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >Weekends are the best time</text>
-<text x="78.0" y="170.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >to be a Stock Token LP</text>
+<text x="78.0" y="112.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >Weekends pay LPs most</text>
+<text x="78.0" y="178.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >per dollar lost</text>
 <text x="80.0" y="222.0" class="t" font-size="30" fill="#454745" text-anchor="start" >Fees per $1 lost to informed traders (1h markout), static ±2% position.</text>
 <circle cx="92.0" cy="268.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
 <text x="114.0" y="278.0" class="t" font-size="28" fill="#0e0f0c" text-anchor="start" font-weight="600" >NYSE hours</text>
@@ -20,52 +20,52 @@
 <text x="534.0" y="278.0" class="t" font-size="28" fill="#0e0f0c" text-anchor="start" font-weight="600" >Weekends</text>
 <line x1="470.0" x2="470.0" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
 <text x="470.0" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$0.50</text>
-<line x1="608.2" x2="608.2" y1="350" y2="768" stroke="#0e0f0c" stroke-width="2" stroke-dasharray="6 5"/>
-<text x="608.2" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$1</text>
-<line x1="746.4" x2="746.4" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
-<text x="746.4" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$2</text>
-<line x1="929.1" x2="929.1" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
-<text x="929.1" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$5</text>
-<line x1="1067.3" x2="1067.3" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
-<text x="1067.3" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$10</text>
-<line x1="1205.5" x2="1205.5" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
-<text x="1205.5" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$20</text>
-<text x="620.2" y="340.0" class="m" font-size="24" fill="#0e0f0c" text-anchor="start" >$1 earned per $1 lost</text>
-<text x="596.2" y="340.0" class="m" font-size="24" fill="#d03238" text-anchor="end" >LPs lose</text>
+<line x1="582.3" x2="582.3" y1="350" y2="768" stroke="#0e0f0c" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="582.3" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$1</text>
+<line x1="694.6" x2="694.6" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
+<text x="694.6" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$2</text>
+<line x1="843.1" x2="843.1" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
+<text x="843.1" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$5</text>
+<line x1="955.4" x2="955.4" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
+<text x="955.4" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$10</text>
+<line x1="1067.7" x2="1067.7" y1="350" y2="768" stroke="#cfd4cb" stroke-width="1"/>
+<text x="1067.7" y="796.0" class="m" font-size="20" fill="#454745" text-anchor="middle" >$20</text>
+<text x="594.3" y="340.0" class="m" font-size="24" fill="#0e0f0c" text-anchor="start" >$1 earned per $1 lost</text>
+<text x="570.3" y="340.0" class="m" font-size="24" fill="#d03238" text-anchor="end" >LPs lose</text>
 <text x="1520.0" y="340.0" class="t" font-size="28" fill="#454745" text-anchor="end" font-weight="600" >weekend vs NYSE</text>
 <text x="80.0" y="432.0" class="d" font-size="46" fill="#0e0f0c" text-anchor="start" >NVDA</text>
 <text x="82.0" y="466.0" class="t" font-size="24" fill="#454745" text-anchor="start" >0.05% pool</text>
-<line x1="608.2" x2="646.2" y1="390" y2="390" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="646.2" cy="390.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
-<text x="668.2" y="400.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$1.21</text>
-<line x1="608.2" x2="649.5" y1="426" y2="426" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="649.5" cy="426.0" r="11" fill="#ffffff" stroke="#0e0f0c" stroke-width="2.5"/>
-<line x1="608.2" x2="876.0" y1="462" y2="462" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="876.0" cy="462.0" r="11" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
-<text x="898.0" y="472.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$3.83</text>
-<text x="1520.0" y="446.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >3.2×</text>
+<line x1="582.3" x2="623.6" y1="390" y2="390" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="623.6" cy="390.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="645.6" y="400.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$1.29</text>
+<line x1="582.3" x2="624.8" y1="426" y2="426" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="624.8" cy="426.0" r="11" fill="#ffffff" stroke="#0e0f0c" stroke-width="2.5"/>
+<line x1="582.3" x2="804.5" y1="462" y2="462" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="804.5" cy="462.0" r="11" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="826.5" y="472.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$3.94</text>
+<text x="1520.0" y="446.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >3.1×</text>
 <text x="80.0" y="568.0" class="d" font-size="46" fill="#0e0f0c" text-anchor="start" >SPCX</text>
 <text x="82.0" y="602.0" class="t" font-size="24" fill="#454745" text-anchor="start" >0.05% pool</text>
-<line x1="608.2" x2="558.7" y1="526" y2="526" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="558.7" cy="526.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
-<text x="536.7" y="536.0" class="m" font-size="28" fill="#d03238" text-anchor="end" >$0.78</text>
-<line x1="608.2" x2="828.6" y1="562" y2="562" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="828.6" cy="562.0" r="11" fill="#ffffff" stroke="#0e0f0c" stroke-width="2.5"/>
-<line x1="608.2" x2="998.2" y1="598" y2="598" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="998.2" cy="598.0" r="11" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
-<text x="1020.2" y="608.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$7.07</text>
-<text x="1520.0" y="582.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >9.1×</text>
+<line x1="582.3" x2="587.1" y1="526" y2="526" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="587.1" cy="526.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="609.1" y="536.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$1.03</text>
+<line x1="582.3" x2="802.8" y1="562" y2="562" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="802.8" cy="562.0" r="11" fill="#ffffff" stroke="#0e0f0c" stroke-width="2.5"/>
+<line x1="582.3" x2="914.7" y1="598" y2="598" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="914.7" cy="598.0" r="11" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="936.7" y="608.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$7.78</text>
+<text x="1520.0" y="582.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >7.6×</text>
 <text x="80.0" y="704.0" class="d" font-size="46" fill="#0e0f0c" text-anchor="start" >TSLA</text>
 <text x="82.0" y="738.0" class="t" font-size="24" fill="#454745" text-anchor="start" >0.3% pool</text>
-<line x1="608.2" x2="563.7" y1="662" y2="662" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="563.7" cy="662.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
-<text x="541.7" y="672.0" class="m" font-size="28" fill="#d03238" text-anchor="end" >$0.80</text>
-<line x1="608.2" x2="753.3" y1="698" y2="698" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="753.3" cy="698.0" r="11" fill="#ffffff" stroke="#0e0f0c" stroke-width="2.5"/>
-<line x1="608.2" x2="1200.8" y1="734" y2="734" stroke="#0e0f0c" stroke-width="2"/>
-<circle cx="1200.8" cy="734.0" r="11" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
-<text x="1222.8" y="744.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$19.53</text>
-<text x="1520.0" y="718.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >24.4×</text>
+<line x1="582.3" x2="630.9" y1="662" y2="662" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="630.9" cy="662.0" r="11" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="652.9" y="672.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$1.35</text>
+<line x1="582.3" x2="794.3" y1="698" y2="698" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="794.3" cy="698.0" r="11" fill="#ffffff" stroke="#0e0f0c" stroke-width="2.5"/>
+<line x1="582.3" x2="1150.2" y1="734" y2="734" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="1150.2" cy="734.0" r="11" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="1172.2" y="744.0" class="m" font-size="28" fill="#0e0f0c" text-anchor="start" >$33.27</text>
+<text x="1520.0" y="718.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >24.6×</text>
 <line x1="80" x2="1520" y1="808" y2="808" stroke="#cfd4cb" stroke-width="1"/>
 <text x="80.0" y="850.0" class="m" font-size="20" fill="#454745" text-anchor="start" >5.1M swaps replayed · Robinhood Chain · Aug 24 to Oct 17, 2026</text>
 <text x="1520.0" y="852.0" class="d" font-size="30" fill="#0e0f0c" text-anchor="end" >Uptick</text>

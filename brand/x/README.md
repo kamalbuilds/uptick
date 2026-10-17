@@ -7,8 +7,8 @@ Profile assets, post images and post copy for the Uptick account on X. Nothing h
 | File | Size | What it shows | Where it goes on X |
 |---|---|---|---|
 | `avatar-400.png` | 400x400 | The step mark: lime on ink, the stepped band from the vault chart. Reads at 32px in X's circle crop. | Profile photo |
-| `banner.png` | 1500x500 | Headline "Stock Token yield, chosen by the chain's own data." beside a trading week of fees per $1 lost: NYSE hours $0.78 to $1.21, weekends $3.83 to $19.53 | Header photo; also the Day 1 post image |
-| `post-1-sessions.png` | 1600x900 | NVDA, SPCX and TSLA by session, with the weekend vs NYSE multiple (3.2x, 9.1x, 24.4x) | Pinned post; thread 1/; Day 6; founder post |
+| `banner.png` | 1500x500 | Headline "Stock Token yield, chosen by the chain's own data." beside a trading week of fees per $1 lost: NYSE hours $1.03 to $1.35, weekends $3.94 to $33.27 | Header photo; also the Day 1 post image |
+| `post-1-sessions.png` | 1600x900 | NVDA, SPCX and TSLA by session, with the weekend vs NYSE multiple (3.1x, 7.6x, 24.6x) | Pinned post; thread 1/; Day 6; founder post |
 | `post-2-hooks.png` | 1600x900 | About $1.2M through v4 hooks in 49 hours; quoted fee 0 to 1% against 5 to 11% taken on single swaps | Thread 6/; Day 8 |
 | `post-3-cap.png` | 1600x900 | One 3% hook under a 2.50% cap (`TakeExceedsCap(300, 250)`, 200 of 200 revert) and a 3.00% cap (200 of 200 settle) | Thread 7/; Day 3 |
 | `post-4-app.png` | 1600x900 | The NVDA vault's band card from the running app: price, band, Chainlink price, room to the edge | Thread 5/; Day 2 |

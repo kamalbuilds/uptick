@@ -31,7 +31,7 @@ Avatar: `avatar-400.png`. Header: `banner.png`.
 Image: `post-1-sessions.png`
 
 ```text
-LPs in Robinhood Chain's NVDA, SPCX and TSLA pools earned $0.78 to $1.21 in fees per $1 lost to informed traders while NYSE was open, and $3.83 to $19.53 on weekends (5.1M swaps, 54 days).
+LPs in Robinhood Chain's NVDA, SPCX and TSLA pools earned $1.03 to $1.35 in fees per $1 lost to informed traders while NYSE was open, and $3.94 to $33.27 on weekends (5.1M swaps, 54 days).
 
 Uptick ranks each token's pools on that replay and deploys its vault into the top one.
 ```
@@ -43,7 +43,7 @@ Ships Day 0, Sunday Oct 18, 14:00 UTC (22:00 Singapore, 10:00 New York). A weeke
 1/ Image: `post-1-sessions.png`
 
 ```text
-A ±2% LP position in Robinhood Chain's NVDA, SPCX and TSLA pools earned $3.83 to $19.53 in fees for every $1 lost to informed traders on weekends, and $0.78 to $1.21 while NYSE was open.
+A ±2% LP position in Robinhood Chain's NVDA, SPCX and TSLA pools earned $3.94 to $33.27 in fees for every $1 lost to informed traders on weekends, and $1.03 to $1.35 while NYSE was open.
 
 That's from replaying 5.1M swaps over 54 days.
 ```
@@ -61,19 +61,19 @@ Fees divided by that loss give fees per $1 lost. Above 1, the LP comes out ahead
 ```text
 Weekends paid best on all three pools:
 
-NVDA 1.21 NYSE hours, 1.23 weeknights, 3.83 weekends
-SPCX 0.78, 3.02, 7.07
-TSLA 0.80, 2.07, 19.53
+NVDA 1.29 NYSE hours, 1.30 weeknights, 3.94 weekends
+SPCX 1.03, 3.90, 7.78
+TSLA 1.35, 3.70, 33.27
 
-SPCX and TSLA LPs lost money while NYSE was open. And which fee tier you sit in moves the number about as much as the clock does.
+Pooled: 13.64 on weekends, 1.16 in NYSE hours. The fee tier you sit in moves the number about as much as the clock.
 ```
 
 4/ No image
 
 ```text
-The obvious strategy: tight ranges while NYSE is open, wide after hours, pause on weekends. We pre-registered a test and it failed on all three tokens. With session labels shuffled at random, it did at least as well in 64 of 64 runs.
+The obvious strategy: tight ranges while NYSE is open, wide after hours, pause on weekends. We pre-registered a test and it could not be told apart from randomly reassigned session labels in 56 of 64 cells.
 
-The weekend pause skips the best session.
+The weekend pause skips the session that pays most per dollar lost.
 ```
 
 5/ Image: `post-4-app.png`
@@ -103,7 +103,7 @@ Image: `post-1-sessions.png`. Quote-post the thread's first post, or post standa
 ```text
 I replayed 5.1M swaps from Robinhood Chain's Stock Token pools to see whether LPing NVDA, SPCX and TSLA pays.
 
-While NYSE is open, mostly not: $0.78 to $1.21 in fees per $1 lost to informed traders. On weekends, $3.83 to $19.53.
+While NYSE is open, LPs earn $1.03 to $1.35 in fees per $1 lost to informed traders. On weekends, $3.94 to $33.27.
 
 So I built @uptickfi to pick pools from that.
 ```
@@ -136,7 +136,7 @@ Founder House posts go out in Singapore morning (02:00 to 03:00 UTC is 10:00 to 
 ### Day 1, Mon Oct 19, at the NYSE open. Image: `banner.png`
 
 ```text
-The NYSE bell just rang. Over 54 days, LPs in Robinhood Chain's NVDA, SPCX and TSLA pools earned $0.78 to $1.21 in fees per $1 lost to informed traders during these 6.5 hours. On weekends the same pools paid $3.83 to $19.53.
+The NYSE bell just rang. Over 54 days, LPs in Robinhood Chain's NVDA, SPCX and TSLA pools earned $1.03 to $1.35 in fees per $1 lost to informed traders during these 6.5 hours. On weekends the same pools paid $3.94 to $33.27.
 ```
 
 ### Day 2, Tue Oct 20. Image: `post-4-app.png`
@@ -166,7 +166,7 @@ Arbitrum Founder House Singapore starts today, run with Robinhood Chain. We're t
 ### Day 6, Sat Oct 24. Image: `post-1-sessions.png`
 
 ```text
-Saturday on Robinhood Chain: NYSE is shut, the Chainlink equity feeds have gone quiet, and the Stock Token pools keep trading. Over our 54-day window, TSLA pool LPs made $19.53 in fees for every $1 lost to informed traders on weekends. SPCX made $7.07 and NVDA $3.83.
+Saturday on Robinhood Chain: NYSE is shut, the Chainlink equity feeds have gone quiet, and the Stock Token pools keep trading. Over our 54-day window, TSLA pool LPs made $33.27 in fees for every $1 lost to informed traders on weekends. SPCX made $7.78 and NVDA $3.94.
 ```
 
 ### Day 7, Sun Oct 25, Founder House day 3. No image
@@ -196,7 +196,7 @@ Leaving an Uptick vault never waits on an oracle. redeemInKind pays your share i
 ### Day 11, Thu Oct 29. No image
 
 ```text
-We checked the session result against chance. With the NYSE-hours labels shuffled at random, an hours-aware LP strategy scored at least as well as on the real schedule in 64 of 64 runs. The instinct that LPs should be careful off-hours points the wrong way on this chain.
+We checked the session result against chance. An hours-aware LP strategy cannot be distinguished from randomly reassigned session labels in 56 of 64 cells. Session labels add no edge over random labels on this chain.
 ```
 
 ### Day 12, Fri Oct 30. No image
@@ -225,7 +225,7 @@ Each handle below was checked on 2026-10-17 with `treg call treg.x.search.posts 
 
 | # | Account | Group | Followers | Checked post | Why them | What to reply with |
 |---|---|---|---|---|---|---|
-| 1 | @JohannKerbrat (Johann Kerbrat) | Robinhood Chain team | 28,190 | Oct 15, "gm to everyone building something on Robinhood Chain" (2110769190676386222) | Posts the chain's milestones ($100B in 105 days, Oct 15). On Sep 11 he wrote that more than 72% of Stock Token volume happens after hours and on weekends (2098532670204731875). | The LP side of his number: in the NVDA, SPCX and TSLA pools, weekend fees beat what informed flow took by $3.83 to $19.53 per $1, against $0.78 to $1.21 while NYSE is open. |
+| 1 | @JohannKerbrat (Johann Kerbrat) | Robinhood Chain team | 28,190 | Oct 15, "gm to everyone building something on Robinhood Chain" (2110769190676386222) | Posts the chain's milestones ($100B in 105 days, Oct 15). On Sep 11 he wrote that more than 72% of Stock Token volume happens after hours and on weekends (2098532670204731875). | The LP side of his number: in the NVDA, SPCX and TSLA pools, weekend fees beat what informed flow took by $3.94 to $33.27 per $1, against $1.03 to $1.35 while NYSE is open. |
 | 2 | @RobinhoodCrypto | Robinhood Chain team | 648,521 | Oct 15, "Stock Tokens put to work in new ways and markets at our Buildathon with Arbitrum in Singapore" (2110753244205216179) | The largest Robinhood account that posts about Stock Tokens and the Singapore program. | `post-1-sessions.png` under any Stock Token or Robinhood Chain post. Once a week at most; this account is for visibility, not conversation. |
 | 3 | @ArbitrumDevs | Arbitrum DevRel | 33,950 | Oct 15, Founder House Singapore mentorship post (2110868328428564975); Oct 15, USDG integration ideas (2110838213191532909) | Runs Founder House Singapore with Robinhood Chain and is collecting USDG use cases. | Under the USDG post: every Uptick pool is a Stock Token/USDG pair, and the engine replays each one's swaps before the vault picks. |
 | 4 | @Swagtimus | Arbitrum DevRel | 21,422 | Oct 12, "More to come at our Founder House in Singapore later this month" (2109676031619514645) | Founder House host. Told an options team in Discord on Sep 26 that complex instruments rarely find PMF unless they're 10x better. | LP economics with a measured number: one deposit, and the evidence for the pool it lands in. |
@@ -233,7 +233,7 @@ Each handle below was checked on 2026-10-17 with `treg call treg.x.search.posts 
 | 6 | @blockbyvlog (Daniel Ortega) | Arbitrum DevRel | 566 | Oct 15, USDG post for teams building "Perps, DEXs, Earn Products or Treasury operations" (2110641863938220226) | Named by @ArbitrumDevs on Oct 16 as "Our DevRel". Small account, so replies get read. | Uptick is an Earn product on USDG pools; reply with the Day 2 band explainer. |
 | 7 | @UniswapBuilders (Uniswap Developers) | Uniswap hooks builders | 3,327 | Oct 6, "Who are the best hook builders?" (2107567825368031449); Oct 14, VolatilePair Hook docs (2110458343030702246) | The account where v4 hook work gets shared, and it amplifies new hook launches (the Hookr post, Oct 13). | `post-3-cap.png`: a hook declares its maximum take and the swap enforces it, about 25k gas per swap. |
 | 8 | @Lighter_xyz | Lighter | 130,742 | Oct 16, "Options season. Coming soon" (2111070244433252856) | Lighter powers the perps inside Robinhood Wallet with USDG as quote (Jul 1 announcement), holds 15.1% of the chain's USDG ($104.9M) and 3.1% of the top 10 Stock Tokens' supply. | Weekend session data: their market makers quote through the same hours when Stock Token pools pay LPs most. |
-| 9 | @WazzCrypto | Stock Token LP | 61,985 | Oct 15, "All my stock lps have been printing and have been in range for 1 month+" (2110798586254344623) | Runs Stock Token LP positions on Robinhood Chain and says so in public. | The session split for the NVDA, SPCX and TSLA pools: weekends returned $3.83 to $19.53 per $1 lost against $0.78 to $1.21 during NYSE hours. |
+| 9 | @WazzCrypto | Stock Token LP | 61,985 | Oct 15, "All my stock lps have been printing and have been in range for 1 month+" (2110798586254344623) | Runs Stock Token LP positions on Robinhood Chain and says so in public. | The session split for the NVDA, SPCX and TSLA pools: weekends returned $3.94 to $33.27 per $1 lost against $1.03 to $1.35 during NYSE hours. |
 | 10 | @DefiIgnas | Stock Token LP | 163,879 | Oct 2, pre-IPO trading onchain (2105969706108620896); Sep 22, "I already exited my meme/stock LP positions. Yields went down a lot." (2102366401923346767) | Had stock LP positions and left when yields fell. Largest audience on this list. | Fee APR moves with volume; fees per $1 lost to informed traders says whether the LP was ever ahead. |
 
 Bench, verified the same way: @YEYEmeta (17,700; asked for xStocks LP fee numbers on Sep 10, 2098050005831745695; an Oct 17 post about the haze puts them in Singapore, so a Founder House contact), @Nibel_eth (36,584; asked on Oct 11 for Stock Token yield builders, 2109362739504435283), @vnovakovski (Vladimir Novakovski, Lighter, 29,156), @AtriumAcademy (3,903, Uniswap hook incubator; no original posts among its latest 20).
@@ -244,5 +244,5 @@ Skip @RobinhoodChain: 96 followers and one post, dated 2025-07-02. It isn't the 
 
 - 74.5% of v4 trades through hooks: Bitquery, no window or method on disk. The repo's own read of 3,183,184 swaps gives 42.8% (`docs/paper/claims.md` X3).
 - 78% of Stock Token flow off-hours: a transfer proxy that also counts LP adds, removes and multi-hop legs (claims X1). Swap events give 55.3% in the three pools.
-- "NYSE hours are the worst session": NVDA is 1.21 against 1.23 and the order flips in the 30-day window (claims X5). Claim "weekends paid best" instead.
-- TSLA's 19.53 comes from the thinnest pool ($35.8M over 54 days). Expect a quant to ask; the answer is the pool size.
+- "NYSE hours are the worst session": NYSE is not separable from weeknights on NVDA or TSLA 0.30%, and pooled NYSE fees (1.16) still exceed markout. Claim "weekends pay LPs far more per dollar lost" (13.64 vs 1.16 pooled) instead.
+- TSLA's 33.27 comes from the thinnest pool ($35.8M over 54 days). Expect a quant to ask; the answer is the pool size.

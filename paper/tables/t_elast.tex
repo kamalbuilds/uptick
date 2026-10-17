@@ -1,0 +1,20 @@
+\begin{tabular}{lrrrr}
+\toprule
+Estimator & $\varepsilon$ & s.e. & 90\% interval & $n$ \\
+\midrule
+Cross-section, token FE and log depth (14 pools) & 0.87 & 0.13 & [0.72, 0.94]\textsuperscript{a} & 14 \\
+Cross-section, token FE, no depth control & 0.63 & & & 14 \\
+As published: five pairs, volume-weighted fee, \USD500 floor & 0.74 & 0.08 & [0.60, 0.88] & 1,337 \\
+Four distinct pairs (Fables pool once), volume-weighted fee & 0.78 & 0.06 & [0.67, 0.89] & 1,006 \\
+Four pairs, mean per-swap fee rate as regressor & 0.78 & 0.07 & [0.66, 0.89] & 1,006 \\
+\quad volume floor \USD0 & 1.58 & 0.16 & [1.26, 1.89] & 1,470 \\
+\quad volume floor \USD100 & 1.05 & 0.09 & [0.90, 1.20] & 1,191 \\
+\quad volume floor \USD2,000 & 0.67 & 0.04 & [0.60, 0.73] & 775 \\
+\quad pair $\times$ hour-of-day effects & 0.62 & 0.07 & [0.49, 0.74] & 1,006 \\
+\quad pair $\times$ session and pair $\times$ day effects & 0.76 & 0.06 & [0.66, 0.87] & 1,006 \\
+Cross-section by session, NYSE / weeknight / weekend & 0.81 / 0.81 / 0.88 & & & 14 \\
+\quad Weekend minus NYSE & +0.06 & & [$-$0.36, +0.53]\textsuperscript{a} & \\
+\quad Weekend minus weeknight & +0.07 & & [$-$0.45, +0.57]\textsuperscript{a} & \\
+\quad Weeknight minus NYSE & $-$0.01 & & [$-$0.21, +0.24]\textsuperscript{a} & \\
+\bottomrule
+\end{tabular}

@@ -13,7 +13,7 @@ Uniswap v4 dynamic-fee hook for a Stock Token / USD stablecoin pool on Robinhood
 
 The hook address needs the flag bits `0xCC` (before/after swap plus both return-delta flags, required by `CappedTakeHook`). Mine the salt with `HookMiner`.
 
-Why session pricing: measured fee per dollar of 1-hour markout on the NVDA, SPCX and TSLA pools is lowest in NYSE hours (0.78 to 1.21) and highest on weekends (3.83 to 19.53), so the schedule is a deploy parameter and not a hard-coded order. See `spikes/stock-vaults/FINDINGS.md`.
+Why session pricing: measured fee per dollar of 1-hour markout on the NVDA, SPCX and TSLA pools is 1.03 to 1.35 in NYSE hours and 3.94 to 33.27 on weekends (pooled 1.16 and 13.64), so the schedule is a deploy parameter and not a hard-coded order. See `spikes/stock-vaults/FINDINGS.md`.
 
 ## Files
 

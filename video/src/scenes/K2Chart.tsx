@@ -9,14 +9,14 @@ const CW = 1500;
 const DW = CW / 7;
 const BASE = 760;
 const TOPH = 560;
-const yv = (v: number) => BASE - (TOPH * Math.log(v / 0.5)) / Math.log(50);
+const yv = (v: number) => BASE - (TOPH * Math.log(v / 0.5)) / Math.log(100);
 const hx = (d: number, h: number) => X0 + (d + h / 24) * DW;
 
 type Bar = { x: number; w: number; lo: number; hi: number; kind: "nyse" | "night" | "wknd"; d: number };
 const bars: Bar[] = [];
-const NYSE: [number, number] = [0.78, 1.21];
-const NIGHT: [number, number] = [1.23, 3.02];
-const WKND: [number, number] = [3.83, 19.53];
+const NYSE: [number, number] = [1.03, 1.35];
+const NIGHT: [number, number] = [1.30, 3.90];
+const WKND: [number, number] = [3.94, 33.27];
 for (let d = 0; d < 5; d++) {
   bars.push({ x: hx(d, 0) + 4, w: hx(d, 9.5) - hx(d, 0) - 8, lo: NIGHT[0], hi: NIGHT[1], kind: "night", d });
   bars.push({ x: hx(d, 9.5) + 2, w: hx(d, 16) - hx(d, 9.5) - 4, lo: NYSE[0], hi: NYSE[1], kind: "nyse", d });
@@ -115,7 +115,7 @@ export const K2Chart: React.FC = () => {
           <Abs key={d} x={X0 + i * DW} y={BASE + 18} w={DW} style={{ textAlign: "center" }}><Mono size={24} color={C.mute}>{d}</Mono></Abs>
         ))}
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Abs key={i} x={X0 + i * DW - 1} y={yv(25)} w={2} h={BASE - yv(25)} style={{ background: "rgba(14,15,12,0.07)" }} />
+          <Abs key={i} x={X0 + i * DW - 1} y={yv(50)} w={2} h={BASE - yv(50)} style={{ background: "rgba(14,15,12,0.07)" }} />
         ))}
         {/* bars, floating from low to high of the range */}
         {bars.map((b, i) => {
@@ -128,13 +128,13 @@ export const K2Chart: React.FC = () => {
         })}
         {/* range labels */}
         <Abs x={hx(2, 9.5) - 110} y={yv(NYSE[0]) + 14} w={300} style={{ opacity: p(t, s7.start + 3.5, s7.start + 4.0), textAlign: "center" }}>
-          <Pill bg={C.ink} color={C.white} size={28}>0.78 to 1.21</Pill>
+          <Pill bg={C.ink} color={C.white} size={28}>1.03 to 1.35</Pill>
         </Abs>
         <Abs x={hx(3, 16) - 110} y={yv(NIGHT[1]) - 74} w={300} style={{ opacity: p(t, nightAt + 0.9, nightAt + 1.3), textAlign: "center" }}>
-          <Pill bg={C.white} color={C.ink} size={28} border={C.ink}>1.23 to 3.02</Pill>
+          <Pill bg={C.white} color={C.ink} size={28} border={C.ink}>1.30 to 3.90</Pill>
         </Abs>
         <Abs x={hx(5, 0)} y={yv(WKND[1]) - 110} w={2 * DW} style={{ opacity: p(t, wkndAt + 0.7, wkndAt + 1.1), textAlign: "center" }}>
-          <Big size={84}>3.83 to 19.53</Big>
+          <Big size={84}>3.94 to 33.27</Big>
         </Abs>
         <Abs x={hx(5, 0)} y={yv(WKND[0]) + 24} w={2 * DW} style={{ opacity: p(t, wkndAt + 1.1, wkndAt + 1.5), textAlign: "center" }}>
           <Pill bg={C.white} color={C.ink} size={26}>stock market closed</Pill>

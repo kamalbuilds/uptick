@@ -4,9 +4,9 @@ import { clamp01, ease, kf, lerp, p, seg, useSec } from "../lib";
 import { Abs, Big, Coin, Cursor, Label, Mono, Pill, Rise } from "../ui";
 
 const CARDS = [
-  { token: "NVDA", tier: "0.05%", v: [1.21, 1.23, 3.83] },
-  { token: "SPCX", tier: "0.05%", v: [0.78, 3.02, 7.07] },
-  { token: "TSLA", tier: "0.3%", v: [0.8, 2.07, 19.53] },
+  { token: "NVDA", tier: "0.05%", v: [1.29, 1.30, 3.94] },
+  { token: "SPCX", tier: "0.05%", v: [1.03, 3.90, 7.78] },
+  { token: "TSLA", tier: "0.3%", v: [1.35, 3.70, 33.27] },
 ];
 const ROWS = [
   { l: "NYSE hours", c: C.ink },
@@ -17,7 +17,7 @@ const CX = [160, 710, 1260];
 const CY = 196;
 const CWD = 500;
 const CH = 368;
-const bar = (v: number) => (436 * Math.log(v / 0.5)) / Math.log(50);
+const bar = (v: number) => (436 * Math.log(v / 0.5)) / Math.log(100);
 
 const Check: React.FC = () => (
   <svg width="30" height="30" viewBox="0 0 30 30"><path d="M5 16 L12 23 L26 7" fill="none" stroke={C.ink} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" /></svg>

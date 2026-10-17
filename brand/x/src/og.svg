@@ -15,10 +15,10 @@
 <text x="62.0" y="277.0" class="d" font-size="74" fill="#e8ebe6" text-anchor="start" >chosen by the chain’s own data.</text>
 <line x1="64" x2="1136" y1="318" y2="318" stroke="#33352f" stroke-width="1.5"/>
 <text x="64.0" y="374.0" class="t" font-size="30" fill="#e8ebe6" text-anchor="start" font-weight="600" >NYSE hours</text>
-<text x="62.0" y="442.0" class="d" font-size="60" fill="#e8ebe6" text-anchor="start" >$0.78 to $1.21</text>
+<text x="62.0" y="442.0" class="d" font-size="60" fill="#e8ebe6" text-anchor="start" >$1.03 to $1.35</text>
 <text x="64.0" y="484.0" class="t" font-size="28" fill="#9a9c97" text-anchor="start" >fees per $1 lost to informed traders</text>
 <text x="620.0" y="374.0" class="t" font-size="30" fill="#e8ebe6" text-anchor="start" font-weight="600" >Weekends</text>
-<text x="618.0" y="442.0" class="d" font-size="60" fill="#9fe870" text-anchor="start" >$3.83 to $19.53</text>
+<text x="618.0" y="442.0" class="d" font-size="60" fill="#9fe870" text-anchor="start" >$3.94 to $33.27</text>
 <text x="620.0" y="484.0" class="t" font-size="28" fill="#9a9c97" text-anchor="start" >fees per $1 lost to informed traders</text>
 <text x="1136.0" y="572.0" class="m" font-size="22" fill="#9a9c97" text-anchor="end" >5.1M swaps replayed · NVDA, SPCX, TSLA · 54 days</text>
 </g>
