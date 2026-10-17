@@ -97,7 +97,7 @@ Installed with `forge install --no-git <repo>@<tag>`:
 | Uniswap/v4-core (TickMath, SqrtPriceMath only) | v4.0.0 | `e50237c43811bd9b526eff40f26772152a42daba` |
 | foundry-rs/forge-std | v1.17.0 | `f3dae6e6ee381f25eb6a246f7da9b85c91a68219` |
 
-Solidity 0.8.26, EVM cancun.
+Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. Runtime code is 24,085 bytes, under the 24,576 byte limit.
 
 ## Test
 
@@ -112,7 +112,7 @@ forge test --match-contract StockVaultFuzzTest
 forge test --match-contract StockVaultInvariantTest
 ```
 
-What is exercised against the real contracts: deposit and withdraw round trips with real NVDA; rebalance after the pool is pushed through the router; fee accrual checked against the pool's own fee growth; the performance-fee share mint checked against its closed form; a 3% pool push that must block deposits (same block, via the spot check; after the TWAP window, via the TWAP check); a stale feed that must block `rebalance`; permissionless `rebalance` at 26 hours; `redeemInKind` with the vault paused and the feed down; a Stock Token transfer that reverts; the first-depositor donation attack; fuzzed deposits and withdrawals with the invariant that the sum of share values never exceeds total assets; a stateful invariant run over deposits, redeems, in-kind redeems and rebalances.
+What is exercised against the real contracts: deposit and withdraw round trips with real NVDA; rebalance after the pool is pushed through the router; fee accrual checked against the pool's own fee growth; the performance-fee share mint checked against its closed form; a 3% pool push that must block deposits (same block, via the spot check; after the TWAP window, via the TWAP check); a stale feed that must block `rebalance`; permissionless `rebalance` at 26 hours; `redeemInKind` with the vault paused and the feed down; a Stock Token transfer that reverts; the first-depositor donation attack; fuzzed deposits and withdrawals with the invariant that the sum of share values never exceeds total assets; a stateful invariant run over deposits, redeems, in-kind redeems and rebalances; and a second vault on the SPCX pool, where the Stock Token is token0, so both token orderings are covered.
 
 ## Deploy
 

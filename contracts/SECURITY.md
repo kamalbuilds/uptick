@@ -65,6 +65,10 @@ Scope: `src/StockVault.sol`. Every guard below says what the contract does when 
 | TWAP-composition NAV vs spot-composition value of the same holdings, 400 NVDA deposit with `instantDeploy` | about 6.5 bp | debug run at head; the gate bounds the gap at second order in `maxDeviationBps` |
 | Pool NVDA price below the Chainlink answer on a Saturday, feed 10 h old | 38 bp | `sqrtOracle` against spot at head; inside the 100 bp gate |
 
+## Bytecode size
+
+Runtime code is 24,085 bytes against the EIP-170 limit of 24,576 (built with `via_ir` and `optimizer_runs = 1`); `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
+
 ## Test and mutation evidence
 
 Each row deletes or breaks one guard in the source, runs the tests that cover it, expects red, restores the source and expects green.
@@ -83,8 +87,9 @@ Each row deletes or breaks one guard in the source, runs the tests that cover it
 | Performance fee not minted | `test_feeAccrualAndPerformanceFeeMath` |
 | Deposit pause not enforced | `test_depositCapAndPause` |
 | Dust-swap guard removed | `test_tinyRedeemDoesNotRevert` |
+| Exits release 20% more liquidity than the shares' fraction | `invariant_exitsNeverDiluteRemainingHolders` (NAV per share fell to 0.75 in one exit) |
 | Token-0 sqrt-price orientation flipped | `test_oracleMappingMatchesPoolForTokenZeroStock`, `test_roundTripAndRebalanceWithTokenZeroStock` |
 
-The stateful invariant run (random deposits, redeems, in-kind redeems and rebalances, 12 calls deep) surfaced the dust-swap case: a swap of a few raw units returns nothing because the pool rounds its fee up. The dust guard and `test_tinyRedeemDoesNotRevert` pin it.
+The stateful invariant run (random deposits, redeems, in-kind redeems and rebalances; 300 runs of 16 calls, 4,800 calls per invariant) holds seven invariants: sum of share values never exceeds NAV, no USD created, no lingering approvals, deposits never refused except by the oracle gate, rebalances never refused except by the oracle gate, redeems refused only by the gates, and no exit lowers NAV per share for the holders left. It surfaced the dust-swap case: a swap of a few raw units returns nothing because the pool rounds its fee up. The dust guard and `test_tinyRedeemDoesNotRevert` pin it.
 
 Static analysis: `slither .` reports reentrancy and strict-equality findings on paths that sit behind `nonReentrant` and call only the immutable router and position manager; the return values it flags as unused are read back by balance delta instead.
