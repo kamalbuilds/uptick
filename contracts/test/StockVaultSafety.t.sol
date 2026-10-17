@@ -262,6 +262,23 @@ contract StockVaultSafetyTest is Base {
         assertEq(vault.balanceOf(alice), 0);
     }
 
+    function test_exitCannotHarvestPoolOracleGap() public {
+        _instant();
+        uint256 shares = _deposit(alice, 100e18);
+        // Chainlink 0.4% above the pool: NVDA is cheap in the pool, so swapping the USDG leg back into NVDA
+        // returns more than the oracle value (inside the 1% bound, so the gate is open)
+        _setFeed(_poolPrice() * 10_040 / 10_000);
+        (StockVault.Status st,,,,,) = vault.health();
+        assertEq(uint8(st), uint8(StockVault.Status.Ok));
+        uint256 fair = vault.convertToAssets(shares);
+        vm.prank(alice);
+        uint256 got = vault.redeem(shares, alice, alice);
+        assertLe(got, fair, "redeem never pays more than NAV");
+        assertGe(got, fair * 9_970 / 10_000, "and not less than the exit buffer allows");
+        // the swap earned more than NAV, and that surplus stayed in the vault instead of leaving with the redeemer
+        assertGt(IERC20(NVDA).balanceOf(address(vault)), 1e16, "gap stayed with the vault");
+    }
+
     // ------------------------------------------------------- slippage (minOut)
 
     function test_swapMinOutBlocksBadFill() public {

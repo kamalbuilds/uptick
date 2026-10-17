@@ -10,10 +10,11 @@ import {IAggregatorV3, IUniswapV3Pool, ISwapRouter02} from "../src/interfaces/IU
 
 /// @dev Fork of Robinhood Chain (4663) at head (the public RPC keeps no historical state, so a fixed block cannot
 /// be replayed later; set FORK_BLOCK to a recent block to pin one). Everything the vault touches (pool, position
-/// manager, router, tokens, Chainlink feed answer) is the real deployed contract. The only cheatcodes are deal
-/// for balances, warp for time, and mockCall on the Chainlink proxy: it replays the feed's real answer with a
-/// fresh timestamp (the equity feeds go stale over weekends) and then follows the price moves the tests make
-/// in the real pool. test_realFeedUnmocked reads the feed untouched.
+/// manager, router, tokens) is the real deployed contract. The only cheatcodes are deal for balances, warp for
+/// time, and mockCall on the Chainlink proxy: setUp points it at the pool's own spot price with a fresh timestamp
+/// (the equity feeds go stale over weekends and trade off the pool by tens of bp), and tests then move it to
+/// follow, or deliberately diverge from, the price moves they make in the real pool. test_realFeedUnmocked reads
+/// the real feed untouched.
 abstract contract Addrs {
     address constant NVDA = 0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC;
     address constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
@@ -39,11 +40,11 @@ abstract contract Base is Test, Addrs {
 
     function setUp() public virtual {
         uint256 blk = vm.envOr("FORK_BLOCK", uint256(0));
-        if (blk == 0) vm.createSelectFork("robinhood");
-        else vm.createSelectFork("robinhood", blk);
-        int256 answer;
-        (feedRound, answer,,,) = IAggregatorV3(FEED).latestRoundData();
-        _setFeed(uint256(answer));
+        string memory url = vm.envOr("FORK_URL", string("robinhood"));
+        if (blk == 0) vm.createSelectFork(url);
+        else vm.createSelectFork(url, blk);
+        (feedRound,,,,) = IAggregatorV3(FEED).latestRoundData();
+        _setFeed(_poolPrice());
 
         vault = _deploy(_defaultParams());
         deal(USDG, trader, 200_000_000e6);
@@ -104,6 +105,12 @@ abstract contract Base is Test, Addrs {
 
     function _spotTick() internal view returns (int24 t) {
         (, t,,,,,) = IUniswapV3Pool(POOL).slot0();
+    }
+
+    /// @dev USD per NVDA (8 decimals) implied by the pool's spot price. NVDA is token1, USDG token0.
+    function _poolPrice() internal view returns (uint256) {
+        uint256 p96 = Math.mulDiv(_spotSqrt(), _spotSqrt(), 1 << 96); // NVDA wei per USDG unit, Q96
+        return Math.mulDiv(1e26, 1 << 96, p96) / 1e6;
     }
 
     function _spotSqrt() internal view returns (uint160 s) {

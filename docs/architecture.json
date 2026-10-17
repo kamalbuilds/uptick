@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Uptick on Robinhood Chain",
+    "output": "architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "deposit-path",
+        "label": "Deposit path",
+        "focus": [
+          "holder",
+          "web",
+          "vault",
+          "pm"
+        ],
+        "note": "A Stock Token holder deposits once; the vault places the position in the hooked pool."
+      },
+      {
+        "id": "swap-pricing",
+        "label": "Swap pricing",
+        "focus": [
+          "traders",
+          "pm",
+          "hook",
+          "feed",
+          "registry"
+        ],
+        "note": "Every swap is priced by market session and oracle gap, under a declared cap."
+      },
+      {
+        "id": "operations",
+        "label": "Operations",
+        "focus": [
+          "keeper",
+          "vault",
+          "stats",
+          "web",
+          "feed"
+        ],
+        "note": "The keeper recentres at the NYSE open; the stats API serves fee APR and the band."
+      }
+    ],
+    "viewBox": [
+      1380,
+      700
+    ]
+  },
+  "components": [
+    {
+      "id": "holder",
+      "type": "external",
+      "label": "Stock Token holder",
+      "sublabel": "EIP-6963 wallet",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Uptick app",
+      "sublabel": "Next.js",
+      "pos": [
+        330,
+        340
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "vault",
+      "type": "backend",
+      "label": "StockVault",
+      "sublabel": "ERC-4626 per token",
+      "pos": [
+        610,
+        340
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "NVDA, SPCX"
+    },
+    {
+      "id": "pm",
+      "type": "cloud",
+      "label": "v4 PoolManager",
+      "sublabel": "Robinhood Chain 4663",
+      "pos": [
+        900,
+        340
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "traders",
+      "type": "external",
+      "label": "Traders and routers",
+      "sublabel": "UniversalRouter, apps",
+      "pos": [
+        1180,
+        340
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "hook",
+      "type": "security",
+      "label": "UptickHook",
+      "sublabel": "session fee, oracle gap",
+      "pos": [
+        900,
+        110
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "capped take"
+    },
+    {
+      "id": "registry",
+      "type": "database",
+      "label": "CapRegistry",
+      "sublabel": "declared max fee",
+      "pos": [
+        1180,
+        110
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "feed",
+      "type": "external",
+      "label": "Chainlink NVDA/USD",
+      "sublabel": "24/5 reference",
+      "pos": [
+        610,
+        110
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "keeper",
+      "type": "backend",
+      "label": "Keeper",
+      "sublabel": "recentre at NYSE open",
+      "pos": [
+        610,
+        570
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "stats",
+      "type": "backend",
+      "label": "Stats API",
+      "sublabel": "fee APR, band",
+      "pos": [
+        330,
+        570
+      ],
+      "size": [
+        140,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "holder-deposit",
+      "from": "holder",
+      "to": "web",
+      "label": "deposit NVDA",
+      "variant": "emphasis"
+    },
+    {
+      "id": "web-vault",
+      "from": "web",
+      "to": "vault",
+      "label": "deposit / redeem"
+    },
+    {
+      "id": "vault-pm",
+      "from": "vault",
+      "to": "pm",
+      "label": "modifyLiquidity"
+    },
+    {
+      "id": "traders-pm",
+      "from": "traders",
+      "to": "pm",
+      "label": "swap"
+    },
+    {
+      "id": "pm-hook",
+      "from": "pm",
+      "to": "hook",
+      "label": "beforeSwap fee",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "feed-hook",
+      "from": "feed",
+      "to": "hook",
+      "label": "reference price"
+    },
+    {
+      "id": "hook-registry",
+      "from": "hook",
+      "to": "registry",
+      "label": "cap"
+    },
+    {
+      "id": "feed-vault",
+      "from": "feed",
+      "to": "vault",
+      "label": "band centre",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "keeper-vault",
+      "from": "keeper",
+      "to": "vault",
+      "label": "rebalance()",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "web-stats",
+      "from": "web",
+      "to": "stats",
+      "label": "APR, band",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Hook",
+      "items": [
+        "Fee by session: NYSE hours, weeknights, weekends",
+        "Surcharge on trades that widen the oracle gap",
+        "Declared max fee enforced inside every swap"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Vault",
+      "items": [
+        "One deposit per Stock Token",
+        "Position recentred daily at the NYSE open",
+        "Fees raise the share price"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Evidence",
+      "items": [
+        "5.1M swaps replayed on the chain's own pools",
+        "LPs earn 3.8 to 19.5x more fee per loss on weekends"
+      ]
+    }
+  ]
+}

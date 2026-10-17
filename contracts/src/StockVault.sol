@@ -129,8 +129,8 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     int24 public tickUpper;
     uint256 public lastRebalance;
 
-    uint256 public lifetimeFeesStock;
-    uint256 public lifetimeFeesUsdg;
+    uint256 private lifetimeFeesStock;
+    uint256 private lifetimeFeesUsdg;
 
     /// @notice Stock Token owed to redeemInKind receivers whose transfer reverted (pause or blocklist).
     mapping(address => uint256) public stockOwed;
@@ -180,7 +180,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         ERC4626(IERC20(c.stock))
         Ownable(c.owner)
     {
-        if (c.treasury == address(0) || c.stock == c.usdg) revert BadConfig();
+        if (c.treasury == address(0) || c.router == address(0) || c.stock == c.usdg) revert BadConfig();
         IUniswapV3Pool pool_ = IUniswapV3Pool(c.pool);
         bool s0 = pool_.token0() == c.stock;
         if (!(s0 && pool_.token1() == c.usdg) && !(pool_.token1() == c.stock && pool_.token0() == c.usdg)) {
@@ -253,13 +253,24 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         _unpause();
     }
 
+    /// @dev Renouncing would freeze every parameter and the keeper and treasury for good.
+    function renounceOwnership() public view override onlyOwner {
+        revert BadConfig();
+    }
+
     function _checkParams(Params memory p) private pure {
-        if (
-            p.rangeBps < 50 || p.rangeBps > 2000 || p.perfFeeBps > 2000 || p.maxDeviationBps < 10
-                || p.maxDeviationBps > 500 || p.slippageBps < 1 || p.slippageBps > 500 || p.exitBufferBps > 200
-                || p.maxStaleness < 1 hours || p.maxStaleness > 7 days || p.twapWindow < 600 || p.twapWindow > 1 days
-                || p.minRebalanceInterval < 1 hours || p.minRebalanceInterval > 24 hours
-        ) revert BadParams();
+        _within(p.rangeBps, 50, 2000);
+        _within(p.perfFeeBps, 0, 2000);
+        _within(p.maxDeviationBps, 10, 500);
+        _within(p.slippageBps, 1, 500);
+        _within(p.exitBufferBps, 0, 200);
+        _within(p.maxStaleness, 1 hours, 7 days);
+        _within(p.twapWindow, 600, 1 days);
+        _within(p.minRebalanceInterval, 1 hours, 24 hours);
+    }
+
+    function _within(uint256 v, uint256 lo, uint256 hi) private pure {
+        if (v < lo || v > hi) revert BadParams();
     }
 
     // -------------------------------------------------------------------- views
@@ -267,14 +278,12 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     /// @notice Net asset value in Stock Token units: idle balances, both position legs at the TWAP price and
     /// uncollected fees, with the treasury's performance cut on those fees already deducted.
     function totalAssets() public view override returns (uint256) {
-        (Status st, Snapshot memory s) = _read();
-        if (st == Status.FeedInvalid) revert OracleUnhealthy(st);
+        Snapshot memory s = _readLenient();
         return _valuation(s).net;
     }
 
     function totalValueInUSDG() external view returns (uint256) {
-        (Status st, Snapshot memory s) = _read();
-        if (st == Status.FeedInvalid) revert OracleUnhealthy(st);
+        Snapshot memory s = _readLenient();
         return _stockToUsdg(_valuation(s).net, s.price);
     }
 
@@ -284,16 +293,14 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     }
 
     function feesEarnedLifetime() external view returns (uint256 stockFees, uint256 usdgFees, uint256 valueInUSDG) {
-        (Status st, Snapshot memory s) = _read();
-        if (st == Status.FeedInvalid) revert OracleUnhealthy(st);
+        Snapshot memory s = _readLenient();
         stockFees = lifetimeFeesStock;
         usdgFees = lifetimeFeesUsdg;
         valueInUSDG = usdgFees + _stockToUsdg(stockFees, s.price);
     }
 
     function positionInfo() external view returns (PositionInfo memory info) {
-        (Status st, Snapshot memory s) = _read();
-        if (st == Status.FeedInvalid) revert OracleUnhealthy(st);
+        Snapshot memory s = _readLenient();
         info.tokenId = tokenId;
         if (tokenId == 0) return info;
         info.tickLower = tickLower;
@@ -369,9 +376,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     {
         Snapshot memory s = _requireHealthy();
         shares = super.deposit(assets, receiver);
-        bool deployed = instantDeploy;
-        if (deployed) _deploy(s);
-        emit Deposited(msg.sender, receiver, assets, shares, deployed);
+        _afterDeposit(s, receiver, assets, shares);
     }
 
     function mint(uint256 shares, address receiver)
@@ -383,6 +388,10 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     {
         Snapshot memory s = _requireHealthy();
         assets = super.mint(shares, receiver);
+        _afterDeposit(s, receiver, assets, shares);
+    }
+
+    function _afterDeposit(Snapshot memory s, address receiver, uint256 assets, uint256 shares) private {
         bool deployed = instantDeploy;
         if (deployed) _deploy(s);
         emit Deposited(msg.sender, receiver, assets, shares, deployed);
@@ -402,10 +411,11 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         _harvest(s);
         if (assets > maxWithdraw(owner_)) revert ExceedsMax();
         shares = previewWithdraw(assets);
-        _exit(msg.sender, receiver, owner_, shares, assets, true, s);
+        _exit(msg.sender, receiver, owner_, shares, assets, assets, true, s);
     }
 
-    /// @notice Burns `shares` and sends the actual proceeds of the Stock Token, at least previewRedeem(shares).
+    /// @notice Burns `shares` and sends the actual proceeds of the Stock Token: at least previewRedeem(shares) and
+    /// at most the shares' NAV, so a pool trading cheaper than Chainlink cannot be harvested through an exit.
     function redeem(uint256 shares, address receiver, address owner_)
         public
         override
@@ -415,7 +425,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         Snapshot memory s = _requireHealthy();
         _harvest(s);
         if (shares > balanceOf(owner_)) revert ExceedsMax();
-        assets = _exit(msg.sender, receiver, owner_, shares, previewRedeem(shares), false, s);
+        assets = _exit(msg.sender, receiver, owner_, shares, previewRedeem(shares), _convertToAssets(shares, Math.Rounding.Floor), false, s);
     }
 
     /// @notice Pro-rata exit in both legs. No oracle gate, no swap, not pausable. If the Stock Token transfer to
@@ -497,6 +507,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         address owner_,
         uint256 shares,
         uint256 minAssets,
+        uint256 maxAssets,
         bool exact,
         Snapshot memory s
     ) internal returns (uint256 delivered) {
@@ -506,12 +517,11 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         _burn(owner_, shares);
         (uint256 outStock, uint256 outUsdg) = _release(shares, supply);
 
-        if (outUsdg > 0) {
-            uint256 minOut = _minOut(_usdgToStock(outUsdg, s.price));
-            if (minOut > 0) outStock += _swap(usdg, stock, outUsdg, minOut);
-        }
-        if (outStock < minAssets) revert ExitBelowMinimum(outStock, minAssets);
-        delivered = exact ? minAssets : outStock;
+        uint256 forfeited; // Stock Token value of a USDG leg too small to swap; it stays in the vault
+        if (_isDust(outUsdg)) forfeited = _usdgToStock(outUsdg, s.price);
+        else outStock += _swap(usdg, stock, outUsdg, _minOut(_usdgToStock(outUsdg, s.price)));
+        if (outStock + (exact ? 0 : forfeited) < minAssets) revert ExitBelowMinimum(outStock, minAssets);
+        delivered = exact ? minAssets : Math.min(outStock, maxAssets);
         stock.safeTransfer(receiver, delivered);
         emit Withdraw(caller, receiver, owner_, delivered, shares);
         emit Withdrawn(caller, receiver, owner_, delivered, shares);
@@ -566,6 +576,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         uint256 id = tokenId;
         if (id == 0) return;
         uint128 liq = _liquidity();
+        tokenId = 0;
         if (liq > 0) {
             positionManager.decreaseLiquidity(
                 INonfungiblePositionManager.DecreaseLiquidityParams(id, liq, 0, 0, block.timestamp)
@@ -575,7 +586,6 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
             INonfungiblePositionManager.CollectParams(id, address(this), type(uint128).max, type(uint128).max)
         );
         positionManager.burn(id);
-        tokenId = 0;
     }
 
     function _openPosition(Snapshot memory s) internal {
@@ -591,21 +601,8 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     /// @dev Swaps the idle inventory to the ratio the range needs at the current spot price, then mints a new
     /// position (tokenId == 0) or adds to the open one. Any remainder stays idle and counts in totalAssets.
     function _deployInto(int24 tl, int24 tu, Snapshot memory s) internal {
+        if (!_balanceInventory(tl, tu, s)) return;
         (uint256 a0, uint256 a1) = _idle01();
-        (uint256 idleStock, uint256 idleUsdg) = _orient(a0, a1);
-        if (idleUsdg + _stockToUsdg(idleStock, s.price) < usdgScale) return;
-
-        (bool zeroForOne, uint256 amountIn) = _swapNeeded(tl, tu, s.sqrtSpot, a0, a1);
-        if (amountIn > 0) {
-            bool stockIn = zeroForOne == stockIsToken0;
-            if (stockIn) {
-                _swap(stock, usdg, amountIn, _minOut(_stockToUsdg(amountIn, s.price)));
-            } else {
-                _swap(usdg, stock, amountIn, _minOut(_usdgToStock(amountIn, s.price)));
-            }
-            (a0, a1) = _idle01();
-        }
-
         address t0 = stockIsToken0 ? address(stock) : address(usdg);
         address t1 = stockIsToken0 ? address(usdg) : address(stock);
         IERC20(t0).forceApprove(address(positionManager), a0);
@@ -626,6 +623,22 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         }
         IERC20(t0).forceApprove(address(positionManager), 0);
         IERC20(t1).forceApprove(address(positionManager), 0);
+    }
+
+    /// @dev Swaps idle inventory toward the ratio the range needs. False when there is less than 1 USD to deploy.
+    function _balanceInventory(int24 tl, int24 tu, Snapshot memory s) internal returns (bool) {
+        (uint256 a0, uint256 a1) = _idle01();
+        (uint256 idleStock, uint256 idleUsdg) = _orient(a0, a1);
+        if (idleUsdg + _stockToUsdg(idleStock, s.price) < usdgScale) return false;
+
+        (bool zeroForOne, uint256 amountIn) = _swapNeeded(tl, tu, s.sqrtSpot, a0, a1);
+        if (zeroForOne == stockIsToken0) {
+            uint256 usdgValue = _stockToUsdg(amountIn, s.price);
+            if (!_isDust(usdgValue)) _swap(stock, usdg, amountIn, _minOut(usdgValue));
+        } else if (!_isDust(amountIn)) {
+            _swap(usdg, stock, amountIn, _minOut(_usdgToStock(amountIn, s.price)));
+        }
+        return true;
     }
 
     /// @dev Solves for the swap that leaves idle balances in the ratio of one unit of liquidity over [tl, tu] at
@@ -660,12 +673,25 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         if (out < minOut) revert SwapBelowMinimum(out, minOut);
     }
 
+    /// @dev Below one US cent a swap is not worth its gas, and the pool rounds its fee up to whole units, so a swap
+    /// of a few raw units can return nothing and revert the whole call. Dust stays in the vault.
+    function _isDust(uint256 usdgAmount) internal view returns (bool) {
+        return usdgAmount < usdgScale / 100;
+    }
+
     /// @dev Lowest acceptable swap output: the Chainlink value of the input less slippageBps.
     function _minOut(uint256 oracleValueOut) internal view returns (uint256) {
         return oracleValueOut.mulDiv(1e4 - params.slippageBps, 1e4);
     }
 
     // ---------------------------------------------------------------- oracle
+
+    /// @dev For views: any readable feed answer is used even when the gate is not Ok; only an unusable feed reverts.
+    function _readLenient() internal view returns (Snapshot memory s) {
+        Status st;
+        (st, s) = _read();
+        if (st == Status.FeedInvalid) revert OracleUnhealthy(st);
+    }
 
     function _requireHealthy() internal view returns (Snapshot memory s) {
         Status st;

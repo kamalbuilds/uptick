@@ -11,6 +11,21 @@ export type VaultStats = {
   aprWindowDays: number;
   /** Null while the keeper has no vault to read (replay). */
   tvlUsd: number | null;
+  /** Price against the strategy band; null when the stats API could not read the pool or the feed. */
+  chart: PriceChart | null;
+};
+
+export type BandSegment = { from: number; to: number; center: number; lower: number; upper: number };
+/** Times are unix seconds, prices are USD per stock token. */
+export type PriceChart = {
+  bandPct: number;
+  poolUsd: number;
+  chainlinkUsd: number;
+  asOf: number;
+  inBand: boolean | null;
+  band: BandSegment | null;
+  history: { t: number; price: number }[];
+  bands: BandSegment[];
 };
 
 const isNum = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
@@ -18,6 +33,27 @@ const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object
 
 /** Onchain vaults report fee_apr_pct per window; the 7d figure leads. */
 const ONCHAIN_WINDOW_DAYS: Record<string, number> = { "7d": 7, "24h": 1 };
+
+function parseSegment(x: unknown): BandSegment {
+  if (!isObj(x) || !isNum(x.from) || !isNum(x.to) || !isNum(x.center) || !isNum(x.lower) || !isNum(x.upper)) throw new Error("keeper band segment malformed");
+  return { from: x.from, to: x.to, center: x.center, lower: x.lower, upper: x.upper };
+}
+
+export function parseChart(raw: unknown): PriceChart | null {
+  if (raw === null || raw === undefined) return null;
+  if (!isObj(raw) || !isNum(raw.band_pct) || !isNum(raw.pool_usd) || !isNum(raw.chainlink_usd) || !isNum(raw.as_of)) throw new Error("keeper chart malformed");
+  if (!Array.isArray(raw.history) || raw.history.length < 2 || !Array.isArray(raw.bands) || raw.bands.length < 1) throw new Error("keeper chart has no series");
+  const history = raw.history.map((h: unknown) => {
+    if (!isObj(h) || !isNum(h.t) || !isNum(h.price)) throw new Error("keeper chart point malformed");
+    return { t: h.t, price: h.price };
+  });
+  return {
+    bandPct: raw.band_pct, poolUsd: raw.pool_usd, chainlinkUsd: raw.chainlink_usd, asOf: raw.as_of,
+    inBand: typeof raw.in_band === "boolean" ? raw.in_band : null,
+    band: raw.band ? parseSegment({ from: isObj(raw.band) ? raw.band.since : undefined, to: raw.as_of, ...(raw.band as object) }) : null,
+    history, bands: raw.bands.map(parseSegment),
+  };
+}
 
 export function parseVaultStats(raw: unknown): VaultStats {
   if (!isObj(raw)) throw new Error("keeper vault is not an object");
@@ -38,7 +74,7 @@ export function parseVaultStats(raw: unknown): VaultStats {
   }
   if (typeof raw.id !== "string" || typeof raw.ticker !== "string" || typeof raw.pool !== "string") throw new Error("keeper id, ticker or pool missing");
   if (raw.tvl_usd !== null && !isNum(raw.tvl_usd)) throw new Error("keeper tvl_usd is neither a number nor null");
-  return { id: raw.id, ticker: raw.ticker, source: raw.source, pool: raw.pool, feeAprPct, aprWindowDays, tvlUsd: raw.tvl_usd };
+  return { id: raw.id, ticker: raw.ticker, source: raw.source, pool: raw.pool, feeAprPct, aprWindowDays, tvlUsd: raw.tvl_usd, chart: parseChart(raw.chart) };
 }
 
 export async function fetchVault(id: string): Promise<VaultStats> {

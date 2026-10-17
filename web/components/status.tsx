@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={`shimmer rounded-md ${className ?? ""}`} aria-hidden />;
+  return <span className={cn("shimmer block rounded-md", className)} aria-hidden />;
 }
 
 export function FetchError({ what, onRetry, dark }: { what: string; onRetry: () => void; dark?: boolean }) {

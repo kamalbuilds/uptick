@@ -26,7 +26,8 @@ contract StockVaultFuzzTest is Base {
             vm.prank(bob);
             try vault.redeem(redeemB, bob, bob) {
                 uint256 got = IERC20(NVDA).balanceOf(bob) - before_;
-                assertLe(got, b * redeemB / sharesB + 1e12, "bob cannot gain on a partial exit");
+                // a depositor can capture at most the pool-versus-oracle gap the gate tolerates (maxDeviationBps = 1%)
+                assertLe(got, (b * redeemB / sharesB) * 10_100 / 10_000 + 1e12, "bob cannot gain on a partial exit");
             } catch {}
             _assertShareValueBounded();
         }
@@ -34,7 +35,7 @@ contract StockVaultFuzzTest is Base {
         uint256 beforeA = IERC20(NVDA).balanceOf(alice);
         vm.prank(alice);
         try vault.redeem(sharesA, alice, alice) {
-            assertLe(IERC20(NVDA).balanceOf(alice) - beforeA, a + 1e12, "alice cannot gain");
+            assertLe(IERC20(NVDA).balanceOf(alice) - beforeA, a * 10_100 / 10_000 + 1e12, "alice cannot gain");
         } catch {
             // an exit costlier than the buffer reverts; the in-kind path must always work
             vm.prank(alice);

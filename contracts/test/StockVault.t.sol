@@ -9,6 +9,12 @@ import {Base} from "./Base.t.sol";
 import {StockVault} from "../src/StockVault.sol";
 
 contract StockVaultTest is Base {
+    /// @dev EIP-170: the chain rejects deployments above 24,576 bytes of runtime code.
+    function test_runtimeCodeFitsEip170() public view {
+        assertLe(address(vault).code.length, 24_576);
+        assertGt(address(vault).code.length, 20_000, "measuring the real contract");
+    }
+
     // ------------------------------------------------------------- round trip
 
     function test_depositWithdrawRoundTrip_instantDeploy() public {
@@ -18,8 +24,7 @@ contract StockVaultTest is Base {
         assertGt(shares, 0);
         assertEq(vault.balanceOf(alice), shares);
 
-        (uint256 id,,,) = (vault.tokenId(), 0, 0, 0);
-        assertGt(id, 0, "position opened");
+        assertGt(vault.tokenId(), 0, "position opened");
         StockVault.PositionInfo memory info = vault.positionInfo();
         assertGt(info.liquidity, 0);
         assertGt(info.usdgAmount, 0, "usdg leg funded");
@@ -133,6 +138,75 @@ contract StockVaultTest is Base {
         _assertClose(pHi, newPrice * 10_500 / 10_000, 40, "upper bound ~ +5%");
     }
 
+    /// @dev After a +8% move the old range holds only USDG and a -8% move leaves it holding only NVDA. A deposit
+    /// with instantDeploy then needs a one-sided top-up: every idle NVDA (or USDG) is swapped across first.
+    function test_instantDeployIntoOutOfRangePosition_up() public {
+        _instant();
+        _deposit(alice, 100e18);
+        _pushPrice(800);
+        vm.warp(block.timestamp + 12 minutes);
+        _setFeed(_poolPrice());
+        int24 spot = _spotTick();
+        assertLt(spot, vault.tickLower(), "price moved above the range (NVDA is token1)");
+        StockVault.PositionInfo memory before_ = vault.positionInfo();
+        assertEq(before_.stockAmount, 0, "range holds only USDG");
+        assertFalse(before_.inRange);
+
+        uint256 navBefore = vault.totalAssets();
+        _deposit(bob, 50e18);
+        StockVault.PositionInfo memory after_ = vault.positionInfo();
+        assertGt(after_.liquidity, before_.liquidity, "top-up added liquidity");
+        assertEq(after_.stockAmount, 0);
+        assertLe(IERC20(NVDA).balanceOf(address(vault)), 1e15, "NVDA fully swapped across");
+        _assertClose(vault.totalAssets(), navBefore + 50e18, 60, "NAV grew by the deposit less swap cost");
+    }
+
+    function test_instantDeployIntoOutOfRangePosition_down() public {
+        _instant();
+        _deposit(alice, 100e18);
+        _pushPrice(-800);
+        vm.warp(block.timestamp + 12 minutes);
+        _setFeed(_poolPrice());
+        assertGt(_spotTick(), vault.tickUpper(), "price moved below the range");
+        StockVault.PositionInfo memory before_ = vault.positionInfo();
+        assertEq(before_.usdgAmount, 0, "range holds only NVDA");
+
+        uint256 navBefore = vault.totalAssets();
+        _deposit(bob, 50e18);
+        StockVault.PositionInfo memory after_ = vault.positionInfo();
+        assertGt(after_.liquidity, before_.liquidity);
+        assertEq(after_.usdgAmount, 0);
+        assertLe(IERC20(USDG).balanceOf(address(vault)), 1e3, "no idle USDG");
+        // NVDA-only range accepts NVDA directly, so the deposit costs nothing
+        _assertClose(vault.totalAssets(), navBefore + 50e18, 5, "NAV grew by the deposit");
+    }
+
+    /// @dev Found by the invariant run: dust swaps (a few raw units) return nothing because the pool rounds its fee
+    /// up, which reverted repeated rebalances and tiny redeems.
+    function test_repeatedRebalancesNeverRevert() public {
+        _instant();
+        _deposit(alice, 300e18);
+        for (uint256 i; i < 6; ++i) {
+            vm.warp(block.timestamp + 6 hours + 1);
+            _setFeed(_feedPrice());
+            vm.prank(keeper);
+            vault.rebalance();
+        }
+        assertGt(vault.tokenId(), 0);
+        _assertClose(vault.totalAssets(), 300e18, 40, "six rebalances cost under 0.4% in total");
+    }
+
+    function test_tinyRedeemDoesNotRevert() public {
+        _instant();
+        uint256 shares = _deposit(alice, 100e18);
+        uint256 before_ = IERC20(NVDA).balanceOf(alice);
+        vm.prank(alice);
+        vault.redeem(shares / 10_000_000, alice, alice); // 1e-7 of the position: its USDG leg is a few raw units
+        assertGt(IERC20(NVDA).balanceOf(alice), before_);
+        vm.prank(alice);
+        vault.redeem(1, alice, alice); // one share unit
+    }
+
     function test_rebalanceRespectsRoles() public {
         _instant();
         _deposit(alice, 50e18);
@@ -206,10 +280,8 @@ contract StockVaultTest is Base {
         assertGt(feeValue, 0);
         emit log_named_uint("fees collected, USD (whole)", _usd(feeValue));
 
-        // the uncollected-fee view matched what was actually collected
+        // the uncollected-fee view matched what was actually collected (USDG is token0, NVDA token1)
         (uint256 stockFees, uint256 usdgFees,) = vault.feesEarnedLifetime();
-        _assertClose(stockFees + feeValue * 0, before_.uncollectedStock + 0 + stockFees * 0, 10_000, "sanity");
-        // USDG is token0 here
         assertEq(f0, usdgFees);
         assertEq(f1, stockFees);
         _assertClose(f0, before_.uncollectedUsdg, 5, "usdg fees equal the view");
@@ -296,6 +368,9 @@ contract StockVaultTest is Base {
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, stranger));
         vault.pause();
+        vm.prank(owner);
+        vm.expectRevert(StockVault.BadConfig.selector);
+        vault.renounceOwnership();
 
         p.twapWindow = 599; // the TWAP must span at least 10 minutes
         vm.prank(owner);

@@ -1,13 +1,53 @@
 import { readFileSync } from "node:fs";
 import { loadTickers, type Ticker } from "./config.ts";
-import { assertPoolOrdering } from "./chain.ts";
+import { assertPoolOrdering, snapshot } from "./chain.ts";
+import { etDate, sessionFor } from "./calendar.ts";
 import { log } from "./log.ts";
 import { onchainVault, samplePps } from "./vaultdata.ts";
 
 const PORT = Number(process.env.STATS_PORT || 8790);
 const SAMPLE_S = 300;
 const replay = JSON.parse(readFileSync(new URL("../data/replay.json", import.meta.url), "utf8"));
+const history = JSON.parse(readFileSync(new URL("../data/history.json", import.meta.url), "utf8"));
 const tickers = loadTickers();
+
+export interface Band { from: number; to: number; center: number; lower: number; upper: number }
+
+/** The strategy band: +-pct around the latest Chainlink round at each NYSE open + 5 min, held until the next recentre.
+ *  Weekends and holidays carry the previous band. Times are unix seconds; `cl` is [ts, usd] sorted by ts. */
+export function bandSegments(cl: [number, number][], fromSec: number, toSec: number, pct: number): Band[] {
+  const out: Band[] = [];
+  const day = etDate(fromSec * 1000 - 86400_000);
+  for (let i = 0; i < Math.ceil((toSec - fromSec) / 86400) + 3; i++) {
+    const d = new Date(Date.UTC(day.y, day.m - 1, day.d + i));
+    const s = sessionFor(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+    if (!s) continue;
+    const at = s.recentreMs / 1000;
+    if (at >= toSec) break;
+    const round = [...cl].reverse().find(([ts]) => ts <= at);
+    if (!round) continue;
+    out.push({ from: at, to: toSec, center: round[1], lower: round[1] * (1 - pct / 100), upper: round[1] * (1 + pct / 100) });
+  }
+  out.forEach((b, i) => { if (out[i + 1]) b.to = out[i + 1].from; });
+  return out.filter((b) => b.to > fromSec);
+}
+
+async function chartFor(t: Ticker) {
+  const h = history.tickers[t.symbol];
+  const pct = replay.pools[t.symbol]?.runs?.[replay.headline_strategy]?.band_pct ?? 5;
+  const snap = await snapshot(t);
+  const points: [number, number][] = [...h.hourly.filter(([ts]: [number, number]) => ts < snap.ts), [snap.ts, snap.poolUsd]];
+  const cl: [number, number][] = [...h.chainlink.filter(([ts]: [number, number]) => ts < snap.clUpdatedAt), [snap.clUpdatedAt, snap.clUsd]];
+  const bands = bandSegments(cl, points[0][0], snap.ts, pct);
+  const now = bands.at(-1) ?? null;
+  return {
+    band_pct: pct, block: Number(snap.block), as_of: snap.ts, pool_usd: snap.poolUsd, chainlink_usd: snap.clUsd, chainlink_updated_at: snap.clUpdatedAt,
+    band: now && { lower: now.lower, upper: now.upper, center: now.center, since: now.from },
+    in_band: now ? snap.poolUsd >= now.lower && snap.poolUsd <= now.upper : null,
+    history: points.map(([ts, price]) => ({ t: ts, price })),
+    bands: bands.map((b) => ({ from: b.from, to: b.to, lower: b.lower, upper: b.upper, center: b.center })),
+  };
+}
 
 function replayVault(t: Ticker) {
   const p = replay.pools[t.symbol], run = p.runs[replay.headline_strategy];
@@ -26,7 +66,8 @@ async function cached<T>(k: string, ttlMs: number, f: () => Promise<T>): Promise
   if (h && Date.now() - h.at < ttlMs) return h.v as T;
   const v = await f(); cache.set(k, { at: Date.now(), v }); return v;
 }
-const vaultView = (t: Ticker) => t.vault ? cached(`v:${t.id}`, 30_000, () => onchainVault(t)) : Promise.resolve(replayVault(t));
+const vaultBase = (t: Ticker) => t.vault ? cached(`v:${t.id}`, 30_000, () => onchainVault(t)) : Promise.resolve(replayVault(t));
+const vaultView = async (t: Ticker) => ({ ...(await vaultBase(t)), chart: await cached(`c:${t.id}`, 60_000, () => chartFor(t)) });
 const strip = ({ share_price_history, ...rest }: any) => rest;
 
 const headers = { "content-type": "application/json", "access-control-allow-origin": "*" };
@@ -38,7 +79,7 @@ export async function handle(req: Request): Promise<Response> {
   if (req.method !== "GET") return json({ error: "method_not_allowed" }, 405);
   try {
     if (u.pathname === "/health") return json({ ok: true, tickers: tickers.map((t) => ({ id: t.id, source: t.vault ? "onchain" : "replay" })) });
-    if (parts[0] === "vaults" && parts.length === 1) return json({ vaults: (await Promise.all(tickers.map(vaultView))).map(strip) });
+    if (parts[0] === "vaults" && parts.length === 1) return json({ vaults: (await Promise.all(tickers.map(vaultBase))).map(strip) });
     if (parts[0] === "vaults" && parts.length === 2) {
       const t = tickers.find((x) => x.id === parts[1].toLowerCase());
       return t ? json(await vaultView(t)) : json({ error: "unknown_vault" }, 404);

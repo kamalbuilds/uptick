@@ -5,12 +5,16 @@ libs = ["lib"]
 solc = "0.8.26"
 evm_version = "cancun"
 optimizer = true
-optimizer_runs = 200
-via_ir = false
+optimizer_runs = 1
+via_ir = true
+eth_rpc_timeout = 120
 remappings = [
   "@openzeppelin/=lib/openzeppelin-contracts/",
   "v4-core/=lib/v4-core/src/",
   "forge-std/=lib/forge-std/src/",
+  "@uniswap/v4-core/=lib/v4-core/",
+  "v4-periphery/=lib/v4-periphery/",
+  "solmate/=lib/v4-core/lib/solmate/",
 ]
 fs_permissions = [{ access = "read", path = "./" }]
 
