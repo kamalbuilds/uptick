@@ -1,6 +1,6 @@
 {
  "tempo": 1.05,
- "duration": 87.859,
+ "duration": 87.155,
  "segments": [
   {
    "id": "s01",
@@ -48,79 +48,79 @@
   },
   {
    "id": "s08",
-   "text": "At night, up to three. On weekends, three point eight to nineteen point five.",
-   "cap": "At night, up to $3. On weekends, $3.8 to $19.5.",
+   "text": "At night, up to four. On weekends, three point nine to thirty-three.",
+   "cap": "At night, up to $4. On weekends, $3.9 to $33.",
    "start": 31.744,
-   "end": 37.307
+   "end": 36.604
   },
   {
    "id": "s09",
    "text": "Pools differ by fee tier, and holders cannot see which pays.",
-   "start": 37.807,
-   "end": 42.186
+   "start": 37.104,
+   "end": 41.483
   },
   {
    "id": "s10",
    "text": "Picking a pool by hand is guesswork.",
-   "start": 42.406,
-   "end": 45.065
+   "start": 41.703,
+   "end": 44.362
   },
   {
    "id": "s11",
    "text": "Hooks, small programs inside pools, can keep a hidden cut. Eighty percent are flagged malicious.",
    "cap": "Hooks, small programs inside pools, can keep a hidden cut. 80% are flagged malicious.",
-   "start": 45.315,
-   "end": 52.44
+   "start": 44.612,
+   "end": 51.737
   },
   {
    "id": "s12",
    "text": "Uptick does the picking.",
-   "start": 52.66,
-   "end": 54.579
+   "start": 51.957,
+   "end": 53.876
   },
   {
    "id": "s13",
    "text": "It replays every pool and fee tier of each token, and picks where liquidity pays.",
-   "start": 54.879,
-   "end": 60.832
+   "start": 54.176,
+   "end": 60.129
   },
   {
    "id": "s14",
    "text": "It only enters pools with no hidden cut, or a maximum fee the pool enforces.",
-   "start": 61.052,
-   "end": 66.505
+   "start": 60.349,
+   "end": 65.802
   },
   {
    "id": "s15",
    "text": "We sent two hundred trades over the maximum, on a copy of the real chain.",
    "cap": "We sent 200 trades over the maximum, on a copy of the real chain.",
-   "start": 66.955,
-   "end": 72.223
+   "start": 66.252,
+   "end": 71.52
   },
   {
    "id": "s16",
    "text": "All two hundred were rejected.",
    "cap": "All 200 were rejected.",
-   "start": 72.443,
-   "end": 74.749
+   "start": 71.74,
+   "end": 74.046
   },
   {
    "id": "s17",
    "text": "For a holder, it is one deposit into a vault.",
-   "start": 75.249,
-   "end": 78.432
+   "start": 74.546,
+   "end": 77.729
   },
   {
    "id": "s18",
    "text": "Deposit NVDA, and the vault earns the fees for you.",
-   "start": 78.652,
-   "end": 82.378
+   "start": 77.949,
+   "end": 81.675
   },
   {
    "id": "s19",
    "text": "Uptick. Stock Token yield, chosen by the chain's own data.",
-   "start": 83.078,
-   "end": 87.259
+   "start": 82.375,
+   "end": 86.555
   }
  ]
 }
