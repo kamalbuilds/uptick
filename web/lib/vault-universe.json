@@ -1,0 +1,47 @@
+{
+  "chainId": 4663,
+  "source": "keeper/data/universe.json + keeper/data/replay.json",
+  "universeBlock": 90722925,
+  "vaults": [
+    {
+      "id": "crcl",
+      "symbol": "CRCL",
+      "name": "Circle Internet Group Stock Token",
+      "token": "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5",
+      "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x6652eDf64bA3731C4F2D3ce821A0Fb1f1f6b482a"
+    },
+    {
+      "id": "spcx",
+      "symbol": "SPCX",
+      "name": "Space Exploration Technologies Corp. Stock Token",
+      "token": "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
+      "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
+      "feeTierPips": 500,
+      "feeTier": "0.05%",
+      "feed": "0xB265810950ba6c5C0Ff821c9963014a56fD8Bffb"
+    },
+    {
+      "id": "nvda",
+      "symbol": "NVDA",
+      "name": "NVIDIA Stock Token",
+      "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+      "feeTierPips": 500,
+      "feeTier": "0.05%",
+      "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15"
+    },
+    {
+      "id": "googl",
+      "symbol": "GOOGL",
+      "name": "Alphabet Class A Stock Token",
+      "token": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
+      "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
+      "feeTierPips": 500,
+      "feeTier": "0.05%",
+      "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b"
+    }
+  ]
+}

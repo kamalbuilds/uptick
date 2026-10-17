@@ -66,6 +66,7 @@ export async function onchainVault(t: Ticker) {
   const now = snap.ts;
   const sum = (w: number) => windowApr(s.events, now, w, startS, tvlUsd, t.stockIsToken0, snap.poolUsd);
   const all = feesInWindow(s.events, now, now - startS + 1, t.stockIsToken0, snap.poolUsd);
+  const open = range[0] !== 0 || range[1] !== 0; // a vault with no position reports ticks 0,0
   const [lo, hi] = [priceFromTick(Number(range[0]), t.stockIsToken0), priceFromTick(Number(range[1]), t.stockIsToken0)].sort((a, b) => a - b);
   const d1 = sum(86400), d7 = sum(7 * 86400);
   return {
@@ -77,7 +78,7 @@ export async function onchainVault(t: Ticker) {
     fees_24h_usd: d1.feesUsd, fees_7d_usd: d7.feesUsd,
     fee_apr_pct: { "24h": d1.aprPct, "7d": d7.aprPct, lifetime: feeAprPct(all, tvlUsd, now - startS) },
     fee_apr_basis: "realized FeesCollected/Rebalanced fees, stock leg valued at the current pool price, divided by current TVL, window clamped to vault age",
-    range: { tick_lower: Number(range[0]), tick_upper: Number(range[1]), price_lower_usd: lo, price_upper_usd: hi, pool_price_usd: snap.poolUsd, chainlink_price_usd: snap.clUsd, in_range: snap.tick >= Number(range[0]) && snap.tick < Number(range[1]) },
+    range: !open ? null : { tick_lower: Number(range[0]), tick_upper: Number(range[1]), price_lower_usd: lo, price_upper_usd: hi, pool_price_usd: snap.poolUsd, chainlink_price_usd: snap.clUsd, in_range: snap.tick >= Number(range[0]) && snap.tick < Number(range[1]) },
     price_per_share_raw: pps.toString(),
     share_price_history: ppsHistory(t),
     deposited_at: startS,

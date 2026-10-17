@@ -6,7 +6,7 @@ import { WalletButton } from "./wallet-button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/vault/nvda", label: "Vaults", match: "/vault" },
+  { href: "/vaults", label: "Vaults", match: "/vault" },
   { href: "/portfolio", label: "Portfolio", match: "/portfolio" },
 ];
 

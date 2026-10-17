@@ -1,144 +1,861 @@
 {
- "generated_at": "2026-10-17T04:20:49.510255+00:00",
+ "generated_at": "2026-10-17T07:40:19.281232+00:00",
  "engine": "spikes/stock-vaults/scripts/engine.py",
- "head_block_of_pull": 90599244,
+ "capital_usd": 100000.0,
+ "band_pct": 5.0,
+ "strategy": "daily recentre at the NYSE open + 5 min, +-5% around Chainlink",
+ "cost_model": "pool price impact + fee tier + gas, engine.IMPACT=1",
+ "tokens": {
+  "CRCL": {
+   "symbol": "CRCL",
+   "pools": [
+    {
+     "kind": "v3",
+     "id": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 48716,
+     "volume_usd": 52170885.602816984,
+     "pool_fees_usd": 156512.656808451,
+     "full": {
+      "fee_apr_pct": 170.65065052813173,
+      "markout_apr_pct": 201.28376262840754,
+      "cost_apr_pct": 47.854820604360384,
+      "edge_apr_pct": -78.48793270463615,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 222.22516585306295,
+      "markout_apr_pct": 221.07474098592897,
+      "cost_apr_pct": 48.471625037799356,
+      "edge_apr_pct": -47.32120017066536,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 128.08355172743362,
+      "markout_apr_pct": 192.3188900838859,
+      "cost_apr_pct": 52.54724663295214,
+      "edge_apr_pct": -116.78258498940441,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x628c98ab436ee34a6a7decd606242890582591bdf7c9a35d90e0d08021c31ea0",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 8446,
+     "volume_usd": 8517914.059819693,
+     "pool_fees_usd": 29804.1812953091,
+     "full": {
+      "fee_apr_pct": 9.38077108442594,
+      "markout_apr_pct": 45.80149496563977,
+      "cost_apr_pct": 1061.9565966880832,
+      "edge_apr_pct": -1098.3773205692967,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 3.629951956596541,
+      "markout_apr_pct": 64.3230188792563,
+      "cost_apr_pct": 2113.959579490989,
+      "edge_apr_pct": -2174.6526464136496,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 54.3305581396185,
+      "markout_apr_pct": 178.1463918383016,
+      "cost_apr_pct": 280.290398192684,
+      "edge_apr_pct": -404.1062318913671,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+     "fee_tier": 2450,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 9601,
+     "volume_usd": 1118681.5755403577,
+     "pool_fees_usd": 3180.4117192612375,
+     "full": {
+      "fee_apr_pct": 26.74909153509845,
+      "markout_apr_pct": 150.6823225031106,
+      "cost_apr_pct": 646.479646801598,
+      "edge_apr_pct": -770.4128777696102,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 43.0450759652549,
+      "markout_apr_pct": 201.91711415802,
+      "cost_apr_pct": 624.1718847301081,
+      "edge_apr_pct": -783.043922922873,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 10.911816537876065,
+      "markout_apr_pct": 123.55183412585562,
+      "cost_apr_pct": 1168.0083882227502,
+      "edge_apr_pct": -1280.6484058107294,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
+     "fee_tier": 1500,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 14630,
+     "volume_usd": 3271835.4432217088,
+     "pool_fees_usd": 5764.974050956651,
+     "full": {
+      "fee_apr_pct": 25.366364486741993,
+      "markout_apr_pct": 145.54587327926617,
+      "cost_apr_pct": 584.9490987467996,
+      "edge_apr_pct": -705.1286075393238,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 32.69898346069606,
+      "markout_apr_pct": 182.41856992262015,
+      "cost_apr_pct": 688.3468224354758,
+      "edge_apr_pct": -838.0664088973997,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 19.551162681306998,
+      "markout_apr_pct": 142.45389034368688,
+      "cost_apr_pct": 914.0181643019095,
+      "edge_apr_pct": -1036.9208919642895,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xdb9c34002d173981250969293af6f43f42a26f2110f19893bbe2ad373375e9e6",
+     "fee_tier": 8388608,
+     "hooks": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+     "vault_capable": false,
+     "swaps": 18755,
+     "volume_usd": 9961146.65863219,
+     "pool_fees_usd": 20027.790909484604,
+     "full": {
+      "fee_apr_pct": 65.41410925106672,
+      "markout_apr_pct": 135.1632281938362,
+      "cost_apr_pct": 351.05894153851546,
+      "edge_apr_pct": -420.80806048128505,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 83.20301483992971,
+      "markout_apr_pct": 139.94999219353264,
+      "cost_apr_pct": 600.0007547201603,
+      "edge_apr_pct": -656.7477320737632,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 58.17870058808688,
+      "markout_apr_pct": 185.73731672654935,
+      "cost_apr_pct": 203.40838673032465,
+      "edge_apr_pct": -330.96700286878706,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xa5be017c2058326bbd27f03e4cb8c7b8ce265eb7e70c71617600eb518b6bff6a",
+     "fee_tier": 8388608,
+     "hooks": "0xa4e6f5500e88691fdcb289aa0e99067481434880",
+     "vault_capable": false,
+     "swaps": 5318,
+     "volume_usd": 874365.0437175788,
+     "pool_fees_usd": 1677.750821447215,
+     "full": {
+      "fee_apr_pct": null,
+      "markout_apr_pct": null,
+      "cost_apr_pct": null,
+      "edge_apr_pct": null,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": null,
+      "markout_apr_pct": null,
+      "cost_apr_pct": null,
+      "edge_apr_pct": null,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": null,
+      "markout_apr_pct": null,
+      "cost_apr_pct": null,
+      "edge_apr_pct": null,
+      "rebalances": 15
+     }
+    }
+   ],
+   "chosen": {
+    "kind": "v3",
+    "id": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
+    "fee_tier": 3000,
+    "confirmed_in_test": true,
+    "rule": "best calibration-half edge among v3 pools; test half is the out-of-sample figure"
+   },
+   "sessions": {
+    "nyse_hours": {
+     "vault_fee_usd": 7949.66054306259,
+     "markout_loss_usd": 9475.74121709919,
+     "pool_volume_usd": 33273125.444102354,
+     "fee_per_dollar_lost": 0.838948675457414
+    },
+    "weeknight": {
+     "vault_fee_usd": 5201.218725475295,
+     "markout_loss_usd": 6154.450816636113,
+     "pool_volume_usd": 16431188.099765338,
+     "fee_per_dollar_lost": 0.845115003830377
+    },
+    "weekend": {
+     "vault_fee_usd": 875.2015967880159,
+     "markout_loss_usd": 913.6788672296989,
+     "pool_volume_usd": 2466572.0589492973,
+     "fee_per_dollar_lost": 0.9578875337695538
+    }
+   },
+   "swaps_replayed": 105466
+  },
+  "GOOGL": {
+   "symbol": "GOOGL",
+   "pools": [
+    {
+     "kind": "v3",
+     "id": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
+     "fee_tier": 500,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 141144,
+     "volume_usd": 76942206.88706058,
+     "pool_fees_usd": 38471.103443530286,
+     "full": {
+      "fee_apr_pct": 38.78232498320464,
+      "markout_apr_pct": 35.40995915988019,
+      "cost_apr_pct": 5.94553904427617,
+      "edge_apr_pct": -2.573173220951724,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 46.41541340254946,
+      "markout_apr_pct": 47.04952822410494,
+      "cost_apr_pct": 7.194487390293775,
+      "edge_apr_pct": -7.828602211849247,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 32.03940693430326,
+      "markout_apr_pct": 24.535523304703865,
+      "cost_apr_pct": 4.990688093553077,
+      "edge_apr_pct": 2.513195536046313,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 19083,
+     "volume_usd": 7168215.702551734,
+     "pool_fees_usd": 25081.586743228516,
+     "full": {
+      "fee_apr_pct": 43.054850885316704,
+      "markout_apr_pct": 30.568235666165812,
+      "cost_apr_pct": 18.835552146908103,
+      "edge_apr_pct": -6.34893692775721,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 55.775489944326786,
+      "markout_apr_pct": 42.09365907512793,
+      "cost_apr_pct": 23.386620537090145,
+      "edge_apr_pct": -9.704789667891287,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 31.221581672263337,
+      "markout_apr_pct": 19.745772168948015,
+      "cost_apr_pct": 15.103755105714292,
+      "edge_apr_pct": -3.627945602398967,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x43fe16b75cabbf38f5b185d16142b02d1d9200d8f1ba17cb6cf899f562c6197f",
+     "fee_tier": 300,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 11311,
+     "volume_usd": 405711.3174487103,
+     "pool_fees_usd": 153.76458931306118,
+     "full": {
+      "fee_apr_pct": 1.3799899047239543,
+      "markout_apr_pct": 27.901725152790856,
+      "cost_apr_pct": 437.50010897163116,
+      "edge_apr_pct": -464.0218442196981,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 1.8269534560459377,
+      "markout_apr_pct": 39.10894001547717,
+      "cost_apr_pct": 644.8845433306901,
+      "edge_apr_pct": -682.1665298901213,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 0.9862724228696567,
+      "markout_apr_pct": 22.86629740016472,
+      "cost_apr_pct": 438.27073243706883,
+      "edge_apr_pct": -460.1507574143639,
+      "rebalances": 15
+     }
+    }
+   ],
+   "chosen": {
+    "kind": "v3",
+    "id": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
+    "fee_tier": 500,
+    "confirmed_in_test": true,
+    "rule": "best calibration-half edge among v3 pools; test half is the out-of-sample figure"
+   },
+   "sessions": {
+    "nyse_hours": {
+     "vault_fee_usd": 1713.1523396317511,
+     "markout_loss_usd": 2110.3893215922194,
+     "pool_volume_usd": 40979326.619135424,
+     "fee_per_dollar_lost": 0.8117707581742472
+    },
+    "weeknight": {
+     "vault_fee_usd": 1289.5327189070056,
+     "markout_loss_usd": 725.7403946460327,
+     "pool_volume_usd": 29796529.345068872,
+     "fee_per_dollar_lost": 1.7768512382943116
+    },
+    "weekend": {
+     "vault_fee_usd": 184.90329624518634,
+     "markout_loss_usd": 74.27788594368081,
+     "pool_volume_usd": 6166350.922856275,
+     "fee_per_dollar_lost": 2.4893451650654708
+    }
+   },
+   "swaps_replayed": 171538
+  },
+  "NVDA": {
+   "symbol": "NVDA",
+   "pools": [
+    {
+     "kind": "v3",
+     "id": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+     "fee_tier": 500,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 509293,
+     "volume_usd": 348715391.8594023,
+     "pool_fees_usd": 174357.69592970115,
+     "full": {
+      "fee_apr_pct": 40.5574193924729,
+      "markout_apr_pct": 30.89758946233919,
+      "cost_apr_pct": 4.623354021384447,
+      "edge_apr_pct": 5.036475908749263,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 41.06377175329374,
+      "markout_apr_pct": 27.39980107378227,
+      "cost_apr_pct": 2.754991593259876,
+      "edge_apr_pct": 10.9089790862516,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 39.471358720719735,
+      "markout_apr_pct": 33.874707356856085,
+      "cost_apr_pct": 6.012765627414405,
+      "edge_apr_pct": -0.41611426355074616,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v3",
+     "id": "0xB944cec30Bd4175855215D767ADC81F39e5f7E2B",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 3633,
+     "volume_usd": 375392.0793611546,
+     "pool_fees_usd": 1126.1762380834639,
+     "full": {
+      "fee_apr_pct": 10.24536112570348,
+      "markout_apr_pct": 26.995165592255155,
+      "cost_apr_pct": 222.8546613851567,
+      "edge_apr_pct": -239.60446585170837,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 11.4839797927242,
+      "markout_apr_pct": 24.0404851116194,
+      "cost_apr_pct": 146.69914424183455,
+      "edge_apr_pct": -159.25564956072975,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 9.026059255247178,
+      "markout_apr_pct": 31.5366759952861,
+      "cost_apr_pct": 300.8216118551219,
+      "edge_apr_pct": -323.3322285951608,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 20059,
+     "volume_usd": 5351455.879942392,
+     "pool_fees_usd": 18724.744123918426,
+     "full": {
+      "fee_apr_pct": 47.324764728143954,
+      "markout_apr_pct": 27.8740674617091,
+      "cost_apr_pct": 30.59453863621549,
+      "edge_apr_pct": -11.143841369780635,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 49.44665743080689,
+      "markout_apr_pct": 24.05462133204787,
+      "cost_apr_pct": 23.928763066215332,
+      "edge_apr_pct": 1.4632730325436898,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 44.86466187669315,
+      "markout_apr_pct": 31.40131904500132,
+      "cost_apr_pct": 34.420690078968285,
+      "edge_apr_pct": -20.95734724727646,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x1d6b86ca25e01a320aa392d6b64e68c364245c2071a7315e80e3e0ccb7e87cc3",
+     "fee_tier": 50,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 27343,
+     "volume_usd": 13037010.21253843,
+     "pool_fees_usd": 821.331643389921,
+     "full": {
+      "fee_apr_pct": 0.8214646794730652,
+      "markout_apr_pct": 7.879785279844456,
+      "cost_apr_pct": 1058.1149415155369,
+      "edge_apr_pct": -1065.1732621159083,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 0.0,
+      "markout_apr_pct": -0.0,
+      "cost_apr_pct": 185.36628418486657,
+      "edge_apr_pct": -185.36628418486657,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 1.7655813980150377,
+      "markout_apr_pct": 18.33557306911254,
+      "cost_apr_pct": 2320.697348636374,
+      "edge_apr_pct": -2337.267340307472,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "fee_tier": 100,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 234642,
+     "volume_usd": 173101698.78478342,
+     "pool_fees_usd": 21637.712348097924,
+     "full": {
+      "fee_apr_pct": 13.358709282291809,
+      "markout_apr_pct": 18.742940157698833,
+      "cost_apr_pct": 549.8558327889443,
+      "edge_apr_pct": -555.2400636643513,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 10.163754526238003,
+      "markout_apr_pct": 18.336865669852106,
+      "cost_apr_pct": 1085.5607809306289,
+      "edge_apr_pct": -1093.733892074243,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 26.326269159154574,
+      "markout_apr_pct": 33.53637474403354,
+      "cost_apr_pct": 37.32280934038628,
+      "edge_apr_pct": -44.53291492526524,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xdf5c0bcd967d54774c139a4ef803ec994779736346fb4c21b50ed241b1fd2682",
+     "fee_tier": 375,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 19957,
+     "volume_usd": 2575186.6458758675,
+     "pool_fees_usd": 1223.213656791037,
+     "full": {
+      "fee_apr_pct": 5.259751486456703,
+      "markout_apr_pct": 24.574674557951276,
+      "cost_apr_pct": 518.2985655577462,
+      "edge_apr_pct": -537.6134886292407,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 7.727578525926626,
+      "markout_apr_pct": 24.56934401030426,
+      "cost_apr_pct": 474.2203511091623,
+      "edge_apr_pct": -491.06211659354005,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 3.040401567157275,
+      "markout_apr_pct": 29.829630632260162,
+      "cost_apr_pct": 763.7409878781942,
+      "edge_apr_pct": -790.5302169432971,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x7990aad9e8fb048f49a155a7df5603db0366f0657035b78eb4196395cccb3dcd",
+     "fee_tier": 8388608,
+     "hooks": "0x66622f77b797d506e5376f7798b67ab288966080",
+     "vault_capable": false,
+     "swaps": 27577,
+     "volume_usd": 8629618.725072732,
+     "pool_fees_usd": 8933.712866503778,
+     "full": {
+      "fee_apr_pct": 23.139862530467482,
+      "markout_apr_pct": 30.11838691141283,
+      "cost_apr_pct": 18.07374419810893,
+      "edge_apr_pct": -25.05226857905428,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 23.080721237534984,
+      "markout_apr_pct": 27.784227499074156,
+      "cost_apr_pct": 14.621194484148168,
+      "edge_apr_pct": -19.324700745687338,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 22.98726298388072,
+      "markout_apr_pct": 32.06927147386166,
+      "cost_apr_pct": 19.439886759654765,
+      "edge_apr_pct": -28.52189524963571,
+      "rebalances": 15
+     }
+    }
+   ],
+   "chosen": {
+    "kind": "v3",
+    "id": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+    "fee_tier": 500,
+    "confirmed_in_test": true,
+    "rule": "best calibration-half edge among v3 pools; test half is the out-of-sample figure"
+   },
+   "sessions": {
+    "nyse_hours": {
+     "vault_fee_usd": 1794.5325230001204,
+     "markout_loss_usd": 1297.4902960550526,
+     "pool_volume_usd": 160308669.80942762,
+     "fee_per_dollar_lost": 1.3830797258802607
+    },
+    "weeknight": {
+     "vault_fee_usd": 1310.0066326965748,
+     "markout_loss_usd": 1157.7714225547638,
+     "pool_volume_usd": 133277646.13761914,
+     "fee_per_dollar_lost": 1.1314898668045248
+    },
+    "weekend": {
+     "vault_fee_usd": 228.94736971203673,
+     "markout_loss_usd": 84.26618240436396,
+     "pool_volume_usd": 55129075.91235551,
+     "fee_per_dollar_lost": 2.7169543365973117
+    }
+   },
+   "swaps_replayed": 842504
+  },
+  "SPCX": {
+   "symbol": "SPCX",
+   "pools": [
+    {
+     "kind": "v3",
+     "id": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
+     "fee_tier": 500,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 436919,
+     "volume_usd": 236319910.6078741,
+     "pool_fees_usd": 118159.95530393705,
+     "full": {
+      "fee_apr_pct": 86.89222399922379,
+      "markout_apr_pct": 95.58639207557034,
+      "cost_apr_pct": 16.379633540622653,
+      "edge_apr_pct": -25.0738016169692,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 79.02693173522121,
+      "markout_apr_pct": 30.90866004655132,
+      "cost_apr_pct": 4.603788204735495,
+      "edge_apr_pct": 43.5144834839344,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 97.05336500468992,
+      "markout_apr_pct": 164.88674716223179,
+      "cost_apr_pct": 30.399606684790847,
+      "edge_apr_pct": -98.23298884233273,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v3",
+     "id": "0xEb07d9587eFD1778dFb9c385Ec43EF6d5F9fE401",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 19969,
+     "volume_usd": 10326012.197213193,
+     "pool_fees_usd": 30978.036591639582,
+     "full": {
+      "fee_apr_pct": 74.32170423808086,
+      "markout_apr_pct": 96.2721636149589,
+      "cost_apr_pct": 47.36799091328203,
+      "edge_apr_pct": -69.31845029016007,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 65.74314517179681,
+      "markout_apr_pct": 31.054881288892382,
+      "cost_apr_pct": 24.75233367170075,
+      "edge_apr_pct": 9.935930211203669,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 85.2241431860466,
+      "markout_apr_pct": 167.34765398696229,
+      "cost_apr_pct": 77.3937208909743,
+      "edge_apr_pct": -159.51723169188995,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xcb6ffbcc84359535c2cc0a5688c0a76520ea6e0a4820fddd3ac8d7880e576370",
+     "fee_tier": 10000,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 8176,
+     "volume_usd": 2415177.2935441504,
+     "pool_fees_usd": 26542.798456050212,
+     "full": {
+      "fee_apr_pct": 79.66994926374889,
+      "markout_apr_pct": 73.52668520859098,
+      "cost_apr_pct": 118.49176638227796,
+      "edge_apr_pct": -112.34850232712003,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 62.73129324304405,
+      "markout_apr_pct": 24.500906007584238,
+      "cost_apr_pct": 61.75750472507725,
+      "edge_apr_pct": -23.52711748961744,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 98.82974379161895,
+      "markout_apr_pct": 127.233249073362,
+      "cost_apr_pct": 193.4722454022457,
+      "edge_apr_pct": -221.87575068398874,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x8567e70dbf639a618ba5eaf9402743452b93ca45c9bf8b97462407f07d7b7448",
+     "fee_tier": 3000,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 8787,
+     "volume_usd": 733040.5295717409,
+     "pool_fees_usd": 2564.9088129715215,
+     "full": {
+      "fee_apr_pct": 23.183541487710816,
+      "markout_apr_pct": 77.6018323674635,
+      "cost_apr_pct": 499.5507649253423,
+      "edge_apr_pct": -553.9690558050952,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 18.367091421126407,
+      "markout_apr_pct": 32.1687128474588,
+      "cost_apr_pct": 235.84315928762427,
+      "edge_apr_pct": -249.6447807139567,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 28.653281395683678,
+      "markout_apr_pct": 135.43326321399675,
+      "cost_apr_pct": 963.3249626793553,
+      "edge_apr_pct": -1070.1049444976686,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xb81d873dfb2bb1aaf08804053f8940fd06bb30a2b5a0fafcdbcc7325544452b9",
+     "fee_tier": 8388608,
+     "hooks": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+     "vault_capable": false,
+     "swaps": 26222,
+     "volume_usd": 10733734.495538685,
+     "pool_fees_usd": 12672.504476270356,
+     "full": {
+      "fee_apr_pct": 46.448606999044465,
+      "markout_apr_pct": 93.13393571343614,
+      "cost_apr_pct": 69.97594593501819,
+      "edge_apr_pct": -116.66127464940989,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 43.60154761609118,
+      "markout_apr_pct": 30.598566641533814,
+      "cost_apr_pct": 21.026516858540294,
+      "edge_apr_pct": -8.023535883982918,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 50.333036966275415,
+      "markout_apr_pct": 160.9749224426697,
+      "cost_apr_pct": 129.67364300777302,
+      "edge_apr_pct": -240.3155284841673,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "fee_tier": 250,
+     "hooks": null,
+     "vault_capable": false,
+     "swaps": 72842,
+     "volume_usd": 9264892.427275525,
+     "pool_fees_usd": 2681.2984918533875,
+     "full": {
+      "fee_apr_pct": 13.651573465102842,
+      "markout_apr_pct": -4074.0625218355995,
+      "cost_apr_pct": 860379.3261252221,
+      "edge_apr_pct": -856291.6120299215,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 25.882636799235502,
+      "markout_apr_pct": 22.676844619913048,
+      "cost_apr_pct": 76.79023684101105,
+      "edge_apr_pct": -73.5844446616886,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 1.4348044653833785,
+      "markout_apr_pct": -16595.791337523406,
+      "cost_apr_pct": 3977608.856034752,
+      "edge_apr_pct": -3961011.6298927628,
+      "rebalances": 15
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x1f5bf0b4df6d26da68a30535727acaf41634443b6421bcecd8ac1d455b2f91d6",
+     "fee_tier": 8388608,
+     "hooks": "0xc15b155a3094934171a15625d1a80aba267b6080",
+     "vault_capable": false,
+     "swaps": 48250,
+     "volume_usd": 8299419.492678325,
+     "pool_fees_usd": 17826.536722182875,
+     "full": {
+      "fee_apr_pct": 45.49250199395713,
+      "markout_apr_pct": 22.674440513293362,
+      "cost_apr_pct": 123.54554382213314,
+      "edge_apr_pct": -100.72748234146938,
+      "rebalances": 30
+     },
+     "calibration": {
+      "fee_apr_pct": 0.0,
+      "markout_apr_pct": -0.0,
+      "cost_apr_pct": 24.301136259884355,
+      "edge_apr_pct": -24.301136259884355,
+      "rebalances": 15
+     },
+     "test": {
+      "fee_apr_pct": 91.5655061898226,
+      "markout_apr_pct": 45.719591189716986,
+      "cost_apr_pct": 229.63107073101358,
+      "edge_apr_pct": -183.78515573090797,
+      "rebalances": 15
+     }
+    }
+   ],
+   "chosen": {
+    "kind": "v3",
+    "id": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
+    "fee_tier": 500,
+    "confirmed_in_test": true,
+    "rule": "best calibration-half edge among v3 pools; test half is the out-of-sample figure"
+   },
+   "sessions": {
+    "nyse_hours": {
+     "vault_fee_usd": 4680.98467119698,
+     "markout_loss_usd": 5865.290147812384,
+     "pool_volume_usd": 138574668.18913558,
+     "fee_per_dollar_lost": 0.7980823715844438
+    },
+    "weeknight": {
+     "vault_fee_usd": 2184.6869558336525,
+     "markout_loss_usd": 1930.8791439757972,
+     "pool_volume_usd": 69165105.16336209,
+     "fee_per_dollar_lost": 1.1314467622946351
+    },
+    "weekend": {
+     "vault_fee_usd": 276.1550030425571,
+     "markout_loss_usd": 60.2464952449977,
+     "pool_volume_usd": 28580137.2553764,
+     "fee_per_dollar_lost": 4.583752165491924
+    }
+   },
+   "swaps_replayed": 621165
+  }
+ },
  "window": {
   "start": "2026-09-17T00:00:00+00:00",
   "end": "2026-10-17T00:00:00+00:00",
-  "days": 30
- },
- "capital_usd": 100000.0,
- "headline_strategy": "B5",
- "cost_model": "pool price impact + fee tier + gas, engine.IMPACT=1",
- "pools": {
-  "NVDA": {
-   "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
-   "fee_tier": 500,
-   "swaps_in_window": 509293,
-   "pool_volume_usd": 348715391.8594023,
-   "pool_fees_usd": 174357.69592970115,
-   "hold_return_pct": -0.8701168505028001,
-   "runs": {
-    "B2": {
-     "band_pct": 2.0,
-     "fee_apr_pct": 82.8968691782308,
-     "markout_apr_pct": 67.96262532285519,
-     "cost_apr_pct": 10.250217792186897,
-     "edge_apr_pct": 4.684026063188717,
-     "net_vs_hold_apr_pct": -28.687759135371,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 3.9077376344015433
-    },
-    "B5": {
-     "band_pct": 5.0,
-     "fee_apr_pct": 40.5574193924729,
-     "markout_apr_pct": 30.89758946233919,
-     "cost_apr_pct": 4.623354021384447,
-     "edge_apr_pct": 5.036475908749263,
-     "net_vs_hold_apr_pct": -9.012640390362282,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 1.9118665841700224
-    },
-    "B10": {
-     "band_pct": 10.0,
-     "fee_apr_pct": 21.0197475991991,
-     "markout_apr_pct": 15.766830618949287,
-     "cost_apr_pct": 1.6935507835211538,
-     "edge_apr_pct": 3.5593661967286567,
-     "net_vs_hold_apr_pct": -0.2059598787671457,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 0.9908656330845141
-    }
-   }
-  },
-  "TSLA": {
-   "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
-   "fee_tier": 3000,
-   "swaps_in_window": 22007,
-   "pool_volume_usd": 7375049.58159739,
-   "pool_fees_usd": 22125.148744792168,
-   "hold_return_pct": -1.7988998330636163,
-   "runs": {
-    "B2": {
-     "band_pct": 2.0,
-     "fee_apr_pct": 83.68506088681964,
-     "markout_apr_pct": 86.66136593706537,
-     "cost_apr_pct": 95.79138106867917,
-     "edge_apr_pct": -98.76768611892489,
-     "net_vs_hold_apr_pct": -136.84734729950569,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 31.087809902734904
-    },
-    "B5": {
-     "band_pct": 5.0,
-     "fee_apr_pct": 53.148233369597286,
-     "markout_apr_pct": 50.69001870176033,
-     "cost_apr_pct": 35.15375761267151,
-     "edge_apr_pct": -32.69554294483456,
-     "net_vs_hold_apr_pct": -35.227082080468776,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 19.743812792283723
-    },
-    "B10": {
-     "band_pct": 10.0,
-     "fee_apr_pct": 31.13594059960941,
-     "markout_apr_pct": 27.029844502973084,
-     "cost_apr_pct": 12.80718291052956,
-     "edge_apr_pct": -8.70108681389323,
-     "net_vs_hold_apr_pct": -2.8138322270540717,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 11.566559099629627
-    }
-   }
-  },
-  "SPCX": {
-   "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
-   "fee_tier": 500,
-   "swaps_in_window": 436919,
-   "pool_volume_usd": 236319910.6078741,
-   "pool_fees_usd": 118159.95530393705,
-   "hold_return_pct": -4.307229870625184,
-   "runs": {
-    "B2": {
-     "band_pct": 2.0,
-     "fee_apr_pct": 133.66407325153776,
-     "markout_apr_pct": 171.88017479671373,
-     "cost_apr_pct": 28.31252705792358,
-     "edge_apr_pct": -66.52862860309952,
-     "net_vs_hold_apr_pct": -40.71066662403103,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 9.297640799030589
-    },
-    "B5": {
-     "band_pct": 5.0,
-     "fee_apr_pct": 86.89222399922379,
-     "markout_apr_pct": 95.58639207557034,
-     "cost_apr_pct": 16.379633540622653,
-     "edge_apr_pct": -25.0738016169692,
-     "net_vs_hold_apr_pct": -6.069758614364525,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 6.044202210218021
-    },
-    "B10": {
-     "band_pct": 10.0,
-     "fee_apr_pct": 49.14652939454707,
-     "markout_apr_pct": 51.98649129463192,
-     "cost_apr_pct": 7.332539050721174,
-     "edge_apr_pct": -10.172500950806024,
-     "net_vs_hold_apr_pct": 13.650271106422698,
-     "rebalances": 30,
-     "gas_usd": 1.125,
-     "fee_capture_pct": 3.418620768570958
-    }
-   }
-  }
+  "days": 30,
+  "calibration_end": "2026-10-02T00:00:00+00:00"
  }
 }

@@ -53,6 +53,8 @@ def hide_overlays():
 def goto(url, settle=3.0):
     S("Page.navigate", {"url": url})
     time.sleep(settle)
+    if not ev("!!document.querySelector('h1') && !/Internal Server Error|Unhandled Runtime Error/.test(document.body.innerText)"):
+        raise RuntimeError(f"{url} did not render a page (error or empty); refusing to overwrite the good capture")
     hide_overlays()
 
 
@@ -67,27 +69,35 @@ def shot(name, full):
 
 
 os.makedirs(OUT, exist_ok=True)
+RECT = """(sel)=>{const f=(new Function('return '+sel))();const e=f();if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,w:r.width,h:r.height}}"""
+meta = {}
 try:
     S("Page.enable")
     S("Emulation.setDeviceMetricsOverride", {"width": W, "height": H, "deviceScaleFactor": DSF, "mobile": False})
     goto("http://localhost:3000/")
     shot("home-full.png", True)
+    meta["cta"] = ev("""(()=>{const a=[...document.querySelectorAll('a,button')].find(x=>/See the NVDA vault/.test(x.innerText));
+      if(!a)return null;const r=a.getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,w:r.width,h:r.height}})()""")
     goto("http://localhost:3000/vault/nvda", 6.0)
     shot("vault-full.png", True)
-    print(ev("document.body.innerText.slice(0,2500)"))
+    rect = lambda js: ev("(()=>{const e=(" + js + ");if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,w:r.width,h:r.height}})()")
+    meta["why"] = rect("[...document.querySelectorAll('h2')].find(x=>/Why this pool/.test(x.innerText))")
+    meta["whyEnd"] = rect("[...document.querySelectorAll('p')].find(x=>/only deposits into pools/.test(x.innerText))")
+    meta["h1"] = rect("document.querySelector('h1')")
+    meta["panel"] = rect("(()=>{let e=document.querySelector('input');while(e&&!(e.innerText.includes('Withdraw')&&e.innerText.includes('Before you sign')))e=e.parentElement;return e})()")
     info = ev("""(()=>{const i=document.querySelector('input');if(!i)return null;i.scrollIntoView({block:'center'});
-      i.focus();const r=i.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,disabled:i.disabled,ph:i.placeholder}})()""")
+      i.focus();const r=i.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,disabled:i.disabled,ph:i.placeholder,scrollY:window.scrollY}})()""")
     print("deposit input:", info)
-    ev("window.scrollTo(0,0)")
+    meta["input"] = info
     if info and not info["disabled"]:
-        for n, txt in enumerate(["", "1", "10", "100"]):
+        for n, txt in enumerate(["", "1", "0", "0"]):
             if txt:
-                S("Input.insertText", {"text": txt[-1]})
+                S("Input.insertText", {"text": txt})
                 time.sleep(0.4)
-            ev("(()=>{const i=document.querySelector('input'); i.focus(); i.scrollIntoView({block:'center'});})()")
             time.sleep(0.2)
             shot(f"deposit-{n}.png", False)
-    json.dump({"input": info}, open(os.path.join(OUT, "app.json"), "w"))
+    json.dump(meta, open(os.path.join(OUT, "..", "..", "src", "app.json"), "w"), indent=1)
+    print(json.dumps(meta))
 finally:
     for fn, args in (("Emulation.clearDeviceMetricsOverride", None),):
         try:

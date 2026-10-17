@@ -115,6 +115,7 @@ if __name__ == "__main__":
         for p in pools:
             if p.get("volume_7d_usd") in (None, 0) and p is not t["pool"]: continue
             n = pull_v3(p["address"], b0, b1); print(sym, "v3", p["fee_tier"], p["address"], n, "swaps", flush=True)
+        if os.environ.get("V3_ONLY"): continue  # threshold calibration: the deepest v3 pool is enough
         if sym not in v4all or os.environ.get("REDISCOVER"):
             v4all[sym] = discover_v4(t["token"], head); json.dump(v4all, open(os.path.join(SWAPS_DIR, "v4-pools.json"), "w"), indent=1)
         cand = [p for p in v4all[sym] if not p["take_capable"] and (p["fee"] <= 100_000 or p["fee"] == 0x800000)]

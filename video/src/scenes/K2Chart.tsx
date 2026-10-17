@@ -36,7 +36,7 @@ const Dots: React.FC<{ t: number; a: number; b: number }> = ({ t, a, b }) => {
         const speed = 380 + (i % 7) * 70;
         const span = 1900;
         const x = ((t * speed + i * 211) % span) - 80;
-        const y = 640 + 130 * Math.sin(i * 1.7) + (i % 5) * 14;
+        const y = 790 + 90 * Math.sin(i * 1.7) + (i % 5) * 12;
         const edge = clamp01(Math.min(x / 160, (span - 80 - x) / 160));
         return <div key={i} style={{ position: "absolute", left: x, top: y, width: 12, height: 12, borderRadius: 6, background: i % 4 === 0 ? C.lime : C.ink, opacity: vis * edge * 0.55 }} />;
       })}
@@ -56,12 +56,12 @@ export const K2Chart: React.FC = () => {
 
   const nyseAt = s7.start + 0.9;
   const nightAt = s8.start + 0.1;
-  const wkndAt = s8.start + (s8.end - s8.start) * 0.44;
+  const wkndAt = s8.start + 1.55;
   const grow = (b: Bar, i: number) => {
     const base = b.kind === "nyse" ? nyseAt + b.d * 0.14 : b.kind === "night" ? nightAt + (i % 15) * 0.045 : wkndAt + (b.d - 5) * 0.18;
     return p(t, base, base + (b.kind === "wknd" ? 0.9 : 0.45), b.kind === "wknd" ? ease.out : ease.out);
   };
-  const lineHit = p(t, s7.start + 2.2, s7.start + 2.6, ease.out) * (1 - p(t, s7.start + 3.4, s7.start + 3.9, ease.lin));
+  const lineHit = p(t, s7.start + 3.2, s7.start + 3.6, ease.out) * (1 - p(t, s7.start + 4.6, s7.start + 5.1, ease.lin));
 
   return (
     <div style={{ position: "absolute", inset: 0, background: C.canvas }}>
@@ -91,11 +91,11 @@ export const K2Chart: React.FC = () => {
 
       {/* chart */}
       <div style={{ opacity: chartIn, transform: `translateX(${(1 - chartIn) * 220}px)` }}>
-        <Abs x={X0} y={96} style={{}}>
+        <Abs x={X0} y={152} style={{}}>
           <div style={{ fontFamily: F.sans, fontWeight: 700, fontSize: 34, color: C.ink }}>Fees earned per $1 lost to informed traders</div>
-          <div style={{ marginTop: 6 }}><Mono size={21} color={C.mute}>range across NVDA, SPCX, TSLA pools, 1 hour markout</Mono></div>
+          <div style={{ marginTop: 6 }}><Mono size={24} color={C.mute}>range across the NVDA, SPCX and TSLA pools</Mono></div>
         </Abs>
-        <Abs x={X0} y={196} style={{ display: "flex", gap: 22 }}>
+        <Abs x={X0} y={250} style={{ display: "flex", gap: 22 }}>
           {([["NYSE open", C.ink], ["Weeknight", "#a3b09b"], ["Weekend", C.lime]] as const).map(([l, c]) => (
             <div key={l} style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: F.sans, fontWeight: 600, fontSize: 24, color: C.ink }}>
               <div style={{ width: 22, height: 22, borderRadius: 6, background: c }} />
@@ -127,7 +127,7 @@ export const K2Chart: React.FC = () => {
           );
         })}
         {/* range labels */}
-        <Abs x={hx(2, 9.5) - 110} y={yv(NYSE[1]) - 128} w={300} style={{ opacity: p(t, s7.start + 2.4, s7.start + 2.9), textAlign: "center" }}>
+        <Abs x={hx(2, 9.5) - 110} y={yv(NYSE[0]) + 14} w={300} style={{ opacity: p(t, s7.start + 3.5, s7.start + 4.0), textAlign: "center" }}>
           <Pill bg={C.ink} color={C.white} size={28}>0.78 to 1.21</Pill>
         </Abs>
         <Abs x={hx(3, 16) - 110} y={yv(NIGHT[1]) - 74} w={300} style={{ opacity: p(t, nightAt + 0.9, nightAt + 1.3), textAlign: "center" }}>

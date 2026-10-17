@@ -6,7 +6,7 @@ import { client, retry } from "../src/chain.ts";
 import { USDG } from "../src/config.ts";
 import { log } from "../src/log.ts";
 import { priceFromSqrt } from "../src/price.ts";
-import { RULE, VAULT_CAPITAL_USD, bandDepthUsd, eligibility, feedSymbol, vaultShare } from "../src/universe.ts";
+import { RULE, VAULT_CAPITAL_USD, bandDepthUsd, cleanName, feedSymbol, rowVerdict, vaultShare } from "../src/universe.ts";
 
 const REPO = new URL("../../../", import.meta.url).pathname;
 const FACTORY: Address = "0x1f7d7550B1b028f7571E69A784071F0205FD2EfA";
@@ -80,7 +80,22 @@ async function swapVolume(pool: Address, usdgIsToken0: boolean, from: bigint, to
   return { usd, swaps };
 }
 
+const OUT = new URL("../data/universe.json", import.meta.url);
+const counts = (rows: any[]) => ({ tokens: rows.length, with_code: rows.filter((x) => x.has_code).length, with_feed: rows.filter((x) => x.feed).length, with_pool: rows.filter((x) => x.pool).length, eligible: rows.filter((x) => x.eligible).length });
+
+/** `--reeval`: re-apply the rule in src/universe.ts to the rows already read from the chain. No RPC. */
+function reeval() {
+  const doc = JSON.parse(readFileSync(OUT, "utf8"));
+  doc.tokens = doc.tokens.map((t: any) => ({ ...t, name: cleanName(t.name), ...rowVerdict(t) }));
+  doc.rule = { ...doc.rule, ...RULE, vault_capital_usd: VAULT_CAPITAL_USD };
+  doc.usdg = USDG;
+  doc.counts = counts(doc.tokens);
+  writeFileSync(OUT, JSON.stringify(doc, null, 1) + "\n");
+  log("reeval", doc.counts);
+}
+
 async function main() {
+  if (process.argv.includes("--reeval")) return reeval();
   const tokens = await loadTokens();
   log("tokens", { count: tokens.length });
   const head = await client.getBlockNumber();
@@ -172,13 +187,9 @@ async function main() {
     const vol = best && best.volume7dUsd !== null ? best.volume7dUsd / VOL_DAYS : null;
     const share = best ? vaultShare(best.depthUsd) : null;
     const dev = best && f?.usd ? ((best.poolUsd - f.usd) / f.usd) * 1e4 : null;
-    const v = eligibility({
-      hasCode: (codes[ti] ?? "0x") !== "0x", hasFeed: !!f, feedOk: !!f?.ok, feedAgeS: f?.ageS ?? null, poolFound: !!best,
-      volume7dUsdPerDay: vol, vaultShare: share, feedDeviationBps: dev,
-    });
     const onchainSymbol = ident[ti * 2].status === "success" ? (ident[ti * 2].result as string) : null;
-    return {
-      symbol: t.symbol, name: `${t.company} Stock Token`, token: t.address, decimals: ident[ti * 2 + 1].status === "success" ? Number(ident[ti * 2 + 1].result) : t.decimals,
+    const row = {
+      symbol: t.symbol, name: cleanName(`${t.company} Stock Token`), token: t.address, decimals: ident[ti * 2 + 1].status === "success" ? Number(ident[ti * 2 + 1].result) : t.decimals,
       onchain_symbol: onchainSymbol, multiplier: t.multiplier, has_code: (codes[ti] ?? "0x") !== "0x",
       feed: f ? { address: f.proxy, aggregator: f.aggregator, description: f.description, decimals: f.decimals, usd: f.usd, updated_at: f.updatedAt, age_s: f.ageS } : null,
       pool: best && {
@@ -188,17 +199,17 @@ async function main() {
         vault_share_100k: share, feed_deviation_bps: dev,
       },
       other_pools: mine.slice(best ? 1 : 0).map((p) => ({ address: p.pool, fee_tier: p.fee, depth_usd_5pct: p.depthUsd, usdg_balance: p.usdgBalance, volume_7d_usd: p.volume7dUsd })),
-      eligible: v.eligible, reason: v.reason,
     };
+    return { ...row, ...rowVerdict(row) };
   });
   const doc = {
-    chain_id: 4663, generated_at: new Date().toISOString(), block: Number(head), block_ts: headTs,
+    chain_id: 4663, usdg: USDG, generated_at: new Date().toISOString(), block: Number(head), block_ts: headTs,
     sources: { tokens: "docs/research/rhj-assets.json + docs/research/founder-house/nightmarket/raw/rhj-assets.json (Robinhood RHJ registry)", feeds: FEEDS_URL, pools: `Uniswap v3 factory ${FACTORY}, fee tiers ${FEE_TIERS.join("/")}, USDG ${USDG}` },
     rule: { ...RULE, vault_capital_usd: VAULT_CAPITAL_USD, volume_window_days: VOL_DAYS, volume_from_block: Number(fromBlock) },
-    counts: { tokens: out.length, with_code: out.filter((x) => x.has_code).length, with_feed: out.filter((x) => x.feed).length, with_pool: out.filter((x) => x.pool).length, eligible: out.filter((x) => x.eligible).length },
+    counts: counts(out),
     tokens: out,
   };
-  writeFileSync(new URL("../data/universe.json", import.meta.url), JSON.stringify(doc, null, 1) + "\n");
+  writeFileSync(OUT, JSON.stringify(doc, null, 1) + "\n");
   log("done", doc.counts);
 }
 

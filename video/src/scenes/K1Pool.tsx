@@ -9,7 +9,7 @@ const US_X = 1100;
 const coinY = (i: number) => 660 - i * 54;
 const TRADER = { x: 330, y: 650 };
 const JAR = { x: 1480, y: 560, w: 130, h: 130 };
-const STEP = 0.9;
+const STEP = 0.6;
 
 export const K1Pool: React.FC = () => {
   const t = useSec();
@@ -27,23 +27,23 @@ export const K1Pool: React.FC = () => {
   for (let n = 0; n < nTrades; n++) {
     const tA = T0 + n * STEP;
     // USDG coin trader -> pool
-    const kIn = p(t, tA, tA + 0.45, ease.inOut);
+    const kIn = p(t, tA, tA + 0.32, ease.inOut);
     if (kIn > 0 && kIn < 1) {
-      swaps.push(<Coin key={`in${n}`} x={lerp(TRADER.x + 80, 940, kIn)} y={lerp(540, 520, kIn)} r={24} fill={C.lime} stroke={C.ink} opacity={1 - p(t, tA + 0.38, tA + 0.45, ease.lin)} />);
+      swaps.push(<Coin key={`in${n}`} x={lerp(TRADER.x + 80, 940, kIn)} y={lerp(540, 520, kIn)} r={28} fill={C.lime} stroke={C.ink} opacity={1 - p(t, tA + 0.26, tA + 0.32, ease.lin)} />);
     }
     // NVDA coin pool -> trader
-    const kOut = p(t, tA + 0.4, tA + 0.9, ease.inOut);
+    const kOut = p(t, tA + 0.28, tA + 0.62, ease.inOut);
     if (kOut > 0 && kOut < 1) {
-      swaps.push(<Coin key={`out${n}`} x={lerp(900, TRADER.x + 90, kOut)} y={lerp(560, 580, kOut)} r={24} fill={C.ink} stroke={C.ink} opacity={p(t, tA + 0.4, tA + 0.48, ease.lin)} />);
+      swaps.push(<Coin key={`out${n}`} x={lerp(900, TRADER.x + 90, kOut)} y={lerp(560, 580, kOut)} r={28} fill={C.ink} stroke={C.ink} opacity={p(t, tA + 0.28, tA + 0.36, ease.lin)} />);
     }
     // fee coin pool -> jar, only once the LP is on screen
     if (tA >= s4.start - 0.1) {
-      const kf = p(t, tA + 0.45, tA + 1.05, ease.inOut);
+      const kf = p(t, tA + 0.32, tA + 0.82, ease.inOut);
       if (kf >= 1) jar++;
       else if (kf > 0) {
         const x = lerp(1150, JAR.x + 65, kf);
         const y = lerp(690, JAR.y - 30, kf) - Math.sin(kf * Math.PI) * 70;
-        flying.push(<Coin key={`fee${n}`} x={x} y={y} r={13} fill={C.lime} stroke={C.limeDeep} />);
+        flying.push(<Coin key={`fee${n}`} x={x} y={y} r={15} fill={C.lime} stroke={C.limeDeep} />);
       }
     }
   }
@@ -90,7 +90,7 @@ export const K1Pool: React.FC = () => {
       </Abs>
 
       <Person x={TRADER.x} y={TRADER.y} s={1} label={t > s5.start + 0.5 ? undefined : "Trader"} opacity={traderIn * firstTraderOut} />
-      <Person x={TRADER.x} y={TRADER.y} s={1} color={C.ink} head={C.lime} label="Knows the new price" opacity={informedIn} />
+      <Person x={TRADER.x} y={TRADER.y} s={1} color={C.ink} head={C.lime} label="Informed trader" opacity={informedIn} />
 
       {swaps}
       {takers}

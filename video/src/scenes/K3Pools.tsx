@@ -14,9 +14,9 @@ const ROWS = [
   { l: "Weekends", c: C.lime },
 ];
 const CX = [160, 710, 1260];
-const CY = 130;
+const CY = 196;
 const CWD = 500;
-const CH = 420;
+const CH = 368;
 const bar = (v: number) => (436 * Math.log(v / 0.5)) / Math.log(50);
 
 const Check: React.FC = () => (
@@ -44,7 +44,7 @@ export const K3Pools: React.FC = () => {
   const picked = p(t, scanB + 0.15, scanB + 0.6, ease.out);
   const dimOthers = 1 - 0.55 * picked;
   const focusLower = p(t, s11.start + 0.3, s11.start + 0.8, ease.out) * (1 - p(t, s12.start - 0.15, s12.start + 0.3, ease.in));
-  const cardsOpacity = (i: number) => (1 - 0.7 * focusLower) * (i === 0 ? 1 : dimOthers);
+  const cardsOpacity = (_i: number) => 1 - 0.7 * focusLower;
 
   // cursor hop in s10
   const cx0 = kf(t, [[s10.start - 0.2, 1900], [s10.start + 0.45, 410], [s10.start + 0.95, 1510], [s10.start + 1.45, 960], [s10.end + 0.1, 960]], ease.inOut);
@@ -73,22 +73,22 @@ export const K3Pools: React.FC = () => {
     if (kc >= 1) pocket++;
     else if (kc > 0) hookCoins.push(<Coin key={`c${n}`} x={lerp(420, 740, kc)} y={lerp(850, 800, kc) + Math.sin(kc * Math.PI) * 30} r={10} fill={C.neg} stroke={C.neg} />);
   }
-  const eighty = p(t, s11.start + (s11.end - s11.start) * 0.55, s11.start + (s11.end - s11.start) * 0.55 + 0.6, ease.out);
-  const eightyN = Math.round(80 * p(t, s11.start + (s11.end - s11.start) * 0.55, s11.start + (s11.end - s11.start) * 0.55 + 0.8, ease.out));
+  const eighty = p(t, s11.start + (s11.end - s11.start) * 0.52, s11.start + (s11.end - s11.start) * 0.52 + 0.6, ease.out);
+  const eightyN = Math.round(80 * p(t, s11.start + (s11.end - s11.start) * 0.52, s11.start + (s11.end - s11.start) * 0.52 + 0.8, ease.out));
 
   const guess = p(t, s10.start + 0.1, s10.start + 0.6, ease.out) * (1 - p(t, s11.start + 0.1, s11.start + 0.5, ease.in));
   const vaultBig = p(t, scanB + 0.4, scanB + 0.9, ease.out);
   const badge1 = p(t, s14.start + 0.1, s14.start + 0.5, ease.back);
-  const badge2 = p(t, s14.start + 1.2, s14.start + 1.6, ease.back);
+  const badge2 = p(t, s14.start + 2.5, s14.start + 2.9, ease.back);
   const labelOp = (1 - picked) * p(t, s9.start, s9.start + 0.4);
 
   return (
     <div style={{ position: "absolute", inset: 0, background: C.canvas }}>
-      <Abs x={160} y={68} style={{ opacity: labelOp }}><Label>Fees earned per $1 lost, by pool</Label></Abs>
+      <Abs x={160} y={150} style={{ opacity: labelOp }}><Label>Fees earned per $1 lost, by pool</Label></Abs>
 
       {CARDS.map((c, i) => {
         const k = p(t, s9.start + i * 0.12, s9.start + i * 0.12 + 0.6, ease.out);
-        const chosen = i === 0 ? picked : 0;
+        const chosen = picked;
         const rowsIn = p(t, s9.start + 0.6 + i * 0.1, s9.start + 1.0 + i * 0.1);
         const veilOp = veil * (1 - lift(i));
         return (
@@ -100,24 +100,24 @@ export const K3Pools: React.FC = () => {
             </Abs>
             {ROWS.map((r, j) => (
               <div key={r.l} style={{ opacity: rowsIn }}>
-                <Abs x={CX[i] + 36} y={CY + 178 + j * 72}>
+                <Abs x={CX[i] + 36} y={CY + 166 + j * 66}>
                   <div style={{ fontFamily: F.sans, fontSize: 24, fontWeight: 600, color: C.ink }}>{r.l}</div>
                 </Abs>
-                <Abs x={CX[i] + 36} y={CY + 178 + j * 72} w={CWD - 72} style={{ textAlign: "right" }}>
+                <Abs x={CX[i] + 36} y={CY + 166 + j * 66} w={CWD - 72} style={{ textAlign: "right" }}>
                   <Mono size={34} style={{ fontWeight: 600 }}>{c.v[j].toFixed(2)}</Mono>
                 </Abs>
-                <Abs x={CX[i] + 36} y={CY + 178 + j * 72 + 42} w={bar(c.v[j]) * rowsIn} h={10} style={{ background: r.c, borderRadius: 5 }} />
+                <Abs x={CX[i] + 36} y={CY + 166 + j * 66 + 42} w={bar(c.v[j]) * rowsIn} h={10} style={{ background: r.c, borderRadius: 5 }} />
               </div>
             ))}
             {/* veil */}
-            <Abs x={CX[i] + 14} y={CY + 160} w={CWD - 28} h={CH - 174} style={{ opacity: veilOp, background: "rgba(255,255,255,0.58)", backdropFilter: `blur(${14}px)`, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Abs x={CX[i] + 14} y={CY + 150} w={CWD - 28} h={CH - 164} style={{ opacity: veilOp, background: "rgba(255,255,255,0.58)", backdropFilter: `blur(${14}px)`, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div style={{ ...display, fontSize: 170, color: C.ink }}>?</div>
             </Abs>
           </div>
         );
       })}
 
-      <Abs x={160} y={585} w={1600} style={{ opacity: veil * (1 - p(t, s11.start + 0.1, s11.start + 0.4, ease.lin)) * (1 - picked) }}>
+      <Abs x={160} y={595} w={1600} style={{ opacity: veil * (1 - p(t, s11.start + 0.1, s11.start + 0.4, ease.lin)) * (1 - picked) }}>
         <Pill bg={C.white} color={C.ink} size={28} border={C.ink}>A holder sees a name and a fee tier</Pill>
       </Abs>
 
@@ -141,7 +141,7 @@ export const K3Pools: React.FC = () => {
           <Coin key={i} x={645 + (i % 5) * 44} y={820 - Math.floor(i / 5) * 30} r={13} fill={C.neg} stroke={C.neg} />
         ))}
         {hookCoins}
-        <Abs x={160} y={888} w={760}><div style={{ fontFamily: F.sans, fontSize: 26, color: C.ink }}><b>Keeps 5 to 11%</b> while the pool quotes 0 to 1%</div></Abs>
+        <Abs x={160} y={868} w={860}><div style={{ fontFamily: F.sans, fontSize: 32, color: C.ink }}><b>Keeps 5 to 11%</b> while the pool quotes 0 to 1%</div></Abs>
         <div style={{ opacity: eighty, transform: `translateY(${(1 - eighty) * 30}px)` }}>
           <Abs x={1010} y={600}><Big size={270} color={C.ink}>{eightyN}%</Big></Abs>
           <Abs x={1020} y={850}><div style={{ fontFamily: F.sans, fontSize: 38, fontWeight: 600, color: C.ink }}>of 84K hooks flagged malicious</div></Abs>
@@ -157,21 +157,21 @@ export const K3Pools: React.FC = () => {
       ) : null}
       {scanning ? (
         <>
-          <Abs x={scanX - 5} y={110} w={10} h={470} style={{ background: C.lime, borderRadius: 5, boxShadow: "0 0 30px rgba(159,232,112,0.9)", opacity: pillFade }} />
-          <Abs x={scanX - 150} y={640} w={300} style={{ textAlign: "center", opacity: pillFade }}><Mono size={22} color={C.body}>replaying every swap</Mono></Abs>
+          <Abs x={scanX - 5} y={170} w={10} h={400} style={{ background: C.lime, borderRadius: 5, boxShadow: "0 0 30px rgba(159,232,112,0.9)", opacity: pillFade }} />
+          <Abs x={Math.max(60, scanX - 220)} y={650} w={440} style={{ textAlign: "center", opacity: pillFade }}><Mono size={28} color={C.body}>replaying every swap</Mono></Abs>
         </>
       ) : null}
 
       {/* the pick */}
-      <Abs x={160} y={610} style={{ opacity: vaultBig, transform: `translateY(${(1 - vaultBig) * 40}px)` }}>
-        <Big size={180}>NVDA vault</Big>
+      <Abs x={160} y={640} style={{ opacity: vaultBig, transform: `translateY(${(1 - vaultBig) * 40}px)` }}>
+        <Big size={118}>One vault per Stock Token</Big>
       </Abs>
-      <Abs x={160} y={810} style={{ display: "flex", gap: 22 }}>
+      <Abs x={160} y={830} style={{ display: "flex", gap: 22 }}>
         <div style={{ opacity: badge1, transform: `scale(${0.8 + 0.2 * badge1})`, transformOrigin: "0 50%" }}>
           <Pill bg={C.lime} color={C.ink} size={32}><Check /> No fee-taking hook</Pill>
         </div>
         <div style={{ opacity: badge2, transform: `scale(${0.8 + 0.2 * badge2})`, transformOrigin: "0 50%" }}>
-          <Pill bg={C.white} color={C.ink} size={32} border={C.ink}>or a maximum fee declared on chain</Pill>
+          <Pill bg={C.white} color={C.ink} size={32} border={C.ink}>or a maximum fee the pool enforces</Pill>
         </div>
       </Abs>
     </div>

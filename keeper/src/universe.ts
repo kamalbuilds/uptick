@@ -71,3 +71,15 @@ export function feedSymbol(name: string): string | null {
   const m = /^Robinhood ([A-Z0-9.]+)\s*(?:\/|-)\s*USD$/.exec(name.trim());
   return m ? m[1] : null;
 }
+
+/** Verdict for a universe.json row (the shape scripts/build-universe.ts writes). */
+export function rowVerdict(t: any, rule = RULE): { eligible: boolean; reason: string } {
+  const p = t.pool, f = t.feed;
+  return eligibility({
+    hasCode: t.has_code, hasFeed: !!f, feedOk: !!f && f.usd > 0, feedAgeS: f?.age_s ?? null, poolFound: !!p,
+    volume7dUsdPerDay: p?.volume_usd_per_day ?? null, vaultShare: p?.vault_share_100k ?? null, feedDeviationBps: p?.feed_deviation_bps ?? null,
+  }, rule);
+}
+
+/** Registry names carry share-class boilerplate ("Space Exploration Technologies Corp. Class A Common Stock"); the vault name drops it. Idempotent. */
+export const cleanName = (name: string): string => name.replace(/\s+(?:Class [A-Z]\s+)?Common Stock(?=\s+Stock Token$)/i, "");

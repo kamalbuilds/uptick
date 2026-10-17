@@ -1,4 +1,5 @@
 import type { Address } from "viem";
+import universe from "./vault-universe.json";
 
 export type VaultConfig = {
   id: string;
@@ -6,7 +7,10 @@ export type VaultConfig = {
   name: string;
   token: Address;
   pool: Address;
+  /** Pool fee tier as shown, e.g. "0.05%". */
   feeTier: string;
+  /** Chainlink proxy that prices the vault. */
+  feed: Address;
   /** Deployed vault address; undefined while the vault is opening. */
   vault: Address | undefined;
 };
@@ -14,28 +18,38 @@ export type VaultConfig = {
 const asAddress = (v: string | undefined): Address | undefined =>
   v && /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as Address) : undefined;
 
-export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
+/** `NEXT_PUBLIC_VAULTS` is a JSON map of ticker to vault address, e.g. {"GOOGL":"0x..."}. Anything unparsable is ignored,
+ *  and the vault stays "Opening" rather than pointing a deposit at a wrong address. */
+function parseVaultMap(raw: string | undefined): Record<string, string> {
+  if (!raw) return {};
+  try {
+    const m: unknown = JSON.parse(raw);
+    return typeof m === "object" && m !== null ? (m as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
 
 // process.env.NEXT_PUBLIC_* must be referenced literally so Next inlines them.
-export const VAULTS: VaultConfig[] = [
-  {
-    id: "nvda",
-    symbol: "NVDA",
-    name: "NVIDIA Stock Token",
-    token: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-    pool: "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
-    feeTier: "0.05%",
-    vault: asAddress(process.env.NEXT_PUBLIC_VAULT_NVDA),
-  },
-  {
-    id: "spcx",
-    symbol: "SPCX",
-    name: "SPCX Stock Token",
-    token: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
-    pool: "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
-    feeTier: "0.05%",
-    vault: asAddress(process.env.NEXT_PUBLIC_VAULT_SPCX),
-  },
-];
+const mapped = parseVaultMap(process.env.NEXT_PUBLIC_VAULTS);
+const fromEnv: Record<string, string | undefined> = {
+  ...mapped,
+  NVDA: process.env.NEXT_PUBLIC_VAULT_NVDA ?? mapped.NVDA,
+  SPCX: process.env.NEXT_PUBLIC_VAULT_SPCX ?? mapped.SPCX,
+};
+
+/** Every Stock Token the keeper's eligibility rule admits, best 30-day fee APR first (web/lib/vault-universe.json). */
+export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
+  id: v.id,
+  symbol: v.symbol,
+  name: v.name,
+  token: v.token as Address,
+  pool: v.pool as Address,
+  feeTier: v.feeTier,
+  feed: v.feed as Address,
+  vault: asAddress(fromEnv[v.symbol]),
+}));
+
+export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
 
 export const getVault = (id: string) => VAULTS.find((v) => v.id === id);

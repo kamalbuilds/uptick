@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
-import { FeaturedVaultCard, VaultRow } from "@/components/vault-card";
-import { VAULTS } from "@/lib/vaults";
+import { FeaturedVaultCard } from "@/components/vault-card";
+import { VaultList } from "@/components/vault-list";
+import { getVault } from "@/lib/vaults";
 
-const nvda = VAULTS[0];
+const nvda = getVault("nvda")!;
 
 const steps = [
   { title: "Deposit your Stock Token", body: "You send a Stock Token and receive vault shares. The vault keeps your deposit in one pool, inside a price band around the Chainlink price." },
@@ -52,9 +53,7 @@ export default function Home() {
 
       <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6" aria-labelledby="vaults">
         <h2 id="vaults" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95]">Vaults</h2>
-        <div className="mt-6 divide-y divide-sage-line border-y border-sage-line">
-          {VAULTS.map((v) => <VaultRow key={v.id} cfg={v} />)}
-        </div>
+        <div className="mt-6"><VaultList /></div>
       </section>
     </>
   );

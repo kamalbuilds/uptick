@@ -10,11 +10,11 @@
   },
   {
    "id": "s03",
-   "text": "Every trade needs a pool of tokens on the other side."
+   "text": "Trades happen against a pool of tokens."
   },
   {
    "id": "s04",
-   "text": "Liquidity providers fill the pool, and earn a fee on each trade."
+   "text": "Liquidity providers fill it, and earn a fee per trade."
   },
   {
    "id": "s05",
@@ -22,22 +22,22 @@
   },
   {
    "id": "s06",
-   "text": "We replayed five point one million real trades from the chain's own pools.",
-   "cap": "We replayed 5.1 million real trades from the chain's own pools."
+   "text": "We replayed five point one million real trades.",
+   "cap": "We replayed 5.1 million real trades."
   },
   {
    "id": "s07",
-   "text": "While the stock market is open, a provider earns about a dollar of fees per dollar lost.",
-   "cap": "While the stock market is open, a provider earns about $1 of fees per $1 lost."
+   "text": "While the market is open, a provider earns about a dollar per dollar lost.",
+   "cap": "While the market is open, a provider earns about $1 per $1 lost."
   },
   {
    "id": "s08",
-   "text": "At night, up to three dollars. On weekends, three point eight to nineteen point five.",
+   "text": "At night, up to three. On weekends, three point eight to nineteen point five.",
    "cap": "At night, up to $3. On weekends, $3.8 to $19.5."
   },
   {
    "id": "s09",
-   "text": "Pools charge different trade fees, called fee tiers, and holders cannot see which pays."
+   "text": "Pools differ by fee tier, and holders cannot see which pays."
   },
   {
    "id": "s10",
@@ -45,8 +45,8 @@
   },
   {
    "id": "s11",
-   "text": "Some pools carry hooks, small programs that can keep a hidden cut, and eighty percent of hooks are flagged malicious.",
-   "cap": "Some pools carry hooks, small programs that can keep a hidden cut. 80% of hooks are flagged malicious."
+   "text": "Hooks, small programs inside pools, can keep a hidden cut. Eighty percent are flagged malicious.",
+   "cap": "Hooks, small programs inside pools, can keep a hidden cut. 80% are flagged malicious."
   },
   {
    "id": "s12",
@@ -54,11 +54,11 @@
   },
   {
    "id": "s13",
-   "text": "For each Stock Token, it replays every pool and fee tier, and chooses where liquidity pays."
+   "text": "It replays every pool and fee tier of each token, and picks where liquidity pays."
   },
   {
    "id": "s14",
-   "text": "It only enters pools with no hidden cut, or a maximum fee declared on chain and enforced in every trade."
+   "text": "It only enters pools with no hidden cut, or a maximum fee the pool enforces."
   },
   {
    "id": "s15",
@@ -80,11 +80,7 @@
   },
   {
    "id": "s19",
-   "text": "Uptick."
-  },
-  {
-   "id": "s20",
-   "text": "Stock Token yield, chosen by the chain's own data."
+   "text": "Uptick. Stock Token yield, chosen by the chain's own data."
   }
  ]
 }

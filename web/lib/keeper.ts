@@ -69,12 +69,12 @@ export function parseVaultStats(raw: unknown): VaultStats {
   } else {
     const apr = raw.fee_apr_pct as Record<string, unknown>;
     const key = Object.keys(ONCHAIN_WINDOW_DAYS).find((k) => isNum(apr[k]));
-    if (!key) throw new Error("keeper onchain fee APR missing");
     const days = isObj(raw.replay) && isObj(raw.replay.window) ? raw.replay.window.days : 30;
-    // A vault with no collected fees yet has no realized APR; lead with the pool's replay figure until it does.
-    if (apr[key] === 0 && isNum(apr.replay_30d) && isNum(days)) {
+    // A vault with no collected fees yet (zero) or no deposits yet (null) has no realized APR; lead with the pool's replay figure until it does.
+    if ((key === undefined || apr[key] === 0) && isNum(apr.replay_30d) && isNum(days)) {
       return { id: raw.id as string, ticker: raw.ticker as string, source: "replay", pool: raw.pool as string, feeAprPct: apr.replay_30d, aprWindowDays: days, tvlUsd: raw.tvl_usd as number | null, chart: parseChart(raw.chart) };
     }
+    if (key === undefined) throw new Error("keeper onchain fee APR missing");
     feeAprPct = apr[key] as number;
     aprWindowDays = ONCHAIN_WINDOW_DAYS[key];
   }

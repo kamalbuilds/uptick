@@ -2,7 +2,8 @@ import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, http, type Address, type Hash } from "viem";
 import { vaultAbi } from "./abi.ts";
 import { assertPoolOrdering, boundedLogs, client, retry, sleep, snapshot, type Snapshot } from "./chain.ts";
-import { CL_MAX_AGE_S, MAX_DEV_BPS, MIN_GAP_H, OOR_MINUTES, RPC_URL, loadTickers, robinhood, type Ticker } from "./config.ts";
+import { CL_MAX_AGE_S, MAX_DEV_BPS, MIN_GAP_H, OOR_MINUTES, RPC_URL, robinhood, type Ticker } from "./config.ts";
+import { loadTickers, withFactory } from "./registry.ts";
 import { recentreDue, sessionAt, nextRecentreMs } from "./calendar.ts";
 import { evaluateGuards } from "./guards.ts";
 import { log } from "./log.ts";
@@ -100,12 +101,12 @@ async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount
 }
 
 async function main() {
-  const tickers = loadTickers();
+  const tickers = await withFactory(loadTickers());
   const account = DRY ? null : loadAccount();
   if (!DRY && !account) throw new Error("VAULT_KEEPER_KEY is not set. Put it in keeper/.env, or run with --dry-run.");
   const wallet = account ? createWalletClient({ account, chain: robinhood, transport: http(RPC_URL, { retryCount: 3 }) }) : null;
   const active = DRY ? tickers : tickers.filter((t) => t.vault);
-  if (!active.length) throw new Error("no VAULT_ADDRESS_* set: nothing to keep");
+  if (!active.length) throw new Error("no deployed vault: set VAULT_ADDRESS_<SYM> or VAULT_FACTORY");
   log("start", { mode: DRY ? "dry-run" : "live", chain: 4663, rpc: RPC_URL, signer: account?.address ?? null, tickers: active.map((t) => t.symbol), max_dev_bps: MAX_DEV_BPS, cl_max_age_s: CL_MAX_AGE_S });
   const state = new Map<string, State>();
   for (const t of active) {

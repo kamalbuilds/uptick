@@ -3639,7 +3639,7 @@
   },
   {
    "symbol": "NET",
-   "name": "Cloudflare, Inc. Class A common stock Stock Token",
+   "name": "Cloudflare, Inc. Stock Token",
    "token": "0x116F00968269B7bfbaD4109cE591d6E74c0601d4",
    "decimals": 18,
    "onchain_symbol": "NET",
@@ -4324,7 +4324,7 @@
   },
   {
    "symbol": "QBTS",
-   "name": "D-Wave Quantum Inc. Common Stock Stock Token",
+   "name": "D-Wave Quantum Inc. Stock Token",
    "token": "0xC583c60aeF9Dc401Da72cEC1B404743a93cea1Cc",
    "decimals": 18,
    "onchain_symbol": "QBTS",
@@ -5415,7 +5415,7 @@
   },
   {
    "symbol": "SPCX",
-   "name": "Space Exploration Technologies Corp. Class A Common Stock Stock Token",
+   "name": "Space Exploration Technologies Corp. Stock Token",
    "token": "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
    "decimals": 18,
    "onchain_symbol": "SPCX",
@@ -6463,5 +6463,6 @@
    "eligible": false,
    "reason": "no Chainlink feed"
   }
- ]
+ ],
+ "usdg": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
 }

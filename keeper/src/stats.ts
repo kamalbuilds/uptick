@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
-import { loadTickers, type Ticker } from "./config.ts";
+import type { Ticker } from "./config.ts";
+import { buildEvidence, replayFeeApr } from "./evidence.ts";
+import { loadTickers, readReplay, readUniverse, withFactory } from "./registry.ts";
 import { assertPoolOrdering, snapshot } from "./chain.ts";
 import { etDate, sessionFor } from "./calendar.ts";
 import { log } from "./log.ts";
@@ -7,9 +9,10 @@ import { onchainVault, samplePps } from "./vaultdata.ts";
 
 const PORT = Number(process.env.STATS_PORT || 8790);
 const SAMPLE_S = 300;
-const replay = JSON.parse(readFileSync(new URL("../data/replay.json", import.meta.url), "utf8"));
+const replay = readReplay();
+const universe = readUniverse();
 const history = JSON.parse(readFileSync(new URL("../data/history.json", import.meta.url), "utf8"));
-const tickers = loadTickers();
+let tickers: Ticker[] = loadTickers();
 
 export interface Band { from: number; to: number; center: number; lower: number; upper: number }
 
@@ -34,7 +37,8 @@ export function bandSegments(cl: [number, number][], fromSec: number, toSec: num
 
 async function chartFor(t: Ticker) {
   const h = history.tickers[t.symbol];
-  const pct = replay.pools[t.symbol]?.runs?.[replay.headline_strategy]?.band_pct ?? 5;
+  if (!h) return null;
+  const pct = replay.band_pct;
   const snap = await snapshot(t);
   const points: [number, number][] = [...h.hourly.filter(([ts]: [number, number]) => ts < snap.ts), [snap.ts, snap.poolUsd]];
   const cl: [number, number][] = [...h.chainlink.filter(([ts]: [number, number]) => ts < snap.clUpdatedAt), [snap.clUpdatedAt, snap.clUsd]];
@@ -50,13 +54,13 @@ async function chartFor(t: Ticker) {
 }
 
 function replayVault(t: Ticker) {
-  const p = replay.pools[t.symbol], run = p.runs[replay.headline_strategy];
+  const tok = replay.tokens[t.symbol];
   return {
-    id: t.id, ticker: t.symbol, source: "replay" as const, pool: t.pool, fee_tier: t.feeTier,
+    id: t.id, ticker: t.symbol, name: t.name, source: "replay" as const, pool: t.pool, fee_tier: t.feeTier,
     vault: null, tvl_usd: null,
-    fee_apr_pct: { replay_30d: run.fee_apr_pct },
-    replay: { strategy: `daily recentre at the NYSE open + 5 min, +-${run.band_pct}% around Chainlink`, capital_usd: replay.capital_usd, window: replay.window,
-      edge_apr_pct: run.edge_apr_pct, net_vs_hold_apr_pct: run.net_vs_hold_apr_pct, rebalances: run.rebalances },
+    fee_apr_pct: { replay_30d: replayFeeApr(tok) },
+    replay: { strategy: replay.strategy, capital_usd: replay.capital_usd, window: replay.window },
+    evidence: buildEvidence(tok, replay),
   };
 }
 
@@ -66,8 +70,15 @@ async function cached<T>(k: string, ttlMs: number, f: () => Promise<T>): Promise
   if (h && Date.now() - h.at < ttlMs) return h.v as T;
   const v = await f(); cache.set(k, { at: Date.now(), v }); return v;
 }
-const vaultBase = (t: Ticker) => t.vault ? cached(`v:${t.id}`, 30_000, () => onchainVault(t)) : Promise.resolve(replayVault(t));
+/** Replay figures always ride along, so a vault with no fee history yet still has its 30-day replay APR and evidence. */
+async function vaultBase(t: Ticker) {
+  const rep = replayVault(t);
+  if (!t.vault) return rep;
+  const on = await cached(`v:${t.id}`, 30_000, () => onchainVault(t));
+  return { ...on, name: rep.name, fee_apr_pct: { ...on.fee_apr_pct, replay_30d: rep.fee_apr_pct.replay_30d }, replay: rep.replay, evidence: rep.evidence };
+}
 const vaultView = async (t: Ticker) => ({ ...(await vaultBase(t)), chart: await cached(`c:${t.id}`, 60_000, () => chartFor(t)) });
+const byApr = (a: { fee_apr_pct: { replay_30d: number | null } }, b: typeof a) => (b.fee_apr_pct.replay_30d ?? -1) - (a.fee_apr_pct.replay_30d ?? -1);
 const strip = ({ share_price_history, ...rest }: any) => rest;
 
 const headers = { "content-type": "application/json", "access-control-allow-origin": "*" };
@@ -79,7 +90,18 @@ export async function handle(req: Request): Promise<Response> {
   if (req.method !== "GET") return json({ error: "method_not_allowed" }, 405);
   try {
     if (u.pathname === "/health") return json({ ok: true, tickers: tickers.map((t) => ({ id: t.id, source: t.vault ? "onchain" : "replay" })) });
-    if (parts[0] === "vaults" && parts.length === 1) return json({ vaults: (await Promise.all(tickers.map(vaultBase))).map(strip) });
+    if (parts[0] === "vaults" && parts.length === 1) {
+      // One unreadable vault must not blank the list: it falls back to its replay entry and says why.
+      const settled = await Promise.allSettled(tickers.map(vaultBase));
+      const vaults = settled.map((r, i) => {
+        if (r.status === "fulfilled") return strip(r.value);
+        const detail = String(r.reason?.message ?? r.reason).split("\n")[0].slice(0, 200);
+        log("list_vault_error", { ticker: tickers[i].symbol, error: detail });
+        return { ...replayVault(tickers[i]), vault: tickers[i].vault ?? null, onchain_error: detail };
+      }).sort(byApr);
+      return json({ count: vaults.length, window: replay.window, vaults });
+    }
+    if (parts[0] === "universe" && parts.length === 1) return json(universe);
     if (parts[0] === "vaults" && parts.length === 2) {
       const t = tickers.find((x) => x.id === parts[1].toLowerCase());
       return t ? json(await vaultView(t)) : json({ error: "unknown_vault" }, 404);
@@ -88,8 +110,8 @@ export async function handle(req: Request): Promise<Response> {
       const k = parts[1].toLowerCase();
       const t = tickers.find((x) => x.id === k || x.pool.toLowerCase() === k);
       if (!t) return json({ error: "unknown_pool" }, 404);
-      return json({ id: t.id, source: "replay", ticker: t.symbol, headline_strategy: replay.headline_strategy, generated_at: replay.generated_at,
-        window: replay.window, capital_usd: replay.capital_usd, cost_model: replay.cost_model, ...replay.pools[t.symbol] });
+      return json({ id: t.id, source: "replay", ticker: t.symbol, strategy: replay.strategy, generated_at: replay.generated_at,
+        window: replay.window, capital_usd: replay.capital_usd, cost_model: replay.cost_model, ...replay.tokens[t.symbol] });
     }
     return json({ error: "not_found" }, 404);
   } catch (e) {
@@ -99,6 +121,7 @@ export async function handle(req: Request): Promise<Response> {
 }
 
 if (import.meta.main) {
+  tickers = await withFactory(tickers);
   for (const t of tickers) await assertPoolOrdering(t);
   Bun.serve({ port: PORT, fetch: handle });
   log("stats_listening", { port: PORT, vaults: tickers.map((t) => ({ id: t.id, source: t.vault ? "onchain" : "replay" })) });

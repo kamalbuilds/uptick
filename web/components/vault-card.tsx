@@ -7,7 +7,7 @@ import { BandChart } from "./band-chart";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
-import { pct, usd } from "@/lib/format";
+import { pct } from "@/lib/format";
 import { sourceLabel } from "@/lib/keeper";
 import type { VaultConfig } from "@/lib/vaults";
 
@@ -62,30 +62,5 @@ export function FeaturedVaultCard({ cfg }: { cfg: VaultConfig }) {
         <Link href={`/vault/${cfg.id}`}>Open the {cfg.symbol} vault <ArrowRight size={20} weight="bold" aria-hidden /></Link>
       </Button>
     </div>
-  );
-}
-
-/** A compact vault row for lists. */
-export function VaultRow({ cfg }: { cfg: VaultConfig }) {
-  const q = useVaultStats(cfg.id);
-  return (
-    <Link
-      href={`/vault/${cfg.id}`}
-      className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 rounded-lg px-4 py-4 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[1.2fr_1fr_1fr_auto]"
-    >
-      <div>
-        <p className="display text-3xl">{cfg.symbol}</p>
-        <p className="text-sm text-body">{cfg.name}, {cfg.feeTier} pool</p>
-      </div>
-      <p className="figure text-right text-xl font-medium sm:text-left">
-        {q.data ? pct(q.data.feeAprPct) : q.isError ? "Unavailable" : <Skeleton className="inline-block h-6 w-16 align-middle" />}
-        <span className="block text-xs font-normal text-body">{q.data ? `fee APR, ${q.data.aprWindowDays}-day ${q.data.source}` : "fee APR"}</span>
-      </p>
-      <p className="figure hidden text-xl font-medium sm:block">
-        {q.data ? (q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)) : q.isError ? "Unavailable" : <Skeleton className="inline-block h-6 w-20 align-middle" />}
-        <span className="block text-xs font-normal text-body">TVL</span>
-      </p>
-      <span className="col-span-2 justify-self-start sm:col-span-1 sm:justify-self-end"><VaultStatus cfg={cfg} /></span>
-    </Link>
   );
 }
