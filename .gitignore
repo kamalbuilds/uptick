@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+out/
+cache/
+broadcast/
+contracts/out/
+contracts/cache/
+keeper/data/raw/
+*.log
+.DS_Store
+contracts/lib/
+web/.next/

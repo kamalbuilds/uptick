@@ -1,0 +1,5 @@
+node_modules
+.next
+.env*.local
+.uicraft-read.json
+next-env.d.ts

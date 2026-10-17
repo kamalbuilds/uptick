@@ -1,0 +1,144 @@
+{
+ "generated_at": "2026-10-17T04:20:49.510255+00:00",
+ "engine": "spikes/stock-vaults/scripts/engine.py",
+ "head_block_of_pull": 90599244,
+ "window": {
+  "start": "2026-09-17T00:00:00+00:00",
+  "end": "2026-10-17T00:00:00+00:00",
+  "days": 30
+ },
+ "capital_usd": 100000.0,
+ "headline_strategy": "B5",
+ "cost_model": "pool price impact + fee tier + gas, engine.IMPACT=1",
+ "pools": {
+  "NVDA": {
+   "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+   "fee_tier": 500,
+   "swaps_in_window": 509293,
+   "pool_volume_usd": 348715391.8594023,
+   "pool_fees_usd": 174357.69592970115,
+   "hold_return_pct": -0.8701168505028001,
+   "runs": {
+    "B2": {
+     "band_pct": 2.0,
+     "fee_apr_pct": 82.8968691782308,
+     "markout_apr_pct": 67.96262532285519,
+     "cost_apr_pct": 10.250217792186897,
+     "edge_apr_pct": 4.684026063188717,
+     "net_vs_hold_apr_pct": -28.687759135371,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 3.9077376344015433
+    },
+    "B5": {
+     "band_pct": 5.0,
+     "fee_apr_pct": 40.5574193924729,
+     "markout_apr_pct": 30.89758946233919,
+     "cost_apr_pct": 4.623354021384447,
+     "edge_apr_pct": 5.036475908749263,
+     "net_vs_hold_apr_pct": -9.012640390362282,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 1.9118665841700224
+    },
+    "B10": {
+     "band_pct": 10.0,
+     "fee_apr_pct": 21.0197475991991,
+     "markout_apr_pct": 15.766830618949287,
+     "cost_apr_pct": 1.6935507835211538,
+     "edge_apr_pct": 3.5593661967286567,
+     "net_vs_hold_apr_pct": -0.2059598787671457,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 0.9908656330845141
+    }
+   }
+  },
+  "TSLA": {
+   "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
+   "fee_tier": 3000,
+   "swaps_in_window": 22007,
+   "pool_volume_usd": 7375049.58159739,
+   "pool_fees_usd": 22125.148744792168,
+   "hold_return_pct": -1.7988998330636163,
+   "runs": {
+    "B2": {
+     "band_pct": 2.0,
+     "fee_apr_pct": 83.68506088681964,
+     "markout_apr_pct": 86.66136593706537,
+     "cost_apr_pct": 95.79138106867917,
+     "edge_apr_pct": -98.76768611892489,
+     "net_vs_hold_apr_pct": -136.84734729950569,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 31.087809902734904
+    },
+    "B5": {
+     "band_pct": 5.0,
+     "fee_apr_pct": 53.148233369597286,
+     "markout_apr_pct": 50.69001870176033,
+     "cost_apr_pct": 35.15375761267151,
+     "edge_apr_pct": -32.69554294483456,
+     "net_vs_hold_apr_pct": -35.227082080468776,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 19.743812792283723
+    },
+    "B10": {
+     "band_pct": 10.0,
+     "fee_apr_pct": 31.13594059960941,
+     "markout_apr_pct": 27.029844502973084,
+     "cost_apr_pct": 12.80718291052956,
+     "edge_apr_pct": -8.70108681389323,
+     "net_vs_hold_apr_pct": -2.8138322270540717,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 11.566559099629627
+    }
+   }
+  },
+  "SPCX": {
+   "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
+   "fee_tier": 500,
+   "swaps_in_window": 436919,
+   "pool_volume_usd": 236319910.6078741,
+   "pool_fees_usd": 118159.95530393705,
+   "hold_return_pct": -4.307229870625184,
+   "runs": {
+    "B2": {
+     "band_pct": 2.0,
+     "fee_apr_pct": 133.66407325153776,
+     "markout_apr_pct": 171.88017479671373,
+     "cost_apr_pct": 28.31252705792358,
+     "edge_apr_pct": -66.52862860309952,
+     "net_vs_hold_apr_pct": -40.71066662403103,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 9.297640799030589
+    },
+    "B5": {
+     "band_pct": 5.0,
+     "fee_apr_pct": 86.89222399922379,
+     "markout_apr_pct": 95.58639207557034,
+     "cost_apr_pct": 16.379633540622653,
+     "edge_apr_pct": -25.0738016169692,
+     "net_vs_hold_apr_pct": -6.069758614364525,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 6.044202210218021
+    },
+    "B10": {
+     "band_pct": 10.0,
+     "fee_apr_pct": 49.14652939454707,
+     "markout_apr_pct": 51.98649129463192,
+     "cost_apr_pct": 7.332539050721174,
+     "edge_apr_pct": -10.172500950806024,
+     "net_vs_hold_apr_pct": 13.650271106422698,
+     "rebalances": 30,
+     "gas_usd": 1.125,
+     "fee_capture_pct": 3.418620768570958
+    }
+   }
+  }
+ }
+}

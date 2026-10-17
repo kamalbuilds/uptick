@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public EVM contract addresses (0x + 40 hex) are not secrets"
+regexes = ['''0x[a-fA-F0-9]{40}\b''']

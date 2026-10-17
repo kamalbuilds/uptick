@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* Tokens from DESIGN.md (wise). Fonts: Archivo (display, stands in for Wise Sans), Figtree (body), Geist Mono (figures, addresses). */
+@theme {
+  --color-primary: #9fe870;
+  --color-primary-active: #cdffad;
+  --color-primary-neutral: #c5edab;
+  --color-primary-pale: #e2f6d5;
+  --color-ink: #0e0f0c;
+  --color-ink-deep: #163300;
+  --color-body: #454745;
+  --color-mute: #6b6d6a;
+  --color-canvas: #ffffff;
+  --color-sage: #e8ebe6;
+  --color-sage-line: #d3d8cf;
+  --color-positive: #2ead4b;
+  --color-positive-deep: #054d28;
+  --color-warning: #ffd11a;
+  --color-warning-deep: #b86700;
+  --color-negative: #d03238;
+  --color-negative-deep: #a72027;
+
+  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html { background: var(--color-sage); color: var(--color-ink); }
+  body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; -webkit-font-smoothing: antialiased; text-wrap: pretty; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 900; font-stretch: 86%; letter-spacing: -0.02em; text-wrap: balance; }
+  :focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: var(--color-primary); color: var(--color-ink); }
+}
+
+@layer utilities {
+  .figure { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .display { font-family: var(--font-display); font-weight: 900; font-stretch: 86%; letter-spacing: -0.035em; line-height: 0.9; }
+  .rise { animation: rise 640ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  .draw { stroke-dasharray: var(--len, 2400); stroke-dashoffset: var(--len, 2400); animation: draw 1400ms var(--ease-out) 200ms forwards; }
+  .shimmer { background: linear-gradient(90deg, var(--color-sage) 0%, #f3f5f0 50%, var(--color-sage) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes pulse-dot { 50% { opacity: 0.35; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .shimmer { animation: none; }
+  .draw { animation: none; stroke-dashoffset: 0; }
+  * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+}

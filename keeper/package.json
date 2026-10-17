@@ -1,0 +1,19 @@
+{
+  "name": "stock-vaults-keeper",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "keeper": "bun src/keeper.ts",
+    "dry-run": "bun src/keeper.ts --dry-run",
+    "stats": "bun src/stats.ts",
+    "replay": "python3 replay/build_replay.py",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "viem": "^2.57.7"
+  },
+  "devDependencies": {
+    "bun-types": "^1.4.3",
+    "typescript": "^7.0.2"
+  }
+}
