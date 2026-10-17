@@ -1,0 +1,11 @@
+{
+  "name": "uptick-explainer",
+  "private": true,
+  "description": "Uptick explainer film. node_modules is a symlink to motion-pipeline/remotion-ava (remotion 4.0.409).",
+  "scripts": {
+    "voice": "bash scripts/voice.sh",
+    "assemble": "node scripts/assemble.mjs",
+    "still": "remotion still src/index.ts Film",
+    "render": "remotion render src/index.ts Film out/uptick-explainer.mp4"
+  }
+}

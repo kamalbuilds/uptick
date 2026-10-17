@@ -1,0 +1,90 @@
+{
+ "segments": [
+  {
+   "id": "s01",
+   "text": "Robinhood's Stock Tokens, stocks on a blockchain, trade around the clock."
+  },
+  {
+   "id": "s02",
+   "text": "But the stock price exists only six and a half hours a day."
+  },
+  {
+   "id": "s03",
+   "text": "Every trade needs a pool of tokens on the other side."
+  },
+  {
+   "id": "s04",
+   "text": "Liquidity providers fill the pool, and earn a fee on each trade."
+  },
+  {
+   "id": "s05",
+   "text": "Their danger: a trader who knows the price just moved."
+  },
+  {
+   "id": "s06",
+   "text": "We replayed five point one million real trades from the chain's own pools.",
+   "cap": "We replayed 5.1 million real trades from the chain's own pools."
+  },
+  {
+   "id": "s07",
+   "text": "While the stock market is open, a provider earns about a dollar of fees per dollar lost.",
+   "cap": "While the stock market is open, a provider earns about $1 of fees per $1 lost."
+  },
+  {
+   "id": "s08",
+   "text": "At night, up to three dollars. On weekends, three point eight to nineteen point five.",
+   "cap": "At night, up to $3. On weekends, $3.8 to $19.5."
+  },
+  {
+   "id": "s09",
+   "text": "Pools charge different trade fees, called fee tiers, and holders cannot see which pays."
+  },
+  {
+   "id": "s10",
+   "text": "Picking a pool by hand is guesswork."
+  },
+  {
+   "id": "s11",
+   "text": "Some pools carry hooks, small programs that can keep a hidden cut, and eighty percent of hooks are flagged malicious.",
+   "cap": "Some pools carry hooks, small programs that can keep a hidden cut. 80% of hooks are flagged malicious."
+  },
+  {
+   "id": "s12",
+   "text": "Uptick does the picking."
+  },
+  {
+   "id": "s13",
+   "text": "For each Stock Token, it replays every pool and fee tier, and chooses where liquidity pays."
+  },
+  {
+   "id": "s14",
+   "text": "It only enters pools with no hidden cut, or a maximum fee declared on chain and enforced in every trade."
+  },
+  {
+   "id": "s15",
+   "text": "We sent two hundred trades over the maximum, on a copy of the real chain.",
+   "cap": "We sent 200 trades over the maximum, on a copy of the real chain."
+  },
+  {
+   "id": "s16",
+   "text": "All two hundred were rejected.",
+   "cap": "All 200 were rejected."
+  },
+  {
+   "id": "s17",
+   "text": "For a holder, it is one deposit into a vault."
+  },
+  {
+   "id": "s18",
+   "text": "Deposit NVDA, and the vault earns the fees for you."
+  },
+  {
+   "id": "s19",
+   "text": "Uptick."
+  },
+  {
+   "id": "s20",
+   "text": "Stock Token yield, chosen by the chain's own data."
+  }
+ ]
+}

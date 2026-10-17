@@ -1,3 +1,5 @@
 .env
 node_modules
 data/pps-*.jsonl
+data/engine/
+data/swaps/

@@ -5,7 +5,7 @@ import { robinhoodChain } from "./chain";
 // The picker (components/wallet-button.tsx) curates which of them are offered.
 export const wagmiConfig = createConfig({
   chains: [robinhoodChain],
-  transports: { [robinhoodChain.id]: http(robinhoodChain.rpcUrls.default.http[0], { retryCount: 4, retryDelay: 400 }) },
+  transports: { [robinhoodChain.id]: http(process.env.NEXT_PUBLIC_RPC_URL || robinhoodChain.rpcUrls.default.http[0], { retryCount: 4, retryDelay: 400 }) },
   multiInjectedProviderDiscovery: true,
   ssr: true,
 });

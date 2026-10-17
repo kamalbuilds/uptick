@@ -15,19 +15,30 @@
           "vault",
           "pm"
         ],
-        "note": "A Stock Token holder deposits once; the vault places the position in the hooked pool."
+        "note": "A Stock Token holder deposits once; the vault places the position in the pool and tier the evidence selected."
       },
       {
-        "id": "swap-pricing",
-        "label": "Swap pricing",
+        "id": "evidence",
+        "label": "Evidence engine",
+        "focus": [
+          "pm",
+          "evidence",
+          "keeper",
+          "vault",
+          "web"
+        ],
+        "note": "The engine replays every swap on every USDG pool and fee tier, picks the pool and tier, and the keeper refreshes it daily."
+      },
+      {
+        "id": "cap-standard",
+        "label": "Cap standard",
         "focus": [
           "traders",
           "pm",
           "hook",
-          "feed",
           "registry"
         ],
-        "note": "Every swap is priced by market session and oracle gap, under a declared cap."
+        "note": "A hook declares its maximum take and the pool enforces it inside every swap; the vault targets uncapped-safe or registered pools."
       },
       {
         "id": "operations",
@@ -39,7 +50,7 @@
           "web",
           "feed"
         ],
-        "note": "The keeper recentres at the NYSE open; the stats API serves fee APR and the band."
+        "note": "The keeper recentres at the NYSE open; the stats API serves fee APR and the tier comparison."
       }
     ],
     "viewBox": [
@@ -89,7 +100,7 @@
         150,
         64
       ],
-      "tag": "NVDA, SPCX"
+      "tag": "many Stock Tokens"
     },
     {
       "id": "pm",
@@ -122,8 +133,8 @@
     {
       "id": "hook",
       "type": "security",
-      "label": "UptickHook",
-      "sublabel": "session fee, oracle gap",
+      "label": "CappedTakeHook",
+      "sublabel": "declared cap, in-swap check",
       "pos": [
         900,
         110
@@ -132,13 +143,13 @@
         160,
         64
       ],
-      "tag": "capped take"
+      "tag": "cap standard"
     },
     {
       "id": "registry",
       "type": "database",
       "label": "CapRegistry",
-      "sublabel": "declared max fee",
+      "sublabel": "declared max take, readable",
       "pos": [
         1180,
         110
@@ -166,7 +177,7 @@
       "id": "keeper",
       "type": "backend",
       "label": "Keeper",
-      "sublabel": "recentre at NYSE open",
+      "sublabel": "refresh evidence, recentre",
       "pos": [
         610,
         570
@@ -180,7 +191,7 @@
       "id": "stats",
       "type": "backend",
       "label": "Stats API",
-      "sublabel": "fee APR, band",
+      "sublabel": "fee APR, tier comparison",
       "pos": [
         330,
         570
@@ -189,6 +200,21 @@
         140,
         64
       ]
+    },
+    {
+      "id": "evidence",
+      "type": "backend",
+      "label": "Evidence engine",
+      "sublabel": "replays swaps, picks tier",
+      "pos": [
+        900,
+        570
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "tag": "5.1M swaps"
     }
   ],
   "connections": [
@@ -221,22 +247,16 @@
       "id": "pm-hook",
       "from": "pm",
       "to": "hook",
-      "label": "beforeSwap fee",
+      "label": "fee cap enforced",
       "variant": "security",
       "fromSide": "top",
       "toSide": "bottom"
     },
     {
-      "id": "feed-hook",
-      "from": "feed",
-      "to": "hook",
-      "label": "reference price"
-    },
-    {
       "id": "hook-registry",
       "from": "hook",
       "to": "registry",
-      "label": "cap"
+      "label": "declares max"
     },
     {
       "id": "feed-vault",
@@ -260,38 +280,55 @@
       "id": "web-stats",
       "from": "web",
       "to": "stats",
-      "label": "APR, band",
+      "label": "APR, tier evidence",
       "variant": "dashed",
       "fromSide": "bottom",
       "toSide": "top",
       "labelDy": 24
+    },
+    {
+      "id": "pm-evidence",
+      "from": "pm",
+      "to": "evidence",
+      "label": "swap history",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "evidence-keeper",
+      "from": "evidence",
+      "to": "keeper",
+      "label": "pool/tier pick, daily",
+      "variant": "emphasis"
     }
   ],
   "cards": [
     {
-      "dot": "cyan",
-      "title": "Hook",
+      "dot": "rose",
+      "title": "Evidence engine",
       "items": [
-        "Fee by session: NYSE hours, weeknights, weekends",
-        "Surcharge on trades that widen the oracle gap",
-        "Declared max fee enforced inside every swap"
+        "Replays every swap on every USDG pool and fee tier",
+        "Fee per $ of 1h markout, by session",
+        "Picks the pool and tier with the best out-of-sample result"
       ]
     },
     {
       "dot": "emerald",
       "title": "Vault",
       "items": [
-        "One deposit per Stock Token",
-        "Position recentred daily at the NYSE open",
-        "Fees raise the share price"
+        "One click per Stock Token",
+        "Deposits into the selected pool and tier",
+        "Recentred daily at the NYSE open"
       ]
     },
     {
-      "dot": "rose",
-      "title": "Evidence",
+      "dot": "cyan",
+      "title": "Cap standard",
       "items": [
-        "5.1M swaps replayed on the chain's own pools",
-        "LPs earn 3.8 to 19.5x more fee per loss on weekends"
+        "Declared max take enforced inside every swap",
+        "CapRegistry readable by routers and integrators",
+        "200 of 200 over-cap swaps revert on a mainnet fork"
       ]
     }
   ]

@@ -7,9 +7,9 @@ import { VAULTS } from "@/lib/vaults";
 const nvda = VAULTS[0];
 
 const steps = [
-  { title: "Deposit NVDA", body: "You send NVDA and receive vault shares. The vault holds your NVDA in the NVDA/USDG pool and re-centres its band at each NYSE open." },
-  { title: "Uptick pools price the session", body: "The Uptick hook charges 25 bps while NYSE is open, 10 bps on weeknights and 5 bps on weekends. Trades that pull the pool away from the Chainlink price pay a surcharge." },
-  { title: "The cap holds", body: "Every Uptick pool declares a maximum fee onchain. No swap through it can pay more, on any router." },
+  { title: "Deposit your Stock Token", body: "You send a Stock Token and receive vault shares. The vault keeps your deposit in one pool, inside a price band around the Chainlink price." },
+  { title: "Uptick picks the pool the data says pays", body: "Every swap on every pool for that token is replayed. The vault goes where fees beat the losses to informed traders." },
+  { title: "Fees come back to you", body: "Swap fees accrue to your shares. Pools are checked against an on-chain declared fee cap. Uptick only deposits into pools without fee-taking hooks or with a declared on-chain cap." },
 ];
 
 export default function Home() {
@@ -18,10 +18,10 @@ export default function Home() {
       <section className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.3fr_0.9fr] lg:items-start lg:gap-14 lg:pt-20">
         <div>
           <h1 className="rise display text-[clamp(3rem,12vw,5.5rem)] lg:text-[clamp(3.4rem,5.6vw,5.5rem)]" style={{ ["--i" as string]: 0 }}>
-            Hold NVDA.<br />Collect the fees.
+            Stock Token yield,<br />chosen by the chain&rsquo;s own data.
           </h1>
           <p className="rise mt-6 max-w-md text-xl text-body" style={{ ["--i" as string]: 2 }}>
-            Deposit NVDA. The vault places it in the NVDA/USDG pool inside a price band and keeps every swap fee.
+            We replay every swap on every pool for each Stock Token and put your deposit where liquidity earns more than it loses.
           </p>
           <div className="rise mt-8" style={{ ["--i" as string]: 3 }}>
             <Button asChild size="lg">
@@ -36,9 +36,9 @@ export default function Home() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="how">
         <div className="rounded-xl bg-ink p-6 text-sage sm:p-10">
-          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">Fees that know when Wall Street is open</h2>
-          <p className="mt-3 max-w-2xl text-sage">We replayed 5.1M swaps on Robinhood Chain. Liquidity providers earn 0.8 to 1.2 dollars of fees for every dollar lost to informed traders while NYSE is open, and 3.8 to 19.5 dollars on weekends. Uptick prices each session.</p>
-          <ol className="relative mt-10 grid gap-8 border-t border-sage/25 pt-8 md:grid-cols-[0.9fr_1.35fr_1fr] md:gap-10">
+          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">Yield chosen by the chain&rsquo;s own data</h2>
+          <p className="mt-3 max-w-2xl text-sage">We replay every swap on every pool for each Stock Token and put your deposit where liquidity earns more than it loses.</p>
+          <ol className="relative mt-10 grid gap-8 border-t border-sage/25 pt-8 md:grid-cols-3 md:gap-10">
             {steps.map((s, i) => (
               <li key={s.title} className="relative">
                 <span className="absolute -top-[37px] left-0 size-3 rounded-full bg-primary" aria-hidden />

@@ -1,34 +1,48 @@
 # Architecture
 
-Uptick has two layers on Robinhood Chain (4663): a pricing layer that makes Stock Token pools charge for the risk they carry, and a vault layer that lets a holder collect those fees with one deposit.
+Uptick has three layers on Robinhood Chain (4663): an evidence engine that measures where Stock Token liquidity earns the most, a vault layer that deposits there in one click, and a cap standard that bounds what the pools under the vault can take.
 
 ```
- holder --deposit--> StockVault (ERC-4626) --mint/burn--> v3 NVDA/USDG position
-                          ^   |                                  |
-                 keeper --+   +-- Chainlink NVDA/USD ------------+ fees
-                 (rebalance daily at NYSE open)
-
- trader --swap--> router --> PoolManager (v4) --> UptickHook (session fee + oracle gap + cap)
+ chain swap history --> Evidence engine --> pool/tier pick per token --> keeper (daily refresh)
+ (every USDG pool,      (fee per $ of 1h        + session evidence                |
+  every fee tier)        markout, out-of-sample)                                  v
+ holder --deposit--> StockVault (ERC-4626) --mint/burn--> selected pool position
+                          ^                                        |
+                 Chainlink USD feed (band centre, oracle gate)     +-- pools without take-capable hooks,
+                                                                       or hooks registered in CapRegistry
 ```
 
 ## Components
 
 | Component | Role |
 |---|---|
-| UptickHook | Uniswap v4 hook on Stock Token pools. Sets the LP fee per swap from the market session and the gap to the Chainlink reference. Declares a maximum fee and enforces it inside the swap. |
-| CapRegistry | Write-once record of each hook's declared maximum, readable by anyone, so integrators and routers can check what a hook may charge. |
-| StockVault | ERC-4626 vault, one per Stock Token. Holds idle balances and one Uniswap v3 position, values everything in the Stock Token, mints shares. |
-| Keeper | Calls `rebalance()` at the NYSE open. Simulates with `eth_call` first and signs only a passing simulation. |
-| Stats API | Serves TVL, fees (lifetime, 24 h, 7 d), fee APR, current range and share price history per vault, from `FeesCollected` events and vault views. |
-| Web app | Vault list, vault detail, deposit and redeem, portfolio. |
+| Evidence engine | Replays every swap on every USDG pool and fee tier of each eligible Stock Token (5.1M swaps over 54 days so far; `spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). Measures fee per dollar of 1 hour markout by session and selects the pool and tier with the best out-of-sample result. |
+| StockVault | ERC-4626 vault, one per Stock Token. Deposits into the selected pool and tier, values everything in the Stock Token, mints shares. |
+| Keeper | Refreshes the evidence and calls `rebalance()` daily at the NYSE open. Simulates with `eth_call` first and signs only a passing simulation. Eligibility rule in `keeper/src/universe.ts`. |
+| CappedTakeHook + CapRegistry | The fee cap standard. A hook declares its maximum take, the pool enforces it inside every swap, and CapRegistry records the declared maximum write-once so anyone can read it. |
+| UptickHook | Reference implementation of the cap standard (session fee and oracle gap under a declared cap). |
+| Stats API | Serves TVL, fees (lifetime, 24 h, 7 d), fee APR, tier comparison, current range and share price history per vault. |
+| Web app | Vault list, per-token tier comparison and session evidence, deposit and redeem, portfolio. |
 
-## Data flow per swap
+## Data flow: evidence engine
+
+1. Eligibility: a Stock Token enters the universe when it has a Chainlink feed and a deep, busy USDG pool whose price sits within bounds of the feed (`keeper/src/universe.ts`).
+2. Pull: every `Swap` event on every USDG pool and fee tier of the token, from the PoolManager and the v3 pools, cached per pool.
+3. Replay: the engine walks the swaps against a vault-shaped position (daily recentre on Chainlink, fixed band) and books, per swap, the fee earned and the 1 hour markout, with a price-impact cost model.
+4. Split: results are grouped by session (NYSE regular hours, weeknights, weekends) so the same pool reads differently at different hours.
+5. Select: the window is split into a calibration half and a test half. Pool and tier are chosen on the first half and scored on the second. The pick is the best out-of-sample edge (fee minus markout minus cost).
+6. Publish: the keeper writes the result to `keeper/data/replay.json`; the stats API serves it and the web app shows the tier comparison and the session evidence for each token.
+7. Refresh: the keeper repeats the run daily so the pick follows the chain's current flow.
+
+The engine is covered by hand-computed tests and mutation checks run red then green (`spikes/stock-vaults/FINDINGS.md`).
+
+## Data flow per swap on a capped pool
 
 1. A trader calls any router. The router calls the v4 PoolManager (`0x8366a39CC670B4001A1121B8F6A443A643e40951`).
-2. `beforeSwap` in UptickHook reads the session for the block timestamp and the Chainlink reference.
-3. The hook returns the fee: base fee for the session, plus a surcharge that grows with the gap the trade opens between pool price and the reference. Trades that close the gap pay the base.
-4. `afterSwap` measures the take the trader paid against the declared maximum. Above the cap the swap reverts with `TakeExceedsCap`. The check runs inside the PoolManager call, so it binds every router and every caller.
-5. A state fingerprint of pool slot0 and liquidity before and after any builder callback blocks a nested self-swap (`NestedStateChange`). A lock flag cannot do this job, because v4-core skips hook callbacks when the hook itself is the caller.
+2. A capped hook sets its fee in `beforeSwap`. UptickHook, the reference implementation, reads the market session and the Chainlink reference.
+3. `afterSwap` measures the take the trader paid against the declared maximum. Above the cap the swap reverts with `TakeExceedsCap`. The check runs inside the PoolManager call, so it binds every router and every caller.
+4. A state fingerprint of pool slot0 and liquidity before and after any builder callback blocks a nested self-swap (`NestedStateChange`). A lock flag cannot do this job, because v4-core skips hook callbacks when the hook itself is the caller.
+5. The vault targets only pools without take-capable hooks, or pools whose hook has a registered cap.
 
 Measured on a mainnet fork: 200 of 200 swaps over the cap revert and 200 of 200 at or under pass, take accounting matches the no-hook pool to 0 wei per leg, and the cap adds about 25,000 gas per swap (`spikes/capped-hooks/FINDINGS.md`).
 
@@ -42,7 +56,7 @@ Measured on a mainnet fork: 200 of 200 swaps over the cap revert and 200 of 200 
 
 ## Session and DST logic
 
-The session decides the base fee in the hook and the recentre slot in the keeper. Both read the same calendar rules (`keeper/src/calendar.ts` for the keeper).
+The session labels the evidence and sets the recentre slot in the keeper (`keeper/src/calendar.ts`).
 
 - Regular session: NYSE trading day, 09:30 to 16:00 America/New_York.
 - The rule is expressed in New York local time and converted to UTC per date, so the open lands at 13:30 UTC in EDT and 14:30 UTC in EST. DST starts the second Sunday of March and ends the first Sunday of November.
@@ -61,6 +75,6 @@ Each is a design decision with the guard that bounds it.
 | Canonical Uniswap deployments are fixed immutables | The constructor checks the pool's tokens and that the position manager resolves the same pool for the pair and fee. |
 | Owner is a multisig with two-step transfer | Powers are bounded parameters. No function moves user funds, withdrawals and `redeemInKind` cannot be paused, ownership cannot be renounced. |
 | Keeper is replaceable | It can call `rebalance()` only. After 26 hours anyone can, behind the same gate. Every swap carries a Chainlink `minOut`, so one rebalance loses at most `slippageBps` of the swapped notional. |
-| Hook fee ceiling is declared and checked | The maximum is immutable, recorded in CapRegistry, and enforced in the swap. |
+| Hook fee ceiling is declared and checked | The maximum is immutable, recorded in CapRegistry, and enforced in the swap. The vault targets only pools without take-capable hooks or with a registered cap. |
 
 Full guard table: `contracts/SECURITY.md`.

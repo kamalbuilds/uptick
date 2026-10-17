@@ -1,0 +1,6467 @@
+{
+ "chain_id": 4663,
+ "generated_at": "2026-10-17T06:47:57.091Z",
+ "block": 90722925,
+ "block_ts": 1792219212,
+ "sources": {
+  "tokens": "docs/research/rhj-assets.json + docs/research/founder-house/nightmarket/raw/rhj-assets.json (Robinhood RHJ registry)",
+  "feeds": "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
+  "pools": "Uniswap v3 factory 0x1f7d7550B1b028f7571E69A784071F0205FD2EfA, fee tiers 100/500/3000/10000, USDG 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
+ },
+ "rule": {
+  "minVolume7dUsdPerDay": 1000000,
+  "maxVaultShare": 0.2,
+  "maxFeedDeviationBps": 300,
+  "maxFeedAgeS": 346200,
+  "vault_capital_usd": 100000,
+  "volume_window_days": 7,
+  "volume_from_block": 84795004
+ },
+ "counts": {
+  "tokens": 196,
+  "with_code": 196,
+  "with_feed": 35,
+  "with_pool": 95,
+  "eligible": 4
+ },
+ "tokens": [
+  {
+   "symbol": "AAOI",
+   "name": "Applied Optoelectronics Stock Token",
+   "token": "0x521Cf887E6531c6F667b5BC4D896E5d9bfE8EB2E",
+   "decimals": 18,
+   "onchain_symbol": "AAOI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x078c1690865964838Ae346077046750846a552D1",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 92.08670356384428,
+    "tick": -231095,
+    "liquidity_raw": "217194980874",
+    "depth_usd_5pct": 0.10300429121843485,
+    "usdg_balance": 0.055183,
+    "stock_balance": 0.1616367796247433,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989699581489,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x455928E891dC22686cD2102690c4cF0e6588B3CE",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AAPL",
+   "name": "Apple Stock Token",
+   "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+   "decimals": 18,
+   "onchain_symbol": "AAPL",
+   "multiplier": "1.000566080061092436",
+   "has_code": true,
+   "feed": {
+    "address": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
+    "aggregator": "0xBb11A21267cFDb63d4935d99a499133DD1744ACb",
+    "description": "Robinhood AAPL / USD",
+    "decimals": 8,
+    "usd": 343.01226254,
+    "updated_at": 1792178266,
+    "age_s": 40946
+   },
+   "pool": {
+    "address": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": false,
+    "price_usd": 343.10211512791034,
+    "tick": 217940,
+    "liquidity_raw": "332293850728949745",
+    "depth_usd_5pct": 304187.2956696992,
+    "usdg_balance": 191016.657718,
+    "stock_balance": 178.0446261105588,
+    "volume_7d_usd": 4142494.658855,
+    "volume_usd_per_day": 591784.951265,
+    "swaps_7d": 11967,
+    "vault_share_100k": 0.2474100523973909,
+    "feed_deviation_bps": 2.619515327090239
+   },
+   "other_pools": [
+    {
+     "address": "0x783C9bbB765047CFdD2b84b92b2Ca9F11D34b7Ed",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 35046.45012018223,
+     "usdg_balance": 62437.637375,
+     "volume_7d_usd": 103081.61740200003
+    },
+    {
+     "address": "0x3714aa8105DE1f384481B425788Af413748C1837",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 208.16647686845585,
+     "usdg_balance": 771.639344,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $591.8K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "ABCL",
+   "name": "Abcellera Biologics Stock Token",
+   "token": "0x3139D77Ace0cbAA5bDfD38bD1F1911a794AF0B0e",
+   "decimals": 18,
+   "onchain_symbol": "ABCL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x6ED779291769dF8c1a3556F86f859192622505FF",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000043,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ADBE",
+   "name": "Adobe Stock Token",
+   "token": "0x232B8ed6377BE97813853B0Ac104c4Cda8378d1B",
+   "decimals": 18,
+   "onchain_symbol": "ADBE",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xd25e11E45f42660668AcC3Db09DFE56F890F2e58",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 239.54768844016573,
+    "tick": -221534,
+    "liquidity_raw": "146880564486",
+    "depth_usd_5pct": 0.11234853011370263,
+    "usdg_balance": 0.246989,
+    "stock_balance": 0.00252818707018204,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988765159612,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AEHR",
+   "name": "Aehr Stock Token",
+   "token": "0x5F604fBA1162193A4388A5DFa56F556f3E133cC2",
+   "decimals": 18,
+   "onchain_symbol": "AEHR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xf5954707E56F80D6e4EBd3609cf76BDb3769b7f5",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000037,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AEIS",
+   "name": "Advanced Energy Stock Token",
+   "token": "0xfAf9cb261B5FCC1f404Bb10CD39C5c6C1974E612",
+   "decimals": 18,
+   "onchain_symbol": "AEIS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x463bE69021bC96198A219cdD498955a44E92f37b",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.002882,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x803c27544Ea2F41Df24C08Aff45451e0B17b45ed",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000035,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ALAB",
+   "name": "Astera Labs, Inc. Stock Token",
+   "token": "0x748c32c3ca24eDf31ea597Db1F3d330a7a6DA3Dc",
+   "decimals": 18,
+   "onchain_symbol": "ALAB",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xd4AA5C1a668793d746fd34813e250cc34f5ad105",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xd8d7D0Dc783ff547C5d7efb52368c386c160dE43",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000658,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AMAT",
+   "name": "Applied Materials Stock Token",
+   "token": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
+   "decimals": 18,
+   "onchain_symbol": "AMAT",
+   "multiplier": "1.000044656302636618",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xa255bAfB65F9c79047EC74814e456e53713C8Cb3",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 465.13441037569885,
+    "tick": -214898,
+    "liquidity_raw": "103661259578",
+    "depth_usd_5pct": 0.11048740819653213,
+    "usdg_balance": 0.206889,
+    "stock_balance": 0.001347495692606108,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988951271388,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x610145AF25feEFd56e83438b2D4Ebf9116372947",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AMBA",
+   "name": "Ambarella Stock Token",
+   "token": "0x99D9D8663545151603863C5AcbD6FC3218899009",
+   "decimals": 18,
+   "onchain_symbol": "AMBA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x814e6F0ab0505457f661063bdA756266181FD7Bb",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000222,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AMC",
+   "name": "AMC Entertainment Stock Token",
+   "token": "0x05a3d1Cd21d0C88145E82600E62e7E496e0F222B",
+   "decimals": 18,
+   "onchain_symbol": "AMC",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xaA34feA710a1A737840329051D81D3B0B7C564d5",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 2.8765992537124028,
+    "tick": -265758,
+    "liquidity_raw": "1742577898261926054",
+    "depth_usd_5pct": 146062.57502585714,
+    "usdg_balance": 285619.831975,
+    "stock_balance": 75766.9466235269,
+    "volume_7d_usd": 2725382.524363998,
+    "volume_usd_per_day": 389340.36062342825,
+    "swaps_7d": 5554,
+    "vault_share_100k": 0.40640068888774183,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xC97894fc00C6Eeb060838559D905B4C2253fd429",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 59.41692679270589,
+     "usdg_balance": 137.580691,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x5c329eC542f9f88B6fB7530e55c06f7B0b5E242F",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000198,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AMD",
+   "name": "AMD Stock Token",
+   "token": "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC",
+   "decimals": 18,
+   "onchain_symbol": "AMD",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x943A29E7ae51A4798823ca9eEd2ed533B2A22C72",
+    "aggregator": "0xdAD54b8Ee51Af258e5A6Faa9a84a3300f4775f7d",
+    "description": "RHAMD / USD",
+    "decimals": 8,
+    "usd": 527.265,
+    "updated_at": 1792188697,
+    "age_s": 30515
+   },
+   "pool": {
+    "address": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 530.2005806191942,
+    "tick": 213588,
+    "liquidity_raw": "53689563398440101",
+    "depth_usd_5pct": 61096.59984043286,
+    "usdg_balance": 44709.7259,
+    "stock_balance": 244.25644652936967,
+    "volume_7d_usd": 1005403.7907729999,
+    "volume_usd_per_day": 143629.11296757142,
+    "swaps_7d": 4947,
+    "vault_share_100k": 0.6207455656981624,
+    "feed_deviation_bps": 55.67562078260806
+   },
+   "other_pools": [
+    {
+     "address": "0xD6aF1dcB75cdAE4F2efc403A58eF023A51edC686",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 676.2751794985843,
+     "usdg_balance": 225.658185,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x4EE16fE614F3a04f1510EDf1932A41cBd5C4af9C",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000003,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $143.6K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "AMKR",
+   "name": "Amkor Technology Stock Token",
+   "token": "0xDd356AA38F40A7b7076755aC854B6FBb1F0D305B",
+   "decimals": 18,
+   "onchain_symbol": "AMKR",
+   "multiplier": "1.000866850964062008",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x2694b507bAb020B37E72a84a6195FBCED3093bb6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000051,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AMZN",
+   "name": "Amazon Stock Token",
+   "token": "0x12f190a9F9d7D37a250758b26824B97CE941bF54",
+   "decimals": 18,
+   "onchain_symbol": "AMZN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xD5a1508ceD74c084eBf3cBe853e2C968fB2a651C",
+    "aggregator": "0x93503dFc97157cdB8aADcCaf70452621d598FDeb",
+    "description": "Robinhood AMZN / USD",
+    "decimals": 8,
+    "usd": 249.15975,
+    "updated_at": 1792173519,
+    "age_s": 45693
+   },
+   "pool": {
+    "address": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 249.74369838780933,
+    "tick": -221117,
+    "liquidity_raw": "930382311824179983",
+    "depth_usd_5pct": 726634.1155371458,
+    "usdg_balance": 185387.390168,
+    "stock_balance": 1178.4034165496191,
+    "volume_7d_usd": 1352817.3654409999,
+    "volume_usd_per_day": 193259.62363442854,
+    "swaps_7d": 4988,
+    "vault_share_100k": 0.12097250539317522,
+    "feed_deviation_bps": 23.43670628218759
+   },
+   "other_pools": [
+    {
+     "address": "0x7b242Dfa849419242E3733308D5c91Fe2A7dAe7e",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xa99dea8D168392abb4AEd0419629309DAC7DBfbb",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000021,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x25967b7CA2d06aa46E47e188231cA78c87Ef1FD7",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000031,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $193.3K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "ANET",
+   "name": "Arista Stock Token",
+   "token": "0x28bABD556b60E53663B8615036479a29c2CDd1Bf",
+   "decimals": 18,
+   "onchain_symbol": "ANET",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x6369190700480aE579a331adFcDb7967255186dD",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 198.11807839327156,
+    "tick": -223433,
+    "liquidity_raw": "165420780907",
+    "depth_usd_5pct": 0.1150692254620058,
+    "usdg_balance": 0.457247,
+    "stock_balance": 0.002167813770613933,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988493090695,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x1de444D502d76313aA00B4c3d556d28B2395C814",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "APLD",
+   "name": "Applied Digital Stock Token",
+   "token": "0xb8DBf92F9741c9ac1c32115E78581f23509916FD",
+   "decimals": 18,
+   "onchain_symbol": "APLD",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x3B2ebc77D892CD02c913b9dA9A8354D7925F4C8c",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00005,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "APP",
+   "name": "AppLovin Stock Token",
+   "token": "0xA249BAF1063Af884807C1E1400AEf7784836917E",
+   "decimals": 18,
+   "onchain_symbol": "APP",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x7cAeC5689e7dAF976469769e45001e99314eAaC8",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000064,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ASML",
+   "name": "ASML Holding NV Stock Token",
+   "token": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
+   "decimals": 18,
+   "onchain_symbol": "ASML",
+   "multiplier": "1.000101323251417769",
+   "has_code": true,
+   "feed": {
+    "address": "0xB4106147E8cce40b7d46124090d373A71b70f87D",
+    "aggregator": "0xF795030a46ad6CA4b07Bf5fB704dC36039118c9F",
+    "description": "Robinhood ASML / USD",
+    "decimals": 8,
+    "usd": 1635.14361128,
+    "updated_at": 1792193657,
+    "age_s": 25555
+   },
+   "pool": {
+    "address": "0xedb22516B14Eb2d1C86927Db373B0E8bF70F5cD1",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 1654.14224697999,
+    "tick": -202210,
+    "liquidity_raw": "7643416832667084",
+    "depth_usd_5pct": 15363.177241812116,
+    "usdg_balance": 10278.862782,
+    "stock_balance": 8.687436964885237,
+    "volume_7d_usd": 40629.14513900001,
+    "volume_usd_per_day": 5804.1635912857155,
+    "swaps_7d": 379,
+    "vault_share_100k": 0.8668277208627027,
+    "feed_deviation_bps": 116.18940115674474
+   },
+   "other_pools": [
+    {
+     "address": "0xce79c1B7b5f9Ae1aab3B1796e7Fcd2F5F24cF265",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 1550.5795857118608,
+     "usdg_balance": 683.669417,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $5.8K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "ASTS",
+   "name": "AST SpaceMobile Stock Token",
+   "token": "0x1AF6446f07eb1d97c546AFC8c9544cBDF3AD5137",
+   "decimals": 18,
+   "onchain_symbol": "ASTS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x046aafF7cF5254360d26894bdc4A2B4CEA901b2B",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xB4C19C79b22310B5fB70959C3490149638E7bd14",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000042,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AUR",
+   "name": "Aurora Innovation Stock Token",
+   "token": "0x373C06c4f7BDe527D7Dae4BA169E42b55E393CeD",
+   "decimals": 18,
+   "onchain_symbol": "AUR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x8cD2c46b8c52e3D143446E959eCf01396FEb667a",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000046,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AVAV",
+   "name": "AeroVironment Stock Token",
+   "token": "0xF6290b5e7C26502e2dA514C31509849718EA76A5",
+   "decimals": 18,
+   "onchain_symbol": "AVAV",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xB4A1331504e4282746C30B89c7f6E6A73aDCFF88",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001025,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AVGO",
+   "name": "Broadcom Stock Token",
+   "token": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
+   "decimals": 18,
+   "onchain_symbol": "AVGO",
+   "multiplier": "1.001257318662278132",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x5B7C404f1d7d77F9f3885aB13d7764F8a173028c",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 331.14614881541337,
+    "tick": -218296,
+    "liquidity_raw": "60443286870375567",
+    "depth_usd_5pct": 54358.1912085335,
+    "usdg_balance": 81991.320409,
+    "stock_balance": 254.8535570912176,
+    "volume_7d_usd": 261233.45936399986,
+    "volume_usd_per_day": 37319.06562342855,
+    "swaps_7d": 1600,
+    "vault_share_100k": 0.6478438184398188,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xC3DaBBED6574E1Ef93C9E3e68E4E30bA77CA38be",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000168,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AXON",
+   "name": "Axon Stock Token",
+   "token": "0xC27dBD474aF5181c5A8777903690D8D262D12648",
+   "decimals": 18,
+   "onchain_symbol": "AXON",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x1Fd543d2a5B31F2E200Cee133d54581a475Bd88F",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000031,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "AXTI",
+   "name": "AXT Stock Token",
+   "token": "0x141eEa040c2250eEc0314e336975e81f85f6585e",
+   "decimals": 18,
+   "onchain_symbol": "AXTI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x0340bfC46E756f1Dcc309AE43B78456885309c09",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000063,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "BA",
+   "name": "Boeing Stock Token",
+   "token": "0x4D21483a44Bf67a86b77E3dA301411880797D452",
+   "decimals": 18,
+   "onchain_symbol": "BA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xc6517047b189c72D3bAa9eF37D1d28F27a63638a",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 189.66036824593513,
+    "tick": -223870,
+    "liquidity_raw": "68843224837085308",
+    "depth_usd_5pct": 46855.06775971793,
+    "usdg_balance": 13539.675223,
+    "stock_balance": 314.3452289075706,
+    "volume_7d_usd": 144000.18338899998,
+    "volume_usd_per_day": 20571.45476985714,
+    "swaps_7d": 438,
+    "vault_share_100k": 0.6809434738991678,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xbf3904cAd0E63a4796CF806C21f2C1528B8eBE06",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 495.1696113133717,
+     "usdg_balance": 666.214122,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "BABA",
+   "name": "Alibaba Stock Token",
+   "token": "0xad25Ac6C84D497db898fa1E8387bf6Af3532a1c4",
+   "decimals": 18,
+   "onchain_symbol": "BABA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x62Cc8F9b5f56a33c9C8A60c8B92779f523c4E984",
+    "aggregator": "0xFf5F85e4888782e66f1dd9cabaDF4822Fbeb1439",
+    "description": "Robinhood BABA / USD",
+    "decimals": 8,
+    "usd": 109.245,
+    "updated_at": 1792180889,
+    "age_s": 38323
+   },
+   "pool": {
+    "address": "0xa57ab582b310dd6f9e934EA1EEEa152741545E6A",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 108.91424124701001,
+    "tick": 229416,
+    "liquidity_raw": "89943385075065274",
+    "depth_usd_5pct": 46389.38695872655,
+    "usdg_balance": 17763.669108,
+    "stock_balance": 366.64179837082787,
+    "volume_7d_usd": 604282.8966270002,
+    "volume_usd_per_day": 86326.12808957146,
+    "swaps_7d": 3796,
+    "vault_share_100k": 0.6831096302643461,
+    "feed_deviation_bps": -30.276786396630815
+   },
+   "other_pools": [
+    {
+     "address": "0x9EDa4BCb3EBfEdE532f3cAE3864fC0CEFff782Aa",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 519.6797838512044,
+     "usdg_balance": 188.764172,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x368DDD38861d31435d764fC54Df7D16481E3590b",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0.09555843652484464,
+     "usdg_balance": 0.319874,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $86.3K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "BB",
+   "name": "Blackberry Stock Token",
+   "token": "0x48E39E56aCdbA37b09020C0b734A613C9a2f100A",
+   "decimals": 18,
+   "onchain_symbol": "BB",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xc424e56e816F148a8B30ccbde2128e04d21f51e9",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 8.110413631753227,
+    "tick": -255392,
+    "liquidity_raw": "52426665471187482",
+    "depth_usd_5pct": 7378.716210325481,
+    "usdg_balance": 12564.884405,
+    "stock_balance": 1882.617673988781,
+    "volume_7d_usd": 41147.51927800001,
+    "volume_usd_per_day": 5878.217039714286,
+    "swaps_7d": 309,
+    "vault_share_100k": 0.9312832517398271,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xA087E1E7770D20e1d1821Cb88E99Db01ADAa10a0",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000013,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "BE",
+   "name": "Bloom Energy Stock Token",
+   "token": "0x822CC93fFD030293E9842c30BBD678F530701867",
+   "decimals": 18,
+   "onchain_symbol": "BE",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x1baD145C8F06444E0dF81c28257cd20231Bd1f16",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 222.0963544830948,
+    "tick": 222290,
+    "liquidity_raw": "34867952067838340",
+    "depth_usd_5pct": 25680.54433613635,
+    "usdg_balance": 13874.362162,
+    "stock_balance": 340.04130310432254,
+    "volume_7d_usd": 711918.993216,
+    "volume_usd_per_day": 101702.71331657143,
+    "swaps_7d": 4820,
+    "vault_share_100k": 0.7956681006452919,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xb28Ae7eaA50a7Eb468D6aA516C85b1bb56b3B085",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.250193,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "BND",
+   "name": "Vanguard Total Bond Market ETF Stock Token",
+   "token": "0x2F62fC9fAbb470C690f141c28340eD832bB27020",
+   "decimals": 18,
+   "onchain_symbol": "BND",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x4f7039AE91038a11e76DA15f0Ccc0FFC90E7C37B",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "BULL",
+   "name": "Webull Stock Token",
+   "token": "0xceF9027c7d6985b85f0BA431125073529A947A68",
+   "decimals": 18,
+   "onchain_symbol": "BULL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x115aAc1E54bBa1e4D10834093147aD8B4B67312d",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000011,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x396E9f3c8CD496311bA3Cd19901b2022fe265c2C",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000724,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CBRS",
+   "name": "Cerebras Systems Stock Token",
+   "token": "0x5c90450Bbb4273D7b2f17CF6917AEB237A569679",
+   "decimals": 18,
+   "onchain_symbol": "CBRS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xa887c160493C80b8cF2a847A0da103e8aA5FE8F9",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CCL",
+   "name": "Carnival Corporation Stock Token",
+   "token": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
+   "decimals": 18,
+   "onchain_symbol": "CCL",
+   "multiplier": "1.021486444855206408",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xB19AcE635Ef3A28B85bFB01Bae97d0DE80750680",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 26.666139583139106,
+    "tick": 243488,
+    "liquidity_raw": "6010259045095251",
+    "depth_usd_5pct": 1533.8409718140463,
+    "usdg_balance": 3608.560049,
+    "stock_balance": 86.29882296298865,
+    "volume_7d_usd": 3074.11433,
+    "volume_usd_per_day": 439.15918999999997,
+    "swaps_7d": 46,
+    "vault_share_100k": 0.9848933029900854,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x7b87eC8bc343dbF930D4f87b1Ef1388787BF9d35",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000049,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CEG",
+   "name": "Constellation Energy Stock Token",
+   "token": "0xaE517A2903E68bd929Dfd15be875F8369D53e94a",
+   "decimals": 18,
+   "onchain_symbol": "CEG",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xc9529b7dc74BF15da6Cee01a282908E8C7aB6BA3",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 273.12784507415785,
+    "tick": 220221,
+    "liquidity_raw": "771151271102581",
+    "depth_usd_5pct": 629.8391285804288,
+    "usdg_balance": 394.683379,
+    "stock_balance": 3.33621435005034,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9937410301553236,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CELH",
+   "name": "Celsius Stock Token",
+   "token": "0x8cF07C5A878945185d327aAa6e33FAa95F95e7bF",
+   "decimals": 18,
+   "onchain_symbol": "CELH",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xe36DBdc0D6d5ab3182b6C18ba14B65BD676cCe02",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000036,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CIEN",
+   "name": "Ciena Stock Token",
+   "token": "0x44f6D488021f8233B9416294d1FE9b1fEe28382d",
+   "decimals": 18,
+   "onchain_symbol": "CIEN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xbD7a539d199783B9E2A91de16dE1050b52cC75Ca",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000046,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CLOV",
+   "name": "Clover Health Investments Stock Token",
+   "token": "0x62200915e7DEab1eC7f79fb246daDbB80eACdDd0",
+   "decimals": 18,
+   "onchain_symbol": "CLOV",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xBDfBc71db927fD566080AC21c6A2A89AE061F940",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 4.444013621702882,
+    "tick": 261407,
+    "liquidity_raw": "82566807952411",
+    "depth_usd_5pct": 8.60201618618087,
+    "usdg_balance": 28.070952,
+    "stock_balance": 36.41863384297844,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.99991398723697,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CLS",
+   "name": "Celestica Stock Token",
+   "token": "0xBf449977089c718C004a66C554B26B94ef3Ad4De",
+   "decimals": 18,
+   "onchain_symbol": "CLS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xaEa7d4E856a1fC2Bd23C7EA26a3433464DE0428F",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 333.4070516098522,
+    "tick": 218227,
+    "liquidity_raw": "134556858892",
+    "depth_usd_5pct": 0.12142281595725576,
+    "usdg_balance": 0.562727,
+    "stock_balance": 0.001039901908801175,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999987857733148,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CLSK",
+   "name": "CleanSpark Stock Token",
+   "token": "0xcBB95BBF36099d34dA091dc6Fa6F49EfA257Cee3",
+   "decimals": 18,
+   "onchain_symbol": "CLSK",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x810c12D3a554Bc47fd39597Fe3b3AAC4941F50eF",
+    "aggregator": "0xEff19B88E3c72f046e4a19A1E62544D5869d4275",
+    "description": "Robinhood CLSK / USD",
+    "decimals": 8,
+    "usd": 8.37999999,
+    "updated_at": 1792188058,
+    "age_s": 31154
+   },
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xf58a091afD28F26e7E2a60803e6Dfb5A8e451021",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000036,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no USDG pool with liquidity"
+  },
+  {
+   "symbol": "COHR",
+   "name": "Coherent Stock Token",
+   "token": "0x92F9F459F1a9a5AD266b182BE7Bffd1C6c666894",
+   "decimals": 18,
+   "onchain_symbol": "COHR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x22003C6509Db36DC67523b2496993F6348FC7F92",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001865,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "COIN",
+   "name": "Coinbase Stock Token",
+   "token": "0x6330D8C3178a418788dF01a47479c0ce7CCF450b",
+   "decimals": 18,
+   "onchain_symbol": "COIN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xA3a468A452940B7D6b69991207B508c609a98Ef2",
+    "aggregator": "0x30398b0B0df82a009bB2D507BC7fE1dc6d3ca294",
+    "description": "Robinhood COIN / USD",
+    "decimals": 8,
+    "usd": 172.25,
+    "updated_at": 1792193350,
+    "age_s": 25862
+   },
+   "pool": {
+    "address": "0x3a6eC0aa6C702323414d449B5F60f4B742A82dED",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": false,
+    "price_usd": 173.50012276930414,
+    "tick": 224759,
+    "liquidity_raw": "921282581428299",
+    "depth_usd_5pct": 599.7217822793508,
+    "usdg_balance": 1010.818694,
+    "stock_balance": 6.077101532650877,
+    "volume_7d_usd": 32074.510585000004,
+    "volume_usd_per_day": 4582.072940714286,
+    "swaps_7d": 1211,
+    "vault_share_100k": 0.9940385343850425,
+    "feed_deviation_bps": 72.57606788413013
+   },
+   "other_pools": [
+    {
+     "address": "0x1AA941420f6347cf004E2D21E40F0632D8862cf8",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000004,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x5C51A0035051fa2DB80AEc8781Be3bD6207d27E0",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000023,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xB649fE35Ff2855adeF4c9A140F86E3248fAFC910",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $4.6K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "COST",
+   "name": "Costco Stock Token",
+   "token": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
+   "decimals": 18,
+   "onchain_symbol": "COST",
+   "multiplier": "1.000612040296259656",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x0a2121A50A09eD0796ae81F9c53fF9398355a398",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 986.225993251696,
+    "tick": -207382,
+    "liquidity_raw": "294510227188728795",
+    "depth_usd_5pct": 457083.6352970659,
+    "usdg_balance": 354882.766517,
+    "stock_balance": 128.0127250297545,
+    "volume_7d_usd": 657590.9484869997,
+    "volume_usd_per_day": 93941.5640695714,
+    "swaps_7d": 2178,
+    "vault_share_100k": 0.17950626021651994,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xdb073638f94A384b8B7a647d73274deCAC9E7cA5",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 89.71118512539803,
+     "usdg_balance": 661.501735,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CRCL",
+   "name": "Circle Internet Group Stock Token",
+   "token": "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5",
+   "decimals": 18,
+   "onchain_symbol": "CRCL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x6652eDf64bA3731C4F2D3ce821A0Fb1f1f6b482a",
+    "aggregator": "0x901D8DF245E48Dfc82D6483FC45b5BE6ddc5281a",
+    "description": "Robinhood CRCL / USD",
+    "decimals": 8,
+    "usd": 82.235,
+    "updated_at": 1792184487,
+    "age_s": 34725
+   },
+   "pool": {
+    "address": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 82.26827109930444,
+    "tick": 232221,
+    "liquidity_raw": "1931271093934264025",
+    "depth_usd_5pct": 865698.1615565745,
+    "usdg_balance": 829016.822536,
+    "stock_balance": 19979.14016596411,
+    "volume_7d_usd": 14234147.693584,
+    "volume_usd_per_day": 2033449.670512,
+    "swaps_7d": 13113,
+    "vault_share_100k": 0.10355202482607356,
+    "feed_deviation_bps": 4.04585630260144
+   },
+   "other_pools": [
+    {
+     "address": "0xA01E08626792D78C65c495b581A50D2156dc860C",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x9324A34abd68e46CD0f62a561a7Bb10a2B1FA477",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00021,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": true,
+   "reason": "feed, volume and depth pass"
+  },
+  {
+   "symbol": "CRDO",
+   "name": "Credo Technology Group Stock Token",
+   "token": "0x4D67253bc223e6b0e104F1084c1fb2b669dDC41b",
+   "decimals": 18,
+   "onchain_symbol": "CRDO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x56db8ACa8CE66B913CbBA8c7F1F499834d056f20",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000023,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CRM",
+   "name": "Salesforce Stock Token",
+   "token": "0xd95B44124e475743a7589e68F3D74008A5536D44",
+   "decimals": 18,
+   "onchain_symbol": "CRM",
+   "multiplier": "1.001148322800714293",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xda68FBa2d1bCA00e3754937b5608bA61Aee6e827",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001013,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CRWD",
+   "name": "CrowdStrike Holdings Stock Token",
+   "token": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
+   "decimals": 18,
+   "onchain_symbol": "CRWD",
+   "multiplier": "4.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xDEe31838Ed96e8b68d6A16d3dB9fDF4Fbd672929",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CRWV",
+   "name": "CoreWeave Stock Token",
+   "token": "0x5f10A1C971B69e47e059e1dC91901B59b3fB49C3",
+   "decimals": 18,
+   "onchain_symbol": "CRWV",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xe1b3aABCAFAd1c94708dc1367dcfF8Aa4407487C",
+    "aggregator": "0xd9C04B7353421fC4deb1614Ed13Fe10D90E586cc",
+    "description": "Robinhood CRWV / USD",
+    "decimals": 8,
+    "usd": 61.05535,
+    "updated_at": 1792193885,
+    "age_s": 25327
+   },
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x556E74940e01C4b449A97E9D0C5F3360AF210bcd",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000019,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no USDG pool with liquidity"
+  },
+  {
+   "symbol": "CSCO",
+   "name": "Cisco Systems Stock Token",
+   "token": "0xF543967EEBB6f1917992eF0E68De63ab07a5a0dA",
+   "decimals": 18,
+   "onchain_symbol": "CSCO",
+   "multiplier": "1.002674650028132112",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x9d181080aaa2D6086Ac56c36e1a903BBDd77E69a",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.008186,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CTSH",
+   "name": "Cognizant Stock Token",
+   "token": "0x63D5a3b6939a33f1e75d8Bcd85759858239600DB",
+   "decimals": 18,
+   "onchain_symbol": "CTSH",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x95A8F85C70805bf74d93cAA69c60db4475977c5B",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000008,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "CVNA",
+   "name": "Carvana Stock Token",
+   "token": "0xa4f319104089FE321dc8093C6E707d4fE190A988",
+   "decimals": 18,
+   "onchain_symbol": "CVNA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x808824415812648f537C2306fb67ed65d8d25f87",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00005,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "DDOG",
+   "name": "Datadog Stock Token",
+   "token": "0x27c99fBde9D0d2AA4f4Bfb4943f237843DdF6958",
+   "decimals": 18,
+   "onchain_symbol": "DDOG",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xb9a8b0A8a724f0813ceF2C9BfEf102087A33753E",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 252.85950271666516,
+    "tick": -220993,
+    "liquidity_raw": "170904446196",
+    "depth_usd_5pct": 0.1343074398613848,
+    "usdg_balance": 1.173299,
+    "stock_balance": 0.003780653080450511,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999986569274052,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x9ccf7423c06bd2FfdbdAb31FBC8B95D9F163A06c",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000034,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x8fbF4C8e6EE5a95f0d23Ef7A065Fe266fC59F680",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000133,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "DELL",
+   "name": "Dell Stock Token",
+   "token": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
+   "decimals": 18,
+   "onchain_symbol": "DELL",
+   "multiplier": "1.000063708620124549",
+   "has_code": true,
+   "feed": {
+    "address": "0x1C6c8cADBe02E19129c39dDB92281cE4c0bf206b",
+    "aggregator": "0xD6ed4e7D4ABA1111EB42A349899b5c72EE1C9FEF",
+    "description": "Robinhood DELL-USD",
+    "decimals": 8,
+    "usd": 448.37856375,
+    "updated_at": 1792195040,
+    "age_s": 24172
+   },
+   "pool": {
+    "address": "0xc30c89cB7815A1488b7998D15eEC73961707Fc5a",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 450.9411700948612,
+    "tick": 215207,
+    "liquidity_raw": "33357048583473636",
+    "depth_usd_5pct": 35006.978743636435,
+    "usdg_balance": 34495.439911,
+    "stock_balance": 669.1435108166899,
+    "volume_7d_usd": 674509.072865,
+    "volume_usd_per_day": 96358.43898071429,
+    "swaps_7d": 1382,
+    "vault_share_100k": 0.7407024505739745,
+    "feed_deviation_bps": 57.15273993986057
+   },
+   "other_pools": [
+    {
+     "address": "0xa0f5EF20f49Db62Bb20e0f2B51257ca897A01a5f",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000214,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $96.4K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "DJT",
+   "name": "Trump Media & Technology Group Stock Token",
+   "token": "0x1D11f0496982706C5e14A514D4E79F2e6BdE4516",
+   "decimals": 18,
+   "onchain_symbol": "DJT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x31a89afd92F9397465649AD03226c52292fc1ae5",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 7.000319238727111,
+    "tick": -256864,
+    "liquidity_raw": "91431645010009302",
+    "depth_usd_5pct": 11955.356365349888,
+    "usdg_balance": 17822.583914,
+    "stock_balance": 22747.488024067923,
+    "volume_7d_usd": 151934.792398,
+    "volume_usd_per_day": 21704.97034257143,
+    "swaps_7d": 868,
+    "vault_share_100k": 0.8932131810975141,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xA04bF3Cd3f5CdB78ab5a3277E9EaB7A765bA9A92",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x336672031DCA39d4160f61106DB0e92295DDAD6F",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000529,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x656EedC3e805ca2Da197071F742908732D60901b",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.007762,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "DOCN",
+   "name": "DigitalOcean Stock Token",
+   "token": "0xc02f12B9fe9E707079EC0d546f3050d3F6C1F8bD",
+   "decimals": 18,
+   "onchain_symbol": "DOCN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xDEBBA94D2143Ea05DD92Ae67161B53112f770842",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000043,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ELF",
+   "name": "e.l.f. Beauty Stock Token",
+   "token": "0x39EC44Bee4F6A116c6F9B8De566848a985C53C60",
+   "decimals": 18,
+   "onchain_symbol": "ELF",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xc7d6ceD1B7746784a20a1201Fa9Eb4c676f1b0E3",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000014,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "EWT",
+   "name": "iShares MSCI Taiwan Capped ETF Stock Token",
+   "token": "0x1c690498150252222C275A5CEd69d3A6b1f52D5E",
+   "decimals": 18,
+   "onchain_symbol": "EWT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xE46891C34A895e988FF94Ca79D20dcF1cfB02f64",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000024,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "EWY",
+   "name": "iShares MSCI South Korea fund Stock Token",
+   "token": "0x7f0aBeF0C07280F82c6a08ead09dEd6BAE2C13Fc",
+   "decimals": 18,
+   "onchain_symbol": "EWY",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xEFdf54610B62A7753Ec30bDc380847c12D32e1D1",
+    "aggregator": "0x105Cbe427BBD3225826a450f67EA80FeC6417F93",
+    "description": "Robinhood EWY / USD",
+    "decimals": 8,
+    "usd": 149.5074,
+    "updated_at": 1792187385,
+    "age_s": 31827
+   },
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xE180B7Fd9acc014d9fbd0d46a9038EDb30008482",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000004,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x23A254C637Ef0F13F6259586f059FFf52b89ed6b",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000015,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no USDG pool with liquidity"
+  },
+  {
+   "symbol": "F",
+   "name": "Ford Motor Stock Token",
+   "token": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
+   "decimals": 18,
+   "onchain_symbol": "F",
+   "multiplier": "1.000145502866134027",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x4dbAC19E895322ac5b93abad9008691632bFFC05",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 12.455118415767933,
+    "tick": -251102,
+    "liquidity_raw": "333550484120499088",
+    "depth_usd_5pct": 58175.82830273691,
+    "usdg_balance": 28266.224487,
+    "stock_balance": 4054.904120924416,
+    "volume_7d_usd": 136146.854862,
+    "volume_usd_per_day": 19449.55069457143,
+    "swaps_7d": 231,
+    "vault_share_100k": 0.632207847893215,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x01948e834623aA859ffDC0D299dD15e7C9D7486F",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.002623,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FICO",
+   "name": "Fair Isaac Stock Token",
+   "token": "0xa48F22A46C0F1C46CA7D111CB6c137c271987180",
+   "decimals": 18,
+   "onchain_symbol": "FICO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xF85F2f5716ca60A30B53193928d3f717343a378e",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000022,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FIG",
+   "name": "Figma Stock Token",
+   "token": "0x41F4267525a8AFf329540eF24fD83d9044758B33",
+   "decimals": 18,
+   "onchain_symbol": "FIG",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xca5904C0a9d42F0Ec1Bf760FDf779907877144fD",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 21.46441318897767,
+    "tick": -245659,
+    "liquidity_raw": "155627123941263966",
+    "depth_usd_5pct": 35632.95760916147,
+    "usdg_balance": 32994.5661,
+    "stock_balance": 3863.369479996924,
+    "volume_7d_usd": 464609.46890400007,
+    "volume_usd_per_day": 66372.78127200001,
+    "swaps_7d": 811,
+    "vault_share_100k": 0.7372839298259569,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x0F0E07a687d3210A3b9B5C40C11BCe39B2674517",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.003172,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FISV",
+   "name": "Fiserv Stock Token",
+   "token": "0x9ECe29A4A2397C0a35fb5fA8EE2b9509130a98cc",
+   "decimals": 18,
+   "onchain_symbol": "FISV",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x9BbA88a4e122576f74c0d88C1989B6C2D6447044",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000018,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FIX",
+   "name": "Comfort Systems Stock Token",
+   "token": "0x93Dbb1d2Dc5D63F4abACFF30485273f538Df68Ac",
+   "decimals": 18,
+   "onchain_symbol": "FIX",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x745104601f86bE0B2392C916442A922F2923FA6C",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 1379.8254991460662,
+    "tick": 204023,
+    "liquidity_raw": "64455896464",
+    "depth_usd_5pct": 0.11832644204321023,
+    "usdg_balance": 0.31386,
+    "stock_balance": 0.000488572749155497,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988167369798,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xC70570871FF437FacE87172a4eF6D9b623f1BD81",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FLNC",
+   "name": "Fluence Energy Stock Token",
+   "token": "0x282e87451E10fA6679BC7D76C69BE44cD3fC777C",
+   "decimals": 18,
+   "onchain_symbol": "FLNC",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xcACD42C86E2D79b48a5E02b1Ca36e0806cc95955",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00215,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FLY",
+   "name": "Firefly Aerospace Inc. Stock Token",
+   "token": "0x03BC731Ffb162cdd7B98D3C6542bFC291126075d",
+   "decimals": 18,
+   "onchain_symbol": "FLY",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x3594F65fE47577202C17BAfB18E5096b44DCEe6D",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 19.010724685562643,
+    "tick": -246873,
+    "liquidity_raw": "534309955370",
+    "depth_usd_5pct": 0.11513296046061276,
+    "usdg_balance": 0.324808,
+    "stock_balance": 0.5592835008685711,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.999998848671721,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x76e92F3a0f088AAFC1B81D37bdfFC24b939C53fd",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001102,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FTNT",
+   "name": "Fortinet Stock Token",
+   "token": "0x3FB8976980d486084b2eb4a404BD12e72823958f",
+   "decimals": 18,
+   "onchain_symbol": "FTNT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x4f2e6B13f5b9595caEE276e14F9f457E17484503",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 169.41934991079714,
+    "tick": -224998,
+    "liquidity_raw": "194644826743",
+    "depth_usd_5pct": 0.12520781614121843,
+    "usdg_balance": 0.503389,
+    "stock_balance": 0.002723278896097549,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999987479234064,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "FUTU",
+   "name": "Futu Holdings Stock Token",
+   "token": "0xeB30663bDFf0622Ef4e4E5cBb4E975F19f33f51D",
+   "decimals": 18,
+   "onchain_symbol": "FUTU",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x7870dbB203eB5Ee1C5176AB134664bE725f1fb32",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xb3E2fb8e10AF6C9FDD7F2D31CEa79927a9dBfcf6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000009,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "GE",
+   "name": "General Electric Stock Token",
+   "token": "0x63b814DDBd6BF339f25Fed8c36158a008D5B373e",
+   "decimals": 18,
+   "onchain_symbol": "GE",
+   "multiplier": "1.001049053505552371",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xC04635d723149390530b637F000c530738dd95EF",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000037,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "GEV",
+   "name": "GE Vernova Stock Token",
+   "token": "0x94B8AAE43A1cCc08Aa64B7D1F29b4D920aF4a0C9",
+   "decimals": 18,
+   "onchain_symbol": "GEV",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xCF0396Ae8b436E4534c3f1AACF186Efc8ba2bcA6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000027,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "GLD",
+   "name": "SPDR Gold Trust Stock Token",
+   "token": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+   "decimals": 18,
+   "onchain_symbol": "GLD",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x7A6A053eCCf1446A2633E05aA6D40D09381997ec",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 382.0648261443867,
+    "tick": 216865,
+    "liquidity_raw": "1666275140813392329",
+    "depth_usd_5pct": 1609616.122430086,
+    "usdg_balance": 635537.814322,
+    "stock_balance": 4525.794551161773,
+    "volume_7d_usd": 1147130.5372290001,
+    "volume_usd_per_day": 163875.7910327143,
+    "swaps_7d": 1429,
+    "vault_share_100k": 0.05849266317040682,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xBA2f1ed4cEB2169D538d1e614D847E83C5A55913",
+     "fee_tier": 500,
+     "depth_usd_5pct": 1215489.2766889026,
+     "usdg_balance": 460856.349222,
+     "volume_7d_usd": 9361219.425606001
+    },
+    {
+     "address": "0x32cb909aCF78354E08aa45639Ff5CD33767E730a",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 11635.360057133112,
+     "usdg_balance": 3348.611333,
+     "volume_7d_usd": 8232.654077000001
+    },
+    {
+     "address": "0x51AadBAF763e2C40e0072de814CaC25d9Bc09B59",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000008,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "GLW",
+   "name": "Corning Stock Token",
+   "token": "0x7c04E6A3368F2A1DE3874f0e80d2e0A1a9915da6",
+   "decimals": 18,
+   "onchain_symbol": "GLW",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x5f15120B65498573Dd0770F92646077A76B60724",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.006999,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "GLXY",
+   "name": "Galaxy Digital Inc. Stock Token",
+   "token": "0x2D427692E928fa156ec22acfaBaFA0447C5805B7",
+   "decimals": 18,
+   "onchain_symbol": "GLXY",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xC67C2D200E0b7E5D99F4CFBede8CB09B48892f2c",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 16.27832859662391,
+    "tick": -248425,
+    "liquidity_raw": "64928836052076195",
+    "depth_usd_5pct": 12946.417039090955,
+    "usdg_balance": 4258.91927,
+    "stock_balance": 6953.76804120427,
+    "volume_7d_usd": 558601.3497570001,
+    "volume_usd_per_day": 79800.19282242858,
+    "swaps_7d": 1750,
+    "vault_share_100k": 0.8853755844719697,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x5016F0fA496fD9818A3452146457cd8D779DBA61",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000056,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "GME",
+   "name": "GameStop Stock Token",
+   "token": "0x1b0E319c6A659F002271B69dB8A7df2F911c153E",
+   "decimals": 18,
+   "onchain_symbol": "GME",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x27C71df6A64fB476468EdF256CF72c038baB5B67",
+    "aggregator": "0xf83Cde62D1Cd90dE8d2Bf3332B90c590985aD679",
+    "description": "Robinhood GME / USD",
+    "decimals": 8,
+    "usd": 26.785,
+    "updated_at": 1792180055,
+    "age_s": 39157
+   },
+   "pool": {
+    "address": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 26.971722777469687,
+    "tick": -243375,
+    "liquidity_raw": "1088018743582040509",
+    "depth_usd_5pct": 279252.96335042606,
+    "usdg_balance": 403878.525296,
+    "stock_balance": 5143.840774036077,
+    "volume_7d_usd": 713081.528171,
+    "volume_usd_per_day": 101868.78973871427,
+    "swaps_7d": 2106,
+    "vault_share_100k": 0.26367625216840024,
+    "feed_deviation_bps": 69.71169590057363
+   },
+   "other_pools": [
+    {
+     "address": "0xE2b46c905E12Ab8E2f864e4821a4325884C1B126",
+     "fee_tier": 500,
+     "depth_usd_5pct": 100539.42273361253,
+     "usdg_balance": 62577.618596,
+     "volume_7d_usd": 5682355.395505003
+    },
+    {
+     "address": "0x0A0675689C2Ad2a3aDe86539BCbD27B6c0764e9d",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 1071.4658414218377,
+     "usdg_balance": 1484.010205,
+     "volume_7d_usd": 21222.861679999995
+    },
+    {
+     "address": "0xB7723619E09e9317b3e538E7531eCbB910Aec107",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000059,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $101.9K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "GOOGL",
+   "name": "Alphabet Class A Stock Token",
+   "token": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
+   "decimals": 18,
+   "onchain_symbol": "GOOGL",
+   "multiplier": "1.000193924414112587",
+   "has_code": true,
+   "feed": {
+    "address": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
+    "aggregator": "0x11eD6d598eF565DDA86fAfE7E779303e7CC6b2Bd",
+    "description": "Robinhood GOOGL / USD",
+    "decimals": 8,
+    "usd": 339.85489338,
+    "updated_at": 1792174784,
+    "age_s": 44428
+   },
+   "pool": {
+    "address": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": true,
+    "price_usd": 339.9487514982059,
+    "tick": -218034,
+    "liquidity_raw": "597081116335330934",
+    "depth_usd_5pct": 544060.4182560288,
+    "usdg_balance": 223436.196574,
+    "stock_balance": 1731.3854559813456,
+    "volume_7d_usd": 12846193.734681996,
+    "volume_usd_per_day": 1835170.5335259994,
+    "swaps_7d": 26585,
+    "vault_share_100k": 0.15526493658898893,
+    "feed_deviation_bps": 2.7617115431954664
+   },
+   "other_pools": [
+    {
+     "address": "0x553e9a453425CD9B90919F317061FbC3794CC57a",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 7606.284196207484,
+     "usdg_balance": 5685.06055,
+     "volume_7d_usd": 25335.278543
+    },
+    {
+     "address": "0xA3617Bb4D7Dc9DD20f79165486097a54b3593164",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001808,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xB2bB17fa1905Bcc1558b5aAeC894faAb666b323A",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000019,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": true,
+   "reason": "feed, volume and depth pass"
+  },
+  {
+   "symbol": "HII",
+   "name": "Huntington Ingalls Stock Token",
+   "token": "0xEB61c0Ed490A367d4E3631cCf8a74B3bfc7E775D",
+   "decimals": 18,
+   "onchain_symbol": "HII",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x78cCe28F3366E72A28bAB1befAcb9F26528811d1",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xE0236F4dAE922534ef8a33f15ea037fC31DaC9CB",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "HIMS",
+   "name": "Hims & Hers Health Stock Token",
+   "token": "0xCceE82fE024c36fA15E1005edE3E9e4787e23D09",
+   "decimals": 18,
+   "onchain_symbol": "HIMS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xC8C90d3a1c1a24967E773ac2aD0d456BA3E31F64",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 28.164111930406026,
+    "tick": 242941,
+    "liquidity_raw": "817640575576027924",
+    "depth_usd_5pct": 214445.79551674606,
+    "usdg_balance": 152885.375809,
+    "stock_balance": 25728.083872595544,
+    "volume_7d_usd": 7493233.142808005,
+    "volume_usd_per_day": 1070461.8775440007,
+    "swaps_7d": 7544,
+    "vault_share_100k": 0.3180198349787584,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x18E2380689f425E0999f119553ac1f1c3B943e5f",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 41.60735887732837,
+     "usdg_balance": 70.630254,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x0326C9F4262B88e79987C31D4F3C82761068CFCB",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0.000004942048837374163,
+     "usdg_balance": 0.0001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "HPE",
+   "name": "HP Enterprise Stock Token",
+   "token": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
+   "decimals": 18,
+   "onchain_symbol": "HPE",
+   "multiplier": "1.001716957939304938",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x9bd9061794310D98b7b8F2ABEb8056225Bc73bee",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 52.14534398255259,
+    "tick": -236782,
+    "liquidity_raw": "347696306264",
+    "depth_usd_5pct": 0.12408375141794135,
+    "usdg_balance": 0.494641,
+    "stock_balance": 0.009344109755609746,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999987591640255,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xe0E25884A3B690B1699732De475b2281600B0934",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 5.703751,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "HWM",
+   "name": "Howmet Aerospace Stock Token",
+   "token": "0xAEa445c5F3DB1a462998ccC422A875A361ee5d99",
+   "decimals": 18,
+   "onchain_symbol": "HWM",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xdAaB22B473029a8F8F00cbe3a33dE82dBbeB6Ec9",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 194.29973281737412,
+    "tick": 223627,
+    "liquidity_raw": "157476689007",
+    "depth_usd_5pct": 0.10848244039481601,
+    "usdg_balance": 0.108724,
+    "stock_balance": 0.00347714951706336,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989151767729,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xC07D223e0DAC22442900637e8A0585b81875c56a",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "IBM",
+   "name": "IBM Stock Token",
+   "token": "0x980dcf6766FA79f5Cf0c4AAdb3ab477ff15a9619",
+   "decimals": 18,
+   "onchain_symbol": "IBM",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x8cD848ce18b829C5c769AFf27164078bB52e0E97",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 231.30801442465838,
+    "tick": 221883,
+    "liquidity_raw": "166640751720821186",
+    "depth_usd_5pct": 125251.69910796975,
+    "usdg_balance": 72823.769532,
+    "stock_balance": 248.29738485670006,
+    "volume_7d_usd": 410345.265594,
+    "volume_usd_per_day": 58620.752227714285,
+    "swaps_7d": 1050,
+    "vault_share_100k": 0.44394781658036264,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xA0A79bC62fC822f3bcDF0EBbc586031781c53a5B",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 19793.078580962738,
+     "usdg_balance": 10232.587406,
+     "volume_7d_usd": 12795.016568000001
+    },
+    {
+     "address": "0x05261191bC75F7Bd572996BD03eaa9A26547C3C2",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x8A9e0978E84eD7786e4251914ffFf2f922Ab351f",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000006,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "IBRX",
+   "name": "ImmunityBio, Stock Token",
+   "token": "0x7c148F74ac7445D1F28366b7FcDC6792a9Fcd0Cf",
+   "decimals": 18,
+   "onchain_symbol": "IBRX",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x86509C1CC350a928Fa6472D72A6915c31e8340F0",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000016,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "INDA",
+   "name": "iShares MSCI India ETF Stock Token",
+   "token": "0xACEF2e09adb47aD6aBeBAD9fF06689E60615C2B6",
+   "decimals": 18,
+   "onchain_symbol": "INDA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x2171c94d8073C4913f4653a0766D18aA8A29D1f6",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 47.747456652975316,
+    "tick": 237662,
+    "liquidity_raw": "2439328277848747",
+    "depth_usd_5pct": 833.0142707963162,
+    "usdg_balance": 626.036622,
+    "stock_balance": 21.134962367363766,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9917386753056973,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x07C3A3a6EEB2F122493F32418FBF136403608Cb8",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.002141,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xFF2C1a42D9F3Ac3D338D8CE4e44607Cb8C333F45",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000123,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "INFQ",
+   "name": "Infleqtion Stock Token",
+   "token": "0xB853bC83a753342a4f8320ea680b4B1E84118D21",
+   "decimals": 18,
+   "onchain_symbol": "INFQ",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xCb52c90cfc9f0E1024FEC25Bb64fdbfC91a1C163",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000045,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "INOD",
+   "name": "Innodata Stock Token",
+   "token": "0xf1953DAB6FaD537488d5A022361FfAa8B4c95eC6",
+   "decimals": 18,
+   "onchain_symbol": "INOD",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x47ec01141EA4D6325908bc5291a981b17eF2daD6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000032,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "INTC",
+   "name": "Intel Stock Token",
+   "token": "0xc72b96e0E48ecd4DC75E1e45396e26300BC39681",
+   "decimals": 18,
+   "onchain_symbol": "INTC",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x3f390C5C24628Ac7C489515402235FeAD71D1913",
+    "aggregator": "0x95fB52f75aEcBCa8E12aA4403f840C8bc18CFbd4",
+    "description": "RHINTC / USD",
+    "decimals": 8,
+    "usd": 89.08,
+    "updated_at": 1792188485,
+    "age_s": 30727
+   },
+   "pool": {
+    "address": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 89.78745353952691,
+    "tick": 231347,
+    "liquidity_raw": "108386202203140685",
+    "depth_usd_5pct": 50756.176172038075,
+    "usdg_balance": 32145.514731,
+    "stock_balance": 3040.772525315855,
+    "volume_7d_usd": 931869.578289,
+    "volume_usd_per_day": 133124.22546985713,
+    "swaps_7d": 6055,
+    "vault_share_100k": 0.6633227409926027,
+    "feed_deviation_bps": 79.41777498056909
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "7-day volume $133.1K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "INTU",
+   "name": "Intuit Stock Token",
+   "token": "0x56d23beE5f41A7120170b0c603Dae30128e460e9",
+   "decimals": 18,
+   "onchain_symbol": "INTU",
+   "multiplier": "1.003226934400018698",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x235B2650E67570Ef3bFd0b3024fc0Ed0B0b24245",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000023,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "IONQ",
+   "name": "IonQ Stock Token",
+   "token": "0x558378E000D634A36593E338eBacdd6207640EfE",
+   "decimals": 18,
+   "onchain_symbol": "IONQ",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x22EfeC4919baf55F360E0EDee4AbEB26DE4971eb",
+    "aggregator": "0x886E11c1053289Eed882C734e1864EfE3430BC24",
+    "description": "Robinhood IONQ / USD",
+    "decimals": 8,
+    "usd": 31.465,
+    "updated_at": 1792194952,
+    "age_s": 24260
+   },
+   "pool": {
+    "address": "0xbc44b11f569d3FEEd9B4088F5A3fC569D2E3c77F",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 32.83321079677533,
+    "tick": -241408,
+    "liquidity_raw": "369095908455",
+    "depth_usd_5pct": 0.10452086087191803,
+    "usdg_balance": 0.084966,
+    "stock_balance": 0.043362919126176375,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989547924838,
+    "feed_deviation_bps": 434.8357847688966
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "7-day volume $0/day is below $1.00M/day"
+  },
+  {
+   "symbol": "IREN",
+   "name": "IREN Limited Stock Token",
+   "token": "0xF0AB0c93bE6F41369d302e55db1A96b3c430212D",
+   "decimals": 18,
+   "onchain_symbol": "IREN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x0dBe9EEEa89C6EF5cd2ffCDF800E6f2548524cDB",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000015,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "JBL",
+   "name": "Jabil Inc. Stock Token",
+   "token": "0xEAf2512dFC1bEAc608F8794B3793CD4E02894Aa6",
+   "decimals": 18,
+   "onchain_symbol": "JBL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x17687ef362f5d06376523cA4DFb15444D1dC6e30",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "JNJ",
+   "name": "Johnson & Johnson Stock Token",
+   "token": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
+   "decimals": 18,
+   "onchain_symbol": "JNJ",
+   "multiplier": "1.000021490286701962",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x7F0aCE18D1dCEd47063CF26e649bc8AB14D09e67",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 254.86838914403432,
+    "tick": -220914,
+    "liquidity_raw": "32214776400434337",
+    "depth_usd_5pct": 25416.759409998373,
+    "usdg_balance": 6731.690024,
+    "stock_balance": 101.97869156956828,
+    "volume_7d_usd": 106615.72335100001,
+    "volume_usd_per_day": 15230.81762157143,
+    "swaps_7d": 439,
+    "vault_share_100k": 0.7973416030714942,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x8d39388EF11Bb78843130Bd74AB0e5d89fA76b30",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 1672.9906954403173,
+     "usdg_balance": 2955.070402,
+     "volume_7d_usd": 5892.137954
+    },
+    {
+     "address": "0x44D79F520EacC47Fe958D6EA88B4eD1271971C1e",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.005434,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "JOBY",
+   "name": "Joby Aviation Stock Token",
+   "token": "0xb334C5cE741B80B5B671F47F5C269Cb193fe8E24",
+   "decimals": 18,
+   "onchain_symbol": "JOBY",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xADe500B7d85dB5048C6A1fb643C4e7be6C72147f",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001165,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "KLAC",
+   "name": "KLA Stock Token",
+   "token": "0x96b933C74eCB4A0926b9210cef7b743EF46be2E9",
+   "decimals": 18,
+   "onchain_symbol": "KLAC",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x6E592cC49f3484155B0dA443fB9b7F0c300f9Dc2",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000034,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "KSS",
+   "name": "Kohls Corporation Stock Token",
+   "token": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
+   "decimals": 18,
+   "onchain_symbol": "KSS",
+   "multiplier": "1.004610068732316661",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xADF6351C8210a1C0d64d35ee9e2274b1cADf9B3C",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000042,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "KTOS",
+   "name": "Kratos Defense & Security Solutions Stock Token",
+   "token": "0x7FD06a4d81cCfA3F351394E144d5191874C31313",
+   "decimals": 18,
+   "onchain_symbol": "KTOS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xF99DB64402BBACeCeb6DA21f941fA75D3596418A",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00006,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LHX",
+   "name": "L3Harris Stock Token",
+   "token": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
+   "decimals": 18,
+   "onchain_symbol": "LHX",
+   "multiplier": "1.004922488323561562",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xe529ab9AfDd8510954e59Ff4D532510f685d1f5f",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000322,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LITE",
+   "name": "Lumentum Stock Token",
+   "token": "0x8eF20885F94e3D9bc7eB3080279188Bd5ED7c08C",
+   "decimals": 18,
+   "onchain_symbol": "LITE",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x48731d5732b6bD1AD3325C77cEDCFF131169783c",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000079,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LLY",
+   "name": "Eli Lilly Stock Token",
+   "token": "0x8005d266423c7ea827372c9c864491e5786600ea",
+   "decimals": 18,
+   "onchain_symbol": "LLY",
+   "multiplier": "1.000002288774375687",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xD2038788ebe1e0BFd7C0A6112f09778F3aeAecA6",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 1256.0565285455834,
+    "tick": 204963,
+    "liquidity_raw": "40835883386495726",
+    "depth_usd_5pct": 71524.30017988397,
+    "usdg_balance": 11102.770583,
+    "stock_balance": 18.48993886073016,
+    "volume_7d_usd": 160117.99384599997,
+    "volume_usd_per_day": 22873.999120857137,
+    "swaps_7d": 590,
+    "vault_share_100k": 0.5830077714651875,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xF4274130137eeE20bAD928B593d992716516CEB9",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 56168.07079958077,
+     "usdg_balance": 134319.51239,
+     "volume_7d_usd": 109703.082905
+    },
+    {
+     "address": "0xF212D02146a897F5F686E9d629F6A73da534324a",
+     "fee_tier": 500,
+     "depth_usd_5pct": 27622.318056813077,
+     "usdg_balance": 72431.278331,
+     "volume_7d_usd": 2275327.157199002
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LMT",
+   "name": "Lockheed Stock Token",
+   "token": "0x329fcACEb9AD6F9580DD5F643fed0646900D043c",
+   "decimals": 18,
+   "onchain_symbol": "LMT",
+   "multiplier": "1.000021050802889793",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x54f160Bea60EC5207918C539d86E0b906b4DA297",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 551.8890508215775,
+    "tick": -213188,
+    "liquidity_raw": "6717557731750353",
+    "depth_usd_5pct": 7799.09779620949,
+    "usdg_balance": 19098.012645,
+    "stock_balance": 9.438538355642754,
+    "volume_7d_usd": 98435.874157,
+    "volume_usd_per_day": 14062.267736714286,
+    "swaps_7d": 322,
+    "vault_share_100k": 0.9276515485226656,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x40567898b0c6ea66798E78fFCF076c55604Bcd0c",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000022,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x24c1cF38EBa9841fa3e7379FC1Da832eb97d3F14",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000005,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x68688654B6050739527b448C9ff98A882D8c357C",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000038,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LRCX",
+   "name": "Lam Research Corp Stock Token",
+   "token": "0x57b0030166DB0C31690d1A5aA167e2e26e2C29a4",
+   "decimals": 18,
+   "onchain_symbol": "LRCX",
+   "multiplier": "1.000732562938505984",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x2aE2CC53e5f8c151d4b07dE63Cb3f362C6400A79",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00004,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LULU",
+   "name": "Lululemon Stock Token",
+   "token": "0x4e62068525Ab11FE768e29dfD00ef909B9803016",
+   "decimals": 18,
+   "onchain_symbol": "LULU",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x0F4227D27082B3BCA6818381b9ea6460275e49f4",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 97.0768413187438,
+    "tick": -230567,
+    "liquidity_raw": "35079586608645559",
+    "depth_usd_5pct": 17081.238432093538,
+    "usdg_balance": 10041.197964,
+    "stock_balance": 633.5251814461687,
+    "volume_7d_usd": 386104.9303529999,
+    "volume_usd_per_day": 55157.8471932857,
+    "swaps_7d": 1741,
+    "vault_share_100k": 0.8541078087246186,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x19757223628dA89569f9A2488Af6C45cB9824EA1",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 498.65039190306993,
+     "usdg_balance": 71.900606,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x5e0a340F80ceA899b70e086D1269d188C48A7380",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000012,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "LUNR",
+   "name": "Intuitive Machines Stock Token",
+   "token": "0xa5D4968421bA94814Be3B136b15cf422101aC1a3",
+   "decimals": 18,
+   "onchain_symbol": "LUNR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xD46f69Ab6997df1B4185292703DeCe704099981b",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xEd48CCb8d9BB86c7E039b153C53CB1A1d8bE85E5",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000028,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "MDB",
+   "name": "MongoDB Stock Token",
+   "token": "0xDdf2266b79abf0B48898959B0ed6E6adf512be74",
+   "decimals": 18,
+   "onchain_symbol": "MDB",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x8b0901b44A68e500bFf1014D615137Dc9CF63519",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x2bb3E8b0406eE84646eeA60dF2c249E07aa473c8",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000127,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "META",
+   "name": "Meta Platforms Stock Token",
+   "token": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+   "decimals": 18,
+   "onchain_symbol": "META",
+   "multiplier": "1.000541459879451635",
+   "has_code": true,
+   "feed": {
+    "address": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
+    "aggregator": "0xc190B6164B9e320A6400cdaB0085a2e0E2b9738e",
+    "description": "Robinhood META / USD",
+    "decimals": 8,
+    "usd": 706.51734377,
+    "updated_at": 1792192070,
+    "age_s": 27142
+   },
+   "pool": {
+    "address": "0x107a7Cb40d8665360ba10E59471Af06150A50922",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 707.2011591842418,
+    "tick": 210707,
+    "liquidity_raw": "75726438575766176",
+    "depth_usd_5pct": 99523.60158336231,
+    "usdg_balance": 64396.717021,
+    "stock_balance": 280.923844951433,
+    "volume_7d_usd": 908396.6808810001,
+    "volume_usd_per_day": 129770.95441157145,
+    "swaps_7d": 2910,
+    "vault_share_100k": 0.5011938397584474,
+    "feed_deviation_bps": 9.678678383079365
+   },
+   "other_pools": [
+    {
+     "address": "0x6FD62e9843aD2Ac2c4fbf2b62647953EA29B3537",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 834.9868892815804,
+     "usdg_balance": 312.260586,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xad6Df50832884f3498cd354086CefB0e39070F1B",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000003,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $129.8K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "MOD",
+   "name": "Modine Stock Token",
+   "token": "0xc6Cbad1016b38B797610c25E1dc7D95988B1f362",
+   "decimals": 18,
+   "onchain_symbol": "MOD",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x962403F3E10D89c3F7f5140f0cF6FCB466DE91a1",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000105,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "MPWR",
+   "name": "Monolithic Power Systems Stock Token",
+   "token": "0x52D50D0280AD1054b43f052bD70a49a212A1b128",
+   "decimals": 18,
+   "onchain_symbol": "MPWR",
+   "multiplier": "1.001003337041156841",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x56Ad01aE395869ae9c491A007c36be3B839A14A6",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 1309.9702137105724,
+    "tick": -204543,
+    "liquidity_raw": "65306894038",
+    "depth_usd_5pct": 0.11681451480658012,
+    "usdg_balance": 0.491444,
+    "stock_balance": 0.000307947101791982,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988318562164,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "MRNA",
+   "name": "Moderna Stock Token",
+   "token": "0x43B07D15cE533bEc5476d70C22a78a1B2B662155",
+   "decimals": 18,
+   "onchain_symbol": "MRNA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xB40196272A6d2EB5edF6d93bc4DC39856AD95E0E",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 213.56153263713864,
+    "tick": -222683,
+    "liquidity_raw": "161594744721111090",
+    "depth_usd_5pct": 116706.70748347163,
+    "usdg_balance": 55704.858963,
+    "stock_balance": 483.46233816786685,
+    "volume_7d_usd": 2569243.822098,
+    "volume_usd_per_day": 367034.8317282857,
+    "swaps_7d": 5540,
+    "vault_share_100k": 0.46145318325057877,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xA34d0667334074DF2d5BfD259e79E6B9cf1fA8Bf",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 12146.677140760316,
+     "usdg_balance": 40390.942286,
+     "volume_7d_usd": 119393.95080700003
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "MRVL",
+   "name": "Marvell Technology Stock Token",
+   "token": "0x62fd0668e10D8B72339BE2DCF7643001688ff13B",
+   "decimals": 18,
+   "onchain_symbol": "MRVL",
+   "multiplier": "1.000151336736428647",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xb5E892F0fC6dAAdDA5b927266FE7907e623e4843",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 228.97321961422844,
+    "tick": 221985,
+    "liquidity_raw": "2398020957308591",
+    "depth_usd_5pct": 1793.2976912122467,
+    "usdg_balance": 2611.711256,
+    "stock_balance": 33.3848698057729,
+    "volume_7d_usd": 25448.401177000003,
+    "volume_usd_per_day": 3635.485882428572,
+    "swaps_7d": 764,
+    "vault_share_100k": 0.9823829492521976,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x06cc0b96Be1fa1d754CE2e1228F5d8c616F795b0",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 958.0306094962494,
+     "usdg_balance": 3224.539131,
+     "volume_7d_usd": 5171.066666000001
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "MSFT",
+   "name": "Microsoft Stock Token",
+   "token": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
+   "decimals": 18,
+   "onchain_symbol": "MSFT",
+   "multiplier": "1.000412952576205964",
+   "has_code": true,
+   "feed": {
+    "address": "0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
+    "aggregator": "0xc3b117F52cf17Dd4369eaF5eaf7cF0E2f91b4E30",
+    "description": "RHMSFT / USD",
+    "decimals": 8,
+    "usd": 528.86830737,
+    "updated_at": 1792180491,
+    "age_s": 38721
+   },
+   "pool": {
+    "address": "0xeb60bCD1D920ad6E102690CCFC6fB488899E1510",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 529.6342827249998,
+    "tick": 213599,
+    "liquidity_raw": "213079105020825162",
+    "depth_usd_5pct": 242346.06814269672,
+    "usdg_balance": 251239.855293,
+    "stock_balance": 297.3090210657862,
+    "volume_7d_usd": 517999.939456,
+    "volume_usd_per_day": 73999.99135085715,
+    "swaps_7d": 3481,
+    "vault_share_100k": 0.2921020841352791,
+    "feed_deviation_bps": 14.483290912418278
+   },
+   "other_pools": [
+    {
+     "address": "0x2Ea9292113514eD84Fd16aA4AD1e416537E39C8c",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0.12900891922979757,
+     "usdg_balance": 0.703761,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x3D69Ea64810300877b938E9AD9916C25912c08f5",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000003,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x38fA8bf13A6b2Ac49bE77BABB22C1837d1e505F9",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000225,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $74.0K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "MSTR",
+   "name": "Strategy Inc. Stock Token",
+   "token": "0xec262a75e413fAfD0dF80480274532C79D42da09",
+   "decimals": 18,
+   "onchain_symbol": "MSTR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x396118bdFB181e6240E74D243F266B061c0edc3D",
+    "aggregator": "0x55bd01F666c99E4590E084FdEfF88041BB50CCD1",
+    "description": "Robinhood MSTR / USD",
+    "decimals": 8,
+    "usd": 135.4,
+    "updated_at": 1792193826,
+    "age_s": 25386
+   },
+   "pool": {
+    "address": "0x17578C0e0D15da44f31677263114F71aE76653EA",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 136.0020909475732,
+    "tick": 227194,
+    "liquidity_raw": "216425015053854761",
+    "depth_usd_5pct": 124734.70916962743,
+    "usdg_balance": 74507.258973,
+    "stock_balance": 3511.809327691618,
+    "volume_7d_usd": 1358116.423007,
+    "volume_usd_per_day": 194016.63185814285,
+    "swaps_7d": 2366,
+    "vault_share_100k": 0.44496909431342463,
+    "feed_deviation_bps": 44.467573676012
+   },
+   "other_pools": [
+    {
+     "address": "0x2C08bCEf714bc8124972B7181494FC598e8Ed111",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 3645.951535421311,
+     "usdg_balance": 1848.873224,
+     "volume_7d_usd": 44977.67483300001
+    },
+    {
+     "address": "0xa8F372b32b9487Ec4d77Fb2046A3bd4a8c6d8a8f",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000045,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $194.0K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "MTSI",
+   "name": "MACOM Stock Token",
+   "token": "0xC93f4d80e268AB922e871bd169156C3CC41894e6",
+   "decimals": 18,
+   "onchain_symbol": "MTSI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x2e9aee43Bb86006D772dae42e12A0d811470D7C1",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000021,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "MU",
+   "name": "Micron Technology Stock Token",
+   "token": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
+   "decimals": 18,
+   "onchain_symbol": "MU",
+   "multiplier": "1.000183456682946507",
+   "has_code": true,
+   "feed": {
+    "address": "0x425EEFdCf05ed6526C3cE61Af99429A228a6d596",
+    "aggregator": "0xA088FaD0A0A62693aF068E2EdB80B1578c8A9365",
+    "description": "RHMU / USD",
+    "decimals": 8,
+    "usd": 876.41375446,
+    "updated_at": 1792194770,
+    "age_s": 24442
+   },
+   "pool": {
+    "address": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 881.0994912179508,
+    "tick": 208508,
+    "liquidity_raw": "110825721478535698",
+    "depth_usd_5pct": 162577.3768962299,
+    "usdg_balance": 102058.616855,
+    "stock_balance": 1256.6495519406492,
+    "volume_7d_usd": 3661198.8223479996,
+    "volume_usd_per_day": 523028.40319257136,
+    "swaps_7d": 10337,
+    "vault_share_100k": 0.38084012104180553,
+    "feed_deviation_bps": 53.46489296985022
+   },
+   "other_pools": [
+    {
+     "address": "0x6fD0f36320A1E50e42f130CE4A5C530B992a0A14",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.007622,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $523.0K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "MXL",
+   "name": "MaxLinear Stock Token",
+   "token": "0x48961813349333209994750ffA89b3c5C22eC969",
+   "decimals": 18,
+   "onchain_symbol": "MXL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x5859a41c8063a82Bd896bC3F39EdE983856DaaF6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000031,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NAVN",
+   "name": "Navan Stock Token",
+   "token": "0xf7181b63Fdb858558A74ba96BC42732684cd7965",
+   "decimals": 18,
+   "onchain_symbol": "NAVN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xfEE5d6e12d1cEE7EAf47904B5f4158460341b499",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000018,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NBIS",
+   "name": "Nebius Group Stock Token",
+   "token": "0x9D9c6684F596F66a64C030B93A886D51Fd4D7931",
+   "decimals": 18,
+   "onchain_symbol": "NBIS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xE1D87B116Ba0fe898998f1D140339D1fA1E09705",
+    "aggregator": "0xE50c4775FeFc1E3C9206771dd0056AEe30F51b2F",
+    "description": "Robinhood NBIS / USD",
+    "decimals": 8,
+    "usd": 165.35,
+    "updated_at": 1792189881,
+    "age_s": 29331
+   },
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x0DDA7C6A2ccE72aBbFA88394aFe407fF98417448",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.006316,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no USDG pool with liquidity"
+  },
+  {
+   "symbol": "NET",
+   "name": "Cloudflare, Inc. Class A common stock Stock Token",
+   "token": "0x116F00968269B7bfbaD4109cE591d6E74c0601d4",
+   "decimals": 18,
+   "onchain_symbol": "NET",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xA9Caebb1b2fB2b954F192572b309aEf1cAf6a330",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 295.7204491811245,
+    "tick": -219428,
+    "liquidity_raw": "12856785194104163",
+    "depth_usd_5pct": 10926.47650472203,
+    "usdg_balance": 3686.57412,
+    "stock_balance": 97.28416136514622,
+    "volume_7d_usd": 201512.340373,
+    "volume_usd_per_day": 28787.47719614286,
+    "swaps_7d": 2221,
+    "vault_share_100k": 0.9014980296047094,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x06Abd56348164c673058dd5750812b059c054CA5",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 1513.470821990581,
+     "usdg_balance": 5034.8476,
+     "volume_7d_usd": 3104.369795
+    },
+    {
+     "address": "0xFdB45d6c7c27144C1BA128F38745b0bfc3a8f18F",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000006,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NFLX",
+   "name": "Netflix Stock Token",
+   "token": "0xE0444EF8BF4eD74f74FD73686e2ddF4C1c5591E8",
+   "decimals": 18,
+   "onchain_symbol": "NFLX",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x59895C0302F41aEaa129D2fa2442CEc01E7eF45E",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 70.37852082406688,
+    "tick": 233783,
+    "liquidity_raw": "373557799627387446",
+    "depth_usd_5pct": 154876.2931951586,
+    "usdg_balance": 50642.466182,
+    "stock_balance": 2099.8237211574146,
+    "volume_7d_usd": 444354.506761,
+    "volume_usd_per_day": 63479.21525157143,
+    "swaps_7d": 1262,
+    "vault_share_100k": 0.3923472000725861,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xeA75eA625d83aE276b9ae8B0A3dC205916EE65cF",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 4614.891306210503,
+     "usdg_balance": 1841.572751,
+     "volume_7d_usd": 2989.168288
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NNE",
+   "name": "Nano Nuclear Energy Stock Token",
+   "token": "0xBEF75684C43c4ea7BD18Dd532a2244674Ee8b926",
+   "decimals": 18,
+   "onchain_symbol": "NNE",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x8368991BF7f5380CecD4a6f4fc4eA151d62343Bc",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000043,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NOW",
+   "name": "ServiceNow Stock Token",
+   "token": "0x0C3260aF4B8f13a69c4c2dFb84fD667890CDFa14",
+   "decimals": 18,
+   "onchain_symbol": "NOW",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x00Ed6C6954EdF77FfA945696F1EACf08eDcC8d3A",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 131.07323641483944,
+    "tick": -227565,
+    "liquidity_raw": "166008841225",
+    "depth_usd_5pct": 0.09392804850011538,
+    "usdg_balance": 0.632748,
+    "stock_balance": 0.000267545287797425,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999990607203972,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NU",
+   "name": "Nu Stock Token",
+   "token": "0x408c14038a04f7bD235329E26d2bf569ee20e250",
+   "decimals": 18,
+   "onchain_symbol": "NU",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xb6d047637151f6De1d02028acdd187Aa9cb7AFE3",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 14.636344782756945,
+    "tick": -249488,
+    "liquidity_raw": "65956925100317133",
+    "depth_usd_5pct": 12470.497685804301,
+    "usdg_balance": 9928.225271,
+    "stock_balance": 1193.4962783450385,
+    "volume_7d_usd": 29022.127944999997,
+    "volume_usd_per_day": 4146.0182778571425,
+    "swaps_7d": 113,
+    "vault_share_100k": 0.889122054739709,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x0E3FaEd512E7909758EB924E6919e0057Bd6b45E",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 4999.1342076101155,
+     "usdg_balance": 2266.768726,
+     "volume_7d_usd": 18336.902396
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "NVDA",
+   "name": "NVIDIA Stock Token",
+   "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+   "decimals": 18,
+   "onchain_symbol": "NVDA",
+   "multiplier": "1.000775159164630595",
+   "has_code": true,
+   "feed": {
+    "address": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+    "aggregator": "0xC9d16E4f2569b9E3ea0468fD85844953713DC2a2",
+    "description": "RHNVDA / USD",
+    "decimals": 8,
+    "usd": 214.58620962,
+    "updated_at": 1792174908,
+    "age_s": 44304
+   },
+   "pool": {
+    "address": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": false,
+    "price_usd": 214.54538058334714,
+    "tick": 222636,
+    "liquidity_raw": "2228045810754664253",
+    "depth_usd_5pct": 1612838.08371804,
+    "usdg_balance": 617708.202522,
+    "stock_balance": 11392.276516129688,
+    "volume_7d_usd": 42947923.42319906,
+    "volume_usd_per_day": 6135417.63188558,
+    "swaps_7d": 56772,
+    "vault_share_100k": 0.058382634617120975,
+    "feed_deviation_bps": -1.9026868839879403
+   },
+   "other_pools": [
+    {
+     "address": "0xc277560DF3689A401bA7deDd7626168b234Ceb5e",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 46599.52912137623,
+     "usdg_balance": 9263.302195,
+     "volume_7d_usd": 14837.493738
+    },
+    {
+     "address": "0xB944cec30Bd4175855215D767ADC81F39e5f7E2B",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 12707.989895703397,
+     "usdg_balance": 5812.444632,
+     "volume_7d_usd": 53627.976372000005
+    },
+    {
+     "address": "0xb75d2D02B0Ec3DE50d32e40A4F1A8DAE8acC4333",
+     "fee_tier": 100,
+     "depth_usd_5pct": 10170.371217250658,
+     "usdg_balance": 82.916605,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": true,
+   "reason": "feed, volume and depth pass"
+  },
+  {
+   "symbol": "NVTS",
+   "name": "Navitas Semiconductor Stock Token",
+   "token": "0xbE6702d7b70315376dC48a3293f24f0982F86386",
+   "decimals": 18,
+   "onchain_symbol": "NVTS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xa6DB97Fb3e2Dcb5De6eC43B04bE6AA151905DC17",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.002152,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "OKLO",
+   "name": "Oklo Stock Token",
+   "token": "0x8B2f88497f15A18E9D4FFa1a8fFB8538399aE774",
+   "decimals": 18,
+   "onchain_symbol": "OKLO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x754799c74d8941ad42084ed3951f996F401DE4a2",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00007,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ON",
+   "name": "ON Semiconductor Stock Token",
+   "token": "0xbBD09F72b025360FeE5C928053Dca6248d35be54",
+   "decimals": 18,
+   "onchain_symbol": "ON",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xfcE637eeAd7D62d9ED27F81D9767de03e9E534Cf",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 72.38780742364116,
+    "tick": 233501,
+    "liquidity_raw": "11623667946269696",
+    "depth_usd_5pct": 4887.457296224859,
+    "usdg_balance": 2889.787881,
+    "stock_balance": 103.8907040090501,
+    "volume_7d_usd": 13735.690109,
+    "volume_usd_per_day": 1962.241444142857,
+    "swaps_7d": 115,
+    "vault_share_100k": 0.9534028431786498,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ONTO",
+   "name": "Onto Innovation Stock Token",
+   "token": "0x8ff63eAeEe3fE54Ba450c4F5538064Ec5A893Aef",
+   "decimals": 18,
+   "onchain_symbol": "ONTO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x3084Cf7A94e52A22a02D268C5E2413e4D2303e5f",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000031,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ORCL",
+   "name": "Oracle Stock Token",
+   "token": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
+   "decimals": 18,
+   "onchain_symbol": "ORCL",
+   "multiplier": "1.004762916906792672",
+   "has_code": true,
+   "feed": {
+    "address": "0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
+    "aggregator": "0x4a9aBC759e0B7b0ba98b5fd39c419A5D3e962aAf",
+    "description": "Robinhood ORCL / USD",
+    "decimals": 8,
+    "usd": 128.16755768,
+    "updated_at": 1792191353,
+    "age_s": 27859
+   },
+   "pool": null,
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no USDG pool with liquidity"
+  },
+  {
+   "symbol": "OUST",
+   "name": "Ouster Stock Token",
+   "token": "0x40E7a279850e443f582059ae5dC1c3b6563E6395",
+   "decimals": 18,
+   "onchain_symbol": "OUST",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xbEbA59ed4a9b3A4b7033384228C75bD9E7dcAD20",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000047,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "P",
+   "name": "Everpure Stock Token",
+   "token": "0x1Cdad396DB64BDa184d5182A97Dd9B3C62100b7D",
+   "decimals": 18,
+   "onchain_symbol": "P",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xCe036Ed958bd5320540894599625ADD23a7f5606",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x0425C69694c9357b6F2DAeb9897795fcD9c6e6cB",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000015,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PANW",
+   "name": "Palo Alto Networks Stock Token",
+   "token": "0xB039597eD45CBa7B6E2fb9E8BE51802969CEe5Be",
+   "decimals": 18,
+   "onchain_symbol": "PANW",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x178723ec752Ae010e95A183C3cF3B13ddcA23449",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.002652,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PATH",
+   "name": "UiPath Stock Token",
+   "token": "0xfb2664f07B6Aadd29ea7a59D8859b1AeB8645cDa",
+   "decimals": 18,
+   "onchain_symbol": "PATH",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x85e93fA4a14B266643B8C9bACe0312425815E72E",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 13.281944326385897,
+    "tick": 250458,
+    "liquidity_raw": "93097291636925",
+    "depth_usd_5pct": 16.767755945232654,
+    "usdg_balance": 25.531655,
+    "stock_balance": 4.242167899808814,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.999832350551598,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PENG",
+   "name": "Penguin Solutions Stock Token",
+   "token": "0x9b23573b156B52565012F5cE02CDF60AFBaa70Be",
+   "decimals": 18,
+   "onchain_symbol": "PENG",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x1cD650500fa6F07646361F5F508aa6Fbf7ddaD36",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001477,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x10508F818e05193eFd10A5AD360441067892551F",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000048,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PFE",
+   "name": "Pfizer Stock Token",
+   "token": "0x7066A64c24e4206CD62E83bf198c1E7EB361F51e",
+   "decimals": 18,
+   "onchain_symbol": "PFE",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xC7d573Fcda6D2107C97fb582ae18411F9Db32E7f",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 29.488428432758003,
+    "tick": 242482,
+    "liquidity_raw": "134656990172391729",
+    "depth_usd_5pct": 36137.80636451328,
+    "usdg_balance": 24958.976923,
+    "stock_balance": 463.2534833402972,
+    "volume_7d_usd": 90037.39319599999,
+    "volume_usd_per_day": 12862.484742285713,
+    "swaps_7d": 479,
+    "vault_share_100k": 0.7345498114773998,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xA26dF7296ef5DFc727f3bc6F1E9050E6B62e6abF",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 2523.1738388664544,
+     "usdg_balance": 1416.705441,
+     "volume_7d_usd": 1438.289571
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PL",
+   "name": "Planet Labs Stock Token",
+   "token": "0xAA4d64474c172010aB57719cb9951E6142a100d3",
+   "decimals": 18,
+   "onchain_symbol": "PL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x0B5DE42992Cc18Bfe63e62F6866c7e6b32CC3c9a",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001229,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PLTR",
+   "name": "Palantir Technologies Stock Token",
+   "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
+   "decimals": 18,
+   "onchain_symbol": "PLTR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x820ABedFF239034956B7A9d2F0a331f9F075eB4c",
+    "aggregator": "0x315afd0f71D5407B99ad19ab001a67af40fbAAF4",
+    "description": "Robinhood PLTR / USD",
+    "decimals": 8,
+    "usd": 184.23,
+    "updated_at": 1792191822,
+    "age_s": 27390
+   },
+   "pool": {
+    "address": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 184.6129771621334,
+    "tick": 224138,
+    "liquidity_raw": "109268553378667032",
+    "depth_usd_5pct": 73372.50999937566,
+    "usdg_balance": 13719.071966,
+    "stock_balance": 474.47970529233186,
+    "volume_7d_usd": 741691.9668460004,
+    "volume_usd_per_day": 105955.99526371434,
+    "swaps_7d": 3504,
+    "vault_share_100k": 0.5767927106803732,
+    "feed_deviation_bps": 20.78799121388561
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "7-day volume $106.0K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "POET",
+   "name": "POET Technologies Stock Token",
+   "token": "0xcf6B2D875361be807EAfa57458c80f28521F9333",
+   "decimals": 18,
+   "onchain_symbol": "POET",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xa1C781ed62AC2d0283f50fF5A843647a56ddd80a",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 6.768732754415998,
+    "tick": 257199,
+    "liquidity_raw": "4922790793714420",
+    "depth_usd_5pct": 632.9539772229259,
+    "usdg_balance": 3.274071,
+    "stock_balance": 204.27475039961334,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9937102713156349,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "POWL",
+   "name": "Powell Industries Stock Token",
+   "token": "0x237c16D66590F67B886d978ACD362EAeaD8B18c7",
+   "decimals": 18,
+   "onchain_symbol": "POWL",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xA348700Ed212c25D1b3FEaBDe288746154440251",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000038,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PR",
+   "name": "Permian Resources Stock Token",
+   "token": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
+   "decimals": 18,
+   "onchain_symbol": "PR",
+   "multiplier": "1.004477942292229526",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xC2B5A8d6eCbbE9e4590271F7fE0261a3B265C3E7",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000006,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "PWR",
+   "name": "Quanta Stock Token",
+   "token": "0x9Ab02Ead789b6903c3c44d0ED32F9c707CDF12FD",
+   "decimals": 18,
+   "onchain_symbol": "PWR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x5CC24380A863119148723d2970aB712e4949B12c",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 668.624398160297,
+    "tick": 211268,
+    "liquidity_raw": "100829680013",
+    "depth_usd_5pct": 0.12885063661043084,
+    "usdg_balance": 0.59618,
+    "stock_balance": 0.000568582243190484,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999987114952942,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "QBTS",
+   "name": "D-Wave Quantum Inc. Common Stock Stock Token",
+   "token": "0xC583c60aeF9Dc401Da72cEC1B404743a93cea1Cc",
+   "decimals": 18,
+   "onchain_symbol": "QBTS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x9eb22AD27148Cb90423422eC8A4a2ECF267E96bf",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000066,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "QCOM",
+   "name": "Qualcomm Stock Token",
+   "token": "0x0f17206447090e464C277571124dD2688E48AEA9",
+   "decimals": 18,
+   "onchain_symbol": "QCOM",
+   "multiplier": "1.001228122794792830",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xC87E9EfD6CDf9bD69b0AeB725b21c60915143A97",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000026,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xFf3aB07DD9C241a72D42b3841814bF800494607a",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.014479,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "QNT",
+   "name": "Quantinuum Inc. Class A Stock Token",
+   "token": "0xB7EDfE2F33C1aC06830a971dFb559bDe8A2a3d76",
+   "decimals": 18,
+   "onchain_symbol": "QNT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x01aC0ccaa97f55d45c996D31B8ec1B14C94ADBf5",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "QQQ",
+   "name": "Invesco QQQ Stock Token",
+   "token": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+   "decimals": 18,
+   "onchain_symbol": "QQQ",
+   "multiplier": "1.000700791241405425",
+   "has_code": true,
+   "feed": {
+    "address": "0x80901d846d5D7B030F26B480776EE3b29374C2ae",
+    "aggregator": "0x25e996ce8b3529885D429241156e83e7b7744049",
+    "description": "Robinhood QQQ / USD",
+    "decimals": 8,
+    "usd": 708.93646854,
+    "updated_at": 1792176985,
+    "age_s": 42227
+   },
+   "pool": {
+    "address": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": false,
+    "price_usd": 710.226154582382,
+    "tick": 210664,
+    "liquidity_raw": "209733222351734520",
+    "depth_usd_5pct": 276231.13623168337,
+    "usdg_balance": 164770.08126,
+    "stock_balance": 1253.4931948696367,
+    "volume_7d_usd": 4471437.133117999,
+    "volume_usd_per_day": 638776.7333025712,
+    "swaps_7d": 11476,
+    "vault_share_100k": 0.26579405681729634,
+    "feed_deviation_bps": 18.191842282258122
+   },
+   "other_pools": [
+    {
+     "address": "0xEbD78dcfc8a6b3A696f1E191aD1ff321f9579f79",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 1951.4188856011174,
+     "usdg_balance": 1523.587486,
+     "volume_7d_usd": 8134.640034000001
+    },
+    {
+     "address": "0x4539019B527211998642fEC342C85dcB44c7e5E4",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000003,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $638.8K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "QUBT",
+   "name": "Quantum Computing Stock Token",
+   "token": "0x59818904ab4cE163b3cE4FfB64f2D6Ca02c434B4",
+   "decimals": 18,
+   "onchain_symbol": "QUBT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x227Bbce9A81B3694b01754298a983Be3F9E44A93",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 6.359276506743708,
+    "tick": -257824,
+    "liquidity_raw": "33853815503238528",
+    "depth_usd_5pct": 4219.0876440119155,
+    "usdg_balance": 4330.725314,
+    "stock_balance": 10665.588564391139,
+    "volume_7d_usd": 95704.281556,
+    "volume_usd_per_day": 13672.040222285714,
+    "swaps_7d": 816,
+    "vault_share_100k": 0.9595171312723123,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x2E2a857C08aD6C09f1d1EC4FDB4Cc7cd06cF17f4",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 3013.3633174485076,
+     "usdg_balance": 1566.928205,
+     "volume_7d_usd": 9318.764191999999
+    },
+    {
+     "address": "0xbAD5559F6b39a341cBF62D7DD7FFEc6F9E242599",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "RBLX",
+   "name": "Roblox Stock Token",
+   "token": "0xF0C4BF4C582cb3836e98394b1d4e7B7281101bE8",
+   "decimals": 18,
+   "onchain_symbol": "RBLX",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x2ef5945cd5664876b6481FdacFaA2942995a4DA8",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 49.66728967391051,
+    "tick": 237268,
+    "liquidity_raw": "142812925936271003",
+    "depth_usd_5pct": 49740.462297481296,
+    "usdg_balance": 71332.06806,
+    "stock_balance": 562.3118837662461,
+    "volume_7d_usd": 104102.51319399998,
+    "volume_usd_per_day": 14871.787599142855,
+    "swaps_7d": 337,
+    "vault_share_100k": 0.667822166872541,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x1BDB8e3A79Cb1a7F228808739311E23098D33d43",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 35299.10823070594,
+     "usdg_balance": 32841.197524,
+     "volume_7d_usd": 384487.95491199987
+    },
+    {
+     "address": "0x153601C37e9372b82021aC84a485807e20054C46",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000004,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "RCAT",
+   "name": "Red Cat Stock Token",
+   "token": "0xFDE6b5d9BB419B10C23268c74e369AbFF39C0460",
+   "decimals": 18,
+   "onchain_symbol": "RCAT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x64710a70839585Af718e1B1FAEf9E7f1665F1116",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 4.707012354019405,
+    "tick": 260832,
+    "liquidity_raw": "5066974193395056",
+    "depth_usd_5pct": 543.2858966039913,
+    "usdg_balance": 395.338192,
+    "stock_balance": 5254.887334668726,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.99459649750096,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "RDDT",
+   "name": "Reddit Stock Token",
+   "token": "0x05b37Fb53A299a1b874A619e1c4C404D52C36F4C",
+   "decimals": 18,
+   "onchain_symbol": "RDDT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xa8744E76aED23B05F0126335E7BD38f7935D19fe",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 154.95487008562782,
+    "tick": -225891,
+    "liquidity_raw": "893323903085000561",
+    "depth_usd_5pct": 549564.4602073375,
+    "usdg_balance": 447975.732402,
+    "stock_balance": 2615.1932352947033,
+    "volume_7d_usd": 2256373.2013049996,
+    "volume_usd_per_day": 322339.0287578571,
+    "swaps_7d": 1593,
+    "vault_share_100k": 0.15394930930808703,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x1a774E182159D2880dbc646eB89a8deFE569f97c",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 3288.0799833594933,
+     "usdg_balance": 1550.853343,
+     "volume_7d_usd": 23722.643095
+    },
+    {
+     "address": "0x344f2705C99948C902d604170abE49b9D2c39d2F",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "RDW",
+   "name": "Redwire Stock Token",
+   "token": "0x92Ef19E82bD8fF36661DE838D5eaE7e5CEF0EfFE",
+   "decimals": 18,
+   "onchain_symbol": "RDW",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x71E15C0Ed50142C772beE6195c936F04E4696F5d",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000027,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "RGTI",
+   "name": "Rigetti Computing Stock Token",
+   "token": "0x284358abc07F9359f19f4b5b4aC91901Be2597Ba",
+   "decimals": 18,
+   "onchain_symbol": "RGTI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x2A045cF1C49c61c166C036d2f06FA2D2d984f765",
+    "aggregator": "0x42B1C5174cE84Be751A23489d7DbDc969Bc17eA2",
+    "description": "Robinhood RGTI / USD",
+    "decimals": 8,
+    "usd": 11.79,
+    "updated_at": 1792188839,
+    "age_s": 30373
+   },
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xb549D4EaF467277E48Aa350f216e413DF8c8BA12",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000036,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no USDG pool with liquidity"
+  },
+  {
+   "symbol": "RIVN",
+   "name": "Rivian Automotive Stock Token",
+   "token": "0xB1BF26c1D20ff267A4f93550d1E0d06ac40a114B",
+   "decimals": 18,
+   "onchain_symbol": "RIVN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xF9e71558eEf115b6C8fbFc9ad5fda00033E9d69C",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 12.426551921770397,
+    "tick": 251124,
+    "liquidity_raw": "48975496503534306",
+    "depth_usd_5pct": 8532.204116012148,
+    "usdg_balance": 669.347957,
+    "stock_balance": 2441.066278518084,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9213855077807882,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xb30A75B200D98A600a3766869344928E35823E23",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 6960.237008180707,
+     "usdg_balance": 13788.508082,
+     "volume_7d_usd": 23416.134110000003
+    },
+    {
+     "address": "0x6e3dFc2FBFc48cC10f28025472256e64aE2c5991",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000008,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "RKLB",
+   "name": "Rocket Lab Corporation Stock Token",
+   "token": "0x3b14C39E89D60D627b42a1A4CA45b5bb45Fc12e2",
+   "decimals": 18,
+   "onchain_symbol": "RKLB",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x045477BF65Aef6f4F2386ad0164579e48381CC74",
+    "aggregator": "0x59aB60B1D63DE8b282852573D18a3a99c04C787c",
+    "description": "Robinhood RKLB / USD",
+    "decimals": 8,
+    "usd": 50.86,
+    "updated_at": 1792188820,
+    "age_s": 30392
+   },
+   "pool": {
+    "address": "0xa9888De1B9D64A93eaeb495A39FE9B3d00654928",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 55.632795607024036,
+    "tick": -236135,
+    "liquidity_raw": "289890822195",
+    "depth_usd_5pct": 0.1068579843337749,
+    "usdg_balance": 0.308668,
+    "stock_balance": 0.01428332444069674,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989314212986,
+    "feed_deviation_bps": 938.4183261942659
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "7-day volume $0/day is below $1.00M/day"
+  },
+  {
+   "symbol": "RUN",
+   "name": "Sunrun Stock Token",
+   "token": "0x756Bc80af765C82da966a788858d65aDF14f3793",
+   "decimals": 18,
+   "onchain_symbol": "RUN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x320FFc07584F5F3cDF68986d2F97B7dD9aed3cB0",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xe6d0f53073041E12bC46759519499764a4B92d13",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.003616,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SATS",
+   "name": "EchoStar Stock Token",
+   "token": "0x95052ddcd5DC25641657424A8Cf04834997E1730",
+   "decimals": 18,
+   "onchain_symbol": "SATS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xF9F25cD5b5Ab162f7aad3cB2A1843916Af49167f",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SCHD",
+   "name": "Schwab US Dividend Equity ETF Stock Token",
+   "token": "0xd63ABB2C13d7a8421a8017a712802053568e3C1D",
+   "decimals": 18,
+   "onchain_symbol": "SCHD",
+   "multiplier": "1.005538606893683992",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x359555e1fa3f28d5A25091dd9F6D350Cb66566cf",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 33.016007022836405,
+    "tick": 241352,
+    "liquidity_raw": "421629349511",
+    "depth_usd_5pct": 0.11972922688228171,
+    "usdg_balance": 0.404571,
+    "stock_balance": 0.016185809180767948,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988027091647,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x66D39BD0F5B90ece7887bdA7f714Ae5521E1cC97",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SGOV",
+   "name": "iShares 0-3 Month Treasury Bond Stock Token",
+   "token": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
+   "decimals": 18,
+   "onchain_symbol": "SGOV",
+   "multiplier": "1.007186931447954063",
+   "has_code": true,
+   "feed": {
+    "address": "0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
+    "aggregator": "0x0E96B7708487f91baAC09697593D3e8bf253f2d8",
+    "description": "Robinhood SGOV-USD",
+    "decimals": 8,
+    "usd": 101.28276622,
+    "updated_at": 1792108928,
+    "age_s": 110284
+   },
+   "pool": {
+    "address": "0xfAb520051f96F4D2a32c22B6a3dD7fFfdf231bFe",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 101.03706296983002,
+    "tick": 230166,
+    "liquidity_raw": "33830084812525083620",
+    "depth_usd_5pct": 16805464.194183897,
+    "usdg_balance": 930244.039676,
+    "stock_balance": 2414.2610978016687,
+    "volume_7d_usd": 48016.093434,
+    "volume_usd_per_day": 6859.441919142858,
+    "swaps_7d": 746,
+    "vault_share_100k": 0.005915247215418295,
+    "feed_deviation_bps": -24.259137002269508
+   },
+   "other_pools": [
+    {
+     "address": "0x6Ba50150B17Ffd0972915Aaf04fFd5E8f4Fa49b4",
+     "fee_tier": 500,
+     "depth_usd_5pct": 4172823.83636374,
+     "usdg_balance": 185695.24837,
+     "volume_7d_usd": 219194.22851100002
+    },
+    {
+     "address": "0xFfb376Bfc48668f16719b42ed8AEEF5b98dBc4f1",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.002945,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $6.9K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "SHOP",
+   "name": "Shopify Stock Token",
+   "token": "0xF53F66751B1Eff985311b693531E3290F600c410",
+   "decimals": 18,
+   "onchain_symbol": "SHOP",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x18A1aFa849A6940870c2163B7ECBCC85d455Ad99",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 170.137388448287,
+    "tick": 224955,
+    "liquidity_raw": "7021472157887052",
+    "depth_usd_5pct": 4526.214471852964,
+    "usdg_balance": 3586.546847,
+    "stock_balance": 11.352189559078852,
+    "volume_7d_usd": 8262.809066999998,
+    "volume_usd_per_day": 1180.401295285714,
+    "swaps_7d": 156,
+    "vault_share_100k": 0.9566978054766176,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SHY",
+   "name": "iShares 1-3 Year Treasury Bond ETF Stock Token",
+   "token": "0xBE274710Bf3d9567e1B290eF6a5F9f90ca016FD8",
+   "decimals": 18,
+   "onchain_symbol": "SHY",
+   "multiplier": "1.002055340428983545",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x6A67F96a4635cf95E9877579dB5566ACb9D47816",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000004,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x8517c791b522B6A4C20bd1021Ff1f6a442daCbA6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000049,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SIMO",
+   "name": "Silicon Motion Stock Token",
+   "token": "0x77E655E37F4d913fB9540e0d541D824171a60e81",
+   "decimals": 18,
+   "onchain_symbol": "SIMO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xa84fe55a03Bb51eb640F8b624FE47b2777358d15",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000031,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SKHY",
+   "name": "SK hynix Inc. American Depositary Shares Stock Token",
+   "token": "0x84CAb63bc87912E71ad199ff14A0bA45de68FeF8",
+   "decimals": 18,
+   "onchain_symbol": "SKHY",
+   "multiplier": "1.000060353549285624",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x5F2a5025feb93a4C44DA4E3B37e4fD3Fb0ab5171",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 137.92177564798817,
+    "tick": 227054,
+    "liquidity_raw": "92037422329869687",
+    "depth_usd_5pct": 53418.038471182655,
+    "usdg_balance": 14361.507228,
+    "stock_balance": 232.40922446445308,
+    "volume_7d_usd": 823044.2054980008,
+    "volume_usd_per_day": 117577.74364257154,
+    "swaps_7d": 8448,
+    "vault_share_100k": 0.6518138349082304,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xB504030B2d88183bf292B13378251aBAABEd5168",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000005,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x3B0028F88fDEB46150420Ad9a0784844c5F6Fab2",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000329,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SLS",
+   "name": "SELLAS Life Sciences Stock Token",
+   "token": "0x285b231728c7E4333799183DF1094d775246a535",
+   "decimals": 18,
+   "onchain_symbol": "SLS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x98e95B56F8b6601Bc1D25bc2eb568ED0FF64279d",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000749,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SLV",
+   "name": "iShares Silver Trust Stock Token",
+   "token": "0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f",
+   "decimals": 18,
+   "onchain_symbol": "SLV",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x209b73908e92Ae021826eD79609845451Ecba2ce",
+    "aggregator": "0xcdF6F7043b3aF6Afa0CAAACe1230B355096B5386",
+    "description": "Robinhood SLV / USD",
+    "decimals": 8,
+    "usd": 51.585,
+    "updated_at": 1792166596,
+    "age_s": 52616
+   },
+   "pool": {
+    "address": "0x8cB787e6c315D464775289BaD00FDD67d53Ecb3D",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 51.51428692589235,
+    "tick": -236904,
+    "liquidity_raw": "356656156479650705",
+    "depth_usd_5pct": 126508.77226277669,
+    "usdg_balance": 53214.043738,
+    "stock_balance": 4642.123411822793,
+    "volume_7d_usd": 381167.6061,
+    "volume_usd_per_day": 54452.51515714285,
+    "swaps_7d": 1211,
+    "vault_share_100k": 0.4414840052375027,
+    "feed_deviation_bps": -13.708069033178472
+   },
+   "other_pools": [
+    {
+     "address": "0x0Fa7BC480885DCf58Ad2ef63eC7289cF2481D51c",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 28655.091180257084,
+     "usdg_balance": 12541.22494,
+     "volume_7d_usd": 27364.11088099999
+    },
+    {
+     "address": "0x37ED4621D1Eb3aBC9e551a888E6AaF0A41F7be8e",
+     "fee_tier": 500,
+     "depth_usd_5pct": 87.88467827825693,
+     "usdg_balance": 219.443421,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $54.5K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "SMCI",
+   "name": "Super Micro Computer Stock Token",
+   "token": "0xc01aA1fECeC0605b13bc84874ff7256C0f5F562a",
+   "decimals": 18,
+   "onchain_symbol": "SMCI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x9f0167dA6D9738b57CbA0833a541Db77762fB7Bb",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001751,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SMH",
+   "name": "VanEck Semiconductor ETF Stock Token",
+   "token": "0x072f979c2CAc8e1391B0162a87Fee094bF8744a0",
+   "decimals": 18,
+   "onchain_symbol": "SMH",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xF9d5F058099707F60740c09Bf67B32967971DC63",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 626.7891892375852,
+    "tick": -211915,
+    "liquidity_raw": "101108331130",
+    "depth_usd_5pct": 0.12509926565963272,
+    "usdg_balance": 0.609385,
+    "stock_balance": 0.000548849471246421,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999987490089084,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SMR",
+   "name": "NuScale Power Stock Token",
+   "token": "0x1Eebee7F74517e0279dFb09d25B0407bEEc3FDd6",
+   "decimals": 18,
+   "onchain_symbol": "SMR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x1AB74b51e40117B363fd774cdA2b45a9895C6Fec",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x5B366a8E7D2f8a3a54711A98F524826E9895B525",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000064,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SNAP",
+   "name": "Snap Stock Token",
+   "token": "0xF6589F11Bc40b669e584073F428B05562F568733",
+   "decimals": 18,
+   "onchain_symbol": "SNAP",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x0EbD4650C9e641E9745b5A508A2D46935DFE753E",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 6.057599374132076,
+    "tick": 258309,
+    "liquidity_raw": "102188262030878750",
+    "depth_usd_5pct": 12429.634447010238,
+    "usdg_balance": 18293.642507,
+    "stock_balance": 7100.451139159957,
+    "volume_7d_usd": 379034.33939,
+    "volume_usd_per_day": 54147.762769999994,
+    "swaps_7d": 1148,
+    "vault_share_100k": 0.8894452115926028,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xe187202cae5587c2b482747b1D11Ec506d730eaf",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000043,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x666AeDbac5587b38889859663e3B72605E7663da",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000043,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xC1BC4e31e763989616445A03627c17A5BC624778",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000089,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SNDK",
+   "name": "Sandisk Corporation Stock Token",
+   "token": "0xB90A19fF0Af67f7779afF50A882A9CfF42446400",
+   "decimals": 18,
+   "onchain_symbol": "SNDK",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xfb133Fa4B7b385802B693a293606682Df47109A3",
+    "aggregator": "0x7B2FdfcEa772f093DD33b3aCF8EE294B368f6c23",
+    "description": "RHSNDK / USD",
+    "decimals": 8,
+    "usd": 1286.13515,
+    "updated_at": 1792191939,
+    "age_s": 27273
+   },
+   "pool": {
+    "address": "0xA1e1C9519cD5ae47e9A935645E1A7b935b944559",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 1295.5243186205632,
+    "tick": 204653,
+    "liquidity_raw": "3132031273305494",
+    "depth_usd_5pct": 5571.292298019571,
+    "usdg_balance": 3101.151876,
+    "stock_balance": 25.298976534504025,
+    "volume_7d_usd": 39666.625174,
+    "volume_usd_per_day": 5666.660739142857,
+    "swaps_7d": 745,
+    "vault_share_100k": 0.9472272037525861,
+    "feed_deviation_bps": 73.00297033762874
+   },
+   "other_pools": [
+    {
+     "address": "0xc9f2e2229ef638a7629185C9B222aD2eeec39B74",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000006,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $5.7K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "SNOW",
+   "name": "Snowflake Stock Token",
+   "token": "0xBa0CAB75495255d0cB58E22B648bFED4ECD1F47E",
+   "decimals": 18,
+   "onchain_symbol": "SNOW",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xE0cA1dfc1161500Fb410C8181F7CC33860FfB16B",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 304.97529608038394,
+    "tick": 219118,
+    "liquidity_raw": "425848893063345",
+    "depth_usd_5pct": 367.53180135848896,
+    "usdg_balance": 37.586653,
+    "stock_balance": 2.1975635832606097,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9963381404846551,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x65BC70bd85B0C8e9AA023155Ac4e15af7b6a29A2",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000039,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SOFI",
+   "name": "SoFi Technologies Stock Token",
+   "token": "0x98E75885157C80992A8D41b696D8c9C6Fb30A926",
+   "decimals": 18,
+   "onchain_symbol": "SOFI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xEA9368e1c88bCe7F04D16919eB131778A0dF826a",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 15.669499597245624,
+    "tick": 248805,
+    "liquidity_raw": "562198243509",
+    "depth_usd_5pct": 0.1099826343444446,
+    "usdg_balance": 0.347531,
+    "stock_balance": 0.20849560549210988,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989001748661,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xB6beAcC9409A3198947885cF983C92bcCE182E70",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SOUN",
+   "name": "SoundHound AI Stock Token",
+   "token": "0x6E3Dfd9f7e1649BaA14D25cac18C94d62dB10A54",
+   "decimals": 18,
+   "onchain_symbol": "SOUN",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xE4E5E1F8Bb52C51ec86Bf2d6494747fB4e6337Bc",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001713,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xB30E0BC08287370Ac89ab8E22E56Ee2420532Ac6",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.001728,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SOXX",
+   "name": "iShares Semiconductor ETF Stock Token",
+   "token": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
+   "decimals": 18,
+   "onchain_symbol": "SOXX",
+   "multiplier": "1.000450838210425960",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x0663E66c880E27a5cE3c4c25234aB64eAd7dFF67",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 493.9648177464374,
+    "tick": 214296,
+    "liquidity_raw": "8653848589571635",
+    "depth_usd_5pct": 9505.268101993452,
+    "usdg_balance": 864.927953,
+    "stock_balance": 17.807736998324852,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9131980746977376,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x563a3154BC09d2a2364b9a2A5766148F4e89be77",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0.12421290158649566,
+     "usdg_balance": 0.483702,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SPCX",
+   "name": "Space Exploration Technologies Corp. Class A Common Stock Stock Token",
+   "token": "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
+   "decimals": 18,
+   "onchain_symbol": "SPCX",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xB265810950ba6c5C0Ff821c9963014a56fD8Bffb",
+    "aggregator": "0x5eaa223c585F40CDcA2D119ea91B97C491245631",
+    "description": "Robinhood SPCX / USD",
+    "decimals": 8,
+    "usd": 145.31,
+    "updated_at": 1792191136,
+    "age_s": 28076
+   },
+   "pool": {
+    "address": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": true,
+    "price_usd": 145.7939217924581,
+    "tick": -226500,
+    "liquidity_raw": "1069962696753802676",
+    "depth_usd_5pct": 638477.2328405784,
+    "usdg_balance": 350263.708209,
+    "stock_balance": 6958.415465709878,
+    "volume_7d_usd": 29984066.55616503,
+    "volume_usd_per_day": 4283438.079452147,
+    "swaps_7d": 83414,
+    "vault_share_100k": 0.13541378874382695,
+    "feed_deviation_bps": 33.30271780731476
+   },
+   "other_pools": [
+    {
+     "address": "0xEb07d9587eFD1778dFb9c385Ec43EF6d5F9fE401",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 302330.8990866794,
+     "usdg_balance": 175760.271781,
+     "volume_7d_usd": 3210976.2720330027
+    },
+    {
+     "address": "0xfbB32C09488e3fc33fe6fD84fe6aE442B4d13a31",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 15848.158048347485,
+     "usdg_balance": 2820.96341,
+     "volume_7d_usd": 58862.959906
+    },
+    {
+     "address": "0x87C58b43537005189cfc7B512d818dc9125E94FC",
+     "fee_tier": 100,
+     "depth_usd_5pct": 5.041080582794916,
+     "usdg_balance": 15.434315,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": true,
+   "reason": "feed, volume and depth pass"
+  },
+  {
+   "symbol": "SPMO",
+   "name": "Invesco S&P 500 Momentum ETF Stock Token",
+   "token": "0xAd622320e520de39e72d41EF07438C3Fd3354875",
+   "decimals": 18,
+   "onchain_symbol": "SPMO",
+   "multiplier": "1.002024883742416310",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x727C8A9e0da8Bb21bE322D2Bb5D891b126143b8C",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000041,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "SPY",
+   "name": "SPDR S&P 500 ETF Trust Stock Token",
+   "token": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
+   "decimals": 18,
+   "onchain_symbol": "SPY",
+   "multiplier": "1.001717991187472003",
+   "has_code": true,
+   "feed": {
+    "address": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
+    "aggregator": "0x78BCB218fA04B9b3a278eBc865Ed320BF8DEFBAc",
+    "description": "RHSPY / USD",
+    "decimals": 8,
+    "usd": 762.82828464,
+    "updated_at": 1792176877,
+    "age_s": 42335
+   },
+   "pool": {
+    "address": "0xa7Bb1AC63BBaB0C44316E6c8C455213441689167",
+    "fee_tier": 500,
+    "tick_spacing": 10,
+    "stock_is_token0": true,
+    "price_usd": 763.2268027121033,
+    "tick": -209946,
+    "liquidity_raw": "299441029337165968",
+    "depth_usd_5pct": 408832.28420520615,
+    "usdg_balance": 119934.572505,
+    "stock_balance": 164.5550324972418,
+    "volume_7d_usd": 872524.2982340001,
+    "volume_usd_per_day": 124646.32831914288,
+    "swaps_7d": 3908,
+    "vault_share_100k": 0.19652841044903346,
+    "feed_deviation_bps": 5.224217299328575
+   },
+   "other_pools": [
+    {
+     "address": "0xA43b424Bc609495AED4BCD88d654934b510B0aD9",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 27705.452317551368,
+     "usdg_balance": 7969.260254,
+     "volume_7d_usd": 13458.763052999999
+    },
+    {
+     "address": "0x62FDE201C424d6d07730B77450Dd73928EBAc5f5",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.01434,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $124.6K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "TE",
+   "name": "T1 Energy Stock Token",
+   "token": "0xb1969f6604CA1AE7a2cD3F1827876e914594CA2D",
+   "decimals": 18,
+   "onchain_symbol": "TE",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xf15dFa4d3E8276068FC6101E21F7AC86349A94bd",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x05346C2C9378A97304f192f90fe7b23edD253067",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000084,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "TEAM",
+   "name": "Atlassian Corporation Stock Token",
+   "token": "0x5B97476b922F3305131B8f0B9D333172E87f4aaE",
+   "decimals": 18,
+   "onchain_symbol": "TEAM",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x56a8350CB1090bCed0AC606d43fEF0155e9136A1",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000026,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "TEM",
+   "name": "Tempus AI Stock Token",
+   "token": "0xB1CC0EC7Db69Cf43539119814df40071b9d61793",
+   "decimals": 18,
+   "onchain_symbol": "TEM",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xcBf1F76e933534689F8EA13766279E839B1baFd8",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000068,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "TER",
+   "name": "Teradyne Stock Token",
+   "token": "0x2778C5024D5cA2CdB0f8eAD671ffc69963AdCD9C",
+   "decimals": 18,
+   "onchain_symbol": "TER",
+   "multiplier": "1.000647857966979018",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xF8C24710Be03cE888d60C550AafE5bfc769abee8",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x307bA38626c581E00Ba03D70773253CF20624DdE",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000044,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "TSEM",
+   "name": "Tower Semiconductor Stock Token",
+   "token": "0x89776d4Cd68193597A2fC132cfaC1fDe36CCeA8a",
+   "decimals": 18,
+   "onchain_symbol": "TSEM",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xCb2bb3e1BD5D5AfFcd45AD1F3Be2db5fE9Ebb227",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000003,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x350051ec863739E4875F255e760Ad3514c10f110",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "TSLA",
+   "name": "Tesla Stock Token",
+   "token": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+   "decimals": 18,
+   "onchain_symbol": "TSLA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x4A1166a659A55625345e9515b32adECea5547C38",
+    "aggregator": "0x7A6b81ba7FbCB90104d8C496158Cf383cD7233b1",
+    "description": "RHTSLA / USD",
+    "decimals": 8,
+    "usd": 352.55185,
+    "updated_at": 1792183545,
+    "age_s": 35667
+   },
+   "pool": {
+    "address": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 352.4311808187876,
+    "tick": -217673,
+    "liquidity_raw": "306170793138527642",
+    "depth_usd_5pct": 284058.63214029605,
+    "usdg_balance": 164897.732109,
+    "stock_balance": 898.1388109279067,
+    "volume_7d_usd": 1568268.479493999,
+    "volume_usd_per_day": 224038.35421342842,
+    "swaps_7d": 4952,
+    "vault_share_100k": 0.2603769102720497,
+    "feed_deviation_bps": -3.4227357256076325
+   },
+   "other_pools": [
+    {
+     "address": "0xB349FB08C2712f3A70Bad40a4d006b68d67e888b",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 13823.249374868248,
+     "usdg_balance": 7634.957839,
+     "volume_7d_usd": 27030.433394999996
+    },
+    {
+     "address": "0xc4f0172D6ac8DD294Dd1137D047d5E1893760236",
+     "fee_tier": 500,
+     "depth_usd_5pct": 8944.770045519266,
+     "usdg_balance": 9841.057676,
+     "volume_7d_usd": 342391.9810620003
+    },
+    {
+     "address": "0x7868622Ff2C3b1B6C8acb15fE0bDAEBF043DDa48",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $224.0K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "TSM",
+   "name": "Taiwan Semiconductor Manufacturing Stock Token",
+   "token": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
+   "decimals": 18,
+   "onchain_symbol": "TSM",
+   "multiplier": "1.002728577037771211",
+   "has_code": true,
+   "feed": {
+    "address": "0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
+    "aggregator": "0x2B3A9A18998e9464760658233ab093e6aEbF45d0",
+    "description": "Robinhood TSM / USD",
+    "decimals": 8,
+    "usd": 413.45006052,
+    "updated_at": 1792173725,
+    "age_s": 45487
+   },
+   "pool": {
+    "address": "0x07e8Ea83D4C1340774c8965125e26e12bf943bf1",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 416.4304427734504,
+    "tick": -216004,
+    "liquidity_raw": "17323156773165825",
+    "depth_usd_5pct": 17470.50025058067,
+    "usdg_balance": 11685.834262,
+    "stock_balance": 197.69188929811438,
+    "volume_7d_usd": 68406.870418,
+    "volume_usd_per_day": 9772.410059714286,
+    "swaps_7d": 296,
+    "vault_share_100k": 0.8512775529744601,
+    "feed_deviation_bps": 72.0856649458929
+   },
+   "other_pools": [
+    {
+     "address": "0x2C240dEcd722b44E1cDE06dB77c2E1B969bE7613",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000137,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xcCba175D31198E47968a7033179F512D7b38eaD6",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000128,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $9.8K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "TTD",
+   "name": "Trade Desk Stock Token",
+   "token": "0x0b5fb4031cae9163db10B169Ee72685F0EdC8545",
+   "decimals": 18,
+   "onchain_symbol": "TTD",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x14f646736d0F326ea530f415E7127ca939794dd3",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000026,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "TTWO",
+   "name": "Take-Two Interactive Software Stock Token",
+   "token": "0x5e81213613b6B86EaB4c6c50d718d34359459786",
+   "decimals": 18,
+   "onchain_symbol": "TTWO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xD9Ab4b7fAe6DC2f7020134Ec744A8F53Ef3E5E24",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": true,
+    "price_usd": 205.09657358060505,
+    "tick": -223087,
+    "liquidity_raw": "74099073032688601",
+    "depth_usd_5pct": 52444.391070466154,
+    "usdg_balance": 28750.47297,
+    "stock_balance": 693.4138735996305,
+    "volume_7d_usd": 433769.68714400014,
+    "volume_usd_per_day": 61967.09816342859,
+    "swaps_7d": 2945,
+    "vault_share_100k": 0.6559769060560309,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xD715802A12a73CEAfE7579912A28d65d2ab5cC57",
+     "fee_tier": 500,
+     "depth_usd_5pct": 3.843672772718482,
+     "usdg_balance": 3.018096,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xC53917De3655CFEDc7f5B2a9B041909Fa4c1b530",
+     "fee_tier": 100,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000003,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x0889178E5cf9408EAD5D0D1e8c6Ff29e113388AF",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000028,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "UMC",
+   "name": "United Microelectronics Stock Token",
+   "token": "0x0E6e67Ba88e7b5d9B67636A215c76779B948dE79",
+   "decimals": 18,
+   "onchain_symbol": "UMC",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xD95a760934ddf6818176d51c12e89520DD7bAC44",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 23.854720222967778,
+    "tick": -244603,
+    "liquidity_raw": "432620957989",
+    "depth_usd_5pct": 0.10442435177638693,
+    "usdg_balance": 0.745385,
+    "stock_balance": 0.017657596415703462,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989557575726,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "UNH",
+   "name": "UnitedHealth Stock Token",
+   "token": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
+   "decimals": 18,
+   "onchain_symbol": "UNH",
+   "multiplier": "1.004241501039702113",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x3Df7e1Ab1AE44cFEdff3e106007EB246682e21c8",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x33f75741614dD041D34468E816DA9840E6423ad4",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.004061,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "UPS",
+   "name": "UPS Stock Token",
+   "token": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
+   "decimals": 18,
+   "onchain_symbol": "UPS",
+   "multiplier": "1.002208724969205741",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x3Ab74C45DceCC6A62898204Dd42143a816B44CB1",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 97.61954836094398,
+    "tick": 230510,
+    "liquidity_raw": "43539741174140514",
+    "depth_usd_5pct": 21259.90451841931,
+    "usdg_balance": 12159.645165,
+    "stock_balance": 215.72270814275979,
+    "volume_7d_usd": 71144.93771500001,
+    "volume_usd_per_day": 10163.562530714287,
+    "swaps_7d": 176,
+    "vault_share_100k": 0.8246749030287258,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x5c67a84Ec5494ffE24E217B28dEbb96341014c86",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 15732.028184457367,
+     "usdg_balance": 10155.615102,
+     "volume_7d_usd": 49278.786135999995
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "USAR",
+   "name": "USA Rare Earth Stock Token",
+   "token": "0xd917B029C761D264c6A312BBbcDA868658eF86a6",
+   "decimals": 18,
+   "onchain_symbol": "USAR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0xA994d3684e8400A6c8078226925779FdeE682DD9",
+    "aggregator": "0x76ba75c6c362900B275D9D4d5C422F0275e85578",
+    "description": "Robinhood USAR-USD",
+    "decimals": 8,
+    "usd": 10.505,
+    "updated_at": 1792188290,
+    "age_s": 30922
+   },
+   "pool": {
+    "address": "0x04391780F519B7d3ba59c9590459D76e23d225C4",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 10.592834764708511,
+    "tick": 252721,
+    "liquidity_raw": "90197077590918903",
+    "depth_usd_5pct": 14507.936135130498,
+    "usdg_balance": 6372.26536,
+    "stock_balance": 6475.915927725158,
+    "volume_7d_usd": 215875.9723,
+    "volume_usd_per_day": 30839.424614285712,
+    "swaps_7d": 1630,
+    "vault_share_100k": 0.8733019157902757,
+    "feed_deviation_bps": 83.61234146455088
+   },
+   "other_pools": [
+    {
+     "address": "0x2b307A1BF7A16D20C577cda78C3447C72ff3694F",
+     "fee_tier": 500,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000016,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0x21cF29b6406d966a81ca48Fb3e99C8Def01f3aD5",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000048,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $30.8K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "USO",
+   "name": "United States Oil Fund Stock Token",
+   "token": "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344",
+   "decimals": 18,
+   "onchain_symbol": "USO",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": {
+    "address": "0x75a9c76Ef439e2C7c2E5a34Ab105EcFe3766431c",
+    "aggregator": "0xa6aC45e27D19f91c55109191D71CfBA4A9f5fBe1",
+    "description": "RHUSO / USD",
+    "decimals": 8,
+    "usd": 162.20999999,
+    "updated_at": 1792175492,
+    "age_s": 43720
+   },
+   "pool": {
+    "address": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 162.41927936787096,
+    "tick": 225419,
+    "liquidity_raw": "2826114929368328103",
+    "depth_usd_5pct": 1779982.278863403,
+    "usdg_balance": 1608439.914427,
+    "stock_balance": 3666.9882066025357,
+    "volume_7d_usd": 6924023.388730996,
+    "volume_usd_per_day": 989146.1983901423,
+    "swaps_7d": 5337,
+    "vault_share_100k": 0.05319199075666706,
+    "feed_deviation_bps": 12.90175561826386
+   },
+   "other_pools": [
+    {
+     "address": "0x6ED11C7DfD8e2ca5620eed29a7B9b53AE90dD0D2",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 122423.42448290263,
+     "usdg_balance": 127221.775489,
+     "volume_7d_usd": 229651.071079
+    }
+   ],
+   "eligible": false,
+   "reason": "7-day volume $989.1K/day is below $1.00M/day"
+  },
+  {
+   "symbol": "VICR",
+   "name": "Vicor Stock Token",
+   "token": "0x6006ed4B2F94110851ff7509D97D034f0EeD9226",
+   "decimals": 18,
+   "onchain_symbol": "VICR",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xF20c51F78aBA822f1F73dF47e0c4E2560da92771",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000045,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "VRT",
+   "name": "Vertiv Stock Token",
+   "token": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
+   "decimals": 18,
+   "onchain_symbol": "VRT",
+   "multiplier": "1.000162788892052072",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xb15E0E29161917D36bBBc496ae482DCE2C77C875",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 226.1776257517487,
+    "tick": 222108,
+    "liquidity_raw": "141508527217",
+    "depth_usd_5pct": 0.10517547959687927,
+    "usdg_balance": 0.290552,
+    "stock_balance": 0.005644753857371442,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999989482463103,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "VSAT",
+   "name": "ViaSat Stock Token",
+   "token": "0x26dCbfb34FC83CAbD6990f449674efDc6097fF85",
+   "decimals": 18,
+   "onchain_symbol": "VSAT",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x51A48907b53054626b54098635714F3eB2f1485b",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000039,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "VST",
+   "name": "Vistra Stock Token",
+   "token": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
+   "decimals": 18,
+   "onchain_symbol": "VST",
+   "multiplier": "1.001114738710796417",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xba154B0C9F1E8242BA064eaD09756567EfbC7171",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000018,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "VTI",
+   "name": "Vanguard Morningstar Total Stock Market ETF Stock Token",
+   "token": "0x0594134DF3f171a354D9C85eBD65b7A6148F6D09",
+   "decimals": 18,
+   "onchain_symbol": "VTI",
+   "multiplier": "1.001751012345030813",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xb78DD1A97fa544c65d7D1f12453EcaAF1e05c36d",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 377.2981442275433,
+    "tick": -216991,
+    "liquidity_raw": "98419449196238436",
+    "depth_usd_5pct": 94477.92239142588,
+    "usdg_balance": 18485.08706,
+    "stock_balance": 81.05862014576374,
+    "volume_7d_usd": 39865.90685800001,
+    "volume_usd_per_day": 5695.129551142859,
+    "swaps_7d": 95,
+    "vault_share_100k": 0.514197183774567,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "WDAY",
+   "name": "Workday Stock Token",
+   "token": "0x82DA4646242e1D962e96e932269Dc644c94a9CaA",
+   "decimals": 18,
+   "onchain_symbol": "WDAY",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x0958970ccBfB7CB99b007c7F326a9A9e4320D283",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000002,
+     "volume_7d_usd": null
+    },
+    {
+     "address": "0xcF64702D2538149a2e84FfA96b00ee745195791D",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.00001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "WDC",
+   "name": "Western Digital Stock Token",
+   "token": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
+   "decimals": 18,
+   "onchain_symbol": "WDC",
+   "multiplier": "1.000217565250523909",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x0aF0268A314362FE321bdb0539aaC9A1FBA119Fd",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000536,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "WULF",
+   "name": "TeraWulf Stock Token",
+   "token": "0x348Be1A8663f15edDe5CDf8A96BB69078f7aB6Fd",
+   "decimals": 18,
+   "onchain_symbol": "WULF",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x0c72e22D7a3EF8Bb845478e5D77aec87789dEfc6",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 11.713155888303575,
+    "tick": -251716,
+    "liquidity_raw": "2379646016235262",
+    "depth_usd_5pct": 402.4912002899939,
+    "usdg_balance": 1540.810283,
+    "stock_balance": 253.6899815004299,
+    "volume_7d_usd": 3004.70763,
+    "volume_usd_per_day": 429.2439471428571,
+    "swaps_7d": 100,
+    "vault_share_100k": 0.9959912229718775,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "WYFI",
+   "name": "WhiteFiber, Inc. Stock Token",
+   "token": "0x9e7ABD3C9139D14E4c86DcE0e455AAB7A0C2FB3E",
+   "decimals": 18,
+   "onchain_symbol": "WYFI",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x2a3063e34C60253ABB23C2442F4CDFBC5cbd02c2",
+    "fee_tier": 3000,
+    "tick_spacing": 60,
+    "stock_is_token0": false,
+    "price_usd": 11.773420107795673,
+    "tick": 251664,
+    "liquidity_raw": "2258067093527171",
+    "depth_usd_5pct": 382.90869835065695,
+    "usdg_balance": 44.192874,
+    "stock_balance": 986.080286406984,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9961855189960545,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0xe7071e2Fe49f86fbBE701053F98a73EB4124a6BD",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0.08024119211484965,
+     "usdg_balance": 0.640585,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "XLK",
+   "name": "State Street Technology Select Sector SPDR ETF Stock Token",
+   "token": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
+   "decimals": 18,
+   "onchain_symbol": "XLK",
+   "multiplier": "1.000804404520428861",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0xe20463635cEEEA8E30A315FFc4D4e81c80E53147",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": true,
+    "price_usd": 187.37122821524054,
+    "tick": -223991,
+    "liquidity_raw": "183566154110",
+    "depth_usd_5pct": 0.12417984990557279,
+    "usdg_balance": 0.525198,
+    "stock_balance": 0.02083119263058028,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.999998758203043,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "XNDU",
+   "name": "Xanadu Quantum Stock Token",
+   "token": "0xA8eB3BCcbf2017eE7CBfb652eB51CF2E1B153289",
+   "decimals": 18,
+   "onchain_symbol": "XNDU",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x69174bFCFAcaDfB056982C88c351549ef6308213",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000034,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "XOM",
+   "name": "ExxonMobil Holdings Corporation Stock Token",
+   "token": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
+   "decimals": 18,
+   "onchain_symbol": "XOM",
+   "multiplier": "1.001039563764661900",
+   "has_code": true,
+   "feed": null,
+   "pool": {
+    "address": "0x6aF79a2c154E7EeA9c87B38617D5f0B598B690FB",
+    "fee_tier": 10000,
+    "tick_spacing": 200,
+    "stock_is_token0": false,
+    "price_usd": 168.237661916855,
+    "tick": 225067,
+    "liquidity_raw": "179269176984",
+    "depth_usd_5pct": 0.11491436098725213,
+    "usdg_balance": 0.745319,
+    "stock_balance": 0.014940763564084324,
+    "volume_7d_usd": null,
+    "volume_usd_per_day": null,
+    "swaps_7d": null,
+    "vault_share_100k": 0.9999988508577107,
+    "feed_deviation_bps": null
+   },
+   "other_pools": [
+    {
+     "address": "0x2e8D684E3c689CC0A2A32fB266eCa2845D4B0DbE",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ZETA",
+   "name": "Zeta Global Stock Token",
+   "token": "0xE674C5c071821f48BB2d12CAdb83617Eff438f9e",
+   "decimals": 18,
+   "onchain_symbol": "ZETA",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xa2D2dCDc5EA5DaBFeD32b4E99c1f0A4d6415d8a3",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000001,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ZM",
+   "name": "Zoom Stock Token",
+   "token": "0x44c4F142009036cF477eD2d09932051843137CF1",
+   "decimals": 18,
+   "onchain_symbol": "ZM",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0x89eF54007B030a07B12F7cda9fe98cb278Cd7E6d",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000007,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  },
+  {
+   "symbol": "ZS",
+   "name": "Zscaler Stock Token",
+   "token": "0x7dc013eB55e436f30d7ED1AFE4E36d6e45e3c3f7",
+   "decimals": 18,
+   "onchain_symbol": "ZS",
+   "multiplier": "1.000000000000000000",
+   "has_code": true,
+   "feed": null,
+   "pool": null,
+   "other_pools": [
+    {
+     "address": "0xdF9A23295D5D66E8066370CeA9349DEf9CcafDAe",
+     "fee_tier": 10000,
+     "depth_usd_5pct": 0,
+     "usdg_balance": 0.000024,
+     "volume_7d_usd": null
+    }
+   ],
+   "eligible": false,
+   "reason": "no Chainlink feed"
+  }
+ ]
+}

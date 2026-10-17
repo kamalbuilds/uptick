@@ -1,0 +1,132 @@
+{
+ "provisional": true,
+ "duration": 103.95,
+ "segments": [
+  {
+   "id": "s01",
+   "text": "Robinhood Stock Tokens trade around the clock.",
+   "start": 0.2,
+   "end": 3.32
+  },
+  {
+   "id": "s02",
+   "text": "But the stock price exists only six and a half hours a day.",
+   "start": 3.62,
+   "end": 9.23
+  },
+  {
+   "id": "s03",
+   "text": "Every trade needs a pool of tokens on the other side.",
+   "start": 9.53,
+   "end": 14.32
+  },
+  {
+   "id": "s04",
+   "text": "Liquidity providers fill the pool, and earn a fee on each trade.",
+   "start": 14.62,
+   "end": 19.82
+  },
+  {
+   "id": "s05",
+   "text": "Their danger: a trader who knows the price just moved.",
+   "start": 20.12,
+   "end": 24.48
+  },
+  {
+   "id": "s06",
+   "text": "We replayed five point one million real trades from the chain's own pools.",
+   "cap": "We replayed 5.1 million real trades from the chain's own pools.",
+   "start": 24.78,
+   "end": 30.4
+  },
+  {
+   "id": "s07",
+   "text": "While the stock market is open, a provider earns about a dollar of fees per dollar lost.",
+   "cap": "While the stock market is open, a provider earns about $1 of fees per $1 lost.",
+   "start": 30.7,
+   "end": 37.98
+  },
+  {
+   "id": "s08",
+   "text": "At night, up to three dollars. On weekends, three point eight to nineteen point five.",
+   "cap": "At night, up to $3. On weekends, $3.8 to $19.5.",
+   "start": 38.28,
+   "end": 44.73
+  },
+  {
+   "id": "s09",
+   "text": "It varies by pool and fee tier too, and holders cannot see it.",
+   "start": 45.03,
+   "end": 50.65
+  },
+  {
+   "id": "s10",
+   "text": "Picking a pool by hand is guesswork.",
+   "start": 50.95,
+   "end": 54.07
+  },
+  {
+   "id": "s11",
+   "text": "Some pools carry hooks, small programs that can keep a hidden cut, and eighty percent of hooks are flagged malicious.",
+   "cap": "Some pools carry hooks, small programs that can keep a hidden cut. 80% of hooks are flagged malicious.",
+   "start": 54.37,
+   "end": 62.9
+  },
+  {
+   "id": "s12",
+   "text": "Uptick does the picking.",
+   "start": 63.2,
+   "end": 65.07
+  },
+  {
+   "id": "s13",
+   "text": "For each Stock Token, it replays every pool and fee tier, and chooses where liquidity pays.",
+   "start": 65.37,
+   "end": 72.23
+  },
+  {
+   "id": "s14",
+   "text": "It only enters pools with no hidden cut, or a maximum fee declared on chain and enforced in every trade.",
+   "start": 72.53,
+   "end": 81.07
+  },
+  {
+   "id": "s15",
+   "text": "We sent two hundred trades over the maximum, on a copy of the real chain.",
+   "cap": "We sent 200 trades over the maximum, on a copy of the real chain.",
+   "start": 81.37,
+   "end": 87.82
+  },
+  {
+   "id": "s16",
+   "text": "All two hundred were rejected.",
+   "cap": "All 200 were rejected.",
+   "start": 88.12,
+   "end": 90.4
+  },
+  {
+   "id": "s17",
+   "text": "For a holder, it is one deposit.",
+   "start": 90.7,
+   "end": 93.82
+  },
+  {
+   "id": "s18",
+   "text": "Deposit NVDA, and the vault earns the fees for you.",
+   "start": 94.12,
+   "end": 98.48
+  },
+  {
+   "id": "s19",
+   "text": "Uptick.",
+   "start": 98.78,
+   "end": 99.4
+  },
+  {
+   "id": "s20",
+   "text": "Stock Token yield, chosen by the chain's own data.",
+   "start": 99.7,
+   "end": 103.65
+  }
+ ]
+}

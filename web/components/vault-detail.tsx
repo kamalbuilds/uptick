@@ -7,7 +7,7 @@ import { BandChart, BandReadout } from "./band-chart";
 import { DepositPanel } from "./deposit-panel";
 import { VaultStatus } from "./vault-card";
 import { FetchError, Skeleton } from "./status";
-import { FeeNow } from "./fee-now";
+import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
 import { pct, shortAddress, usd } from "@/lib/format";
@@ -78,9 +78,9 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
           </section>
 
           <section aria-labelledby="fee">
-            <h2 id="fee" className="text-3xl leading-none">The fee moves with the session</h2>
-            <p className="mt-2 max-w-xl text-body">The Uptick hook sets the swap fee from the NYSE session, in the same transaction as the swap.</p>
-            <div className="mt-4 rounded-xl bg-sage p-1"><FeeNow /></div>
+            <h2 id="fee" className="text-3xl leading-none">Why this pool</h2>
+            <p className="mt-2 max-w-xl text-body">We replay every swap on every {cfg.symbol} pool and deposit where liquidity earns more than it loses.</p>
+            <div className="mt-4 rounded-xl bg-sage p-1"><WhyThisPool id={cfg.id} symbol={cfg.symbol} /></div>
           </section>
 
           <section aria-labelledby="band">

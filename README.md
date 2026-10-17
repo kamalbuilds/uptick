@@ -1,14 +1,12 @@
 # Uptick
 
-Stock Token yield on Robinhood Chain. Deposit NVDA once, earn the trading fees of its pool, with fees priced by whether Wall Street is open.
+Stock Token yield, chosen by the chain's own data. Deposit a Robinhood Stock Token once; Uptick's evidence engine has already measured, from every swap on every USDG pool and fee tier, where liquidity earns the most, and the vault deposits there.
 
-Robinhood Chain (chain 4663) lists 189,012 NVDA holders and 114,550 SPCX holders. Their tokens sit idle while the pools they trade in pay liquidity providers a single flat fee at every hour of the week. Uptick turns that idle balance into a managed position and prices the fee to the risk behind it.
+Robinhood Chain (chain 4663) lists 189,012 NVDA holders and 114,550 SPCX holders. Their tokens sit idle, and holders cannot see which pool or fee tier pays liquidity providers best.[^1] Uptick publishes that calibration and routes the deposit by it.
 
 ## The insight
 
-Liquidity provider risk on a stock token depends on whether the NYSE is open. When it is open, informed traders hit the pool at the speed of the Chainlink feed. At night and on weekends the price cannot move on the underlying, so the same flow is mostly benign. Every pool charges one fee regardless.
-
-Fees earned per dollar lost to informed traders (1 hour markout), from 5.1M swaps on the chain's own NVDA, SPCX and TSLA pools over 54 days:
+Liquidity economics on a stock token differ by session and by pool and tier. Fees earned per dollar lost to informed traders (1 hour markout), from 5.1M swaps on the chain's own NVDA, SPCX and TSLA pools over 54 days:[^2]
 
 | Session | Fee earned per $1 lost to informed flow |
 |---|---|
@@ -16,22 +14,25 @@ Fees earned per dollar lost to informed traders (1 hour markout), from 5.1M swap
 | Weeknights | 1.23 to 3.02 |
 | Weekends | 3.83 to 19.53 |
 
-Source: `spikes/stock-vaults/FINDINGS.md`, `spikes/stock-vaults/logs/session_split.txt`.
-
-Weekend liquidity is the most profitable and the cheapest to underwrite. NYSE hours are where a flat fee underprices the risk. Uptick prices both ends.
+The spread between pools and tiers is as large as the spread between sessions. The evidence engine measures it per token and selects the pool and tier with the best out-of-sample result.
 
 ## How it works
 
-**UptickHook** is a Uniswap v4 hook for Stock Token pools.
-- Session pricing: the LP fee follows the market session (NYSE regular hours, weeknights, weekends, holidays), DST-aware.
-- Oracle-gap pricing: trades that push the pool away from the Chainlink reference pay more.
-- Declared cap: the hook declares a maximum fee and enforces it inside every swap. It cannot charge more than it declares, on any router. The enforcement mechanism is proven on a mainnet fork: 200 of 200 over-cap swaps revert, accounting is exact to 0 wei, and a nested self-swap evasion is blocked (`spikes/capped-hooks/FINDINGS.md`).
+**1. Evidence engine** (`spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). For every eligible Stock Token (Chainlink feed, deep and busy USDG pool; `keeper/src/universe.ts`) it replays every swap on every USDG pool and fee tier, computes fee per dollar of 1 hour markout by session, and ranks pool and tier on a held-out half of the window.[^2]
 
-**StockVault** is an ERC-4626 vault per Stock Token (NVDA first, SPCX next). It holds one concentrated position on the Stock Token / USDG pool and recentres it every day at the NYSE open, around the Chainlink price. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens.
+**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. 46 fork tests run against the real pool, router and tokens, and 14 guards are mutation-tested.[^3]
 
-**Keeper and stats API** recentre on the NYSE calendar (13:35 UTC in EDT, 14:35 UTC in EST), simulate every `rebalance()` with `eth_call` first and sign only a simulation that succeeds. The stats API serves TVL, fee APR and share price per vault.
+**3. Keeper and stats API** refresh the evidence and recentre each vault daily on the NYSE calendar (13:35 UTC in EDT, 14:35 UTC in EST). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 
-**Web app** shows the vaults, deposits, and portfolio.
+**4. Pools under a declared cap.** The cap standard (`CappedTakeHook` + `CapRegistry`) lets a hook declare its maximum take and enforces it inside every swap on every router. The vault targets pools without take-capable hooks, or hooks with a registered cap. On a mainnet fork 200 of 200 over-cap swaps revert, accounting is exact to 0 wei, and a nested self-swap evasion is blocked.[^4] `UptickHook` is one reference implementation of the standard.
+
+**5. Web app** shows each token's tier comparison and session evidence, then deposits, redeems and tracks the portfolio.
+
+## Why the chain needs it
+
+Hooks carry 74.5% of v4 trades on Robinhood Chain, 0x labels 80% of 84K hooks malicious, and about $1.2M left traders in 49 hours to hooks keeping 5 to 11% while their pools quote 0 to 1%.[^5] Quoted fees no longer tell the price a liquidity provider or trader gets. Uptick's pick is measured, and its pools sit under a cap the chain enforces.
+
+Session-fee and oracle-gap hooks (Fables, SessionFeeHook, Bellswap, ClosingBell) price swaps. Vault products (AutoRange, HedgeHood, Saffron) choose ranges by hand. Uptick adds the published calibration, the cap standard and one-click vaults across many Stock Tokens.[^6]
 
 ## Evidence
 
@@ -77,10 +78,19 @@ anvil --fork-url https://rpc.mainnet.chain.robinhood.com
 ## Repo layout
 
 ```
-contracts/   StockVault (ERC-4626), fork tests, invariants, SECURITY.md
-keeper/      rebalance keeper, NYSE calendar, stats API, replay engine
-web/         Next.js app: vaults, vault detail, portfolio
+contracts/   StockVault (ERC-4626), CappedTakeHook, CapRegistry, UptickHook (reference
+             implementation), fork tests, invariants, SECURITY.md
+keeper/      evidence refresh, rebalance keeper, NYSE calendar, eligibility rule, stats API
+web/         Next.js app: vaults, tier comparison and session evidence, portfolio
 docs/        ARCHITECTURE.md, PITCH.md, architecture.html
+deck/        investor deck (index.html, uptick-deck.pdf)
 ```
 
 Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture.html](docs/architecture.html). Demo: [docs/PITCH.md](docs/PITCH.md).
+
+[^1]: Holder counts: `docs/research/founder-house/PLATFORM-TRUTH.md`, Stock Tokens table (Blockscout, 2026-10-16).
+[^2]: `spikes/stock-vaults/FINDINGS.md`, `spikes/stock-vaults/logs/session_split.txt`, engine `spikes/stock-vaults/scripts/engine.py`. Window 2026-08-24 to 2026-10-17.
+[^3]: `contracts/SECURITY.md`, `contracts/test/`.
+[^4]: `spikes/capped-hooks/FINDINGS.md`.
+[^5]: 74.5%: Bitquery. 80% of 84K: 0x. $1.2M in 49 hours: `docs/research/founder-house/OUTREACH-fomo-gmgn.md`.
+[^6]: `docs/research/founder-house/vaults/HOOK-DESIGN.md` section A and `docs/research/founder-house/vaults/COMPETITORS.md`.

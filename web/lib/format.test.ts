@@ -46,3 +46,13 @@ test("parseVaultStats reads the keeper price chart and rejects a malformed one",
   assert.equal(parseVaultStats({ ...raw, chart: null }).chart, null);
   assert.throws(() => parseVaultStats({ ...raw, chart: { ...raw.chart, history: [] } }), /no series/);
 });
+
+test("a new onchain vault with no fees leads with the replay APR; one with fees leads with its own", () => {
+  const base = { id: "nvda", ticker: "NVDA", source: "onchain", pool: "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3", tvl_usd: 49968.98, replay: { window: { days: 30 } } };
+  const fresh = parseVaultStats({ ...base, fee_apr_pct: { "7d": 0, lifetime: 0, replay_30d: 40.6 } });
+  assert.equal(fresh.feeAprPct, 40.6);
+  assert.equal(fresh.source, "replay");
+  const earning = parseVaultStats({ ...base, fee_apr_pct: { "7d": 38.2, lifetime: 38.2, replay_30d: 40.6 } });
+  assert.equal(earning.feeAprPct, 38.2);
+  assert.equal(earning.source, "onchain");
+});

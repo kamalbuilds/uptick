@@ -74,7 +74,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
 <section class="slide dark" data-t="Title">
   <div class="k" style="color:var(--lime)">Robinhood Chain &middot; chain 4663</div>
   <h1 style="font-size:430px;line-height:.8;color:var(--lime);margin-top:30px;margin-left:-12px">Uptick</h1>
-  <p style="font-size:50px;line-height:1.15;max-width:1450px;margin-top:48px;font-weight:600">Deposit NVDA once. Earn the trading fees of its pool, with fees priced by whether Wall Street is open.<sup>1</sup></p>
+  <p style="font-size:50px;line-height:1.15;max-width:1450px;margin-top:48px;font-weight:600">Stock Token yield, chosen by the chain's own data. Deposit once; the vault goes where 5.1M replayed swaps show liquidity earns the most.<sup>1</sup></p>
   <div class="week" style="position:absolute;left:112px;right:112px;bottom:92px;height:150px;grid-template-columns:repeat(24,1fr);grid-template-rows:repeat(7,1fr);grid-auto-flow:row" id="w1"></div>
   <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md. Strip: one week, 7 rows by 24 hours, NYSE regular session (Mon to Fri, 09:30 to 16:00 ET) in lime.</div>
 </section>
@@ -92,7 +92,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
     </div>
     <div style="flex:1;display:flex;flex-direction:column;gap:28px">
       <div class="card d"><div class="num">78%</div><div class="lab">of Stock Token flow arrives outside NYSE regular hours.<sup>3</sup></div></div>
-      <div class="card"><div class="lab" style="margin:0;font-size:30px;color:var(--ink)">Pools that trade them charge one flat fee at every hour. LPs are priced wrong at both ends.<sup>1</sup></div></div>
+      <div class="card"><div class="lab" style="margin:0;font-size:30px;color:var(--ink)">Holders cannot see which pool, fee tier and hour pays liquidity providers best. The chain's swap history can.<sup>1</sup></div></div>
     </div>
   </div>
   <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md. [2] derived: 5 days x 6.5 h = 32.5 of 168 hours (19%). [3] docs/research/founder-house/PLATFORM-TRUTH.md, verdict line 3 and Gap 3 (78%, interval 69 to 85).</div>
@@ -116,18 +116,18 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
     <div style="position:absolute;left:0;top:296px;font:900 40px Archivo">Weekends<div style="font:400 24px Figtree;margin-top:4px">3.83 to 19.53</div></div>
   </div>
   <style>.bar{position:absolute;left:0;right:0;height:78px}.bar span{position:absolute;top:0;bottom:0;background:var(--ink);border-radius:14px;min-width:20px}</style>
-  <p style="position:absolute;left:112px;right:112px;bottom:92px;font-size:28px;font-weight:600">Weekend liquidity is the most profitable and the cheapest to underwrite. NYSE hours are where a flat fee underprices the risk. Uptick prices both ends.<sup>1</sup></p>
+  <p style="position:absolute;left:112px;right:112px;bottom:92px;font-size:28px;font-weight:600">Pool and fee tier move the number as much as the clock does. Uptick's evidence engine measures it per token and the vault deposits where it is best.<sup>1</sup></p>
   <div class="fn" style="color:#2c4a14"><b>Sources.</b> [1] spikes/stock-vaults/FINDINGS.md and stock-vaults-app/README.md. Fee earned per $1 lost to informed traders (1 hour markout), static &plusmn;2% vault, NVDA, SPCX and TSLA pools, 5.1M swaps, 2026-08-24 to 10-17. Range ends are per-pool values: NYSE 0.78 (SPCX) to 1.21 (NVDA); weeknights 1.23 (NVDA) to 3.02 (SPCX); weekends 3.83 (NVDA) to 19.53 (TSLA).</div>
 </section>
 
 <!-- 4 -->
 <section class="slide sage" data-t="Product">
-  <h2>One deposit. The pool's fees <em>come back</em> to the holder.</h2>
+  <h2>One click, into the pool the <em>evidence</em> picks.</h2>
   <div class="row" style="margin-top:52px;gap:36px;align-items:flex-start">
     <div style="width:430px;display:flex;flex-direction:column;gap:22px">
-      <div class="card w" style="padding:26px"><div class="k">Hook</div><div style="font-size:27px;line-height:1.25;margin-top:8px">UptickHook sets the LP fee per swap from the market session and the gap to Chainlink, and declares a maximum it enforces.<sup>1</sup></div></div>
-      <div class="card w" style="padding:26px"><div class="k">Vault</div><div style="font-size:27px;line-height:1.25;margin-top:8px">StockVault, an ERC-4626 vault per Stock Token. One position, recentred at the NYSE open.<sup>1</sup></div></div>
-      <div class="card w" style="padding:26px"><div class="k">App</div><div style="font-size:27px;line-height:1.25;margin-top:8px">Vaults, deposit and redeem, portfolio. Exit always pays both tokens.<sup>1</sup></div></div>
+      <div class="card w" style="padding:26px"><div class="k">Evidence engine</div><div style="font-size:27px;line-height:1.25;margin-top:8px">Replays every swap on every USDG pool and tier, and picks the best.<sup>1</sup></div></div>
+      <div class="card w" style="padding:26px"><div class="k">Vault</div><div style="font-size:27px;line-height:1.25;margin-top:8px">ERC-4626 per Stock Token. Deposits into the pick, recentred daily.<sup>1</sup></div></div>
+      <div class="card w" style="padding:26px"><div class="k">App</div><div style="font-size:27px;line-height:1.25;margin-top:8px">Tier comparison, deposit, redeem, portfolio.<sup>1</sup></div></div>
     </div>
     <div style="width:560px;height:660px;overflow:hidden;border-radius:20px;border:3px solid var(--ink);background:#fff"><img src="img/home-1440.png" alt="Uptick home" style="width:100%;display:block"></div>
     <div style="width:560px;height:660px;overflow:hidden;border-radius:20px;border:3px solid var(--ink);background:#fff"><img src="img/vault-nvda-1440.png" alt="Uptick NVDA vault" style="width:100%;display:block"></div>
@@ -137,19 +137,18 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
 
 <!-- 5 -->
 <section class="slide light" data-t="How it works">
-  <h2>A hook that <em>prices</em> the risk. A vault that <em>collects</em> the fees.</h2>
+  <h2>An engine that <em>measures</em> the pools. A vault that <em>collects</em> the fees.</h2>
   <div style="margin-top:54px;display:grid;grid-template-columns:1fr 1fr;gap:40px">
     <div class="card" style="padding:32px">
-      <div class="k" style="color:var(--ink)">Pricing layer &middot; Uniswap v4</div>
+      <div class="k" style="color:var(--ink)">Evidence engine &middot; cap standard</div>
       <div style="display:flex;align-items:center;gap:18px;margin-top:22px">
-        <div class="node">Trader<small>any router</small></div><span style="font-size:38px">&rarr;</span>
-        <div class="node">PoolManager<small>0x8366...0951</small></div><span style="font-size:38px">&rarr;</span>
-        <div class="node d">UptickHook<small>session fee<br>oracle gap<br>declared cap</small></div>
+        <div class="node">PoolManager<small>0x8366...0951<br>every swap</small></div><span style="font-size:38px">&rarr;</span>
+        <div class="node d">Evidence engine<small>fee per $ of<br>1h markout<br>pool and tier pick</small></div>
       </div>
       <ol style="font-size:25px;line-height:1.4;margin:26px 0 0 28px;color:var(--ink)">
-        <li>beforeSwap reads the session and the Chainlink reference.</li>
-        <li>Fee = session base plus a surcharge for trades that open a gap.</li>
-        <li>afterSwap reverts with <b>TakeExceedsCap</b> above the declared maximum, on every router.<sup>1</sup></li>
+        <li>Replays every swap on every USDG pool and fee tier, split by session.</li>
+        <li>Selects the pool and tier with the best out-of-sample result; the keeper refreshes it daily.</li>
+        <li>Pools sit under the cap standard: <b>TakeExceedsCap</b> reverts any take above a hook's declared maximum, on every router.<sup>1</sup></li>
       </ol>
     </div>
     <div class="card g" style="padding:32px">
@@ -157,7 +156,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
       <div style="display:flex;align-items:center;gap:18px;margin-top:22px">
         <div class="node">Holder<small>deposit NVDA</small></div><span style="font-size:38px">&rarr;</span>
         <div class="node l">StockVault<small>shares at NAV</small></div><span style="font-size:38px">&rarr;</span>
-        <div class="node">NVDA / USDG<small>v3 position</small></div>
+        <div class="node">Selected pool<small>NVDA / USDG<br>position</small></div>
       </div>
       <ol style="font-size:25px;line-height:1.4;margin:26px 0 0 28px;color:var(--ink)">
         <li>Every value-in and value-out passes an oracle gate: Chainlink fresh, TWAP and spot within bounds.</li>
@@ -200,7 +199,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
     <div class="card" style="flex:1"><div class="num" style="font-size:132px">80%</div><div class="lab">of 84K hooks labelled malicious by 0x<sup>1</sup></div></div>
     <div class="card g" style="flex:1"><div class="num" style="font-size:132px">$1.2M</div><div class="lab">taken in 49 hours by hooks keeping 5 to 11% while pools quote 0 to 1%<sup>3</sup></div></div>
   </div>
-  <p class="lead" style="max-width:1600px;font-size:38px;color:var(--ink);font-weight:600">Uptick declares its maximum and the pool enforces it inside the swap. Stock Tokens, Uniswap v4 hooks and Chainlink equity feeds sit on one chain.</p>
+  <p class="lead" style="max-width:1600px;font-size:38px;color:var(--ink);font-weight:600">Uptick's cap standard makes a hook declare its maximum and the pool enforce it inside the swap. The vault targets pools without take-capable hooks, or with a registered cap.</p>
   <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md (Bitquery 74.5%; 0x 80% of 84K). [2] docs/research/founder-house/QWEN-LANE.md line 63 (cryptobriefing, Oct 12 2026). [3] docs/research/founder-house/OUTREACH-fomo-gmgn.md, hidden-take table.</div>
 </section>
 
@@ -222,31 +221,31 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
 
 <!-- 9 -->
 <section class="slide light" data-t="Competition">
-  <h2>Session fees exist. <em>None</em> pairs them with an enforced cap and a vault that collects.<sup>1</sup></h2>
+  <h2>Hooks price swaps. Vaults pick ranges by hand. <em>None</em> publishes a calibration.<sup>1</sup></h2>
   <div class="row" style="margin-top:50px;gap:40px;align-items:flex-start">
     <div style="flex:1">
       <table>
         <tr><th>Approach</th><th>What it prices</th></tr>
-        <tr><td>Covered-call vaults, fixed-yield LP, ETF baskets, agent range managers</td><td>Weekly expiry, fixed rate, a basket, a 5 minute loop. Not the session.<sup>1</sup></td></tr>
-        <tr><td>Session-fee hooks</td><td>Higher fee when the market is closed. ClosingBell-Hook, ETHOnline 2026 Uniswap track.<sup>2</sup></td></tr>
-        <tr><td style="background:var(--lime);font-weight:600">Uptick</td><td style="background:var(--lime);font-weight:600">Session, oracle gap, an enforced cap, and the vault that collects.</td></tr>
+        <tr><td>Session-fee and oracle-gap hooks</td><td>SessionFeeHook and Fables are live on the chain, Bellswap charges a Chainlink gap surcharge, ClosingBell won a Uniswap Foundation prize at ETHOnline 2026. Fees are hand-set.<sup>2</sup></td></tr>
+        <tr><td>Vault products</td><td>AutoRange, HedgeHood, Saffron choose ranges by hand.<sup>1</sup></td></tr>
+        <tr><td style="background:var(--lime);font-weight:600">Uptick</td><td style="background:var(--lime);font-weight:600">A published calibration of every pool and tier, a cap standard, and one-click vaults across Stock Tokens.</td></tr>
       </table>
     </div>
     <div style="flex:.85;display:grid;gap:18px">
-      <div class="card g" style="padding:26px"><b style="font-size:30px">Enforced cap.</b><div class="lab" style="margin-top:6px">200 of 200 over-cap swaps revert.<sup>3</sup></div></div>
-      <div class="card g" style="padding:26px"><b style="font-size:30px">Fees calibrated on data.</b><div class="lab" style="margin-top:6px">5.1M swaps, three pools, 54 days.<sup>4</sup></div></div>
-      <div class="card g" style="padding:26px"><b style="font-size:30px">Integrated vault.</b><div class="lab" style="margin-top:6px">Deposit once; oracle-gated in and out.<sup>5</sup></div></div>
+      <div class="card g" style="padding:26px"><b style="font-size:30px">Cap standard.</b><div class="lab" style="margin-top:6px">200 of 200 over-cap swaps revert.<sup>3</sup></div></div>
+      <div class="card g" style="padding:26px"><b style="font-size:30px">Evidence engine.</b><div class="lab" style="margin-top:6px">5.1M swaps replayed, pool and tier picked out-of-sample, 54 days.<sup>4</sup></div></div>
+      <div class="card g" style="padding:26px"><b style="font-size:30px">One-click vaults.</b><div class="lab" style="margin-top:6px">Many Stock Tokens; oracle-gated in and out.<sup>5</sup></div></div>
       <div class="card g" style="padding:26px"><b style="font-size:30px">Robinhood Chain specifics.</b><div class="lab" style="margin-top:6px">24/5 Chainlink equity feed, NYSE calendar with DST, USDG.<sup>5</sup></div></div>
     </div>
   </div>
-  <div class="fn"><b>Sources.</b> [1] docs/research/founder-house/vaults/COMPETITORS.md, "Off-hours aware" column: HedgeHood, Saffron, StonkBrokers, TickerSpring, AutoRange, EARN, Crossbow, Arrowfarm. [2] docs/research/competitor-teardown.md. [3] spikes/capped-hooks/FINDINGS.md. [4] spikes/stock-vaults/FINDINGS.md. [5] docs/ARCHITECTURE.md.</div>
+  <div class="fn"><b>Sources.</b> [1] docs/research/founder-house/vaults/COMPETITORS.md, "Off-hours aware" column: HedgeHood, Saffron, StonkBrokers, TickerSpring, AutoRange, EARN, Crossbow, Arrowfarm. [2] docs/research/founder-house/vaults/HOOK-DESIGN.md, section A (prior art, read 2026-10-17). [3] spikes/capped-hooks/FINDINGS.md. [4] spikes/stock-vaults/FINDINGS.md. [5] docs/ARCHITECTURE.md.</div>
 </section>
 
 <!-- 10 -->
 <section class="slide green" data-t="Business model">
   <h2>Uptick earns a performance share of the fees the vault <em>collects</em>.<sup>1</sup></h2>
   <div style="margin-top:62px;display:flex;align-items:center;gap:22px">
-    <div class="node" style="flex:1">Pool trades<small>session-priced fees accrue to the position</small></div><span style="font-size:48px">&rarr;</span>
+    <div class="node" style="flex:1">Pool trades<small>fees accrue to the selected position</small></div><span style="font-size:48px">&rarr;</span>
     <div class="node" style="flex:1">Rebalance<small>vault collects fees</small></div><span style="font-size:48px">&rarr;</span>
     <div class="node d" style="flex:1.1">Treasury shares minted<small>from uncollected fees, before NAV is computed</small></div><span style="font-size:48px">&rarr;</span>
     <div class="node" style="flex:1">Holders<small>share price identical one second before and after</small></div>
@@ -286,7 +285,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
       <div style="font-size:28px;line-height:1.5;margin-top:22px;color:var(--ink)">Amount: <b>[to be filled]</b><br>Instrument: <b>[to be filled]</b><br>Use of funds: <b>[to be filled]</b></div>
     </div>
   </div>
-  <p style="position:absolute;left:112px;bottom:96px;font:900 48px Archivo;color:var(--lime)">Uptick. Stock Token yield, priced for the risk.</p>
+  <p style="position:absolute;left:112px;bottom:96px;font:900 48px Archivo;color:var(--lime)">Uptick. Stock Token yield, chosen by the chain's own data.</p>
   <div class="fn"><b>Sources.</b> Team and ask panels are founder-supplied fields.</div>
 </section>
 
