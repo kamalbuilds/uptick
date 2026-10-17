@@ -154,7 +154,7 @@ contract VaultFactory is Ownable2Step {
     function entries(uint256 offset, uint256 limit) external view returns (Entry[] memory page) {
         uint256 n = _entries.length;
         if (offset >= n) return page;
-        uint256 end = offset + limit > n ? n : offset + limit;
+        uint256 end = limit > n - offset ? n : offset + limit;
         page = new Entry[](end - offset);
         for (uint256 i = offset; i < end; ++i) {
             page[i - offset] = _entries[i];

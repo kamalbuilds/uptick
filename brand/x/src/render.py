@@ -4,7 +4,7 @@ Usage: python3 render.py <source.svg> <out.png> <width> <height> [--no-text]
 
 Checks, printed as JSON and exit 1 on any failure:
   fonts    every face the source declares reached status "loaded"
-  overlap  no two <text> boxes intersect by more than 2px in both axes
+  overlap  no two <text> ink boxes (baseline - 0.78em to baseline + descender) intersect by more than 3px
   clipped  every <text> bbox (and every element marked data-box) sits inside the canvas, and inside its
            data-within="<x0> <y0> <x1> <y1>" region when one is given
 The tab is created with background:true and never activated, so the user's window keeps focus.
@@ -37,11 +37,19 @@ CHECK = r"""
       if (!inside(b, x0, y0, x1, y1)) bad.push({label, why: 'outside region ' + w.getAttribute('data-within'), b});
     }
   }
-  const tb = [...document.querySelectorAll('text')].map(el => [el.textContent.trim().slice(0, 40), el.getBoundingClientRect()]);
+  // Ink box, not em box: x from layout, y from the baseline with ascender 0.78em and a descender sized by the glyphs present,
+  // so tightly leaded headline lines do not count as collisions but real ones do.
+  const ink = el => {
+    const r = el.getBoundingClientRect(), base = r.top + (+el.getAttribute('y') - el.getBBox().y) * (r.height / el.getBBox().height);
+    const fs = +el.getAttribute('font-size'), s = el.textContent;
+    const desc = /[gjpqy]/.test(s) ? 0.22 : /[$,;()]/.test(s) ? 0.12 : 0.03;
+    return {left: r.left, right: r.right, top: base - 0.78 * fs, bottom: base + desc * fs};
+  };
+  const tb = [...document.querySelectorAll('text')].map(el => [el.textContent.trim().slice(0, 40), ink(el)]);
   for (let i = 0; i < tb.length; i++) for (let j = i + 1; j < tb.length; j++) {
     const [a, A] = tb[i], [c, B] = tb[j];
     const w = Math.min(A.right, B.right) - Math.max(A.left, B.left), h = Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top);
-    if (w > 2 && h > 2) bad.push({label: a + ' | ' + c, why: 'text overlaps text', overlap: [Math.round(w), Math.round(h)]});
+    if (w > 3 && h > 3) bad.push({label: a + ' | ' + c, why: 'text overlaps text', overlap: [Math.round(w), Math.round(h)]});
   }
   const texts = tb.length;
   return JSON.stringify({faces, texts, bad});

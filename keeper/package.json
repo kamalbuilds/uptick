@@ -6,8 +6,10 @@
     "keeper": "bun src/keeper.ts",
     "dry-run": "bun src/keeper.ts --dry-run",
     "stats": "bun src/stats.ts",
-    "replay": "python3 replay/build_replay.py",
-    "test": "bun test"
+    "replay": "python3 replay/replay.py",
+    "test": "bun test",
+    "pull": "python3 replay/pull.py",
+    "universe": "bun scripts/build-universe.ts"
   },
   "dependencies": {
     "viem": "^2.57.7"

@@ -19,11 +19,11 @@ function Row({ cfg, stats, pending }: { cfg: VaultConfig; stats: VaultStats | un
     <li>
       <Link
         href={`/vault/${cfg.id}`}
-        className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 rounded-lg px-4 py-4 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[1.4fr_1fr_0.7fr_auto]"
+        className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 rounded-lg px-4 py-4 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[1.4fr_1fr_0.7fr_9.5rem]"
       >
         <div>
           <p className="display text-3xl">{cfg.symbol}</p>
-          <p className="text-sm text-body">{cfg.name}</p>
+          <p className="text-sm text-body">{cfg.name}<span className="sm:hidden">, {cfg.feeTier} pool</span></p>
         </div>
         <p className="figure text-right text-xl font-medium sm:text-left">
           {stats ? pct(stats.feeAprPct) : pending ? <Skeleton className="inline-block h-6 w-16 align-middle" /> : "Unavailable"}

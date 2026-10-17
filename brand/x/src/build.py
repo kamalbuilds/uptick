@@ -107,7 +107,7 @@ def banner():
         b.append(f'<rect x="{X(s) + 1:.1f}" y="{Y(hi_v):.1f}" width="{X(e) - X(s) - 2:.1f}" height="{Y(lo_v) - Y(hi_v):.1f}" rx="3" fill="{fill[k]}"/>')
     b.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(1):.1f}" y2="{Y(1):.1f}" stroke="{C["ink"]}" stroke-width="1.5" stroke-dasharray="5 4"/>')
     b.append(t(x0 - 10, Y(1) + 5, "$1", 14, "m", C["ink"], "end"))
-    b.append(t(X(116) + 8, Y(1) + 5, "fees = losses", 13, "m", C["body"]))
+    b.append(t(x1, Y(1) - 8, "fees = losses", 13, "m", C["body"], "end"))
     b.append(f'<line x1="{x0}" x2="{x1}" y1="{yb + 8}" y2="{yb + 8}" stroke="{C["ink"]}" stroke-width="1"/>')
     for d, name in enumerate(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]):
         b.append(f'<line x1="{X(24 * d):.1f}" x2="{X(24 * d):.1f}" y1="{yb + 8}" y2="{yb + 14}" stroke="{C["ink"]}" stroke-width="1"/>')
@@ -117,8 +117,8 @@ def banner():
     b.append(f'<line x1="{mx:.1f}" x2="{mx:.1f}" y1="{Y(1.21) - 6:.1f}" y2="{214}" stroke="{C["ink"]}" stroke-width="1"/>')
     b.append(t(mx - 4, 156, "NYSE open", 16, "t", C["ink"], weight=600))
     b.append(t(mx - 6, 198, "$0.78 to $1.21", 38, "d"))
-    b.append(t(X(116) - 14, 150, "Weekend", 16, "t", C["ink"], "end", weight=600))
-    b.append(t(X(116) - 14, 192, "$3.83 to $19.53", 38, "d", anchor="end"))
+    b.append(t(X(116) + 4, Y(3.83) + 26, "Weekend", 16, "t", C["ink"], weight=600))
+    b.append(t(X(116) + 2, Y(3.83) + 60, "$3.83 to $19.53", 30, "d"))
     nx = X(68) + (X(85.5) - X(68)) / 2
     b.append(t(nx, Y(3.02) - 10, "weeknights $1.23 to $3.02", 13, "m", C["body"], "middle"))
     b.append(t(x1, 476, "range across NVDA, SPCX, TSLA pools · Aug 24 to Oct 17, 2026 · UTC", 12, "m", C["mute"], "end"))
@@ -196,14 +196,14 @@ def post_hooks():
     W, H = 1600, 900
     b = [f'<g data-within="60 40 1560 870">']
     b.append(t(80, 104, "Uniswap v4 hooks on Robinhood Chain, Oct 14 to 16, 2026", 24, "t", C["mute_dark"], weight=600))
-    b.append(t(82, 196, "about", 34, "t", C["canvas"], weight=600))
-    b.append(t(70, 330, "$1.2M", 230, "d", C["canvas"]))
-    b.append(t(80, 392, "left traders in 49 hours, through hooks that keep 5 to 11% of a swap", 32, "t", C["canvas"]))
-    b.append(t(80, 434, "while the pool quotes a fee of 0 to 1%.", 32, "t", C["canvas"]))
+    b.append(t(82, 156, "about", 30, "t", C["canvas"], weight=600))
+    b.append(t(70, 342, "$1.2M", 230, "d", C["canvas"]))
+    b.append(t(80, 402, "left traders in 49 hours, through hooks that keep 5 to 11% of a swap", 32, "t", C["canvas"]))
+    b.append(t(80, 444, "while the pool quotes a fee of 0 to 1%.", 32, "t", C["canvas"]))
     # range bars on one % axis
     x0, x1 = 470, 1500
     X = lambda p: x0 + p / 12 * (x1 - x0)
-    y1, y2, ya = 520, 600, 650
+    y1, y2, ya = 530, 606, 654
     for p in range(0, 13, 2):
         b.append(f'<line x1="{X(p):.1f}" x2="{X(p):.1f}" y1="{y1 - 34}" y2="{ya - 12}" stroke="{C["rule_dark"]}" stroke-width="1"/>')
         b.append(t(X(p), ya + 12, f"{p}%", 16, "m", C["mute_dark"], "middle"))
@@ -226,35 +226,36 @@ def post_hooks():
 
 
 # ---------------------------------------------------------------- post 3: cap 1600x900
-def cap_panel(px, py, pw, ph, cap, settle):
-    """One panel: take % axis 0..3.5, a ceiling at `cap`, a 3% hook's take rising into it."""
-    b = [f'<rect x="{px}" y="{py}" width="{pw}" height="{ph}" rx="24" fill="{C["card"]}"/>']
-    l, r, top, bot = px + 96, px + pw - 40, py + 110, py + ph - 70
+def cap_panel(px, py, pw, ph, cap, settle, head, sub):
+    """One panel: take % axis 0..3.5, a bar at the declared `cap`, a 3% hook's take rising into it."""
+    b = [f'<g data-within="{px} {py} {px + pw} {py + ph}">',
+         f'<rect x="{px}" y="{py}" width="{pw}" height="{ph}" rx="24" fill="{C["card"]}"/>',
+         t(px + 40, py + 62, head, 42, "d"), t(px + 42, py + 96, sub, 17, "m", C["body"])]
+    l, r, top, bot = px + 96, px + pw - 40, py + 150, py + ph - 56
     Y = lambda p: bot - p / 3.5 * (bot - top)
     for p in range(0, 4):
         b.append(f'<line x1="{l}" x2="{r}" y1="{Y(p):.1f}" y2="{Y(p):.1f}" stroke="{C["rule"]}" stroke-width="1"/>')
         b.append(t(l - 14, Y(p) + 5, f"{p}%", 15, "m", C["body"], "end"))
     cy = Y(cap)
     b.append(f'<rect x="{l}" y="{cy - 12:.1f}" width="{r - l}" height="12" fill="{C["ink"]}"/>')
-    b.append(t(r, cy - 22, f"declared max {cap:.2f}%", 16, "m", C["ink"], "end"))
+    b.append(t(r, cy - 22, f"max {cap:.2f}%", 16, "m", C["ink"], "end"))
     sx, sy = l + 24, Y(0)
     if settle:
         hx = l + 250
         b.append(f'<path d="M{sx} {sy:.1f} C {sx + 120} {sy:.1f}, {hx - 90} {cy:.1f}, {hx} {cy:.1f} L {r - 30} {cy:.1f}" fill="none" stroke="{C["ink"]}" stroke-width="5" stroke-linecap="round"/>')
         b.append(f'<circle cx="{r - 30}" cy="{cy:.1f}" r="13" fill="{C["lime"]}" stroke="{C["ink"]}" stroke-width="4"/>')
-        b.append(t(r - 30, cy + 44, "swap settles, 3.00% taken", 17, "m", C["ink"], "end"))
+        b.append(t(r - 30, cy + 44, "settles, 3.00% taken", 17, "m", C["ink"], "end"))
     else:
-        hx = l + 230
-        b.append(f'<path d="M{hx} {cy:.1f} L {hx + 34} {Y(3.0):.1f}" stroke="{C["mute"]}" stroke-width="3" stroke-dasharray="4 5" fill="none"/>')
-        b.append(t(hx + 42, Y(3.0) - 2, "3% wanted", 15, "m", C["mute"]))
-        b.append(f'<path d="M{sx} {sy:.1f} Q {hx - 70} {sy - 40:.1f}, {hx} {cy:.1f}" fill="none" stroke="{C["ink"]}" stroke-width="5" stroke-linecap="round"/>')
-        lx = hx + 210
-        b.append(f'<path d="M{hx} {cy:.1f} Q {hx + 80} {cy + 30:.1f}, {lx} {sy:.1f}" fill="none" stroke="{C["neg"]}" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 0"/>')
-        for dx, dy in [(-22, 16), (0, 22), (22, 16)]:
-            b.append(f'<line x1="{hx + dx * 0.4:.1f}" y1="{cy + dy * 0.4:.1f}" x2="{hx + dx:.1f}" y2="{cy + dy:.1f}" stroke="{C["neg"]}" stroke-width="3" stroke-linecap="round"/>')
+        hx, lx = l + 200, l + 370
+        b.append(f'<path d="M{hx} {cy:.1f} L {hx + 30} {Y(3.0):.1f}" stroke="{C["mute"]}" stroke-width="3" stroke-dasharray="4 5" fill="none"/>')
+        b.append(t(hx + 38, Y(3.0) + 2, "3% wanted", 15, "m", C["mute"]))
+        b.append(f'<path d="M{sx} {sy:.1f} Q {hx - 60} {sy - 30:.1f}, {hx} {cy:.1f}" fill="none" stroke="{C["ink"]}" stroke-width="5" stroke-linecap="round"/>')
+        b.append(f'<path d="M{hx} {cy:.1f} Q {hx + 90} {cy + 20:.1f}, {lx} {sy:.1f}" fill="none" stroke="{C["neg"]}" stroke-width="5" stroke-linecap="round"/>')
         b.append(f'<circle cx="{lx}" cy="{sy:.1f}" r="13" fill="{C["card"]}" stroke="{C["neg"]}" stroke-width="4"/>')
-        b.append(t(lx + 24, sy - 34, "reverts: TakeExceedsCap", 17, "m", C["neg"]))
-        b.append(t(lx + 24, sy - 12, "the trader keeps everything", 15, "m", C["body"]))
+        b.append(t(lx + 26, sy - 62, "reverts with", 17, "m", C["neg"]))
+        b.append(t(lx + 26, sy - 40, "TakeExceedsCap", 17, "m", C["neg"]))
+        b.append(t(lx + 26, sy - 14, "nothing is taken", 15, "m", C["body"]))
+    b.append("</g>")
     return b
 
 
@@ -263,12 +264,10 @@ def post_cap():
     b = [f'<g data-within="60 40 1560 870">']
     b.append(t(78, 118, "Declare a maximum take.", 64, "d"))
     b.append(t(78, 184, "Any swap above it reverts.", 64, "d"))
-    b.append(t(80, 236, "Uptick’s cap standard checks the hook’s take inside the swap. Same 3% hook, two declared caps, on a fork of Robinhood Chain:", 22, "t", C["body"]))
-    pw, ph, py = 700, 470, 280
-    b += cap_panel(80, py, pw, ph, 2.5, settle=False)
-    b.append(t(120, py + 54, "200 of 200 revert", 40, "d"))
-    b += cap_panel(820, py, pw, ph, 3.0, settle=True)
-    b.append(t(860, py + 54, "200 of 200 settle", 40, "d"))
+    b.append(t(80, 236, "Uptick’s cap standard checks the hook’s take inside the swap. One 3% hook, two declared caps, on a fork of Robinhood Chain.", 22, "t", C["body"]))
+    pw, ph, py = 700, 480, 276
+    b += cap_panel(80, py, pw, ph, 2.5, False, "200 of 200 revert", "3% hook, declared max 2.50%")
+    b += cap_panel(820, py, pw, ph, 3.0, True, "200 of 200 settle", "same hook, declared max 3.00%")
     b.append(t(80, 806, "At the edge, under a 3.00% cap: a 3.01% take reverts 60 of 60 times, 2.99% passes 60 of 60.", 22, "t", C["ink"]))
     b.append(t(80, 852, "CappedTakeHook + CapRegistry · Uniswap v4 PoolManager 0x8366…0951 · about 25k gas per swap", 16, "m", C["body"]))
     b.append(t(1520, 852, "Uptick", 30, "d", anchor="end"))
@@ -279,10 +278,10 @@ def post_cap():
 # ---------------------------------------------------------------- post 4: app 1600x900
 def post_app():
     W, H = 1600, 900
-    cx, cy, cw, ch = 205, 955, 645, 800          # crop of web/screens/vault-nvda-1440.png (1440x2400)
-    k = 770 / ch
+    cx, cy, cw, ch = 205, 932, 645, 828          # crop of web/screens/vault-nvda-1440.png (1440x2400)
+    k = 760 / ch
     fw, fh = cw * k, ch * k
-    fx, fy = 1520 - fw, (H - fh) / 2
+    fx, fy = 1520 - fw, 52
     b = [f'<g data-within="60 40 {fx - 40:.0f} 870">']
     b.append(t(80, 112, "Uptick", 30, "d"))
     b.append(t(78, 258, "Deposit NVDA.", 72, "d"))
@@ -295,10 +294,10 @@ def post_app():
         "Swap fees accrue while the pool price is inside.",
     ]):
         b.append(t(80, 480 + i * 36, line, 25, "t", C["ink_deep"]))
-    b.append(t(78, 722, "$49,968.98", 56, "m", C["ink"], weight=500))
+    b.append(t(78, 724, "$49,968.98", 64, "d"))
     b.append(t(80, 760, "in the NVDA vault, running on a Robinhood Chain mainnet fork", 19, "t", C["ink_deep"]))
-    b.append(t(80, 852, "The NVDA vault page, captured from the running app", 15, "m", C["ink_deep"]))
     b.append("</g>")
+    b.append(t(1520, 856, "NVDA vault page, captured from the running app", 15, "m", C["ink_deep"], "end"))
     b.append(f'<defs><clipPath id="shot"><rect x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" rx="16"/></clipPath></defs>')
     b.append(f'<g clip-path="url(#shot)"><svg x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" viewBox="{cx} {cy} {cw} {ch}">'
              f'<image href="../../../web/screens/vault-nvda-1440.png" width="1440" height="2400"/></svg></g>')

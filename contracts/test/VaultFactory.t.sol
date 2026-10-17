@@ -258,6 +258,7 @@ contract VaultFactoryTest is Test {
         VaultFactory.Entry[] memory tail = factory.entries(2, 10);
         assertEq(tail.length, 1);
         assertEq(tail[0].stock, GOOGL);
+        assertEq(factory.entries(0, type(uint256).max).length, 3, "an unbounded limit is clamped, not an overflow");
         assertEq(factory.entries(3, 10).length, 0);
         assertEq(factory.entries(99, 10).length, 0);
         vm.expectRevert(VaultFactory.OutOfRange.selector);
