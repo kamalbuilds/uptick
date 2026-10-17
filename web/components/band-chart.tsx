@@ -81,10 +81,7 @@ export function BandChart({ symbol, chart, compact = false }: { symbol: string; 
             onPointerLeave={() => setHover(null)}
           >
             {!compact && ticks.map((p) => (
-              <g key={p}>
-                <line x1={padL} x2={width - padR} y1={y(p)} y2={y(p)} stroke="var(--color-sage-line)" strokeWidth={1} />
-                <text x={width - padR + 8} y={y(p) + 4} fontSize={12} fill="var(--color-mute)" style={{ fontFamily: "var(--font-mono)" }}>{usd(p)}</text>
-              </g>
+              <line key={p} x1={padL} x2={width - padR} y1={y(p)} y2={y(p)} stroke="var(--color-sage-line)" strokeWidth={1} />
             ))}
             {chart.bands.map((b) => {
               const a = Math.max(x(b.from), padL), z = x(Math.min(b.to, t1));
@@ -96,6 +93,9 @@ export function BandChart({ symbol, chart, compact = false }: { symbol: string; 
                 </g>
               );
             })}
+            {!compact && ticks.map((p) => (
+              <text key={p} x={width - padR + 8} y={y(p) + 4} fontSize={12} fill="var(--color-mute)" style={{ fontFamily: "var(--font-mono)" }}>{usd(p)}</text>
+            ))}
             {!compact && dayTicks.map((t) => (
               <text key={t} x={x(t)} y={H - 6} fontSize={12} textAnchor="middle" fill="var(--color-mute)" style={{ fontFamily: "var(--font-mono)" }}>{dayLabel(t)}</text>
             ))}

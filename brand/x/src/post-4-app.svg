@@ -7,21 +7,16 @@
 .t { font-family: Figtree, sans-serif; }
 .m { font-family: "Geist Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 </style>
-<rect width="1600" height="900" fill="#9fe870"/>
-<g data-within="60 40 888 870">
-<text x="80.0" y="112.0" class="d" font-size="30" fill="#0e0f0c" text-anchor="start" >Uptick</text>
-<text x="78.0" y="258.0" class="d" font-size="72" fill="#0e0f0c" text-anchor="start" >Deposit NVDA.</text>
-<text x="78.0" y="334.0" class="d" font-size="72" fill="#0e0f0c" text-anchor="start" >The band follows</text>
-<text x="78.0" y="410.0" class="d" font-size="72" fill="#0e0f0c" text-anchor="start" >the price.</text>
-<text x="80.0" y="480.0" class="t" font-size="25" fill="#163300" text-anchor="start" >The vault provides liquidity in the NVDA/USDG</text>
-<text x="80.0" y="516.0" class="t" font-size="25" fill="#163300" text-anchor="start" >0.05% pool, inside a band 5% around the</text>
-<text x="80.0" y="552.0" class="t" font-size="25" fill="#163300" text-anchor="start" >Chainlink price, re-centred at each NYSE open.</text>
-<text x="80.0" y="588.0" class="t" font-size="25" fill="#163300" text-anchor="start" >Swap fees accrue while the pool price is inside.</text>
-<text x="78.0" y="724.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >$49,968.98</text>
-<text x="80.0" y="760.0" class="t" font-size="19" fill="#163300" text-anchor="start" >in the NVDA vault, running on a Robinhood Chain mainnet fork</text>
+<rect width="1600" height="900" fill="#0e0f0c"/>
+<g data-within="60 40 585 870">
+<text x="78.0" y="150.0" class="d" font-size="64" fill="#e8ebe6" text-anchor="start" >Deposit NVDA.</text>
+<text x="78.0" y="212.0" class="d" font-size="64" fill="#e8ebe6" text-anchor="start" >The band follows</text>
+<text x="78.0" y="270.0" class="d" font-size="64" fill="#e8ebe6" text-anchor="start" >the price.</text>
+<text x="80.0" y="728.0" class="t" font-size="28" fill="#e8ebe6" text-anchor="start" font-weight="600" >NVDA vault, Robinhood Chain</text>
+<text x="80.0" y="764.0" class="t" font-size="28" fill="#e8ebe6" text-anchor="start" font-weight="600" >mainnet fork</text>
+<text x="80.0" y="806.0" class="m" font-size="20" fill="#9a9c97" text-anchor="start" >captured from the running app</text>
 </g>
-<text x="1520.0" y="856.0" class="m" font-size="15" fill="#163300" text-anchor="end" >NVDA vault page, captured from the running app</text>
-<defs><clipPath id="shot"><rect x="928.0" y="52.0" width="592.0" height="760.0" rx="16"/></clipPath></defs>
-<g clip-path="url(#shot)"><svg x="928.0" y="52.0" width="592.0" height="760.0" viewBox="205 932 645 828"><image href="../../../web/screens/vault-nvda-1440.png" width="1440" height="2400"/></svg></g>
-<rect x="928.0" y="52.0" width="592.0" height="760.0" rx="16" fill="none" stroke="#0e0f0c" stroke-width="1.5" data-box="screenshot frame"/>
+<defs><clipPath id="shot"><rect x="609.3" y="46.0" width="910.7" height="770.0" rx="30"/></clipPath></defs>
+<image href="app-band-card.png" x="609.3" y="46.0" width="910.7" height="770.0" clip-path="url(#shot)" data-box="screenshot"/>
+<text x="1520.0" y="852.0" class="d" font-size="30" fill="#e8ebe6" text-anchor="end" >Uptick</text>
 </svg>

@@ -1,12 +1,15 @@
 """Render an SVG/HTML source to an exact-size PNG through a background CDP tab (port 9396), then check it.
 
-Usage: python3 render.py <source.svg> <out.png> <width> <height> [--no-text]
+Usage: python3 render.py <source.svg> <out.png> <width> <height> [--no-text] [--min-font N]
 
 Checks, printed as JSON and exit 1 on any failure:
   fonts    every face the source declares reached status "loaded"
   overlap  no two <text> ink boxes (baseline - 0.78em to baseline + descender) intersect by more than 3px
   clipped  every <text> bbox (and every element marked data-box) sits inside the canvas, and inside its
            data-within="<x0> <y0> <x1> <y1>" region when one is given
+  minfont  with --min-font N, no <text> is set below N px
+  srgb     the capture carries the display's profile (Display P3 here); it is converted to sRGB and saved
+           without an embedded profile, so a service that strips profiles shows the token colours as written
 The tab is created with background:true and never activated, so the user's window keeps focus.
 """
 import base64, json, sys, time, urllib.request
@@ -16,6 +19,7 @@ import websocket
 
 src, out, W, H = Path(sys.argv[1]).resolve(), sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
 NEED_TEXT = "--no-text" not in sys.argv
+MIN_FONT = float(sys.argv[sys.argv.index("--min-font") + 1]) if "--min-font" in sys.argv else 0
 url = src.as_uri()
 
 CHECK = r"""
@@ -51,6 +55,7 @@ CHECK = r"""
     const w = Math.min(A.right, B.right) - Math.max(A.left, B.left), h = Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top);
     if (w > 3 && h > 3) bad.push({label: a + ' | ' + c, why: 'text overlaps text', overlap: [Math.round(w), Math.round(h)]});
   }
+  for (const el of document.querySelectorAll('text')) if (+el.getAttribute('font-size') < %s) bad.push({label: el.textContent.trim().slice(0, 40), why: 'font-size ' + el.getAttribute('font-size') + ' below floor'});
   const texts = tb.length;
   return JSON.stringify({faces, texts, bad});
 })()
@@ -83,7 +88,7 @@ try:
     call("Page.enable", {}, sid)
     call("Page.navigate", {"url": url}, sid)
     time.sleep(2.5)
-    res = call("Runtime.evaluate", {"expression": CHECK % (W, H), "awaitPromise": True, "returnByValue": True}, sid)
+    res = call("Runtime.evaluate", {"expression": CHECK % (W, H, MIN_FONT), "awaitPromise": True, "returnByValue": True}, sid)
     report = json.loads(res["result"]["value"])
     shot = call("Page.captureScreenshot", {"format": "png", "clip": {"x": 0, "y": 0, "width": W, "height": H, "scale": 1}}, sid)
     Path(out).write_bytes(base64.b64decode(shot["data"]))
@@ -91,8 +96,16 @@ finally:
     call("Emulation.clearDeviceMetricsOverride", {}, sid)
     call("Target.closeTarget", {"targetId": tid})
 
-from PIL import Image
+import io
+from PIL import Image, ImageCms
 
+im = Image.open(out)
+icc = im.info.get("icc_profile")
+if icc:
+    im = ImageCms.profileToProfile(im, ImageCms.ImageCmsProfile(io.BytesIO(icc)), ImageCms.createProfile("sRGB"), outputMode="RGB")
+im = im.convert("RGB")
+im.info.pop("icc_profile", None)
+im.save(out)
 size = Image.open(out).size
 unloaded = [f for f in report["faces"] if f["status"] != "loaded"]
 ok = size == (W, H) and not unloaded and not report["bad"] and (report["texts"] > 0 or not NEED_TEXT)

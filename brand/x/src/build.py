@@ -1,12 +1,14 @@
-"""Write the Uptick X kit SVG sources. Every number below comes from a file in this repo:
+"""Write the Uptick X kit SVG sources. Every number below comes from a file in /Users/kamal/Desktop/arbitrium:
 
-  sessions  spikes/stock-vaults/FINDINGS.md, "Why" table (fee per $1 of 1h markout, static ±2% vault)
+  sessions  spikes/stock-vaults/FINDINGS.md, "Why" table (fee per $1 of 1h markout, static ±2% position)
   sessions  spikes/stock-vaults/scripts/strategies.py true_label(): NYSE 13:30-20:00 UTC, weekend Fri 20:00 to Mon 00:00 UTC
-  hooks     docs/research/founder-house/OUTREACH-fomo-gmgn.md sections 4 and Evidence; README.md (0x: 80% of 84K)
-  cap       spikes/capped-hooks/FINDINGS.md, Claim 2 and Claim 1
-  app       web/screens/vault-nvda-1440.png (real capture of the running app)
+  hooks     docs/research/founder-house/OUTREACH-fomo-gmgn.md section 4 and Evidence
+  cap       spikes/capped-hooks/evidence/claim2-enforce.txt; revert arguments from
+            `forge test --mt test_cap250_reverts_on_every_swap -vvvv` (src/evidence/cap250-trace-summary.txt)
+  app       src/app-band-card.png, captured from the running app by capture_app.py
 
-Run: python3 build.py   (writes *.svg next to this file)
+Run: python3 build.py   (writes *.svg next to this file), then render.py per file.
+Type floor for phone reading (a 1600px post shows at about 0.19x): claim text >= 36px, labels >= 24px, sources >= 20px.
 """
 import math
 from pathlib import Path
@@ -16,8 +18,7 @@ HERE = Path(__file__).parent
 
 C = dict(  # web/DESIGN.md tokens
     canvas="#e8ebe6", card="#ffffff", ink="#0e0f0c", ink_deep="#163300", body="#454745", mute="#868685",
-    lime="#9fe870", lime_pale="#e2f6d5", lime_neutral="#c5edab", neg="#d03238", rule="#cfd4cb",
-    rule_dark="#33352f", mute_dark="#9a9c97",
+    lime="#9fe870", neg="#d03238", positive="#2ead4b", rule="#cfd4cb", rule_dark="#33352f", mute_dark="#9a9c97",
 )
 
 STYLE = f"""<style>
@@ -28,6 +29,9 @@ STYLE = f"""<style>
 .t {{ font-family: Figtree, sans-serif; }}
 .m {{ font-family: "Geist Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }}
 </style>"""
+
+DASH = ' stroke-dasharray="6 5"'
+HEAD_STEP = 58  # 64px display lines, DESIGN.md display-xl line height 0.9
 
 
 def doc(w, h, body, bg):
@@ -42,23 +46,26 @@ def t(x, y, s, size, cls="t", fill=C["ink"], anchor="start", weight=None, extra=
             f'text-anchor="{anchor}"{w} {extra}>{escape(s)}</text>')
 
 
+def wordmark(fill=C["ink"]):
+    """Same place on every 1600x900 post: bottom-right, 30px, baseline 852."""
+    return t(1520, 852, "Uptick", 30, "d", fill, "end")
+
+
 def mark(x, y, size, bg=True):
+    """The step: the stepped band from the vault chart. Outer corners sit about 10px inside X's circle crop at 400."""
     k = size / 400
     back = f'<rect width="400" height="400" fill="{C["ink"]}"/>' if bg else ""
     return (f'<g transform="translate({x},{y}) scale({k:.5f})">{back}'
-            f'<path d="M70 186 H200 V104 H330 V214 H200 V296 H70 Z" fill="{C["lime"]}" stroke="{C["lime"]}" stroke-width="24" stroke-linejoin="round"/>'
-            f'<polyline points="20,268 84,256 124,272 170,234 206,244 244,178 274,188 302,152" fill="none" stroke="{C["ink"]}" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>'
-            f'<circle cx="302" cy="152" r="19" fill="{C["lime"]}" stroke="{C["ink"]}" stroke-width="10"/></g>')
+            f'<path d="M68 180 H200 V80 H332 V220 H200 V320 H68 Z" fill="{C["lime"]}" stroke="{C["lime"]}" '
+            f'stroke-width="24" stroke-linejoin="round"/></g>')
 
 
-SESS = {  # fee per $1 lost, min and max across NVDA, SPCX, TSLA
-    "reg": (0.78, 1.21), "night": (1.23, 3.02), "weekend": (3.83, 19.53),
-}
 POOLS = [  # (pool, fee tier, NYSE hours, weeknights, weekends)
     ("NVDA", "0.05% pool", 1.21, 1.23, 3.83),
     ("SPCX", "0.05% pool", 0.78, 3.02, 7.07),
     ("TSLA", "0.3% pool", 0.80, 2.07, 19.53),
 ]
+SESS = {k: (min(p[i] for p in POOLS), max(p[i] for p in POOLS)) for i, k in [(2, "reg"), (3, "night"), (4, "weekend")]}
 
 
 def week_blocks():
@@ -82,195 +89,184 @@ def avatar():
 
 # ---------------------------------------------------------------- banner 1500x500
 def banner():
+    """Desktop profile: the avatar covers x 35..401 from y 311 down (1500x500 terms), so the left column ends by y 280."""
     W, H = 1500, 500
-    x0, x1, yt, yb = 708, 1436, 104, 396
+    x0, x1, yt, yb = 708, 1436, 40, 396
     lo, hi = math.log10(0.6), math.log10(25)
     Y = lambda v: yb - (math.log10(v) - lo) / (hi - lo) * (yb - yt)
     X = lambda hr: x0 + hr / 168 * (x1 - x0)
-    fill = {"reg": C["ink"], "night": C["lime_neutral"], "weekend": C["lime"]}
-    b = []
-    # left column, kept above y 330 so the avatar owns the lower-left
-    b.append(f'<g data-within="56 36 640 330">')
-    b.append(t(64, 92, "Uptick", 34, "d"))
-    for i, line in enumerate(["Stock Token yield,", "chosen by the", "chain’s own data."]):
-        b.append(t(62, 170 + i * 56, line, 58, "d"))
-    b.append(t(64, 318, "Robinhood Chain · 5.1M swaps · 54 days", 17, "m", C["body"]))
+    fill = {"reg": C["ink"], "night": C["card"], "weekend": C["lime"]}
+    b = ['<g data-within="56 30 660 280">']
+    for i, line in enumerate(["Stock Token yield,", "chosen by", "the chain’s own data."]):
+        b.append(t(62, 104 + i * 58, line, 60, "d"))  # 0.97: "yield," and "by" descend into the next line
+    b.append(t(64, 264, "5.1M swaps · 54 days · Robinhood Chain", 22, "m", C["body"]))
     b.append("</g>")
-    # chart
-    b.append(f'<g data-within="660 36 1470 482">')
-    b.append(t(x0, 66, "Fees LPs earn per $1 lost to informed traders, across a trading week", 18, "t", C["ink"], weight=600))
-    for v, lab in [(20, "$20"), (5, "$5")]:
-        b.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="{C["rule"]}" stroke-width="1"/>')
-        b.append(t(x0 - 10, Y(v) + 5, lab, 14, "m", C["mute"], "end"))
+    b.append('<g data-within="680 30 1470 482">')
     for s, e, k in week_blocks():
         lo_v, hi_v = SESS[k]
-        b.append(f'<rect x="{X(s) + 1:.1f}" y="{Y(hi_v):.1f}" width="{X(e) - X(s) - 2:.1f}" height="{Y(lo_v) - Y(hi_v):.1f}" rx="3" fill="{fill[k]}"/>')
-    b.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(1):.1f}" y2="{Y(1):.1f}" stroke="{C["ink"]}" stroke-width="1.5" stroke-dasharray="5 4"/>')
-    b.append(t(x0 - 10, Y(1) + 5, "$1", 14, "m", C["ink"], "end"))
-    b.append(t(x1, Y(1) - 8, "fees = losses", 13, "m", C["body"], "end"))
-    b.append(f'<line x1="{x0}" x2="{x1}" y1="{yb + 8}" y2="{yb + 8}" stroke="{C["ink"]}" stroke-width="1"/>')
+        stroke = f' stroke="{C["ink"]}" stroke-width="1.5"' if k == "night" else ""
+        b.append(f'<rect x="{X(s) + 1:.1f}" y="{Y(hi_v):.1f}" width="{X(e) - X(s) - 2:.1f}" height="{Y(lo_v) - Y(hi_v):.1f}" rx="3" fill="{fill[k]}"{stroke}/>')
+    b.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(1):.1f}" y2="{Y(1):.1f}" stroke="{C["ink"]}" stroke-width="2" stroke-dasharray="6 5"/>')
+    b.append(t(x1, Y(1) - 12, "$1 = break-even", 22, "m", C["ink"], "end"))
+    b.append(f'<line x1="{x0}" x2="{x1}" y1="{yb + 8}" y2="{yb + 8}" stroke="{C["ink"]}" stroke-width="1.5"/>')
     for d, name in enumerate(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]):
-        b.append(f'<line x1="{X(24 * d):.1f}" x2="{X(24 * d):.1f}" y1="{yb + 8}" y2="{yb + 14}" stroke="{C["ink"]}" stroke-width="1"/>')
-        b.append(t(X(24 * d + 12), yb + 32, name, 13, "m", C["body"], "middle"))
-    # session labels
-    mx = X(13.5) + (X(20) - X(13.5)) / 2
-    b.append(f'<line x1="{mx:.1f}" x2="{mx:.1f}" y1="{Y(1.21) - 6:.1f}" y2="{214}" stroke="{C["ink"]}" stroke-width="1"/>')
-    b.append(t(mx - 4, 156, "NYSE open", 16, "t", C["ink"], weight=600))
-    b.append(t(mx - 6, 198, "$0.78 to $1.21", 38, "d"))
-    b.append(t(X(116) + 4, Y(3.83) + 26, "Weekend", 16, "t", C["ink"], weight=600))
-    b.append(t(X(116) + 2, Y(3.83) + 60, "$3.83 to $19.53", 30, "d"))
-    nx = X(68) + (X(85.5) - X(68)) / 2
-    b.append(t(nx, Y(3.02) - 10, "weeknights $1.23 to $3.02", 13, "m", C["body"], "middle"))
-    b.append(t(x1, 476, "range across NVDA, SPCX, TSLA pools · Aug 24 to Oct 17, 2026 · UTC", 12, "m", C["mute"], "end"))
-    b.append("</g>")
-    return doc(W, H, "\n".join(b), C["canvas"])
+        b.append(f'<line x1="{X(24 * d):.1f}" x2="{X(24 * d):.1f}" y1="{yb + 8}" y2="{yb + 16}" stroke="{C["ink"]}" stroke-width="1.5"/>')
+        b.append(t(X(24 * d + 12), yb + 40, name, 20, "m", C["body"], "middle"))
+    # NYSE hours callout over Tuesday, leader to Tuesday's NYSE block
+    mx = X(24 + 16.75)
+    b.append(f'<line x1="{mx:.1f}" x2="{mx:.1f}" y1="{Y(1.21) - 4:.1f}" y2="{Y(3.02) - 34:.1f}" stroke="{C["ink"]}" stroke-width="1.5"/>')
+    b.append(t(mx - 4, 116, "NYSE hours", 26, "t", C["ink"], weight=600))
+    b.append(t(mx - 6, 160, "$0.78 to $1.21", 38, "d"))
+    # weekend figure inside the lime block
+    wx = X(116) + 14
+    b.append(t(wx, Y(19.53) + 36, "Weekends", 26, "t", C["ink"], weight=600))
+    b.append(t(wx - 2, Y(19.53) + 82, "$3.83 to", 42, "d"))
+    b.append(t(wx - 2, Y(19.53) + 126, "$19.53", 42, "d"))
+    return doc(W, H, "\n".join(b) + "\n</g>", C["canvas"])
 
 
-# ---------------------------------------------------------------- OG 1200x630
+# ---------------------------------------------------------------- OG 1200x630 (link previews only)
 def og():
+    """X puts the domain label bottom-left on link cards, so x < 260, y > 530 stays empty."""
     W, H = 1200, 630
-    b = [f'<g data-within="40 30 1160 600">']
-    b.append(mark(64, 52, 56, bg=False))
-    b.append(t(132, 92, "Uptick", 34, "d", C["canvas"]))
-    b.append(t(1136, 90, "Robinhood Chain", 18, "m", C["mute_dark"], "end"))
-    b.append(t(62, 214, "Stock Token yield, chosen", 80, "d", C["lime"]))
-    b.append(t(62, 292, "by the chain’s own data.", 80, "d", C["lime"]))
-    b.append(f'<line x1="64" x2="1136" y1="352" y2="352" stroke="{C["rule_dark"]}" stroke-width="1"/>')
-    b.append(t(64, 398, "NYSE hours", 22, "t", C["mute_dark"], weight=600))
-    b.append(t(62, 466, "$0.78 to $1.21", 60, "d", C["canvas"]))
-    b.append(t(620, 398, "Weekends", 22, "t", C["mute_dark"], weight=600))
-    b.append(t(618, 466, "$3.83 to $19.53", 60, "d", C["lime"]))
-    b.append(t(64, 528, "Fees liquidity providers earn per $1 lost to informed traders.", 24, "t", C["canvas"]))
-    b.append(t(64, 562, "5.1M swaps on the chain’s NVDA, SPCX and TSLA pools over 54 days.", 24, "t", C["mute_dark"]))
+    b = ['<g data-within="40 30 1160 600">']
+    b.append(mark(64, 50, 56, bg=False))
+    b.append(t(132, 90, "Uptick", 34, "d", C["canvas"]))
+    b.append(t(62, 206, "Stock Token yield,", 74, "d", C["canvas"]))
+    b.append(t(62, 277, "chosen by the chain’s own data.", 74, "d", C["canvas"]))
+    b.append(f'<line x1="64" x2="1136" y1="318" y2="318" stroke="{C["rule_dark"]}" stroke-width="1.5"/>')
+    for x, label, fig, col in [(64, "NYSE hours", "$0.78 to $1.21", C["canvas"]), (620, "Weekends", "$3.83 to $19.53", C["lime"])]:
+        b.append(t(x, 374, label, 30, "t", C["canvas"], weight=600))
+        b.append(t(x - 2, 442, fig, 60, "d", col))
+        b.append(t(x, 484, "fees per $1 lost to informed traders", 28, "t", C["mute_dark"]))
+    b.append(t(1136, 572, "5.1M swaps replayed · NVDA, SPCX, TSLA · 54 days", 22, "m", C["mute_dark"], "end"))
     b.append("</g>")
     return doc(W, H, "\n".join(b), C["ink"])
 
 
 # ---------------------------------------------------------------- post 1: sessions 1600x900
+def dot(x, y, session, r=11):
+    f = {0: C["ink"], 1: C["card"], 2: C["lime"]}[session]
+    return f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{f}" stroke="{C["ink"]}" stroke-width="2.5"/>'
+
+
 def post_sessions():
     W, H = 1600, 900
-    x0, x1 = 470, 1280
+    x0, x1 = 470, 1250
     lo, hi = math.log10(0.5), math.log10(25)
     X = lambda v: x0 + (math.log10(v) - lo) / (hi - lo) * (x1 - x0)
-    b = [f'<g data-within="60 40 1560 870">']
-    b.append(t(78, 118, "NYSE hours are the worst time", 64, "d"))
-    b.append(t(78, 184, "to be a Stock Token LP", 64, "d"))
-    b.append(t(80, 236, "Fees earned per $1 lost to informed traders (1 hour markout), static ±2% position, by session.", 22, "t", C["body"]))
-    top, gap, lane = 330, 150, 38
-    ax = top + 2 * gap + 2 * lane + 40
+    b = ['<g data-within="60 40 1560 870">']
+    b.append(t(78, 112, "Weekends are the best time", 64, "d"))
+    b.append(t(78, 112 + HEAD_STEP, "to be a Stock Token LP", 64, "d"))
+    b.append(t(80, 222, "Fees per $1 lost to informed traders (1h markout), static ±2% position.", 30, "t", C["body"]))
+    lx = 92
+    for i, name in enumerate(["NYSE hours", "Weeknights", "Weekends"]):
+        b.append(dot(lx, 268, i))
+        b.append(t(lx + 22, 278, name, 28, "t", C["ink"], weight=600))
+        lx += 210
+    top, gap, lane = 390, 136, 36
+    ax = top + 2 * gap + 2 * lane + 34
     for v in [0.5, 1, 2, 5, 10, 20]:
         lab = f"${v:g}" if v >= 1 else "$0.50"
-        dash = 'stroke-dasharray="6 5"' if v == 1 else ""
-        b.append(f'<line x1="{X(v):.1f}" x2="{X(v):.1f}" y1="{top - 44}" y2="{ax}" stroke="{C["rule"] if v != 1 else C["ink"]}" stroke-width="{1 if v != 1 else 2}" {dash}/>')
-        b.append(t(X(v), ax + 28, lab, 16, "m", C["body"], "middle"))
-    b.append(t(X(1) + 10, top - 50, "$1 earned per $1 lost", 15, "m", C["ink"]))
-    b.append(t(X(1) - 10, top - 50, "LPs lose", 15, "m", C["neg"], "end"))
-    style = {0: (C["ink"], C["ink"]), 1: (C["lime_neutral"], C["ink"]), 2: (C["lime"], C["ink"])}
-    names = ["NYSE hours", "Weeknights", "Weekends"]
-    b.append(t(1520, top - 50, "weekend vs NYSE", 15, "m", C["body"], "end"))
+        one = v == 1
+        b.append(f'<line x1="{X(v):.1f}" x2="{X(v):.1f}" y1="{top - 40}" y2="{ax}" stroke="{C["ink"] if one else C["rule"]}" '
+                 f'stroke-width="{2 if one else 1}"{DASH if one else ""}/>')
+        b.append(t(X(v), ax + 28, lab, 20, "m", C["body"], "middle"))
+    b.append(t(X(1) + 12, top - 50, "$1 earned per $1 lost", 24, "m", C["ink"]))
+    b.append(t(X(1) - 12, top - 50, "LPs lose", 24, "m", C["neg"], "end"))
+    b.append(t(1520, top - 50, "weekend vs NYSE", 28, "t", C["body"], "end", weight=600))
     for g, (pool, tier, *vals) in enumerate(POOLS):
         cy = top + g * gap + lane
-        b.append(t(80, cy + 4, pool, 46, "d"))
-        b.append(t(82, cy + 32, tier, 17, "t", C["body"]))
+        b.append(t(80, cy + 6, pool, 46, "d"))
+        b.append(t(82, cy + 40, tier, 24, "t", C["body"]))
         for i, v in enumerate(vals):
             y = cy + (i - 1) * lane
-            b.append(t(x0 - 34, y + 5, names[i], 16, "t", C["body"], "end"))
             b.append(f'<line x1="{X(1):.1f}" x2="{X(v):.1f}" y1="{y}" y2="{y}" stroke="{C["ink"]}" stroke-width="2"/>')
-            f, s = style[i]
-            b.append(f'<circle cx="{X(v):.1f}" cy="{y}" r="10" fill="{f}" stroke="{s}" stroke-width="2.5"/>')
+            b.append(dot(X(v), y, i))
+            if i == 1:
+                continue
             if v >= 1:
-                b.append(t(X(v) + 20, y + 6, f"${v:.2f}", 18, "m", C["ink"]))
+                b.append(t(X(v) + 22, y + 10, f"${v:.2f}", 28, "m", C["ink"]))
             else:
-                b.append(t(X(v) - 20, y + 6, f"${v:.2f}", 18, "m", C["neg"], "end"))
-        ratio = vals[2] / vals[0]
-        b.append(t(1520, cy + 18, f"{ratio:.1f}×", 54, "d", anchor="end"))
-    b.append(f'<line x1="80" x2="1520" y1="812" y2="812" stroke="{C["rule"]}" stroke-width="1"/>')
-    b.append(t(80, 852, "Uptick", 30, "d"))
-    b.append(t(1520, 850, "5.1M swaps replayed · Robinhood Chain 4663 · Aug 24 to Oct 17, 2026", 16, "m", C["body"], "end"))
+                b.append(t(X(v) - 22, y + 10, f"${v:.2f}", 28, "m", C["neg"], "end"))
+        b.append(t(1520, cy + 20, f"{vals[2] / vals[0]:.1f}×", 54, "d", anchor="end"))
+    b.append(f'<line x1="80" x2="1520" y1="808" y2="808" stroke="{C["rule"]}" stroke-width="1"/>')
+    b.append(t(80, 850, "5.1M swaps replayed · Robinhood Chain · Aug 24 to Oct 17, 2026", 20, "m", C["body"]))
+    b.append(wordmark())
     b.append("</g>")
     return doc(W, H, "\n".join(b), C["canvas"])
 
 
-# ---------------------------------------------------------------- post 2: hook skim 1600x900
+# ---------------------------------------------------------------- post 2: hook take 1600x900
 def post_hooks():
     W, H = 1600, 900
-    b = [f'<g data-within="60 40 1560 870">']
-    b.append(t(80, 104, "Uniswap v4 hooks on Robinhood Chain, Oct 14 to 16, 2026", 24, "t", C["mute_dark"], weight=600))
-    b.append(t(82, 156, "about", 30, "t", C["canvas"], weight=600))
-    b.append(t(70, 342, "$1.2M", 230, "d", C["canvas"]))
-    b.append(t(80, 402, "left traders in 49 hours, through hooks that keep 5 to 11% of a swap", 32, "t", C["canvas"]))
-    b.append(t(80, 444, "while the pool quotes a fee of 0 to 1%.", 32, "t", C["canvas"]))
-    # range bars on one % axis
-    x0, x1 = 470, 1500
+    b = ['<g data-within="60 40 1560 870">']
+    b.append(t(80, 100, "Uniswap v4 hooks on Robinhood Chain, Oct 14 to 16, 2026", 30, "t", C["mute_dark"], weight=600))
+    b.append(t(70, 318, "~$1.2M", 230, "d", C["canvas"]))
+    b.append(t(80, 390, "left traders in 49 hours through hooks on pools quoting 0 to 1%.", 40, "t", C["canvas"]))
+    b.append(t(80, 442, "Single swaps lost 5 to 11%.", 40, "t", C["canvas"]))
+    x0, x1 = 560, 1500
     X = lambda p: x0 + p / 12 * (x1 - x0)
-    y1, y2, ya = 530, 606, 654
+    y1, y2, ya = 560, 680, 760
     for p in range(0, 13, 2):
-        b.append(f'<line x1="{X(p):.1f}" x2="{X(p):.1f}" y1="{y1 - 34}" y2="{ya - 12}" stroke="{C["rule_dark"]}" stroke-width="1"/>')
-        b.append(t(X(p), ya + 12, f"{p}%", 16, "m", C["mute_dark"], "middle"))
-    b.append(t(80, y1 + 8, "Fee the pool quotes", 24, "t", C["canvas"], weight=600))
-    b.append(f'<rect x="{X(0):.1f}" y="{y1 - 16}" width="{X(1) - X(0):.1f}" height="32" rx="4" fill="{C["mute_dark"]}"/>')
-    b.append(t(X(1) + 16, y1 + 8, "0 to 1%", 22, "m", C["canvas"]))
-    b.append(t(80, y2 + 8, "Share the hook keeps", 24, "t", C["canvas"], weight=600))
-    b.append(f'<rect x="{X(5):.1f}" y="{y2 - 16}" width="{X(11) - X(5):.1f}" height="32" rx="4" fill="{C["neg"]}"/>')
-    b.append(t(X(5) - 16, y2 + 8, "5 to 11%", 22, "m", C["canvas"], "end"))
-    b.append(f'<line x1="80" x2="1520" y1="712" y2="712" stroke="{C["rule_dark"]}" stroke-width="1"/>')
-    b.append(t(78, 800, "80%", 84, "d", C["canvas"]))
-    b.append(t(272, 772, "of 84,000 Uniswap v4 hooks", 24, "t", C["canvas"]))
-    b.append(t(272, 804, "labelled malicious by 0x", 24, "t", C["mute_dark"]))
-    b.append(t(1520, 772, "Uptick deposits only into pools without fee-taking", 24, "t", C["lime"], "end", weight=600))
-    b.append(t(1520, 804, "hooks, or with a cap declared on chain.", 24, "t", C["lime"], "end", weight=600))
-    b.append(t(80, 862, "3,183,184 swaps read across 19,775 pools · blocks 88,480,052 to 90,230,052 · chain 4663", 16, "m", C["mute_dark"]))
-    b.append(t(1520, 862, "Uptick", 26, "d", C["canvas"], "end"))
+        b.append(f'<line x1="{X(p):.1f}" x2="{X(p):.1f}" y1="{y1 - 52}" y2="{ya - 28}" stroke="{C["rule_dark"]}" stroke-width="1"/>')
+        b.append(t(X(p), ya, f"{p}%", 20, "m", C["mute_dark"], "middle"))
+    b.append(t(80, y1 + 12, "Fee the pool quotes", 36, "t", C["canvas"], weight=600))
+    b.append(f'<rect x="{X(0):.1f}" y="{y1 - 32}" width="{X(1) - X(0):.1f}" height="64" rx="6" fill="{C["mute_dark"]}"/>')
+    b.append(t(X(1) + 20, y1 + 12, "0 to 1%", 36, "m", C["canvas"]))
+    b.append(t(80, y2 + 12, "Hook take, one swap", 36, "t", C["canvas"], weight=600))
+    b.append(f'<rect x="{X(5):.1f}" y="{y2 - 32}" width="{X(11) - X(5):.1f}" height="64" rx="6" fill="{C["neg"]}"/>')
+    b.append(t(X(5) - 20, y2 + 12, "5 to 11%", 36, "m", C["canvas"], "end"))
+    b.append(f'<line x1="80" x2="1520" y1="808" y2="808" stroke="{C["rule_dark"]}" stroke-width="1"/>')
+    b.append(t(80, 850, "3,183,184 swaps read across 19,775 pools · blocks 88,480,052 to 90,230,052", 20, "m", C["mute_dark"]))
+    b.append(wordmark(C["canvas"]))
     b.append("</g>")
     return doc(W, H, "\n".join(b), C["ink"])
 
 
 # ---------------------------------------------------------------- post 3: cap 1600x900
-def cap_panel(px, py, pw, ph, cap, settle, head, sub):
-    """One panel: take % axis 0..3.5, a bar at the declared `cap`, a 3% hook's take rising into it."""
+def cap_card(px, py, pw, ph, cap_bps, take_bps, title, outcome):
+    """Literal outcome of the fork test: one take, one cap, the result. A take-vs-cap bar underneath."""
+    reverts = take_bps > cap_bps
     b = [f'<g data-within="{px} {py} {px + pw} {py + ph}">',
          f'<rect x="{px}" y="{py}" width="{pw}" height="{ph}" rx="24" fill="{C["card"]}"/>',
-         t(px + 40, py + 62, head, 42, "d"), t(px + 42, py + 96, sub, 17, "m", C["body"])]
-    l, r, top, bot = px + 96, px + pw - 40, py + 150, py + ph - 56
-    Y = lambda p: bot - p / 3.5 * (bot - top)
-    for p in range(0, 4):
-        b.append(f'<line x1="{l}" x2="{r}" y1="{Y(p):.1f}" y2="{Y(p):.1f}" stroke="{C["rule"]}" stroke-width="1"/>')
-        b.append(t(l - 14, Y(p) + 5, f"{p}%", 15, "m", C["body"], "end"))
-    cy = Y(cap)
-    b.append(f'<rect x="{l}" y="{cy - 12:.1f}" width="{r - l}" height="12" fill="{C["ink"]}"/>')
-    b.append(t(r, cy - 22, f"max {cap:.2f}%", 16, "m", C["ink"], "end"))
-    sx, sy = l + 24, Y(0)
-    if settle:
-        hx = l + 250
-        b.append(f'<path d="M{sx} {sy:.1f} C {sx + 120} {sy:.1f}, {hx - 90} {cy:.1f}, {hx} {cy:.1f} L {r - 30} {cy:.1f}" fill="none" stroke="{C["ink"]}" stroke-width="5" stroke-linecap="round"/>')
-        b.append(f'<circle cx="{r - 30}" cy="{cy:.1f}" r="13" fill="{C["lime"]}" stroke="{C["ink"]}" stroke-width="4"/>')
-        b.append(t(r - 30, cy + 44, "settles, 3.00% taken", 17, "m", C["ink"], "end"))
+         t(px + 40, py + 72, title, 44, "d")]
+    rows = [("take", f"{take_bps} bps"), ("cap", f"{cap_bps} bps")]
+    for i, (k, v) in enumerate(rows):
+        y = py + 148 + i * 52
+        b.append(t(px + 42, y, k, 36, "m", C["body"]))
+        b.append(t(px + 170, y, v, 36, "m", C["ink"]))
+    y = py + 148 + 2 * 52 + 12
+    if reverts:
+        b.append(t(px + 42, y, "revert", 36, "m", C["neg"]))
+        b.append(t(px + 42, y + 50, outcome, 36, "m", C["neg"]))
     else:
-        hx, lx = l + 200, l + 370
-        b.append(f'<path d="M{hx} {cy:.1f} L {hx + 30} {Y(3.0):.1f}" stroke="{C["mute"]}" stroke-width="3" stroke-dasharray="4 5" fill="none"/>')
-        b.append(t(hx + 38, Y(3.0) + 2, "3% wanted", 15, "m", C["mute"]))
-        b.append(f'<path d="M{sx} {sy:.1f} Q {hx - 60} {sy - 30:.1f}, {hx} {cy:.1f}" fill="none" stroke="{C["ink"]}" stroke-width="5" stroke-linecap="round"/>')
-        b.append(f'<path d="M{hx} {cy:.1f} Q {hx + 90} {cy + 20:.1f}, {lx} {sy:.1f}" fill="none" stroke="{C["neg"]}" stroke-width="5" stroke-linecap="round"/>')
-        b.append(f'<circle cx="{lx}" cy="{sy:.1f}" r="13" fill="{C["card"]}" stroke="{C["neg"]}" stroke-width="4"/>')
-        b.append(t(lx + 26, sy - 62, "reverts with", 17, "m", C["neg"]))
-        b.append(t(lx + 26, sy - 40, "TakeExceedsCap", 17, "m", C["neg"]))
-        b.append(t(lx + 26, sy - 14, "nothing is taken", 15, "m", C["body"]))
+        b.append(f'<circle cx="{px + 56}" cy="{y - 12}" r="13" fill="{C["positive"]}"/>')
+        b.append(t(px + 84, y, outcome, 36, "m", C["ink"]))
+    # bar: 0..350 bps
+    l, r, by = px + 42, px + pw - 42, py + ph - 92
+    X = lambda bps: l + bps / 350 * (r - l)
+    b.append(f'<rect x="{l}" y="{by}" width="{r - l}" height="28" rx="4" fill="{C["canvas"]}"/>')
+    b.append(f'<rect x="{l}" y="{by}" width="{X(take_bps) - l:.1f}" height="28" rx="4" fill="{C["neg"] if reverts else C["ink"]}"/>')
+    b.append(f'<rect x="{X(cap_bps) - 2.5:.1f}" y="{by - 14}" width="5" height="56" fill="{C["ink"]}"/>')
+    for bps in (0, 100, 200, 300):
+        b.append(t(X(bps), by + 66, f"{bps // 100}%", 20, "m", C["body"], "middle"))
     b.append("</g>")
     return b
 
 
 def post_cap():
     W, H = 1600, 900
-    b = [f'<g data-within="60 40 1560 870">']
-    b.append(t(78, 118, "Declare a maximum take.", 64, "d"))
-    b.append(t(78, 184, "Any swap above it reverts.", 64, "d"))
-    b.append(t(80, 236, "Uptick’s cap standard checks the hook’s take inside the swap. One 3% hook, two declared caps, on a fork of Robinhood Chain.", 22, "t", C["body"]))
-    pw, ph, py = 700, 480, 276
-    b += cap_panel(80, py, pw, ph, 2.5, False, "200 of 200 revert", "3% hook, declared max 2.50%")
-    b += cap_panel(820, py, pw, ph, 3.0, True, "200 of 200 settle", "same hook, declared max 3.00%")
-    b.append(t(80, 806, "At the edge, under a 3.00% cap: a 3.01% take reverts 60 of 60 times, 2.99% passes 60 of 60.", 22, "t", C["ink"]))
-    b.append(t(80, 852, "CappedTakeHook + CapRegistry · Uniswap v4 PoolManager 0x8366…0951 · about 25k gas per swap", 16, "m", C["body"]))
-    b.append(t(1520, 852, "Uptick", 30, "d", anchor="end"))
+    b = ['<g data-within="60 40 1560 870">']
+    b.append(t(78, 112, "Declare a maximum take.", 64, "d"))
+    b.append(t(78, 112 + HEAD_STEP, "Any swap above it reverts.", 64, "d"))
+    b.append(t(80, 226, "CappedTakeHook measures each hook’s take inside the swap. One 3% hook, two caps,", 30, "t", C["body"]))
+    b.append(t(80, 264, "200 swaps each, on a Robinhood Chain mainnet fork.", 30, "t", C["body"]))
+    pw, ph, py = 700, 480, 306
+    b += cap_card(80, py, pw, ph, 250, 300, "Cap 2.50%: 200 of 200 revert", "TakeExceedsCap(300, 250)")
+    b += cap_card(820, py, pw, ph, 300, 300, "Cap 3.00%: 200 of 200 settle", "settled")
+    b.append(t(80, 850, "Claim2Enforce.t.sol · Uniswap v4 PoolManager 0x8366…0951", 20, "m", C["body"]))
+    b.append(wordmark())
     b.append("</g>")
     return doc(W, H, "\n".join(b), C["canvas"])
 
@@ -278,31 +274,22 @@ def post_cap():
 # ---------------------------------------------------------------- post 4: app 1600x900
 def post_app():
     W, H = 1600, 900
-    cx, cy, cw, ch = 205, 932, 645, 828          # crop of web/screens/vault-nvda-1440.png (1440x2400)
-    k = 760 / ch
-    fw, fh = cw * k, ch * k
-    fx, fy = 1520 - fw, 52
-    b = [f'<g data-within="60 40 {fx - 40:.0f} 870">']
-    b.append(t(80, 112, "Uptick", 30, "d"))
-    b.append(t(78, 258, "Deposit NVDA.", 72, "d"))
-    b.append(t(78, 334, "The band follows", 72, "d"))
-    b.append(t(78, 410, "the price.", 72, "d"))
-    for i, line in enumerate([
-        "The vault provides liquidity in the NVDA/USDG",
-        "0.05% pool, inside a band 5% around the",
-        "Chainlink price, re-centred at each NYSE open.",
-        "Swap fees accrue while the pool price is inside.",
-    ]):
-        b.append(t(80, 480 + i * 36, line, 25, "t", C["ink_deep"]))
-    b.append(t(78, 724, "$49,968.98", 64, "d"))
-    b.append(t(80, 760, "in the NVDA vault, running on a Robinhood Chain mainnet fork", 19, "t", C["ink_deep"]))
+    iw, ih = 1217, 1029                    # src/app-band-card.png, the band card at 1.8x
+    k = 770 / ih                           # figures render at 18 * 1.8 * k = 24.2px
+    fw, fh = iw * k, ih * k
+    fx, fy = 1520 - fw, 46
+    b = [f'<g data-within="60 40 {fx - 24:.0f} 870">']
+    b.append(t(78, 150, "Deposit NVDA.", 64, "d", C["canvas"]))
+    b.append(t(78, 150 + 62, "The band follows", 64, "d", C["canvas"]))  # "Deposit" descends
+    b.append(t(78, 150 + 62 + HEAD_STEP, "the price.", 64, "d", C["canvas"]))
+    b.append(t(80, 728, "NVDA vault, Robinhood Chain", 28, "t", C["canvas"], weight=600))
+    b.append(t(80, 764, "mainnet fork", 28, "t", C["canvas"], weight=600))
+    b.append(t(80, 806, "captured from the running app", 20, "m", C["mute_dark"]))
     b.append("</g>")
-    b.append(t(1520, 856, "NVDA vault page, captured from the running app", 15, "m", C["ink_deep"], "end"))
-    b.append(f'<defs><clipPath id="shot"><rect x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" rx="16"/></clipPath></defs>')
-    b.append(f'<g clip-path="url(#shot)"><svg x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" viewBox="{cx} {cy} {cw} {ch}">'
-             f'<image href="../../../web/screens/vault-nvda-1440.png" width="1440" height="2400"/></svg></g>')
-    b.append(f'<rect x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" rx="16" fill="none" stroke="{C["ink"]}" stroke-width="1.5" data-box="screenshot frame"/>')
-    return doc(W, H, "\n".join(b), C["lime"])
+    b.append(f'<defs><clipPath id="shot"><rect x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" rx="30"/></clipPath></defs>')
+    b.append(f'<image href="app-band-card.png" x="{fx:.1f}" y="{fy:.1f}" width="{fw:.1f}" height="{fh:.1f}" clip-path="url(#shot)" data-box="screenshot"/>')
+    b.append(wordmark(C["canvas"]))
+    return doc(W, H, "\n".join(b), C["ink"])
 
 
 OUT = {
@@ -310,6 +297,7 @@ OUT = {
     "post-1-sessions.svg": post_sessions(), "post-2-hooks.svg": post_hooks(),
     "post-3-cap.svg": post_cap(), "post-4-app.svg": post_app(),
 }
-for name, svg in OUT.items():
-    (HERE / name).write_text(svg)
-    print("wrote", name)
+if __name__ == "__main__":
+    for name, svg in OUT.items():
+        (HERE / name).write_text(svg)
+        print("wrote", name)

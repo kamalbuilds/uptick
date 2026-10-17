@@ -1,0 +1,14 @@
+# forge test --mt test_cap250_reverts_on_every_swap -vvvv, spikes/capped-hooks, run 2026-10-17
+ 200 TakeExceedsCap(300, 250)
+No files changed, compilation skipped
+
+Ran 1 test for test/Claim2Enforce.t.sol:Claim2Enforce
+[PASS] test_cap250_reverts_on_every_swap() (gas: 44223872)
+Logs:
+  N swaps: 200
+  reverted with TakeExceedsCap: 200
+  reverted for another reason: 0
+
+Traces:
+  [44223872] Claim2Enforce::test_cap250_reverts_on_every_swap()
+    ├─ [0] VM::assertGe(200, 50, "need N >= 50") [staticcall]
