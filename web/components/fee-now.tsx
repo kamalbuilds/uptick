@@ -47,7 +47,7 @@ export function FeeNow({ compact = false }: { compact?: boolean }) {
         </tbody>
       </table>
       <p className="mt-3 text-sm text-body">
-        Fee cap: this pool can never charge more than <strong className="font-semibold text-ink">{MAX_FEE_BPS} bps</strong>; enforced inside every swap.
+        Fee cap: an Uptick pool can never charge more than <strong className="font-semibold text-ink">{MAX_FEE_BPS} bps</strong>; enforced inside every swap.
       </p>
     </div>
   );

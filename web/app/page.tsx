@@ -7,9 +7,9 @@ import { VAULTS } from "@/lib/vaults";
 const nvda = VAULTS[0];
 
 const steps = [
-  { title: "Deposit NVDA", body: "You send NVDA and receive vault shares that track your part of the position." },
-  { title: "The band follows the price", body: "The vault holds your NVDA in the NVDA/USDG pool inside a narrow price band and re-centres the band each trading day." },
-  { title: "Swaps pay you", body: "Every swap that crosses the band pays a fee. Fees raise the share price, so your claim on the vault grows." },
+  { title: "Deposit NVDA", body: "You send NVDA and receive vault shares. The vault holds your NVDA in the NVDA/USDG pool and re-centres its band at each NYSE open." },
+  { title: "Uptick pools price the session", body: "The Uptick hook charges 25 bps while NYSE is open, 10 bps on weeknights and 5 bps on weekends. Trades that pull the pool away from the Chainlink price pay a surcharge." },
+  { title: "The cap holds", body: "Every Uptick pool declares a maximum fee onchain. No swap through it can pay more, on any router." },
 ];
 
 export default function Home() {
@@ -36,8 +36,8 @@ export default function Home() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="how">
         <div className="rounded-xl bg-ink p-6 text-sage sm:p-10">
-          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">The band is the product</h2>
-          <p className="mt-3 max-w-xl text-sage">The vault holds a narrow price band around the oracle price. Inside the band, swaps pay.</p>
+          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">Fees that know when Wall Street is open</h2>
+          <p className="mt-3 max-w-2xl text-sage">We replayed 5.1M swaps on Robinhood Chain. Liquidity providers earn 0.8 to 1.2 dollars of fees for every dollar lost to informed traders while NYSE is open, and 3.8 to 19.5 dollars on weekends. Uptick prices each session.</p>
           <ol className="relative mt-10 grid gap-8 border-t border-sage/25 pt-8 md:grid-cols-[0.9fr_1.35fr_1fr] md:gap-10">
             {steps.map((s, i) => (
               <li key={s.title} className="relative">
