@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="900" viewBox="0 0 1600 900">
+<style>
+@font-face { font-family: Archivo; src: url("../fonts/archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: Figtree; src: url("../fonts/figtree.woff2") format("woff2"); font-weight: 300 900; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; }
+.d { font-family: Archivo, sans-serif; font-weight: 900; font-stretch: 86%; letter-spacing: -0.03em; }
+.t { font-family: Figtree, sans-serif; }
+.m { font-family: "Geist Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+</style>
+<rect width="1600" height="900" fill="#0e0f0c"/>
+<g data-within="60 40 1560 870">
+<text x="80.0" y="104.0" class="t" font-size="24" fill="#9a9c97" text-anchor="start" font-weight="600" >Uniswap v4 hooks on Robinhood Chain, Oct 14 to 16, 2026</text>
+<text x="82.0" y="196.0" class="t" font-size="34" fill="#e8ebe6" text-anchor="start" font-weight="600" >about</text>
+<text x="70.0" y="330.0" class="d" font-size="230" fill="#e8ebe6" text-anchor="start" >$1.2M</text>
+<text x="80.0" y="392.0" class="t" font-size="32" fill="#e8ebe6" text-anchor="start" >left traders in 49 hours, through hooks that keep 5 to 11% of a swap</text>
+<text x="80.0" y="434.0" class="t" font-size="32" fill="#e8ebe6" text-anchor="start" >while the pool quotes a fee of 0 to 1%.</text>
+<line x1="470.0" x2="470.0" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="470.0" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >0%</text>
+<line x1="641.7" x2="641.7" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="641.7" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >2%</text>
+<line x1="813.3" x2="813.3" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="813.3" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >4%</text>
+<line x1="985.0" x2="985.0" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="985.0" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >6%</text>
+<line x1="1156.7" x2="1156.7" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="1156.7" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >8%</text>
+<line x1="1328.3" x2="1328.3" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="1328.3" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >10%</text>
+<line x1="1500.0" x2="1500.0" y1="486" y2="638" stroke="#33352f" stroke-width="1"/>
+<text x="1500.0" y="662.0" class="m" font-size="16" fill="#9a9c97" text-anchor="middle" >12%</text>
+<text x="80.0" y="528.0" class="t" font-size="24" fill="#e8ebe6" text-anchor="start" font-weight="600" >Fee the pool quotes</text>
+<rect x="470.0" y="504" width="85.8" height="32" rx="4" fill="#9a9c97"/>
+<text x="571.8" y="528.0" class="m" font-size="22" fill="#e8ebe6" text-anchor="start" >0 to 1%</text>
+<text x="80.0" y="608.0" class="t" font-size="24" fill="#e8ebe6" text-anchor="start" font-weight="600" >Share the hook keeps</text>
+<rect x="899.2" y="584" width="515.0" height="32" rx="4" fill="#d03238"/>
+<text x="883.2" y="608.0" class="m" font-size="22" fill="#e8ebe6" text-anchor="end" >5 to 11%</text>
+<line x1="80" x2="1520" y1="712" y2="712" stroke="#33352f" stroke-width="1"/>
+<text x="78.0" y="800.0" class="d" font-size="84" fill="#e8ebe6" text-anchor="start" >80%</text>
+<text x="272.0" y="772.0" class="t" font-size="24" fill="#e8ebe6" text-anchor="start" >of 84,000 Uniswap v4 hooks</text>
+<text x="272.0" y="804.0" class="t" font-size="24" fill="#9a9c97" text-anchor="start" >labelled malicious by 0x</text>
+<text x="1520.0" y="772.0" class="t" font-size="24" fill="#9fe870" text-anchor="end" font-weight="600" >Uptick deposits only into pools without fee-taking</text>
+<text x="1520.0" y="804.0" class="t" font-size="24" fill="#9fe870" text-anchor="end" font-weight="600" >hooks, or with a cap declared on chain.</text>
+<text x="80.0" y="862.0" class="m" font-size="16" fill="#9a9c97" text-anchor="start" >3,183,184 swaps read across 19,775 pools · blocks 88,480,052 to 90,230,052 · chain 4663</text>
+<text x="1520.0" y="862.0" class="d" font-size="26" fill="#e8ebe6" text-anchor="end" >Uptick</text>
+</g>
+</svg>

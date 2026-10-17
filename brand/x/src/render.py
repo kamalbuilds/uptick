@@ -4,6 +4,7 @@ Usage: python3 render.py <source.svg> <out.png> <width> <height> [--no-text]
 
 Checks, printed as JSON and exit 1 on any failure:
   fonts    every face the source declares reached status "loaded"
+  overlap  no two <text> boxes intersect by more than 2px in both axes
   clipped  every <text> bbox (and every element marked data-box) sits inside the canvas, and inside its
            data-within="<x0> <y0> <x1> <y1>" region when one is given
 The tab is created with background:true and never activated, so the user's window keeps focus.
@@ -36,7 +37,13 @@ CHECK = r"""
       if (!inside(b, x0, y0, x1, y1)) bad.push({label, why: 'outside region ' + w.getAttribute('data-within'), b});
     }
   }
-  const texts = document.querySelectorAll('text').length;
+  const tb = [...document.querySelectorAll('text')].map(el => [el.textContent.trim().slice(0, 40), el.getBoundingClientRect()]);
+  for (let i = 0; i < tb.length; i++) for (let j = i + 1; j < tb.length; j++) {
+    const [a, A] = tb[i], [c, B] = tb[j];
+    const w = Math.min(A.right, B.right) - Math.max(A.left, B.left), h = Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top);
+    if (w > 2 && h > 2) bad.push({label: a + ' | ' + c, why: 'text overlaps text', overlap: [Math.round(w), Math.round(h)]});
+  }
+  const texts = tb.length;
   return JSON.stringify({faces, texts, bad});
 })()
 """

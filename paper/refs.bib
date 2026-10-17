@@ -1,0 +1,438 @@
+% Bibliography for the paper on session-dependent adverse selection in 24/7 tokenized-equity AMMs.
+% Journal and proceedings metadata verified against the Crossref API (api.crossref.org/works/<doi>) on 2026-10-17.
+% arXiv metadata verified against the arXiv export API (export.arxiv.org/api/query?id_list=...) on 2026-10-17.
+
+% ---------- Adverse selection and LVR ----------
+
+@article{glosten1985bid,
+  author  = {Glosten, Lawrence R. and Milgrom, Paul R.},
+  title   = {Bid, Ask and Transaction Prices in a Specialist Market with Heterogeneously Informed Traders},
+  journal = {Journal of Financial Economics},
+  volume  = {14},
+  number  = {1},
+  pages   = {71--100},
+  year    = {1985},
+  doi     = {10.1016/0304-405X(85)90044-3}
+}
+
+@misc{milionis2022lvr,
+  author        = {Milionis, Jason and Moallemi, Ciamac C. and Roughgarden, Tim and Zhang, Anthony Lee},
+  title         = {Automated Market Making and Loss-Versus-Rebalancing},
+  year          = {2022},
+  eprint        = {2208.06046},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-fin.MF},
+  note          = {arXiv:2208.06046, version 6},
+  annote        = {arXiv:2208.06046, version 6 read}
+}
+
+@inproceedings{milionis2025fees,
+  author    = {Milionis, Jason and Moallemi, Ciamac C. and Roughgarden, Tim},
+  title     = {Automated Market Making and Arbitrage Profits in the Presence of Fees},
+  booktitle = {Financial Cryptography and Data Security},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  pages     = {159--171},
+  year      = {2025},
+  doi       = {10.1007/978-3-031-78676-1_9},
+  eprint    = {2305.14604},
+  archivePrefix = {arXiv}
+}
+
+@misc{nezlobin2025lvr,
+  author        = {Nezlobin, Alex and Tassy, Martin},
+  title         = {Loss-Versus-Rebalancing under Deterministic and Generalized Block-Times},
+  year          = {2025},
+  eprint        = {2505.05113},
+  note        = {arXiv:2505.05113},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-fin.MF}
+}
+
+% ---------- Empirical LP profitability ----------
+
+@misc{loesch2021impermanent,
+  author        = {Loesch, Stefan and Hindman, Nate and Richardson, Mark B. and Welch, Nicholas},
+  title         = {Impermanent Loss in {Uniswap} v3},
+  year          = {2021},
+  eprint        = {2111.09192},
+  note        = {arXiv:2111.09192},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{heimbach2022risks,
+  author    = {Heimbach, Lioba and Schertenleib, Eric and Wattenhofer, Roger},
+  title     = {Risks and Returns of {Uniswap} {V3} Liquidity Providers},
+  booktitle = {Proceedings of the 4th ACM Conference on Advances in Financial Technologies (AFT '22)},
+  pages     = {89--101},
+  year      = {2022},
+  doi       = {10.1145/3558535.3559772},
+  eprint    = {2205.08904},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{fritsch2021concentrated,
+  author    = {Fritsch, Robin},
+  title     = {Concentrated Liquidity in Automated Market Makers},
+  booktitle = {Proceedings of the 2021 ACM CCS Workshop on Decentralized Finance and Security (DeFi '21)},
+  pages     = {15--20},
+  year      = {2021},
+  doi       = {10.1145/3464967.3488590},
+  eprint    = {2110.01368},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{fritsch2024measuring,
+  author    = {Fritsch, Robin and Canidio, Andrea},
+  title     = {Measuring Arbitrage Losses and Profitability of {AMM} Liquidity},
+  booktitle = {Companion Proceedings of the ACM Web Conference 2024 (WWW '24 Companion)},
+  pages     = {1761--1767},
+  year      = {2024},
+  doi       = {10.1145/3589335.3651961},
+  eprint    = {2404.05803},
+  archivePrefix = {arXiv}
+}
+
+@article{lehar2025uniswap,
+  author  = {Lehar, Alfred and Parlour, Christine A.},
+  title   = {Decentralized Exchange: The {Uniswap} Automated Market Maker},
+  journal = {The Journal of Finance},
+  volume  = {80},
+  number  = {1},
+  pages   = {321--374},
+  year    = {2025},
+  doi     = {10.1111/jofi.13405}
+}
+
+@article{capponi2025liquidity,
+  author  = {Capponi, Agostino and Jia, Ruizhe},
+  title   = {Liquidity Provision on Blockchain-Based Decentralized Exchanges},
+  journal = {The Review of Financial Studies},
+  volume  = {38},
+  number  = {10},
+  pages   = {3040--3085},
+  year    = {2025},
+  doi     = {10.1093/rfs/hhaf046}
+}
+
+@misc{capponi2021adoption,
+  author        = {Capponi, Agostino and Jia, Ruizhe},
+  title         = {The Adoption of Blockchain-based Decentralized Exchanges},
+  year          = {2021},
+  eprint        = {2103.08842},
+  note        = {arXiv:2103.08842},
+  archivePrefix = {arXiv}
+}
+
+% ---------- Informed flow, CEX-DEX arbitrage, MEV ----------
+
+@inproceedings{daian2020flash,
+  author    = {Daian, Philip and Goldfeder, Steven and Kell, Tyler and Li, Yunqi and Zhao, Xueyuan and Bentov, Iddo and Breidenbach, Lorenz and Juels, Ari},
+  title     = {Flash Boys 2.0: Frontrunning in Decentralized Exchanges, Miner Extractable Value, and Consensus Instability},
+  booktitle = {2020 IEEE Symposium on Security and Privacy (SP)},
+  pages     = {910--927},
+  year      = {2020},
+  doi       = {10.1109/SP40000.2020.00040},
+  eprint    = {1904.05234},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{heimbach2024nonatomic,
+  author    = {Heimbach, Lioba and Pahari, Vabuk and Schertenleib, Eric},
+  title     = {Non-Atomic Arbitrage in Decentralized Finance},
+  booktitle = {2024 IEEE Symposium on Security and Privacy (SP)},
+  pages     = {3866--3884},
+  year      = {2024},
+  doi       = {10.1109/SP54263.2024.00256},
+  eprint    = {2401.01622},
+  archivePrefix = {arXiv}
+}
+
+@misc{wu2025cexdex,
+  author        = {Wu, Fei and Sui, Danning and Thiery, Thomas and Pai, Mallesh},
+  title         = {Measuring {CEX-DEX} Extracted Value and Searcher Profitability: The Darkest of the {MEV} Dark Forest},
+  year          = {2025},
+  eprint        = {2507.13023},
+  note        = {arXiv:2507.13023},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CR}
+}
+
+% ---------- Fee design ----------
+
+@inproceedings{goyal2023curve,
+  author    = {Goyal, Mohak and Ramseyer, Geoffrey and Goel, Ashish and Mazi{\`e}res, David},
+  title     = {Finding the Right Curve: Optimal Design of Constant Function Market Makers},
+  booktitle = {Proceedings of the 24th ACM Conference on Economics and Computation (EC '23)},
+  pages     = {783--812},
+  year      = {2023},
+  doi       = {10.1145/3580507.3597688},
+  eprint    = {2212.03340},
+  archivePrefix = {arXiv}
+}
+
+@article{hasbrouck2026fees,
+  author  = {Hasbrouck, Joel and Rivera, Thomas J. and Saleh, Fahad},
+  title   = {The Need for Fees at a {DEX}: How Increases in Fees Can Increase {DEX} Trading Volume},
+  journal = {Management Science},
+  volume  = {72},
+  number  = {10},
+  pages   = {8309--8324},
+  year    = {2026},
+  doi     = {10.1287/mnsc.2023.00726}
+}
+
+@inproceedings{adams2026amamm,
+  author    = {Adams, Austin and Moallemi, Ciamac C. and Reynolds, Sara and Robinson, Dan},
+  title     = {am-{AMM}: An Auction-Managed Automated Market Maker},
+  booktitle = {Financial Cryptography and Data Security},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  pages     = {93--108},
+  year      = {2026},
+  doi       = {10.1007/978-3-032-07024-1_6},
+  eprint    = {2403.03367},
+  archivePrefix = {arXiv}
+}
+
+@misc{campbell2025optimal,
+  author        = {Campbell, Steven and Bergault, Philippe and Milionis, Jason and Nutz, Marcel},
+  title         = {Optimal Fees for Liquidity Provision in Automated Market Makers},
+  year          = {2025},
+  eprint        = {2508.08152},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-fin.TR},
+  note          = {arXiv:2508.08152, version 2 (2 October 2026)},
+  annote        = {Version 2 (2 October 2026) read}
+}
+
+@misc{baggiani2025dynamic,
+  author        = {Baggiani, Leonardo and Herdegen, Martin and S{\'a}nchez-Betancourt, Leandro},
+  title         = {Optimal Dynamic Fees in Automated Market Makers},
+  year          = {2025},
+  eprint        = {2506.02869},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-fin.TR},
+  note          = {arXiv:2506.02869, version 3 (30 July 2026)},
+  annote        = {Version 3 (30 July 2026) read}
+}
+
+@misc{alexander2024fees,
+  author        = {Alexander, Abe and Fritz, Lars},
+  title         = {Fees in {AMMs}: A Quantitative Study},
+  year          = {2024},
+  eprint        = {2406.12417},
+  note        = {arXiv:2406.12417},
+  archivePrefix = {arXiv}
+}
+
+% ---------- Uniswap v4 hooks ----------
+
+@techreport{adams2024v4,
+  author      = {Adams, Hayden and Salem, Moody and Zinsmeister, Noah and Reynolds, Sara and Adams, Austin and Pote, Will and Toda, Mark and Henshaw, Alice and Williams, Emily and Robinson, Dan},
+  title       = {Uniswap v4 Core},
+  institution = {Uniswap Labs},
+  type        = {Whitepaper},
+  month       = aug,
+  year        = {2024},
+  url         = {https://app.uniswap.org/whitepaper-v4.pdf}
+}
+
+@misc{donboly2026hooks,
+  author       = {Donboly, Nicolas},
+  title        = {Building Secure {Uniswap} v4 Hooks},
+  howpublished = {Trail of Bits Blog},
+  year         = {2026},
+  month        = jul,
+  url          = {https://blog.trailofbits.com/2026/07/30/building-secure-uniswap-v4-hooks/},
+  note         = {Accessed 2026-10-17}
+}
+
+@misc{zeroex2026hooks,
+  author       = {{0x}},
+  title        = {{Uniswap} v4 Hooks Were a Mistake},
+  howpublished = {X article},
+  year         = {2026},
+  month        = sep,
+  url          = {https://x.com/i/article/2099578032960995502},
+  annote       = {Date from the post's snowflake id (2026-09-14). Figures cited as reported in press coverage (cryptobriefing.com/0x-criticizes-uniswap-v4-hooks-malicious/); the article itself was not read}
+}
+
+% ---------- Trading hours, weekends, overnight ----------
+
+@article{french1980weekend,
+  author  = {French, Kenneth R.},
+  title   = {Stock Returns and the Weekend Effect},
+  journal = {Journal of Financial Economics},
+  volume  = {8},
+  number  = {1},
+  pages   = {55--69},
+  year    = {1980},
+  doi     = {10.1016/0304-405X(80)90021-5},
+  annote  = {Abstract opening and the summary in Keim and Stambaugh (1984) read; full text not accessed}
+}
+
+@article{keim1984weekend,
+  author  = {Keim, Donald B. and Stambaugh, Robert F.},
+  title   = {A Further Investigation of the Weekend Effect in Stock Returns},
+  journal = {The Journal of Finance},
+  volume  = {39},
+  number  = {3},
+  pages   = {819--835},
+  year    = {1984},
+  doi     = {10.1111/j.1540-6261.1984.tb03675.x}
+}
+
+@article{french1986variances,
+  author  = {French, Kenneth R. and Roll, Richard},
+  title   = {Stock Return Variances: The Arrival of Information and the Reaction of Traders},
+  journal = {Journal of Financial Economics},
+  volume  = {17},
+  number  = {1},
+  pages   = {5--26},
+  year    = {1986},
+  doi     = {10.1016/0304-405X(86)90004-8}
+}
+
+@article{barclay2003price,
+  author  = {Barclay, Michael J. and Hendershott, Terrence},
+  title   = {Price Discovery and Trading After Hours},
+  journal = {The Review of Financial Studies},
+  volume  = {16},
+  number  = {4},
+  pages   = {1041--1073},
+  year    = {2003},
+  doi     = {10.1093/rfs/hhg030}
+}
+
+@article{barclay2004liquidity,
+  author  = {Barclay, Michael J. and Hendershott, Terrence},
+  title   = {Liquidity Externalities and Adverse Selection: Evidence from Trading after Hours},
+  journal = {The Journal of Finance},
+  volume  = {59},
+  number  = {2},
+  pages   = {681--710},
+  year    = {2004},
+  doi     = {10.1111/j.1540-6261.2004.00646.x}
+}
+
+@article{lou2019tug,
+  author  = {Lou, Dong and Polk, Christopher and Skouras, Spyros},
+  title   = {A Tug of War: Overnight versus Intraday Expected Returns},
+  journal = {Journal of Financial Economics},
+  volume  = {134},
+  number  = {1},
+  pages   = {192--213},
+  year    = {2019},
+  doi     = {10.1016/j.jfineco.2019.03.011}
+}
+
+% ---------- Price discovery while the reference market is closed ----------
+
+@article{hasbrouck2003intraday,
+  author  = {Hasbrouck, Joel},
+  title   = {Intraday Price Formation in {U.S.} Equity Index Markets},
+  journal = {The Journal of Finance},
+  volume  = {58},
+  number  = {6},
+  pages   = {2375--2400},
+  year    = {2003},
+  doi     = {10.1046/j.1540-6261.2003.00609.x}
+}
+
+@article{bondarenko2023clock,
+  author  = {Bondarenko, Oleg and Muravyev, Dmitriy},
+  title   = {Market Return Around the Clock: A Puzzle},
+  journal = {Journal of Financial and Quantitative Analysis},
+  volume  = {58},
+  number  = {3},
+  pages   = {939--967},
+  year    = {2023},
+  doi     = {10.1017/S0022109022000783}
+}
+
+@article{boyarchenko2023overnight,
+  author  = {Boyarchenko, Nina and Larsen, Lars C. and Whelan, Paul},
+  title   = {The Overnight Drift},
+  journal = {The Review of Financial Studies},
+  volume  = {36},
+  number  = {9},
+  pages   = {3502--3547},
+  year    = {2023},
+  doi     = {10.1093/rfs/hhad020}
+}
+
+@misc{cha2026nest,
+  author        = {Cha, Doohwi and Sung, Minsuk and Lee, Minjae and Yeo, Hyeonjun and Kim, Hanhee and Son, Seunghan and Seo, Donghwa and Lee, Juyeong},
+  title         = {{NEST}: Stale-Robust Tokenized-Stock Measurement for a Crypto-Treasury {LETF} Stack},
+  year          = {2026},
+  eprint        = {2610.21491},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-fin.TR},
+  note          = {arXiv:2610.21491. Extended version of a paper accepted at MARBLE 2026}
+}
+
+@misc{cong2025tokenized,
+  author       = {Cong, Lin William and Landsman, Wayne R. and Rabetti, Daniel and Zhang, Che and Zhao, Wenqi},
+  title        = {Tokenized Stocks},
+  howpublished = {SSRN Working Paper 5937314},
+  year         = {2025},
+  doi          = {10.2139/ssrn.5937314},
+  annote       = {Metadata verified via Crossref; SSRN returned 403, finding attributed via Cha et al. (2026)}
+}
+
+@misc{agarwal2026bitquery,
+  author       = {Agarwal, Gaurav},
+  title        = {Tokenized Stocks Trade All Weekend. Most of {Monday's} Move Still Arrives Overnight},
+  howpublished = {Bitquery On-chain Investigation},
+  year         = {2026},
+  month        = oct,
+  url          = {https://bitquery.io/investigations/tokenized-stocks-weekend-trading},
+  note         = {Industry report dated 2026-10-05; accessed 2026-10-17}
+}
+
+% ---------- Oracles ----------
+
+@inproceedings{liu2021oracles,
+  author    = {Liu, Bowen and Szalachowski, Pawel and Zhou, Jianying},
+  title     = {A First Look into {DeFi} Oracles},
+  booktitle = {2021 IEEE International Conference on Decentralized Applications and Infrastructures (DAPPS)},
+  pages     = {39--48},
+  year      = {2021},
+  doi       = {10.1109/DAPPS52256.2021.00010},
+  eprint    = {2005.04377},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{eskandari2021sok,
+  author    = {Eskandari, Shayan and Salehi, Mehdi and Gu, Wanyun Catherine and Clark, Jeremy},
+  title     = {{SoK}: Oracles from the Ground Truth to Market Manipulation},
+  booktitle = {Proceedings of the 3rd ACM Conference on Advances in Financial Technologies (AFT '21)},
+  pages     = {127--141},
+  year      = {2021},
+  doi       = {10.1145/3479722.3480994},
+  eprint    = {2106.00667},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{deng2024oracle,
+  author    = {Deng, Xun and Beillahi, Sidi Mohamed and Minwalla, Cyrus and Du, Han and Veneris, Andreas and Long, Fan},
+  title     = {Safeguarding {DeFi} Smart Contracts against Oracle Deviations},
+  booktitle = {Proceedings of the IEEE/ACM 46th International Conference on Software Engineering (ICSE '24)},
+  pages     = {1--12},
+  year      = {2024},
+  doi       = {10.1145/3597503.3639225},
+  eprint    = {2401.06044},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{qin2021liquidations,
+  author    = {Qin, Kaihua and Zhou, Liyi and Gamito, Pablo and Jovanovic, Philipp and Gervais, Arthur},
+  title     = {An Empirical Study of {DeFi} Liquidations: Incentives, Risks, and Instabilities},
+  booktitle = {Proceedings of the 21st ACM Internet Measurement Conference (IMC '21)},
+  pages     = {336--350},
+  year      = {2021},
+  doi       = {10.1145/3487552.3487811},
+  eprint    = {2106.06389},
+  archivePrefix = {arXiv}
+}

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="900" viewBox="0 0 1600 900">
+<style>
+@font-face { font-family: Archivo; src: url("../fonts/archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: Figtree; src: url("../fonts/figtree.woff2") format("woff2"); font-weight: 300 900; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; }
+.d { font-family: Archivo, sans-serif; font-weight: 900; font-stretch: 86%; letter-spacing: -0.03em; }
+.t { font-family: Figtree, sans-serif; }
+.m { font-family: "Geist Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+</style>
+<rect width="1600" height="900" fill="#e8ebe6"/>
+<g data-within="60 40 1560 870">
+<text x="78.0" y="118.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >NYSE hours are the worst time</text>
+<text x="78.0" y="184.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >to be a Stock Token LP</text>
+<text x="80.0" y="236.0" class="t" font-size="22" fill="#454745" text-anchor="start" >Fees earned per $1 lost to informed traders (1 hour markout), static ±2% position, by session.</text>
+<line x1="470.0" x2="470.0" y1="286" y2="746" stroke="#cfd4cb" stroke-width="1" />
+<text x="470.0" y="774.0" class="m" font-size="16" fill="#454745" text-anchor="middle" >$0.50</text>
+<line x1="613.5" x2="613.5" y1="286" y2="746" stroke="#0e0f0c" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="613.5" y="774.0" class="m" font-size="16" fill="#454745" text-anchor="middle" >$1</text>
+<line x1="757.0" x2="757.0" y1="286" y2="746" stroke="#cfd4cb" stroke-width="1" />
+<text x="757.0" y="774.0" class="m" font-size="16" fill="#454745" text-anchor="middle" >$2</text>
+<line x1="946.8" x2="946.8" y1="286" y2="746" stroke="#cfd4cb" stroke-width="1" />
+<text x="946.8" y="774.0" class="m" font-size="16" fill="#454745" text-anchor="middle" >$5</text>
+<line x1="1090.3" x2="1090.3" y1="286" y2="746" stroke="#cfd4cb" stroke-width="1" />
+<text x="1090.3" y="774.0" class="m" font-size="16" fill="#454745" text-anchor="middle" >$10</text>
+<line x1="1233.8" x2="1233.8" y1="286" y2="746" stroke="#cfd4cb" stroke-width="1" />
+<text x="1233.8" y="774.0" class="m" font-size="16" fill="#454745" text-anchor="middle" >$20</text>
+<text x="623.5" y="280.0" class="m" font-size="15" fill="#0e0f0c" text-anchor="start" >$1 earned per $1 lost</text>
+<text x="603.5" y="280.0" class="m" font-size="15" fill="#d03238" text-anchor="end" >LPs lose</text>
+<text x="1520.0" y="280.0" class="m" font-size="15" fill="#454745" text-anchor="end" >weekend vs NYSE</text>
+<text x="80.0" y="372.0" class="d" font-size="46" fill="#0e0f0c" text-anchor="start" >NVDA</text>
+<text x="82.0" y="400.0" class="t" font-size="17" fill="#454745" text-anchor="start" >0.05% pool</text>
+<text x="436.0" y="335.0" class="t" font-size="16" fill="#454745" text-anchor="end" >NYSE hours</text>
+<line x1="613.5" x2="653.0" y1="330" y2="330" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="653.0" cy="330" r="10" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="673.0" y="336.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$1.21</text>
+<text x="436.0" y="373.0" class="t" font-size="16" fill="#454745" text-anchor="end" >Weeknights</text>
+<line x1="613.5" x2="656.4" y1="368" y2="368" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="656.4" cy="368" r="10" fill="#c5edab" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="676.4" y="374.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$1.23</text>
+<text x="436.0" y="411.0" class="t" font-size="16" fill="#454745" text-anchor="end" >Weekends</text>
+<line x1="613.5" x2="891.6" y1="406" y2="406" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="891.6" cy="406" r="10" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="911.6" y="412.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$3.83</text>
+<text x="1520.0" y="386.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >3.2×</text>
+<text x="80.0" y="522.0" class="d" font-size="46" fill="#0e0f0c" text-anchor="start" >SPCX</text>
+<text x="82.0" y="550.0" class="t" font-size="17" fill="#454745" text-anchor="start" >0.05% pool</text>
+<text x="436.0" y="485.0" class="t" font-size="16" fill="#454745" text-anchor="end" >NYSE hours</text>
+<line x1="613.5" x2="562.1" y1="480" y2="480" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="562.1" cy="480" r="10" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="542.1" y="486.0" class="m" font-size="18" fill="#d03238" text-anchor="end" >$0.78</text>
+<text x="436.0" y="523.0" class="t" font-size="16" fill="#454745" text-anchor="end" >Weeknights</text>
+<line x1="613.5" x2="842.4" y1="518" y2="518" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="842.4" cy="518" r="10" fill="#c5edab" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="862.4" y="524.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$3.02</text>
+<text x="436.0" y="561.0" class="t" font-size="16" fill="#454745" text-anchor="end" >Weekends</text>
+<line x1="613.5" x2="1018.5" y1="556" y2="556" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="1018.5" cy="556" r="10" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="1038.5" y="562.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$7.07</text>
+<text x="1520.0" y="536.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >9.1×</text>
+<text x="80.0" y="672.0" class="d" font-size="46" fill="#0e0f0c" text-anchor="start" >TSLA</text>
+<text x="82.0" y="700.0" class="t" font-size="17" fill="#454745" text-anchor="start" >0.3% pool</text>
+<text x="436.0" y="635.0" class="t" font-size="16" fill="#454745" text-anchor="end" >NYSE hours</text>
+<line x1="613.5" x2="567.3" y1="630" y2="630" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="567.3" cy="630" r="10" fill="#0e0f0c" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="547.3" y="636.0" class="m" font-size="18" fill="#d03238" text-anchor="end" >$0.80</text>
+<text x="436.0" y="673.0" class="t" font-size="16" fill="#454745" text-anchor="end" >Weeknights</text>
+<line x1="613.5" x2="764.2" y1="668" y2="668" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="764.2" cy="668" r="10" fill="#c5edab" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="784.2" y="674.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$2.07</text>
+<text x="436.0" y="711.0" class="t" font-size="16" fill="#454745" text-anchor="end" >Weekends</text>
+<line x1="613.5" x2="1228.9" y1="706" y2="706" stroke="#0e0f0c" stroke-width="2"/>
+<circle cx="1228.9" cy="706" r="10" fill="#9fe870" stroke="#0e0f0c" stroke-width="2.5"/>
+<text x="1248.9" y="712.0" class="m" font-size="18" fill="#0e0f0c" text-anchor="start" >$19.53</text>
+<text x="1520.0" y="686.0" class="d" font-size="54" fill="#0e0f0c" text-anchor="end" >24.4×</text>
+<line x1="80" x2="1520" y1="812" y2="812" stroke="#cfd4cb" stroke-width="1"/>
+<text x="80.0" y="852.0" class="d" font-size="30" fill="#0e0f0c" text-anchor="start" >Uptick</text>
+<text x="1520.0" y="850.0" class="m" font-size="16" fill="#454745" text-anchor="end" >5.1M swaps replayed · Robinhood Chain 4663 · Aug 24 to Oct 17, 2026</text>
+</g>
+</svg>

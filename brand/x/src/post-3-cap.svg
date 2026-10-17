@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="900" viewBox="0 0 1600 900">
+<style>
+@font-face { font-family: Archivo; src: url("../fonts/archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: Figtree; src: url("../fonts/figtree.woff2") format("woff2"); font-weight: 300 900; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; }
+.d { font-family: Archivo, sans-serif; font-weight: 900; font-stretch: 86%; letter-spacing: -0.03em; }
+.t { font-family: Figtree, sans-serif; }
+.m { font-family: "Geist Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+</style>
+<rect width="1600" height="900" fill="#e8ebe6"/>
+<g data-within="60 40 1560 870">
+<text x="78.0" y="118.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >Declare a maximum take.</text>
+<text x="78.0" y="184.0" class="d" font-size="64" fill="#0e0f0c" text-anchor="start" >Any swap above it reverts.</text>
+<text x="80.0" y="236.0" class="t" font-size="22" fill="#454745" text-anchor="start" >Uptick’s cap standard checks the hook’s take inside the swap. Same 3% hook, two declared caps, on a fork of Robinhood Chain:</text>
+<rect x="80" y="280" width="700" height="470" rx="24" fill="#ffffff"/>
+<line x1="176" x2="740" y1="680.0" y2="680.0" stroke="#cfd4cb" stroke-width="1"/>
+<text x="162.0" y="685.0" class="m" font-size="15" fill="#454745" text-anchor="end" >0%</text>
+<line x1="176" x2="740" y1="597.1" y2="597.1" stroke="#cfd4cb" stroke-width="1"/>
+<text x="162.0" y="602.1" class="m" font-size="15" fill="#454745" text-anchor="end" >1%</text>
+<line x1="176" x2="740" y1="514.3" y2="514.3" stroke="#cfd4cb" stroke-width="1"/>
+<text x="162.0" y="519.3" class="m" font-size="15" fill="#454745" text-anchor="end" >2%</text>
+<line x1="176" x2="740" y1="431.4" y2="431.4" stroke="#cfd4cb" stroke-width="1"/>
+<text x="162.0" y="436.4" class="m" font-size="15" fill="#454745" text-anchor="end" >3%</text>
+<rect x="176" y="460.9" width="564" height="12" fill="#0e0f0c"/>
+<text x="740.0" y="450.9" class="m" font-size="16" fill="#0e0f0c" text-anchor="end" >declared max 2.50%</text>
+<path d="M406 472.9 L 440 431.4" stroke="#868685" stroke-width="3" stroke-dasharray="4 5" fill="none"/>
+<text x="448.0" y="429.4" class="m" font-size="15" fill="#868685" text-anchor="start" >3% wanted</text>
+<path d="M200 680.0 Q 336 640.0, 406 472.9" fill="none" stroke="#0e0f0c" stroke-width="5" stroke-linecap="round"/>
+<path d="M406 472.9 Q 486 502.9, 616 680.0" fill="none" stroke="#d03238" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 0"/>
+<line x1="397.2" y1="479.3" x2="384.0" y2="488.9" stroke="#d03238" stroke-width="3" stroke-linecap="round"/>
+<line x1="406.0" y1="481.7" x2="406.0" y2="494.9" stroke="#d03238" stroke-width="3" stroke-linecap="round"/>
+<line x1="414.8" y1="479.3" x2="428.0" y2="488.9" stroke="#d03238" stroke-width="3" stroke-linecap="round"/>
+<circle cx="616" cy="680.0" r="13" fill="#ffffff" stroke="#d03238" stroke-width="4"/>
+<text x="640.0" y="646.0" class="m" font-size="17" fill="#d03238" text-anchor="start" >reverts: TakeExceedsCap</text>
+<text x="640.0" y="668.0" class="m" font-size="15" fill="#454745" text-anchor="start" >the trader keeps everything</text>
+<text x="120.0" y="334.0" class="d" font-size="40" fill="#0e0f0c" text-anchor="start" >200 of 200 revert</text>
+<rect x="820" y="280" width="700" height="470" rx="24" fill="#ffffff"/>
+<line x1="916" x2="1480" y1="680.0" y2="680.0" stroke="#cfd4cb" stroke-width="1"/>
+<text x="902.0" y="685.0" class="m" font-size="15" fill="#454745" text-anchor="end" >0%</text>
+<line x1="916" x2="1480" y1="597.1" y2="597.1" stroke="#cfd4cb" stroke-width="1"/>
+<text x="902.0" y="602.1" class="m" font-size="15" fill="#454745" text-anchor="end" >1%</text>
+<line x1="916" x2="1480" y1="514.3" y2="514.3" stroke="#cfd4cb" stroke-width="1"/>
+<text x="902.0" y="519.3" class="m" font-size="15" fill="#454745" text-anchor="end" >2%</text>
+<line x1="916" x2="1480" y1="431.4" y2="431.4" stroke="#cfd4cb" stroke-width="1"/>
+<text x="902.0" y="436.4" class="m" font-size="15" fill="#454745" text-anchor="end" >3%</text>
+<rect x="916" y="419.4" width="564" height="12" fill="#0e0f0c"/>
+<text x="1480.0" y="409.4" class="m" font-size="16" fill="#0e0f0c" text-anchor="end" >declared max 3.00%</text>
+<path d="M940 680.0 C 1060 680.0, 1076 431.4, 1166 431.4 L 1450 431.4" fill="none" stroke="#0e0f0c" stroke-width="5" stroke-linecap="round"/>
+<circle cx="1450" cy="431.4" r="13" fill="#9fe870" stroke="#0e0f0c" stroke-width="4"/>
+<text x="1450.0" y="475.4" class="m" font-size="17" fill="#0e0f0c" text-anchor="end" >swap settles, 3.00% taken</text>
+<text x="860.0" y="334.0" class="d" font-size="40" fill="#0e0f0c" text-anchor="start" >200 of 200 settle</text>
+<text x="80.0" y="806.0" class="t" font-size="22" fill="#0e0f0c" text-anchor="start" >At the edge, under a 3.00% cap: a 3.01% take reverts 60 of 60 times, 2.99% passes 60 of 60.</text>
+<text x="80.0" y="852.0" class="m" font-size="16" fill="#454745" text-anchor="start" >CappedTakeHook + CapRegistry · Uniswap v4 PoolManager 0x8366…0951 · about 25k gas per swap</text>
+<text x="1520.0" y="852.0" class="d" font-size="30" fill="#0e0f0c" text-anchor="end" >Uptick</text>
+</g>
+</svg>

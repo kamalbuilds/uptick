@@ -81,6 +81,13 @@ const vaultView = async (t: Ticker) => ({ ...(await vaultBase(t)), chart: await 
 const byApr = (a: { fee_apr_pct: { replay_30d: number | null } }, b: typeof a) => (b.fee_apr_pct.replay_30d ?? -1) - (a.fee_apr_pct.replay_30d ?? -1);
 const strip = ({ share_price_history, ...rest }: any) => rest;
 
+const LIST_VAULT_TIMEOUT_MS = 20_000;
+function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const late = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(`${what} timed out after ${ms} ms`)), ms); });
+  return Promise.race([p, late]).finally(() => clearTimeout(timer));
+}
+
 const headers = { "content-type": "application/json", "access-control-allow-origin": "*" };
 const json = (v: unknown, status = 200) => new Response(JSON.stringify(v), { status, headers });
 
@@ -92,7 +99,7 @@ export async function handle(req: Request): Promise<Response> {
     if (u.pathname === "/health") return json({ ok: true, tickers: tickers.map((t) => ({ id: t.id, source: t.vault ? "onchain" : "replay" })) });
     if (parts[0] === "vaults" && parts.length === 1) {
       // One unreadable vault must not blank the list: it falls back to its replay entry and says why.
-      const settled = await Promise.allSettled(tickers.map(vaultBase));
+      const settled = await Promise.allSettled(tickers.map((t) => withTimeout(vaultBase(t), LIST_VAULT_TIMEOUT_MS, `${t.symbol} on-chain read`)));
       const vaults = settled.map((r, i) => {
         if (r.status === "fulfilled") return strip(r.value);
         const detail = String(r.reason?.message ?? r.reason).split("\n")[0].slice(0, 200);
@@ -123,7 +130,7 @@ export async function handle(req: Request): Promise<Response> {
 if (import.meta.main) {
   tickers = await withFactory(tickers);
   for (const t of tickers) await assertPoolOrdering(t);
-  Bun.serve({ port: PORT, fetch: handle });
+  Bun.serve({ port: PORT, fetch: handle, idleTimeout: 60 }); // the default 10 s drops a slow on-chain read as an empty reply
   log("stats_listening", { port: PORT, vaults: tickers.map((t) => ({ id: t.id, source: t.vault ? "onchain" : "replay" })) });
   const live = tickers.filter((t) => t.vault);
   const sample = () => live.forEach((t) => samplePps(t).catch((e) => log("sample_error", { ticker: t.symbol, error: String(e.message).slice(0, 200) })));

@@ -1,0 +1,430 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage[round,authoryear]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.35em}
+\newcommand{\USD}{\$}
+
+\title{When the Market Is Closed: Session-Dependent Adverse Selection for Liquidity Providers in 24/7 Tokenized-Equity AMMs}
+\author{Kamal\\[2pt]\small Uptick}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Tokenized equities on Robinhood Chain trade against a dollar stablecoin in Uniswap pools around the clock, while the listed shares trade 32.5 hours a week in the regular session and the Chainlink feeds that price them follow a 24/5 schedule. We ask when liquidity providers (LPs) in these pools lose to informed flow, and whether fees or ranges that follow the trading calendar recover the loss. Replaying 5,113,049 swaps on three Stock Token pools over 54 days, we find that NYSE hours are the most toxic session and weekends the least: a static $\pm2\%$ position earns 0.78 to 1.21 dollars of fees per dollar of one-hour markout in NYSE hours and 3.83 to 19.53 on weekends (pooled 0.86 and 9.41). Fifteen Uniswap v4 pools over a separate 16-day window show the same ordering. The profile does not convert into a better strategy. A pre-registered hours-aware range strategy meets its bar on 0 of 3 tokens, and randomly reassigned session labels match or beat the true calendar in 64 of 64 placebo cells. Calibrated on the first half of the window and tested on the second, at a measured fee elasticity of volume of 0.74 to 0.87, a session fee schedule adds 0.00 APR points over a calibrated flat fee, because an elasticity below one places the optimal fee at the cap in every session. An oracle-gap surcharge helps one token and hurts two, because the direction of toxic flow relative to the oracle reverses as the feed ages. Weekend perpetual-futures prices reduce Monday-open pricing error by 3.7\%, against 69.3\% once the Monday pre-market trades. We also measure hooks that keep 10\% of a swap while the pool displays a 1\% fee, and test an in-swap cap that bounds such takes. For LPs the lever is the fee level and the choice of pool, not the shape of the trading calendar.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+Tokenized equities now trade on public blockchains at every hour of the week. On Robinhood Chain, an Arbitrum Orbit chain with chain identifier 4663, Robinhood-issued Stock Tokens trade against the USDG stablecoin in Uniswap v3 and v4 pools around the clock. The listed shares they track trade in a regular session that covers 32.5 of the 168 hours in a week, and the Chainlink equity feeds deployed on the chain follow a 24/5 schedule: across the three feeds we study, there was no update on any Saturday or Sunday of our sample and none on the Labor Day holiday. An automated market maker (AMM) liquidity provider in these pools sells immediacy at a fixed fee to whoever arrives, at any hour, against a reference market that is open for about a fifth of the week.
+
+Two literatures give opposite intuitions about when that LP loses. The theory of loss-versus-rebalancing \citep{milionis2022lvr} prices adverse selection off the variance of an external reference price, and equity microstructure shows that per-hour variance is 13 to 100 times higher while the exchange is open than while it is closed \citep{french1986variances}. Together they predict that LP losses concentrate in exchange hours. Design practice on Robinhood Chain points the other way: fee hooks deployed or proposed for Stock Token pools charge the most when the market is closed, on the view that the weekend reopening gap is the main LP risk. Which view describes these pools is an empirical question, and its answer decides how an LP product should set ranges, fees and pool choice.
+
+We answer it with four data sets drawn from the chain and from reference venues: every swap on three Stock Token/USDG Uniswap v3 pools over 54 days (5,113,049 swaps and \USD1,791.3M of volume), every swap on 15 Uniswap v4 Stock Token pools over 15.95 days (374,678 swaps), 168 ticker-weekends of Hyperliquid equity perpetual prices matched to Nasdaq official opens and closes, and a 49-hour census of 3,183,184 v4 swaps across all pools on the chain. Our contributions are as follows.
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item \textbf{A session profile of LP adverse selection in a 24/7 AMM whose reference market closes.} For a static $\pm2\%$ position, fees earned per dollar of one-hour markout are 0.78 to 1.21 in NYSE hours, 1.23 to 3.02 on weeknights and 3.83 to 19.53 on weekends across three pools; pooled, 0.86, 1.96 and 9.41. NYSE hours are the most toxic session on every pool and weekends the least. A separate sample of 15 v4 pools gives 1.28, 1.49 and 3.66.
+\item \textbf{A pre-registered negative result for hours-aware ranges.} A strategy that runs a tight range in NYSE hours and wide ranges off-hours meets its pre-registered bar on 0 of 3 tokens, at two capital levels, under two cost models and on two metrics, and a shuffled-session placebo matches or beats the real calendar in 64 of 64 cells.
+\item \textbf{An out-of-sample test of session-priced and oracle-gap fees against a measured fee elasticity.} We estimate the elasticity of pool volume to the fee at 0.87 (s.e.\ 0.13) across 14 pools and 0.74 (s.e.\ 0.08) within pool pairs hour by hour, with no difference across sessions. At that elasticity a session fee schedule adds exactly 0.00 APR points over a calibrated flat fee on all three tokens, and an oracle-gap term adds $+9.8$, $-11.5$ and $-48.2$. We show why: the direction of toxic flow relative to the oracle reverses between NYSE hours and weeknights.
+\item \textbf{Weekend price discovery measured from the LP side.} A weekend perpetual-futures price read on Sunday at 16:00 UTC reduces Monday-open error by 3.7\% (168 ticker-weekends, cross-validated); read on Monday at 13:00 UTC, by 69.3\%. Weekend pools track the perpetual within 4.1 basis points (bp) at the median for NVDA while sitting 44.4~bp from the stale oracle. Weekend flow is benign for LPs because the weekend carries little hedgeable information.
+\item \textbf{Hidden fee-taking by hooks, and a mechanism that bounds it.} In a 49-hour census, one family of 36 hooks took exactly 10.00\% of \USD4,583,144 of swap value on top of a displayed 1\% pool fee, and another hook realised a median 3.00\% take on swaps whose Swap event reports a zero fee. An in-swap declared cap reverts 200 of 200 over-cap swaps and passes 200 of 200 at-cap swaps for 22,721 to 25,263 gas.
+\item \textbf{Design guidance for Stock Token LP vaults} that follows from these results: choose pool and fee tier by measured out-of-sample edge, keep ranges static across sessions, stay in the market on weekends, account for the stablecoin half of a two-sided range, and deposit only behind enforced hook caps.
+\end{enumerate}
+
+\subsection{Related literature}\label{sec:lit}
+
+\paragraph{Adverse selection against passive liquidity.} A market maker who cannot distinguish informed from uninformed customers recovers losses to the informed through the spread \citep{glosten1985bid}; an AMM is such a market maker with a spread fixed by the pool. \citet{milionis2022lvr} decompose LP profit and loss into a market-risk term and fees minus loss-versus-rebalancing (LVR), whose rate for a constant-product pool is $\sigma^2/8$ of pool value. \citet{milionis2025fees} add fees and discrete blocks, so that arbitrage profit is LVR scaled by the probability that a block offers a profitable trade, and \citet{nezlobin2025lvr} derive the case of deterministic block times. Every one of these models prices adverse selection off the variance of an external price that trades continuously. Combined with the variance ratios of \citet{french1986variances}, LVR theory predicts the concentration in NYSE hours that we measure.
+
+\paragraph{LP profitability on concentrated-liquidity AMMs.} \citet{loesch2021impermanent} find that LPs in 17 Uniswap v3 pools lost more to impermanent loss than they earned in fees. \citet{heimbach2022risks} show that significant returns require narrow ranges and active management, and \citet{fritsch2021concentrated} backtests range strategies on historical trades. \citet{fritsch2024measuring} simulate pools against second-by-second Binance prices and find arbitrage losses exceeding fees on many large pools. \citet{lehar2025uniswap} characterise LP equilibrium across all Uniswap interactions, and \citet{capponi2025liquidity} and \citet{capponi2021adoption} study arbitrage losses as a shared cost and the role of curvature. These studies use crypto pairs whose reference venue never closes. We mark each swap to the same pool's price an hour later rather than to an external price, and we split the measurement by session.
+
+\paragraph{Informed flow.} \citet{daian2020flash} document arbitrage bots competing in priority gas auctions; \citet{heimbach2024nonatomic} attribute more than a quarter of volume on large Ethereum DEXs to non-atomic arbitrage against off-chain venues; \citet{wu2025cexdex} estimate the profits of the major CEX-DEX arbitrageurs. In crypto the arbitrageur can hedge at any hour. For a Stock Token the hedging venues are liquid mainly in US hours, which is where we find the informed flow.
+
+\paragraph{Fee design.} \citet{goyal2023curve} compute optimal trading functions for given beliefs. \citet{hasbrouck2026fees} show that higher DEX fees can raise volume by attracting liquidity. \citet{adams2026amamm} auction the right to set the pool fee. \citet{campbell2025optimal} find that the profit-maximising fee sits near the competing CEX trading cost and that high fees protect LPs in high volatility. \citet{baggiani2025dynamic} find two fee regimes that collapse to a constant fee once price formation moves into the AMM. \citet{alexander2024fees} argue for directional fees under drift. These models assume an alternative venue that is always open. Our measured elasticity, below one and identical across sessions, places the optimum at a corner, between the results of \citet{hasbrouck2026fees} and \citet{baggiani2025dynamic}, and the reversal of the toxic direction with feed age is a mechanism a directional fee keyed to the oracle cannot accommodate.
+
+\paragraph{Trading hours and overnight returns.} \citet{french1980weekend} and \citet{keim1984weekend} document weekend return anomalies. \citet{french1986variances} attribute high trading-time variance mainly to private information revealed through trading. \citet{barclay2003price} find after-hours price discovery to be real but less efficient, with individual after-hours trades more informative, and \citet{barclay2004liquidity} find after-hours spreads three to four times wider, reflecting adverse selection. \citet{lou2019tug} show that strategy returns split between overnight and intraday clienteles. In those markets the spread widens after hours; in an AMM it cannot. A fixed fee collects on volume, while information per hour falls when the exchange closes, which reconciles more informative individual after-hours trades with the lower off-hours toxicity per fee dollar we measure.
+
+\paragraph{Price discovery when the reference market is closed.} \citet{hasbrouck2003intraday} locates most index price discovery in E-mini futures; \citet{bondarenko2023clock} and \citet{boyarchenko2023overnight} study returns around the clock and overnight drift. For tokenized equities, \citet{cha2026nest} show that off-hours token returns and the next opening gap share the move from the prior close, so raw fit is partly mechanical, and summarise \citet{cong2025tokenized} as showing that weekend token moves anticipate the open. An industry study by \citet{agarwal2026bitquery} finds that tokens move a small share of the way to Monday's open by Sunday evening and most of it after US futures reopen. We ask what the answer implies for the LP, and our Monday-open test reaches the same conclusion from different data.
+
+\paragraph{Oracles and hooks.} \citet{liu2021oracles} measure deviations of deployed DeFi oracles from exchange rates, \citet{eskandari2021sok} systematise oracle designs and attacks, \citet{deng2024oracle} verify protocol parameters under skewed oracle input, and \citet{qin2021liquidations} study liquidation mechanisms that consume oracle prices. This literature treats deviation as error or attack; on Robinhood Chain, staleness follows the exchange calendar. The Uniswap v4 design \citep{adams2024v4} lets hooks set fees and alter swap accounting through returned deltas. \citet{donboly2026hooks} catalogue recurring hook failure patterns, and \citet{zeroex2026hooks} surveys deployed hooks for extractive behaviour. We add a measurement of realised versus displayed take on one chain and a mechanism that bounds take inside the swap.
+
+As far as our search of these literatures found, no prior study measures how LP adverse selection varies by session in a 24/7 AMM whose reference market closes, or tests session-aware and oracle-aware fees out of sample against a measured fee elasticity.
+
+The rest of the paper is organised as follows. Section~\ref{sec:setting} describes the institutional setting and Section~\ref{sec:data} the data. Section~\ref{sec:method} sets out the replay engine, metrics and tests. Section~\ref{sec:results} reports results, Section~\ref{sec:design} draws implications for LP vault design, Section~\ref{sec:scope} states the scope of the evidence and Section~\ref{sec:conclusion} concludes. Appendix~\ref{app:repro} maps every table to the script that produces it.
+
+\section{Institutional setting}\label{sec:setting}
+
+\paragraph{Robinhood Chain and Stock Tokens.} Robinhood Chain (chain 4663) is an Arbitrum Orbit chain. Stock Tokens are ERC-20 tokens issued by Robinhood that track listed US equities. Issuer documentation states that they are not available to US persons and that market makers mint and burn them from Monday 02:00 to Saturday 02:00 Central European Time, so that on weekends supply is fixed and price formation happens in the secondary market alone.\footnote{\url{https://docs.robinhood.com/chain/stock-tokens/}, read 2026-10-16.} The token contracts expose issuer controls, among them a pause, an oracle pause flag and a multiplier that adjusts the token-to-share ratio for corporate actions; when we compare pool prices with per-share prices we divide by the multiplier.
+
+\paragraph{Pools.} Stock Tokens trade against USDG in Uniswap v3 pools at fixed fee tiers and in Uniswap v4 pools, some of which carry hooks. We study three v3 pools whose tokens have Chainlink feeds on the chain: NVDA/USDG 0.05\%, SPCX/USDG 0.05\% and TSLA/USDG 0.30\%. In v3 an LP supplies liquidity over a price range and earns the pool fee on volume that trades through the range, in proportion to its share of active liquidity.
+
+\paragraph{Reference prices and their calendar.} The listed shares trade in the regular session, 13:30 to 20:00 UTC on weekdays during US daylight time (all dates in our sample), with extended-hours and overnight sessions around it. The Chainlink equity feeds on the chain follow a 24/5 schedule. In our window the NVDA, TSLA and SPCX feeds posted 459, 635 and 952 updates, none on a Saturday or Sunday and none on Labor Day; in the regular session the median interval between updates was 27, 12 and 12 minutes and the median update moved the price by 53 to 54~bp. On weekends the median feed age seen by a swap was 1,478, 1,802 and 1,326 minutes for the NVDA, TSLA 0.30\% and SPCX pools. Hyperliquid HIP-3 equity perpetuals (the ``xyz'' markets) trade 24/7 and give a continuous outside price.
+
+\paragraph{Hooks on the chain.} A Uniswap v4 hook is a contract called before and after pool actions, with permissions encoded in the bits of its address \citep{adams2024v4}. A hook with a dynamic-fee flag can override the LP fee per swap, and a hook with return-delta permissions can take part of a swap's input or output. The Swap event records pool-level amounts and the LP fee after any override, so a take through return deltas does not appear in the event's fee field. Session-fee hooks already run on Stock Token pools on the chain: SessionFeeHook sets a fee per session from an owner calendar, and FablesRWA hooks apply session floors with an opening descent and a closing ramp. Eight such pools carried \USD27.5M of volume in the seven days to 2026-10-17. Oracle-gap designs also exist: BellswapHook charges a surcharge on swaps that move away from the Chainlink price, and the ClosingBell design prices calendar, staleness and deviation, with its highest fees when the market is closed.
+
+\section{Data}\label{sec:data}
+
+\paragraph{Uniswap v3 replay sample.} We pull every Swap event from the three v3 pools from 2026-08-24 to 2026-10-17 (54 days) through the chain's public RPC. Each event carries the post-swap square-root price, the post-swap active liquidity and the signed token amounts. Block numbers are converted to timestamps by linear interpolation on a grid of sampled block timestamps. We drop swaps whose price lies more than 25\% (in log terms) from the rolling median of 51 neighbouring swaps; these execute through empty ranges near the extreme ticks. Table~\ref{tab:data} summarises the sample. Most activity is off-hours: 67.5\% of swaps and 55.3\% of volume fall outside the regular session, and the weekend accounts for 17.1\% to 37.4\% of each pool's volume. Volume declined through the window. NVDA pool volume was \USD213.4M and \USD242.1M in the first two full weeks and \USD27.6M in the last; SPCX fell from a peak of \USD180.9M to \USD22.6M.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Uniswap v3 replay sample, 2026-08-24 to 2026-10-17. Volume is the USDG leg. Off-hours is everything outside Monday to Friday 13:30 to 20:00 UTC; the weekend runs from Friday 20:00 to Monday 00:00 UTC, plus exchange holidays. Hold return is the change in the pool price over the window.}
+\label{tab:data}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Pool & Fee tier & Swaps & Volume & LP fees & \multicolumn{2}{c}{Off-hours share} & Hold \\
+\cmidrule(lr){6-7}
+ & & & (\USD M) & (\USD K) & swaps & volume & return \\
+\midrule
+NVDA/USDG & 0.05\% & 2,885,756 & 1,058.2 & 529.1 & 67.7\% & 58.9\% & $-2.12\%$ \\
+SPCX/USDG & 0.05\% & 2,031,274 & 697.3 & 348.6 & 66.1\% & 49.5\% & $+7.23\%$ \\
+TSLA/USDG & 0.30\% & 196,019 & 35.8 & 107.5 & 79.6\% & 64.2\% & $-3.35\%$ \\
+\midrule
+Total & & 5,113,049 & 1,791.3 & & 67.5\% & 55.3\% & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Uniswap v4 sample.} To test the session profile on a different set of pools and a different window, we take the 15 largest v4 Stock Token pools by USDG volume in a two-day census (NVDA four pools, SPY three, AAPL two, TSLA two, and META, MSTR, CRCL and SPCX one each) and pull their swaps from 2026-09-30 19:00 to 2026-10-16 17:53 UTC (15.95 days, two weekends): 374,678 swaps and \USD268.3M of volume. As a sign check, 192,318 token purchases paid USDG and 182,356 sales received it, with 4 exceptions.
+
+\paragraph{Reference prices.} Chainlink rounds come from the feed proxies on the chain. Hyperliquid xyz perpetual prices are hourly candles from the venue's public API; for the Monday-open test we use the most recent 5,000 hourly candles for NVDA, TSLA, AAPL, META, GOOGL, MSTR and CRCL. Official opens and closes come from Nasdaq historical quotes. The Monday-open test uses plain Friday-to-Monday weekends from 2026-03-23, 24 per ticker, for 168 ticker-weekends.
+
+\paragraph{Hook census.} We pull every v4 Swap event on the chain between blocks 88,480,052 and 90,230,052 (about 49 hours, 2026-10-14 to 2026-10-16): 3,183,184 swaps in 19,775 pools. Pool keys and hook addresses come from Initialize events, recovered for pools carrying 97.2\% of swaps. Hooks are grouped into families by runtime bytecode with immutable words masked. Dollar values for ETH-paired pools use a single Chainlink ETH/USD read of \USD2,439.28 at the window midpoint.
+
+\section{Methodology}\label{sec:method}
+
+\subsection{Replay engine}
+
+We replay each v3 pool's swap history and insert a hypothetical LP position. Let a position hold liquidity $L_v$ on the price range $[P_a, P_b]$. For swap $i$ with input-side notional $V_i$ in dollars and pool fee rate $\varphi$, the position earns
+\begin{equation}
+F_i = \varphi \, V_i \, \theta_i \, \frac{L_v}{\bar L_i + L_v},
+\end{equation}
+where $\theta_i$ is the fraction of the swap's price path, measured in $\sqrt{P}$ for dollar-in swaps and in $1/\sqrt{P}$ for token-in swaps, that lies inside $[P_a,P_b]$, and $\bar L_i$ is the average of the pool's active liquidity before and after the swap. Token and dollar holdings follow the concentrated-liquidity formulas at each swap's price. The engine carries six hand-computed tests (exact fee share, partial range overlap, a round-trip identity, zero fees out of range, rebalance cost accounting, and the quadratic impact cost). Each of three deliberate mutations (sharing fees by $L_v/\bar L_i$, ignoring range overlap, dropping the rebalance cost) turns one or two tests red, and restoring the code turns them green.
+
+\subsection{Markout and edge}
+
+Let $(\Delta x_i, \Delta y_i)$ be the change in the position's token and dollar holdings caused by swap $i$ at time $t_i$, and let $P^{+}_i$ be the pool price after the last swap at or before $t_i + 3600$ seconds. The one-hour markout of swap $i$ from the LP's side is
+\begin{equation}
+m_i = \Delta x_i \, P^{+}_i + \Delta y_i ,
+\end{equation}
+and the LP's adverse-selection loss over a set of swaps $S$ is $M_S = -\sum_{i \in S} m_i$. The reference is the same pool one hour later, which measures the information in the order flow without requiring a continuously trading outside price. Our session statistic is fees earned per dollar of markout, $F_S / M_S$, for the regular session (NYSE), weekday hours outside it (weeknight) and the weekend. A value below one means the LP paid more to informed flow than it earned.
+
+Over a window of $D$ days with starting capital $W_0$, we report each component as a simple annualised rate, $\mathrm{APR}(X) = (X/W_0)(365/D) \times 100$. Edge is fees minus markout loss minus rebalancing cost, $F - M - C$; it removes the position's exposure to the price level, which over 54 days dominates any comparison with holding the token \citep{milionis2022lvr}. Net versus hold is $F + (V_{\mathrm{end}} - W_0) - N (P_{\mathrm{end}} - P_0)$, where $N$ is the number of tokens deposited at the start.
+
+For the v4 sample we work at the pool level. With the trader's token and dollar amounts $(q_i, u_i)$, negative when paid into the pool, the trader's gain gross of fee at horizon $H$ is $q_i \, p(t_i + H) + u_i + \mathrm{fee}_i$, where $p$ is the same pool's mid price. This is the pool's adverse-selection loss, and the LP's net is the fee minus that loss. We use horizons of 5 minutes, 1 hour and 6 hours, and also mark each off-hours swap to the pool mid at 13:45 UTC on the next trading day.
+
+\subsection{Strategies and cost models}
+
+All strategies deposit tokens worth $W_0$ at the start. Strategy A is a full-range position. Strategies B2, B5 and B10 hold a range of $\pm2\%$, $\pm5\%$ and $\pm10\%$ around the Chainlink price, recentred once a day at 13:35 UTC. Strategy C is hours-aware: $\pm1\%$ in the regular session, and off-hours a width equal to the 90th percentile of the perpetual's off-hours price excursions before the window (2.84\% on weeknights and 2.57\% on weekends for NVDA, 2.45\% and 1.74\% for TSLA 0.30\%, 6.68\% and 5.81\% for SPCX), recentring on the Chainlink price at each session change and after 30 minutes out of range. Strategy D adds a guardian to C that withdraws liquidity on Saturdays and Sundays, when the issuer does not mint or burn, and in the regular session whenever the feed is more than two hours old.
+
+Rebalancing swaps are costed in two ways. Under the fee-only model a rebalance pays the pool fee on the swapped amount, as if routed across venues at no impact. Under the pool-impact model it also pays $D^2/(L\sqrt{P})$ for a swap of $D$ dollars against the pool's own active liquidity $L$, a conservative bound. Gas is charged at an assumed \USD0.05 per million gas, with 0.75 million gas per rebalance and 0.30 million per withdrawal.
+
+\subsection{Pre-registered tests and placebo}
+
+Before the replay we recorded the claim that C or D earns at least 5 APR points net over holding and beats the best static range by at least 2 points on at least 2 of 3 tokens. We evaluate it at \USD100K and \USD1M, under both cost models, on net versus hold and on edge.
+
+The placebo keeps every swap and every Chainlink round real and reassigns the session labels that C and D act on. Labels are defined on 30-minute slots. One mode shifts the label timeline circularly by a random offset that is not within 90 minutes of a whole number of days; the other permutes the runs of identical labels, each keeping its length. A cell is a pool (including the TSLA 0.05\% pool), cost model, shuffle mode, strategy and metric, for 64 cells with 100 draws each. Cells share data and are not independent tests.
+
+\subsection{Fee schedules out of sample}
+
+The fee test fixes the LP as B2 at \USD100K under the fee-only model, so the position path, and with it the rebalancing cost, is the same under every schedule and cancels from every comparison. We calibrate on 2026-08-24 to 2026-09-20 and test on 2026-09-20 to 2026-10-17, 27.0 days each. Fees are chosen from the grid $\{1,2,3,5,8,12,18,25,35\}$~bp, with 35~bp, the top of the range observed across Stock Token pools on the chain, as a declared cap for every schedule. A static schedule sets one fee. A session schedule sets one fee per session. A session-plus-gap schedule sets a fee per session and per oracle class: neutral, toward the Chainlink price (the swap reduces the absolute log gap between pool and oracle) or away from it. The oracle term is active only outside the weekend, when the feed is at most six hours old and the pre-swap gap is at least $\vartheta \in \{0, 15, 30\}$~bp, with $\vartheta$ chosen in calibration.
+
+Let each swap's fee and markout loss at the pool's own tier $f_0$ be $F$ and $M$, and let a schedule charge $f$, with $\mu = f/f_0$. We consider three volume responses: (i) none, edge $F\mu - M$; (ii) constant elasticity $\varepsilon$ for all flow, edge $F\mu^{1-\varepsilon} - M\mu^{-\varepsilon}$; (iii) only benign flow responds, edge $F\mu^{1-\varepsilon} - M$. Fees are chosen under (ii) on the calibration half and evaluated on the test half under all three. Because edge is additive over buckets, each grid search is exact. Under (ii), whenever $F>0$, $M \geq 0$ and $\varepsilon < 1$,
+\begin{equation}
+\frac{\partial}{\partial \mu}\left(F\mu^{1-\varepsilon} - M\mu^{-\varepsilon}\right) = (1-\varepsilon) F \mu^{-\varepsilon} + \varepsilon M \mu^{-\varepsilon-1} > 0,
+\end{equation}
+so in any bucket where flow is toxic on net, the best fee is the highest one allowed. Two controls accompany the test: 200 permutations of the session labels and 40 permutations of the toward and away labels.
+
+The elasticity comes from two estimators on 2026-10-01 to 2026-10-16. The cross-section regresses log volume on log fee with token fixed effects and log median active liquidity across 14 pools that trade the same four tokens at fees from 1.25 to 35~bp. The within-pair estimator uses five pairs of a dynamic-fee pool and a static pool on the same token and regresses the hourly log volume ratio on the dynamic pool's log fee, with pair-by-session fixed effects (and, in a variant, pair-by-day fixed effects), so that identification comes from fee changes within a session.
+
+\subsection{Monday-open test}
+
+For each ticker and weekend, the gap is $g = (O_{\mathrm{Mon}}/C_{\mathrm{Fri}} - 1)\times 10^4$~bp and the perpetual move to read time $\tau$ is $r_\tau = (p_\tau / p_{\mathrm{Fri\,20:00}} - 1)\times 10^4$~bp. The stale estimate of the open is the Friday close, the value a 24/5 feed carries through the weekend, with error $|g|$. The perpetual estimate has error $|g - \beta r_\tau|$, with $\beta$ estimated by pooled least squares through the origin on all other weekends (leave one weekend out). We report the reduction in mean absolute error, $1 - \overline{|g-\beta r_\tau|}/\overline{|g|}$. As a negative control, we pair each ticker's gaps with its perpetual moves shifted by $k = 1,\dots,23$ weekends and repeat the test.
+
+\section{Results}\label{sec:results}
+
+\subsection{Adverse selection by session}\label{sec:res:session}
+
+Table~\ref{tab:session} and Figure~\ref{fig:sessions} report fees per dollar of one-hour markout for a \USD100K static $\pm2\%$ position. The regular session is the most toxic on every pool and the weekend the least. Pooled across the three pools, the position earned \USD37,310 of fees and lost \USD43,575 to markout in NYSE hours, a ratio of 0.86, against 1.96 on weeknights and 9.41 on weekends. At $\pm5\%$ the pooled ratios are 1.01, 2.11 and 10.64, and the ordering again holds on all three pools. The weekend is benign but small in dollars: it supplied \USD10,570 of the position's \USD71,394 of fees, 14.8\%.
+
+\begin{table}[t]
+\centering
+\small
+\caption{LP fees and one-hour markout by session. Panel A: a \USD100K static $\pm2\%$ position recentred daily on Chainlink, fee-only costs, 2026-08-24 to 2026-10-17. Panel B: pool-level fees and adverse selection on 15 Uniswap v4 Stock Token pools, 2026-09-30 to 2026-10-16. Net is fees minus adverse selection, in basis points of volume where shown.}
+\label{tab:session}
+\begin{tabular}{llrrrr}
+\toprule
+\multicolumn{6}{l}{\emph{Panel A: v3 replay, static $\pm2\%$ position}} \\
+Pool & Session & Volume (\USD M) & Fees (\USD) & Markout loss (\USD) & Fee / markout \\
+\midrule
+NVDA 0.05\% & NYSE & 435.0 & 8,713 & 7,216 & 1.21 \\
+ & Weeknight & 441.9 & 6,205 & 5,030 & 1.23 \\
+ & Weekend & 181.3 & 1,630 & 426 & 3.83 \\
+SPCX 0.05\% & NYSE & 352.4 & 18,704 & 23,955 & 0.78 \\
+ & Weeknight & 221.6 & 9,042 & 2,989 & 3.02 \\
+ & Weekend & 123.3 & 2,651 & 375 & 7.07 \\
+TSLA 0.30\% & NYSE & 12.8 & 9,893 & 12,404 & 0.80 \\
+ & Weeknight & 9.6 & 8,267 & 3,988 & 2.07 \\
+ & Weekend & 13.4 & 6,289 & 322 & 19.53 \\
+Pooled & NYSE & & 37,310 & 43,575 & 0.86 \\
+ & Weeknight & & 23,514 & 12,007 & 1.96 \\
+ & Weekend & & 10,570 & 1,123 & 9.41 \\
+\midrule
+\multicolumn{6}{l}{\emph{Panel B: 15 v4 pools, pool level}} \\
+Horizon & Session & Volume (\USD M) & Fees (\USD K) & Adverse (\USD K) & Net (bp) \\
+\midrule
+1 hour & NYSE & 88.6 & 149.2 & 116.4 & 3.7 \\
+ & Weekday off-hours & 136.6 & 109.6 & 73.6 & 2.6 \\
+ & Weekend & 43.0 & 11.7 & 3.2 & 2.0 \\
+Next open & Weekday off-hours & 136.6 & 109.4 & 80.2 & 2.1 \\
+ & Weekend & 43.0 & 11.7 & 9.9 & 0.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figs/fig_sessions.png}
+\caption{Fees earned per dollar of one-hour markout by session, log scale. Bars: a \USD100K static $\pm2\%$ position on each v3 pool and pooled across the three (2026-08-24 to 2026-10-17). Diamonds: pool-level fees over one-hour adverse selection on 15 v4 pools (2026-09-30 to 2026-10-16). Values below the dashed line mean the LP paid more to informed flow than it earned.}
+\label{fig:sessions}
+\end{figure}
+
+The v4 sample, drawn from different pools, fee tiers and dates, gives the same ordering at the pool level: fees over one-hour adverse selection are 1.28 in NYSE hours, 1.49 on weekday off-hours and 3.66 on weekends. Marked to the next regular open instead of one hour ahead, off-hours adverse selection over the 15.95 days totals \USD90.1K against \USD121.1K of off-hours fees, so LPs netted $+$\USD31.0K off-hours, of which $+$\USD1.9K came from the two weekends. Individual pools do lose: marked to the open, the TSLA pools lost 13.6~bp of volume on weekday off-hours and the MSTR pool 4.0~bp, and on weekends CRCL lost 99.4~bp and META 43.5~bp on \USD0.2M and \USD0.3M of volume.
+
+Why weekend flow is benign shows in where the pools trade. On weekends the NVDA pool sat a median 44.4~bp from the stale Chainlink price but 4.1~bp from the 24/7 perpetual; for TSLA 0.30\% the figures are 52.8 and 11.8~bp, and for SPCX 25.7 and 14.0~bp. Arbitrage carries the perpetual price into the pools through the weekend, inside the fee. In the regular session, where the hourly perpetual candle is a coarse reference for a fast-moving price, the NVDA pool sits closer to Chainlink (15.5~bp) than to the perpetual (18.2~bp).
+
+The ordering of NYSE hours and weeknights is not robust for NVDA, where the two ratios differ by 0.02. In the 30 days to 2026-10-17, for a $\pm5\%$ position under pool-impact costs, NVDA reads 1.38 in NYSE hours, 1.13 on weeknights and 2.72 on weekends. The weekend is the least toxic session in every pool, width and window we examine; the regular session is the most toxic on SPCX and TSLA and in the pooled data.
+
+\subsection{Hours-aware ranges do not help}\label{sec:res:ranges}
+
+Table~\ref{tab:strategies} reports net-versus-hold and edge APRs. The pre-registered claim fails on 0 of 3 tokens at \USD100K and at \USD1M, under both cost models, on net and on edge. NVDA comes closest: at \USD100K with fee-only costs, C's edge of 23.2 exceeds the best static range (B2, 21.9) by 1.3 points, under the 2-point bar, and its net of 11.4 trails B5's 12.4. On TSLA and SPCX, C and D lose to every static range. Larger capital makes it worse: at \USD1M under pool-impact costs, C's edge is $-115.6$, $-505.9$ and $-366.5$ APR on NVDA, TSLA and SPCX, because C rebalances at every session change (114 rebalances on NVDA against 54 for a daily static range) and pays impact each time.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Strategy returns, APR points. Panel A: \USD100K, fee-only costs. Panel B: edge at \USD1M under pool-impact costs. Edge is fees minus one-hour markout loss minus rebalancing cost. A: full range; B2, B5, B10: static $\pm2\%$, $\pm5\%$, $\pm10\%$ recentred daily; C: hours-aware; D: C with weekend and stale-feed withdrawal. TSLA is the 0.30\% pool. 2026-08-24 to 2026-10-17.}
+\label{tab:strategies}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{NVDA} & \multicolumn{2}{c}{TSLA} & \multicolumn{2}{c}{SPCX} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Strategy & Net vs hold & Edge & Net vs hold & Edge & Net vs hold & Edge \\
+\midrule
+\multicolumn{7}{l}{\emph{Panel A: \USD100K, fee-only costs}} \\
+A & 8.8 & 0.6 & 15.1 & 2.1 & $-20.8$ & 1.3 \\
+B2 & 1.7 & 21.9 & 17.7 & 22.6 & 33.7 & 16.3 \\
+B5 & 12.4 & 16.2 & 42.0 & 28.4 & 24.7 & 30.0 \\
+B10 & 12.1 & 9.6 & 36.4 & 22.4 & 4.5 & 19.7 \\
+C & 11.4 & 23.2 & $-13.9$ & $-19.4$ & $-35.9$ & $-3.5$ \\
+D & 9.2 & 12.9 & $-48.3$ & $-67.7$ & $-44.2$ & $-13.7$ \\
+\midrule
+\multicolumn{7}{l}{\emph{Panel B: edge, \USD1M, pool-impact costs}} \\
+A & & 0.5 & & 1.8 & & 1.2 \\
+B2 & & $-52.7$ & & $-418.8$ & & $-232.9$ \\
+B5 & & $-13.5$ & & $-210.5$ & & $-114.4$ \\
+B10 & & 1.0 & & $-67.4$ & & $-42.2$ \\
+C & & $-115.6$ & & $-505.9$ & & $-366.5$ \\
+D & & $-116.5$ & & $-511.2$ & & $-367.5$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The placebo shows that the calendar the strategy follows carries no information in the direction the strategy assumes. In all 64 cells, randomly reassigned labels match or beat the real calendar in at least 67\% of draws (the share ranges from 0.67 to 1.00), and the real result lies below the mean of the shuffled draws in 64 of 64 cells. Section~\ref{sec:res:session} explains why: C concentrates liquidity in the session with the lowest fee per dollar of markout and spreads it thinly in the sessions with the highest. D's weekend withdrawal removes the best session altogether. After the fact, we checked the inverse schedule (wide in NYSE hours, $\pm1\%$ off-hours); its edge beats random labels in 12 of 12 cells, with shares of shuffles at or above it between 0.03 and 0.21. It was found after the data were seen and has not been tested out of sample, so we do not report it as a result.
+
+Wide static ranges beat holding in Panel A mainly through the price level, not through fees. A two-sided range centred on the price holds about half its value in USDG, and the tokens moved $-2.12\%$ (NVDA), $-3.35\%$ (TSLA) and $+7.23\%$ (SPCX) over the window; On SPCX, whose price rose, the full-range position A trails holding by 20.8 points despite a positive edge. We therefore rank strategies by edge.
+
+\subsection{Session-priced and oracle-gap fees out of sample}\label{sec:res:fees}
+
+Panel A of Table~\ref{tab:fees} reports the fee elasticity of volume. The cross-section across 14 pools gives 0.87 (s.e.\ 0.13) with a depth control and 0.63 without one; the within-pair hourly estimator gives 0.74 (s.e.\ 0.08) with pair-by-session effects and 0.69 (s.e.\ 0.07) with pair-by-day effects added. Estimated session by session, the cross-section gives 0.81, 0.81 and 0.88. Volume responds to the fee less than one for one, and equally in every session.
+
+\begin{table}[p]
+\centering
+\small
+\caption{Fee elasticity and the out-of-sample fee test. Panel A: elasticity of pool volume to the fee, 2026-10-01 to 2026-10-16. Panel B: edge on the test half (2026-09-20 to 2026-10-17) for a \USD100K static $\pm2\%$ position, APR points; schedules are calibrated on 2026-08-24 to 2026-09-20 under response (ii) with $\varepsilon = 0.8$ and capped at 35~bp. Panel C: pool-level one-hour markout of swaps that move the pool toward or away from the Chainlink price, basis points of volume, LP view (positive means the LP gains), full window.}
+\label{tab:fees}
+\begin{tabular}{lrrr}
+\toprule
+\multicolumn{4}{l}{\emph{Panel A: elasticity of volume to the fee}} \\
+Estimator & $\varepsilon$ & s.e. & $n$ \\
+\midrule
+Cross-section, token FE and log depth & 0.87 & 0.13 & 14 pools \\
+Cross-section, token FE, no depth control & 0.63 & & 14 pools \\
+Hourly within pair, pair $\times$ session FE & 0.74 & 0.08 & 1,337 \\
+Hourly within pair, plus pair $\times$ day FE & 0.69 & 0.07 & 1,337 \\
+Cross-section, NYSE / weeknight / weekend & 0.81 / 0.81 / 0.88 & 0.08 / 0.14 / 0.17 & 14 pools \\
+\midrule
+\multicolumn{4}{l}{\emph{Panel B: test-half edge, APR points}} \\
+ & NVDA & SPCX & TSLA 0.30\% \\
+\midrule
+Pool tier & 5~bp & 5~bp & 30~bp \\
+Edge at pool tier & 7.42 & $-56.22$ & $-44.30$ \\
+Best static fee, (ii) & 93.71 & 148.08 & $-31.91$ \\
+Session schedule chosen (bp) & 35 / 35 / 35 & 35 / 35 / 35 & 35 / 35 / 35 \\
+Session minus static, (ii) & 0.00 & 0.00 & 0.00 \\
+Session plus gap minus static, (i) & $-7.58$ & $-72.26$ & $-3.95$ \\
+Session plus gap minus static, (ii) & $+9.83$ & $-11.47$ & $-48.21$ \\
+Session plus gap minus static, (iii) & $-0.84$ & $-7.98$ & $-1.83$ \\
+Direction-shuffle control, median (ii) & 0.00 & 0.00 & 0.00 \\
+Share of direction shuffles $\geq$ real & 0.00 & 1.00 & 1.00 \\
+Session schedule minus pool tier, (ii) & 86.29 & 204.30 & 12.39 \\
+\midrule
+\multicolumn{4}{l}{\emph{Panel C: toxicity by oracle direction, bp of volume}} \\
+ & NVDA & SPCX & TSLA 0.30\% \\
+\midrule
+NYSE, toward Chainlink & $-0.50$ & $-4.68$ & $+13.38$ \\
+NYSE, away from Chainlink & $+2.51$ & $+1.21$ & $+9.76$ \\
+Weeknight, toward Chainlink & $+11.00$ & $-1.30$ & $+12.52$ \\
+Weeknight, away from Chainlink & $-5.61$ & $+8.10$ & $+17.86$ \\
+\midrule
+\multicolumn{4}{l}{\emph{Panel D: test-half gain over the best static fee at other elasticities, (ii), APR points}} \\
+ & NVDA & SPCX & TSLA 0.30\% \\
+\midrule
+Session, $\varepsilon = 0.6$ & 0.00 & 0.00 & 0.00 \\
+Session, $\varepsilon = 1.0$ & 0.00 & 0.00 & 0.00 \\
+Session, $\varepsilon = 1.5$ & $-1.31$ & $-12.44$ & $-2.05$ \\
+Session, $\varepsilon = 2.0$ & $-4.73$ & $-67.12$ & $-48.99$ \\
+Session plus gap, $\varepsilon = 0.6$ & $+5.40$ & $-19.93$ & $-24.80$ \\
+Session plus gap, $\varepsilon = 1.0$ & $+64.72$ & $-4.96$ & $-94.45$ \\
+Session plus gap, $\varepsilon = 1.5$ & $+137.35$ & $+131.56$ & $-533.31$ \\
+Session plus gap, $\varepsilon = 2.0$ & $+342.12$ & $+243.94$ & $-2{,}898.69$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Panel B reports the out-of-sample test. On all three tokens, every session chooses the 35~bp cap in calibration, the session schedule collapses to the best flat fee, and its gain over that fee on the test half is 0.00 APR points. This is the corner predicted by equation (3): with $\varepsilon$ below one, raising the fee raises fee revenue and lowers markout loss wherever flow is toxic on net, in every session alike. The session-label control cannot discriminate at this elasticity, since both the real and the shuffled schedules collapse to the cap. The result is not specific to $\varepsilon = 0.8$ (Panel D): at $\varepsilon = 0.6$ and $1.0$ the session schedule again gains 0.00 on all three tokens, and at 1.5 and 2.0, where a session shape appears, it loses to the flat fee on all three. No elasticity between 0.6 and 2.0 makes a session schedule beat a flat fee on any token.
+
+Adding the oracle-gap term helps NVDA by 9.83 points under (ii), and that gain is real against its own control (no shuffled direction assignment reaches it). The gap term clears a 5-point bar on two of three tokens only at elasticities of 1.5 and above, 4.8 standard errors above the cross-sectional estimate and 9.5 above the within-pair estimate, and there the TSLA fit diverges ($-533.31$ and $-2{,}898.69$ points), the signature of an unstable fit rather than a usable schedule. It hurts SPCX by 11.47 and TSLA by 48.21, and NVDA's gain turns negative under responses (i) and (iii). Panel C shows why the oracle term does not transfer. In NYSE hours, when the feed is fresh, NVDA swaps that move the pool toward the Chainlink price are the toxic ones ($-0.50$~bp for the LP) and swaps that move it away are profitable ($+2.51$~bp). On weeknights, when the feed is hours old, the signs reverse: swaps toward the stale price earn the LP $+11.00$~bp and swaps away from it cost $-5.61$~bp. SPCX does not reverse, and on the TSLA 0.30\% pool LPs gain in every cell. A fixed rule that charges ``away'' flow more is right in one cell and wrong in the next, and the sign fitted per token and session on four weeks does not survive the test half on two of three tokens. The oracle's distance from the pool means information when the feed is fresh and noise when it is stale.
+
+The lever is the fee level. Moving from the pool's own tier to 35~bp adds 86.29, 204.30 and 12.39 APR points under (ii). For NVDA and SPCX that is an extrapolation seven times above the 5~bp tier, outside the range where the elasticity was estimated, so we read the sign and not the size. A hookless pool at a higher fixed tier captures this effect without any schedule.
+
+\paragraph{Monday open versus the weekend before it.} Designs that charge the weekend most treat the reopening as the main LP loss. In our window, the first hour after each Monday open cost a \USD100K static $\pm2\%$ NVDA position \USD460 net (fees \USD562, markout loss \USD1,022) summed over all Mondays, while the 63.5 hours before those opens (Friday 22:00 to Monday 13:30 UTC) earned it \USD1,515 net. For SPCX the figures are $-$\USD24 and $+$\USD3,440; for TSLA 0.30\%, $-$\USD3,060 and $+$\USD6,147. The reopening loss is real and, for NVDA and SPCX, smaller than what the preceding weekend earns. A schedule fitted to these data would not price the weekend highest.
+
+\subsection{Weekend price discovery}\label{sec:res:monday}
+
+Table~\ref{tab:monday} and Figure~\ref{fig:monday} report the Monday-open test. Against a stale Friday close, whose mean absolute error at the Monday open is 136.9~bp, a perpetual price read on Sunday at 16:00 UTC reduces the error by 3.7\% in the pooled, cross-validated test. The reduction is 6.8\% on Saturday at 16:00, 14.8\% on Monday at 00:00, when the overnight session opens, 36.5\% at 08:00 in the pre-market and 69.3\% at 13:00, half an hour before the open. The correlation between the perpetual move and the gap is 0.41 at Sunday 16:00, 0.57 at Monday 00:00 and 0.96 at Monday 13:00.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Reduction in mean absolute Monday-open error from a perpetual-futures price read at the stated time (UTC), relative to the stale Friday close. Leave one weekend out, 24 plain Friday-to-Monday weekends per ticker from 2026-03-23. The control pairs each ticker's gaps with its perpetual moves from another weekend (23 circular shifts) and reports the mean and maximum over shifts.}
+\label{tab:monday}
+\begin{tabular}{lrrrrr}
+\toprule
+Ticker & Sat 16:00 & Sun 16:00 & Mon 00:00 & Mon 08:00 & Mon 13:00 \\
+\midrule
+NVDA & $-1.5\%$ & 12.9\% & 21.3\% & 36.7\% & 78.5\% \\
+TSLA & $-2.3\%$ & $-4.6\%$ & $-7.2\%$ & 12.3\% & 49.1\% \\
+AAPL & $-14.4\%$ & $-3.6\%$ & $-5.6\%$ & 20.7\% & 63.9\% \\
+META & $-0.7\%$ & $-8.9\%$ & 0.6\% & 19.8\% & 52.7\% \\
+GOOGL & $-4.6\%$ & $-4.1\%$ & 9.0\% & 24.2\% & 61.6\% \\
+MSTR & 13.3\% & 3.7\% & 15.5\% & 41.6\% & 71.9\% \\
+CRCL & 8.2\% & 13.7\% & 24.1\% & 44.6\% & 77.4\% \\
+\midrule
+Pooled, $n = 168$ & 6.8\% & 3.7\% & 14.8\% & 36.5\% & 69.3\% \\
+Control, mean (max) & & $-2.1\%$ ($2.6\%$) & & & $-1.6\%$ ($3.3\%$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figs/fig_monday.png}
+\caption{Reduction in Monday-open error from a perpetual price read at each hour after the Friday close. Line: in-sample fit with a single pooled coefficient. Squares: leave-one-weekend-out estimates. Grey bars: the mismatched-weekend control (mean to maximum over 23 shifts). Shading marks the Monday overnight session and the pre-market.}
+\label{fig:monday}
+\end{figure}
+
+The test can detect information when it exists: at Sunday 16:00 the real pairing beats all 23 mismatched pairings, whose mean is $-2.1\%$, and at Monday 13:00 the real 69.3\% again beats all 23, against a control mean of $-1.6\%$. What it detects on the weekend is little. Information about the Monday open arrives with the Monday overnight and pre-market sessions, when regulated venues for the underlying reopen, consistent with the convergence pattern reported by \citet{agarwal2026bitquery} and with the decomposition of \citet{cha2026nest}.
+
+For the LP this is the same finding as Section~\ref{sec:res:session} seen from the price side. The perpetual, and with it the pools that track it, carries little weekend information that an arbitrageur could trade against the LP. Weekend pools are priced near the perpetual (\S\ref{sec:res:session}), weekend flow pays the LP, and a weekend fair-value oracle would publish a price the deep pools already trade at.
+
+\subsection{Fee-taking hooks and realised take}\label{sec:res:hooks}
+
+Quoted fee tiers are the usual basis on which LPs and routers compare pools. On Robinhood Chain they do not always describe what a swap pays. In the 49-hour census, 42.8\% of the 3,183,184 v4 swaps ran through pools with a hook, and 26.7\% through pools whose hook holds a return-delta permission, which allows a take that the Swap event's fee field does not show. Only 3.1\% of swaps carry an event-visible fee of 5\% or more.
+
+One family of 36 hooks shares a runtime with an immutable \texttt{feeBps} of 1000 and sits on pools with a 1\% fee. Over the census its pools executed 25,504 swaps (14,758 buys and 10,746 sells, 0.80\% of all swaps) with \USD4,583,144 of gross value, and the hooks took \USD458,314, exactly 10.00\% of gross, on top of the 1\% pool fee. For the Pons fee hook we join Swap events to the hook's own \texttt{HookFeeCollected} events by transaction and pool over blocks 90,230,000 to 90,239,999 (about 17 minutes). On the 488 fee events paid in native ETH from single-swap transactions, the Swap event's LP fee is zero in 488 of 488, while the hook's fee plus tax as a share of the ETH leg has a 10th percentile of 1.00\%, a median of 3.00\%, a 90th percentile of 3.00\%, a 99th percentile of 4.00\% and a maximum of 7.00\%.
+
+These are not Stock Token pools, but the same PoolManager and the same routers serve both. A vault or router that selects pools by the displayed fee tier can direct deposits or swaps into pools whose realised take is several times the displayed fee.
+
+\subsection{An in-swap fee cap}\label{sec:res:cap}
+
+A disclosure that cannot be enforced does not bound the take. We therefore test a mechanism that enforces it inside the swap. An abstract hook base, \texttt{CappedTakeHook}, wraps a builder's \texttt{beforeSwap} and \texttt{afterSwap} logic. In \texttt{afterSwap} it computes the take the builder's code returned on the specified leg (over the specified amount), on the unspecified leg (the \texttt{beforeSwap} unspecified delta plus the \texttt{afterSwap} return, over the AMM's unspecified amount) and through any dynamic LP fee, rounds each leg up, and reverts with \texttt{TakeExceedsCap} when the total exceeds an immutable \texttt{maxTakeBps}. A write-once \texttt{CapRegistry} records each hook's declared cap from its constructor. Because v4-core skips hook callbacks when the hook itself calls the pool, a lock flag cannot detect a hook that trades against its own pool inside the callback; the base instead reads the pool's price, tick and active liquidity before and after each builder callback and reverts on any change.
+
+We run the tests on a Foundry fork of Robinhood Chain against the deployed PoolManager, with new tokens, pools and hooks per test; 26 of 26 tests pass. With a hook that takes 3\%, a cap of 250~bp reverts 200 of 200 swaps and a cap of 300~bp passes 200 of 200, and fuzzing confirms both in 256 of 256 runs. One basis point either side of the cap behaves correctly in 60 of 60 swaps: a 3.01\% take under a 300~bp cap reverts and a 2.99\% take passes; a 50~bp dynamic fee against caps of 49 and 50~bp, and a 250~bp take split across three paths against caps of 249 and 250~bp, also split correctly 60 of 60. The computed take equals the trader's loss against an identical pool without a hook to the wei on the Pons-shaped and dynamic-fee paths (64 swaps each); for exact-output swaps that take on the specified leg, the aggregate is off by up to 0.9\%, a worst-case understatement of 2.80~bp against the cap, because the base converts at the average rather than the marginal price. Without the nested-state guard, a hook that trades against its own pool costs the trader 385~bp while the base reports a take of zero; with the guard both directions revert. Exact-output swaps below about 100 wei pass under the cap (50 wei passes, 99 wei and above revert).
+
+The overhead is 25,174 to 25,263 gas per swap against an uncapped hook with the same take permissions as the Pons hook, 22,961 to 23,050 against an uncapped hook with the base's own permission bits, and 22,721 on the dynamic-fee path; the nested-state guard accounts for 6,833 of it. These figures use Foundry's gas schedule on a fork. A declaration in the registry is a claim, not a proof: a hook can register a cap without inheriting the base, so the registry needs a codehash or factory attestation before routers can rely on it.
+
+\section{Implications for LP vault design}\label{sec:design}
+
+The results translate into a small set of design rules for an LP product that takes a Stock Token deposit and provides liquidity on the holder's behalf.
+
+\begin{enumerate}[leftmargin=*,itemsep=3pt]
+\item \textbf{Choose the pool and fee tier by measured edge, out of sample.} The fee level moves edge by tens to hundreds of APR points (Table~\ref{tab:fees}, Panel B); the session shape moves it by zero. Pools and tiers differ as much as sessions do (Table~\ref{tab:session}). The evidence that matters is fee per dollar of markout per pool and tier, measured on swaps the selection did not see.
+\item \textbf{Keep the range static across sessions and recentre once a day.} Tightening in NYSE hours concentrates liquidity where fees per dollar of markout are lowest and multiplies rebalancing cost (Table~\ref{tab:strategies}).
+\item \textbf{Stay in the market on weekends.} The weekend is the least toxic session on every pool we study. Withdrawing on weekends gives up the best fees per dollar of markout (strategy D).
+\item \textbf{Treat the oracle as a valuation input with a calendar.} A 24/5 feed is hours old on weeknights and roughly a day or more old on weekends. A vault that values shares with it must bound staleness, cross-check the pool's time-weighted and spot prices, and handle the weekend explicitly; a fee or range keyed to the distance from the oracle changes meaning with feed age (Table~\ref{tab:fees}, Panel C).
+\item \textbf{Account for the stablecoin half.} A $\pm5\%$ range centred on the price holds 48.8\% of its value in the token at entry, so 51.2\% of a token-only deposit becomes USDG, and comparisons with holding are dominated by the price level. A holder who wants the full token exposure can restore it with a long perpetual position; over our window the Hyperliquid xyz funding paid by longs averaged 5.5\% APR on NVDA, 6.8\% on TSLA and 1.7\% on SPCX (1,296 hourly prints each), which sets the cost of that hedge.
+\item \textbf{Deposit only where the take is bounded.} Pool choice should exclude hooks with take permissions unless their take is capped and enforced inside the swap (\S\ref{sec:res:cap}).
+\end{enumerate}
+
+Uptick is an implementation of these rules. Its \texttt{StockVault} is an ERC-4626 vault per Stock Token, deployed on the pool and tier its evidence engine selects, that holds one Uniswap v3 position recentred daily at the NYSE open around the Chainlink price and keeps that position in the pool through the weekend. Every value-in and value-out path is gated on feed freshness and on agreement between the feed, the pool's time-weighted price and its spot price; with a 25-hour staleness bound, the weekend's silent feed closes the gate for deposits and cash withdrawals rather than pricing them at a stale value, while redemption in kind of both tokens, which needs no price, stays open. Because the vault sits in v3 pools, which carry no hooks, rule 6 holds by construction. Its evidence engine is the replay engine of Section~\ref{sec:method}. The engine's 30-day replay of a \USD100K $\pm5\%$ NVDA position recentred daily at the open, under pool-impact costs (509,293 swaps, \USD348.7M of volume), shows a fee APR of 40.56 against a markout APR of 30.90 and a cost APR of 4.62, an edge of 5.04 APR. Most of the headline fee rate is paid back to informed flow, which is why the vault reports edge and selects on it.
+
+\section{Scope of the evidence}\label{sec:scope}
+
+The v3 results come from one 54-day window in which volume fell steadily; NVDA weekly volume went from \USD242.1M at its peak to \USD27.6M in the last full week. The session profile could differ in a regime of rising volume or around earnings and macro events. Dollar-weighted pooled statistics are dominated by NVDA and SPCX, and the TSLA 0.30\% pool is small. The v4 sample covers 15.95 days and two weekends whose Monday gaps were moderate; a weekend with a gap of 5\% to 10\% could change the weekend line for that week. The Monday-open test uses seven single stocks; index products, whose futures reopen on Sunday evening, may carry more weekend information. The Monday-open-hour comparison rests on about eight Mondays.
+
+The replay engine uses the active liquidity reported at each swap rather than the full tick map, adds the hypothetical position without changing the flow it meets, and does not simulate trading halts. The one-hour markout uses the same pool's price as its reference, so if all pools lag together at the open, adverse selection at the open is understated. The fee test's volume response is a constant-elasticity model fitted on 16 days and 14 pools, and it treats toxic and benign flow as equally fee-sensitive under response (ii); responses (i) and (iii) bound that assumption. Moving the NVDA and SPCX pools from 5 to 35~bp multiplies the fee by seven, far beyond the within-session fee variation from which the within-pair elasticity is identified (standard deviation of the log fee 0.34 to 0.39). The placebo cells share data and are not independent. The hook census covers 49 hours and the Pons join 17 minutes, and the cap's gas figures come from a fork under Foundry's gas schedule. Within that scope, every result in the paper is regenerated by a script in the replication package (Appendix~\ref{app:repro}).
+
+\section{Conclusion}\label{sec:conclusion}
+
+In a 24/7 AMM whose reference market closes, LPs lose most to informed flow while the reference market is open and least when it is closed. On Robinhood Chain's Stock Token pools, fees cover one-hour markout less than one for one in NYSE hours and close to ten for one on weekends, in two samples of pools. The weekend is benign because it carries little hedgeable information: weekend perpetual prices barely improve on the Friday close as forecasts of the Monday open, and the pools already trade at the perpetual.
+
+The calendar does not, however, make a better strategy. Ranges that follow the session lose to static ranges and to randomly assigned sessions. Session fee schedules, tested out of sample at the measured elasticity, collapse to a flat fee at the cap, and oracle-gap fees fail because the meaning of the oracle changes with its age. What moves LP returns is the fee level and the pool chosen, and on a chain where hooks can take value that the displayed fee does not show, that choice also requires a bound on the take that is enforced inside the swap.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\clearpage
+\appendix
+\section{Reproduction map}\label{app:repro}
+
+Every quantitative result in the paper was regenerated on 2026-10-17 from cached swap pulls and reference data, from stored census aggregates for the hook census, against a fresh fork of chain 4663 for the cap tests, and from the venue's public API for perpetual funding. Each output matched the original log. Identifiers refer to the claim ledger distributed with the paper (\texttt{claims.md}).
+
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{8.4cm}}
+\toprule
+Result & Ledger IDs & Script \\
+\midrule
+Table~\ref{tab:data} & A1 to A3, A5, A8 & \texttt{run.py}, \texttt{pooled\_sessions.py} \\
+Weekly volume & A4 & \texttt{weekly\_volume.py} \\
+Engine tests and mutations & A7 & \texttt{test\_engine.py}, \texttt{mutation\_check.py} \\
+Table~\ref{tab:session}, Figure~\ref{fig:sessions} & B1, B2, B4, B5, F1 to F4 & \texttt{session\_split.py}, \texttt{pooled\_sessions.py}, \texttt{markouts.py}, \texttt{markout\_open.py} \\
+Product-window session split & B6 & \texttt{product\_sessions\_check.py} \\
+Chainlink calendar, weekend basis & B8, B9 & \texttt{cl\_gaps.py}, \texttt{basis.py} \\
+Table~\ref{tab:strategies}, placebo & C1 to C5, C7 & \texttt{run.py}, \texttt{report\_tables.py}, \texttt{shuffle.py}, \texttt{shuffle\_cells.py} \\
+Table~\ref{tab:fees} & B7, D1 to D7 & \texttt{elasticity.py}, \texttt{backtest.py}, \texttt{monday\_open.py} \\
+Table~\ref{tab:monday}, Figure~\ref{fig:monday} & E1 to E4 & \texttt{monday\_shrunk.py}, \texttt{monday\_profile.py}, \texttt{monday\_shuffle\_control.py} \\
+Hook census & G1 to G3, G7 & stored census aggregates, \texttt{an\_ponsjoin.py} \\
+Cap mechanism & H1 to H4, H6 & \texttt{forge test} on a fork of chain 4663 \\
+Design rules, Uptick replay & I1, I4, I5 & \texttt{product\_replay\_check.py}, \texttt{funding.py} \\
+Figures & & \texttt{figs/make\_figs.py} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}

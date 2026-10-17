@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <!-- Uptick mark: the vault's price band re-centred one step up, the pool price running through it, the latest price as a ringed dot. -->
-  <rect width="400" height="400" fill="#0e0f0c"/>
-  <path d="M70 186 H200 V104 H330 V214 H200 V296 H70 Z" fill="#9fe870" stroke="#9fe870" stroke-width="24" stroke-linejoin="round"/>
-  <polyline points="20,268 84,256 124,272 170,234 206,244 244,178 274,188 302,152" fill="none" stroke="#0e0f0c" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="302" cy="152" r="19" fill="#9fe870" stroke="#0e0f0c" stroke-width="10"/>
-</svg>
