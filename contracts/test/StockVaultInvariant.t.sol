@@ -104,6 +104,34 @@ contract Handler is Test, Addrs {
         }
     }
 
+    function withdraw(uint256 who, uint256 frac) external {
+        uint256 price = _sync();
+        address a = actors[who % 3];
+        uint256 assets = bound(frac, 1, 100) * vault.maxWithdraw(a) / 100;
+        if (assets == 0) return;
+        uint256 before = IERC20(NVDA).balanceOf(a);
+        uint256 sharesBefore = vault.balanceOf(a);
+        uint256 pps = vault.pricePerShare();
+        uint256 cap = vault.previewWithdraw(assets);
+        vm.prank(a);
+        try vault.withdraw(assets, a, a) returns (uint256 burned) {
+            // an exit near the whole vault hands the unspent buffer back to the exiter as shares; what then stays
+            // for the others is a sliver whose valuation rounds by whole raw USDG units, so judge it only when
+            // the others hold at least 0.001 NVDA
+            if ((vault.totalSupply() - vault.balanceOf(a)) * vault.pricePerShare() / 1e24 >= 1e15) _trackExit(pps);
+            uint256 got = IERC20(NVDA).balanceOf(a) - before;
+            // ERC-4626: exactly the assets out, at most previewWithdraw shares burned, and the return value is the burn
+            if (got != assets || burned > cap || sharesBefore - vault.balanceOf(a) != burned) lastRedeemRevert = "withdraw broke ERC-4626";
+            totalOut += got;
+            usdOut += got * price / 1e8;
+        } catch (bytes memory err) {
+            bytes4 sel = bytes4(err);
+            if (sel != StockVault.OracleUnhealthy.selector && sel != StockVault.ExitBelowMinimum.selector) {
+                lastRedeemRevert = err;
+            }
+        }
+    }
+
     function redeemInKind(uint256 who, uint256 frac) external {
         uint256 price = _sync();
         address a = actors[who % 3];
@@ -164,11 +192,12 @@ contract StockVaultInvariantTest is StdInvariant, Base {
         handler = new Handler(vault, owner, keeper, feedRound);
         targetSender(makeAddr("fuzzer")); // few distinct senders keep the fork's account fetches small
         targetContract(address(handler));
-        bytes4[] memory sel = new bytes4[](4);
+        bytes4[] memory sel = new bytes4[](5);
         sel[0] = Handler.deposit.selector;
         sel[1] = Handler.redeem.selector;
         sel[2] = Handler.redeemInKind.selector;
         sel[3] = Handler.rebalance.selector;
+        sel[4] = Handler.withdraw.selector;
         targetSelector(StdInvariant.FuzzSelector({addr: address(handler), selectors: sel}));
     }
 

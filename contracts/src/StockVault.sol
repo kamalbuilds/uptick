@@ -399,8 +399,9 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
 
     // -------------------------------------------------------------- withdrawals
 
-    /// @notice Burns previewWithdraw(assets) shares and sends exactly `assets` of the Stock Token. Reverts when
-    /// the exit swap costs more than the exit buffer; use redeem or redeemInKind then.
+    /// @notice Sends exactly `assets` of the Stock Token and burns the shares the exit actually cost: at most
+    /// previewWithdraw(assets), less whatever part of the exit buffer the swap did not spend. Reverts when the exit
+    /// swap costs more than the exit buffer; use redeem or redeemInKind then.
     function withdraw(uint256 assets, address receiver, address owner_)
         public
         override
@@ -410,12 +411,12 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         Snapshot memory s = _requireHealthy();
         _harvest(s);
         if (assets > maxWithdraw(owner_)) revert ExceedsMax();
-        shares = previewWithdraw(assets);
-        _exit(msg.sender, receiver, owner_, shares, assets, assets, true, s);
+        (, shares) = _exit(msg.sender, receiver, owner_, previewWithdraw(assets), assets, true, s);
     }
 
-    /// @notice Burns `shares` and sends the actual proceeds of the Stock Token: at least previewRedeem(shares) and
-    /// at most the shares' NAV, so a pool trading cheaper than Chainlink cannot be harvested through an exit.
+    /// @notice Burns `shares` and sends the actual proceeds of their pro-rata slice in the Stock Token: at least
+    /// previewRedeem(shares), and everything the exit swap returned above that. The slice is taken pro-rata, so
+    /// the holders who stay keep their NAV per share whatever the swap returns.
     function redeem(uint256 shares, address receiver, address owner_)
         public
         override
@@ -425,7 +426,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         Snapshot memory s = _requireHealthy();
         _harvest(s);
         if (shares > balanceOf(owner_)) revert ExceedsMax();
-        assets = _exit(msg.sender, receiver, owner_, shares, previewRedeem(shares), _convertToAssets(shares, Math.Rounding.Floor), false, s);
+        (assets,) = _exit(msg.sender, receiver, owner_, shares, previewRedeem(shares), false, s);
     }
 
     /// @notice Pro-rata exit in both legs. No oracle gate, no swap, not pausable. If the Stock Token transfer to
@@ -501,18 +502,19 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         return 6;
     }
 
+    /// @dev Burns `shares`, releases their pro-rata slice and swaps its USDG leg. `exact` (withdraw) sends
+    /// `minAssets` and mints back to the owner the shares the unspent part of the exit buffer is worth; otherwise
+    /// (redeem) sends all the proceeds. Returns the Stock Token sent and the shares burned.
     function _exit(
         address caller,
         address receiver,
         address owner_,
         uint256 shares,
         uint256 minAssets,
-        uint256 maxAssets,
         bool exact,
         Snapshot memory s
-    ) internal returns (uint256 delivered) {
+    ) internal returns (uint256 delivered, uint256 burned) {
         if (shares == 0) revert ZeroAmount();
-        if (caller != owner_) _spendAllowance(owner_, caller, shares);
         uint256 supply = totalSupply();
         _burn(owner_, shares);
         (uint256 outStock, uint256 outUsdg) = _release(shares, supply);
@@ -521,10 +523,20 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         if (_isDust(outUsdg)) forfeited = _usdgToStock(outUsdg, s.price);
         else outStock += _swap(usdg, stock, outUsdg, _minOut(_usdgToStock(outUsdg, s.price)));
         if (outStock + (exact ? 0 : forfeited) < minAssets) revert ExitBelowMinimum(outStock, minAssets);
-        delivered = exact ? minAssets : Math.min(outStock, maxAssets);
+        delivered = exact ? minAssets : outStock;
+        burned = shares;
+        if (outStock > delivered) {
+            // The unspent buffer stays idle in the vault. Mint the owner back the shares it is worth, priced like
+            // the harvest mint: against the assets of those who stay (net of the surplus), rounding down.
+            uint256 surplus = outStock - delivered;
+            uint256 refund = surplus.mulDiv(supply - shares + 10 ** _decimalsOffset(), _valuation(s).net - delivered - surplus + 1);
+            burned -= refund;
+            _mint(owner_, refund);
+        }
+        if (caller != owner_) _spendAllowance(owner_, caller, burned);
         stock.safeTransfer(receiver, delivered);
-        emit Withdraw(caller, receiver, owner_, delivered, shares);
-        emit Withdrawn(caller, receiver, owner_, delivered, shares);
+        emit Withdraw(caller, receiver, owner_, delivered, burned);
+        emit Withdrawn(caller, receiver, owner_, delivered, burned);
     }
 
     /// @dev Takes shares/supply of idle balances and of the position's liquidity into this contract and returns

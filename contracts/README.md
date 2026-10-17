@@ -97,7 +97,7 @@ Installed with `forge install --no-git <repo>@<tag>`:
 | Uniswap/v4-core (TickMath, SqrtPriceMath only) | v4.0.0 | `e50237c43811bd9b526eff40f26772152a42daba` |
 | foundry-rs/forge-std | v1.17.0 | `f3dae6e6ee381f25eb6a246f7da9b85c91a68219` |
 
-Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. Runtime code is 24,132 bytes, under the 24,576 byte limit.
+Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. Runtime code is 24,245 bytes, under the 24,576 byte limit.
 
 ## Test
 

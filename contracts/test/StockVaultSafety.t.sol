@@ -262,7 +262,7 @@ contract StockVaultSafetyTest is Base {
         assertEq(vault.balanceOf(alice), 0);
     }
 
-    function test_exitCannotHarvestPoolOracleGap() public {
+    function test_exitGapIsBoundedByOracleTolerance() public {
         _instant();
         uint256 shares = _deposit(alice, 100e18);
         // NAV with the feed at the pool price: the reference an exit may be paid at
@@ -277,7 +277,7 @@ contract StockVaultSafetyTest is Base {
         _assertClose(fair, atPool, 2, "NAV ignores a feed above the pool");
         vm.prank(alice);
         uint256 got = vault.redeem(shares, alice, alice);
-        assertLe(got, fair, "redeem never pays more than NAV");
+        assertLe(got, fair * 10_100 / 10_000, "redeem pays the realised proceeds, within the oracle tolerance of NAV");
         assertGe(got, fair * 9_970 / 10_000, "and not less than the exit buffer allows");
     }
 

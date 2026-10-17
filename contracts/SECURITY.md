@@ -34,7 +34,7 @@ Scope: `src/StockVault.sol`. Every guard below says what the contract does when 
 | Spot more than `maxDeviationBps` from Chainlink | same | Closed: `OracleUnhealthy(SpotDeviates)` |
 | Swap `minOut` (Chainlink value less `slippageBps`) | every swap: balancing swap on deploy, exit swap | Closed: the router reverts, and a local balance-delta check backs it up with `SwapBelowMinimum` |
 | Exit buffer: proceeds below `previewRedeem` / requested assets | `withdraw`, `redeem` | Closed: `ExitBelowMinimum`. `redeemInKind` is the way out. |
-| `redeem` NAV cap | `redeem` | Proceeds above the shares' NAV stay in the vault, so an exit cannot collect the gap between a cheap pool and the oracle. |
+| Exit proceeds | `redeem`, `withdraw` | The exiter receives what their own slice realises. `redeem` pays all of it, `withdraw` pays the requested assets and burns only the shares it needed. The slice is cut pro-rata and the spot price is inside `maxDeviationBps` of Chainlink at entry, so the gap an exit can collect is bounded by that tolerance and comes out of the exiter's own slice, never from the holders who stay. |
 | Pause | deposit, mint | Closed. `maxDeposit` and `maxMint` return 0. |
 | Deposit cap | deposit, mint | Closed above the cap. |
 | Keeper-only window | `rebalance` | Closed to non-keepers until 26 hours after the last rebalance, then open to anyone, still behind the oracle gate. |
@@ -54,6 +54,7 @@ Scope: `src/StockVault.sol`. Every guard below says what the contract does when 
 - Virtual-share offset 6 (`_decimalsOffset`): shares have 24 decimals. A donation to the vault cannot make a later depositor round to zero shares without costing the donor more than the depositor loses.
 - Rounding follows ERC-4626: down for assets out and shares in, up for assets in and shares out.
 - Withdrawals and exits are pro-rata over idle balances and liquidity, so every exit leaves the per-share composition unchanged.
+- Exits guarantee both sides. The exiter gets the actual proceeds of their pro-rata slice: `redeem` returns at least `previewRedeem` (the swap is refused below it, to within the one-cent USDG dust that is never swapped), and every wei the swap returns above that is paid out. `withdraw` sends exactly the assets requested and burns at most `previewWithdraw` shares: the part of the exit buffer the swap does not spend is returned to the owner as shares, priced against the assets of those who stay (net of the surplus, rounding down), and the allowance is charged for the shares actually burned. The holders who stay keep their assets per share across every exit, to within the rounding of the liquidity maths (a few raw USDG units) and in their favour. Measured on the real pool: a 400 NVDA deposit with `instantDeploy` followed by a 99% `redeem` leaves a 0.053 NVDA holder redeeming 0.0528 NVDA (the stake it deposited, less its own deploy cost), and the same dust holder behind a full exit or a `withdraw` of the same size redeems within the 1% oracle tolerance of her deposit.
 - Approvals to the position manager and router are set to the exact amount and returned to zero in the same call.
 
 ## Quantities measured on the real pool
@@ -67,7 +68,7 @@ Scope: `src/StockVault.sol`. Every guard below says what the contract does when 
 
 ## Bytecode size
 
-Runtime code is 24,132 bytes against the EIP-170 limit of 24,576 (built with `via_ir` and `optimizer_runs = 1`); `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
+Runtime code is 24,245 bytes against the EIP-170 limit of 24,576 (built with `via_ir` and `optimizer_runs = 1`); `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
 
 ## Test and mutation evidence
 
@@ -79,7 +80,6 @@ Each row deletes or breaks one guard in the source, runs the tests that cover it
 | Spot-vs-Chainlink bound removed | `test_spotPushedThreePercentBlocksDeposit` |
 | Swap `minOut` forced to 0 | `test_swapMinOutBlocksBadFill` |
 | Exit proceeds check removed | `test_exitBeyondBufferRevertsInsteadOfUnderpaying` |
-| `redeem` NAV cap removed | `test_exitCannotHarvestPoolOracleGap` |
 | Staleness check removed | `test_staleFeedBlocksRebalance`, `test_permissionlessRebalanceStillGatedByOracle` |
 | Virtual-share offset set to 0 | `test_firstDepositorDonationAttackFails`, `testFuzz_donationAttackNeverProfits` |
 | Uncollected fees not valued | `test_feeAccrualAndPerformanceFeeMath`, `test_pricePerShareContinuousThroughHarvest` |
@@ -87,6 +87,7 @@ Each row deletes or breaks one guard in the source, runs the tests that cover it
 | Performance fee not minted | `test_feeAccrualAndPerformanceFeeMath` |
 | Deposit pause not enforced | `test_depositCapAndPause` |
 | Dust-swap guard removed | `test_tinyRedeemDoesNotRevert` |
+| Exit proceeds capped at the shares' NAV, unspent `withdraw` buffer kept in the vault | `test_dustHolderGainsNothingFromPartialExit`, `test_dustHolderGainsNothingFromFullExit`, `test_dustHolderGainsNothingFromWithdraw`, `test_fullWithdrawKeepsOthersWhole`, `testFuzz_depositWithdrawNoFreeMoney` |
 | Exits release 20% more liquidity than the shares' fraction | `invariant_exitsNeverDiluteRemainingHolders` (NAV per share fell to 0.75 in one exit) |
 | Token-0 sqrt-price orientation flipped | `test_oracleMappingMatchesPoolForTokenZeroStock`, `test_roundTripAndRebalanceWithTokenZeroStock` |
 
