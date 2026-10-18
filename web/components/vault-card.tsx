@@ -10,9 +10,20 @@ import { useVaultStats } from "@/lib/hooks";
 import { pct, signed } from "@/lib/format";
 import { sourceLabel } from "@/lib/keeper";
 import type { VaultConfig } from "@/lib/vaults";
+import universe from "@/lib/vault-universe.json";
+
+type GateState = "open" | "reduced" | "closed";
+
+/** The gate state the keeper wrote into vault-universe.json for this vault. Anything absent or unrecognised reads as closed. */
+function gateState(id: string): GateState {
+  const state = universe.vaults.find((v) => v.id === id)?.gate?.state;
+  return state === "open" || state === "reduced" ? state : "closed";
+}
 
 export function VaultStatus({ cfg }: { cfg: VaultConfig }) {
-  if (!cfg.open) return <span className="rounded-full bg-sage px-3 py-1 text-sm font-semibold text-body">Closed</span>;
+  const state = gateState(cfg.id);
+  if (state === "closed") return <span className="rounded-full bg-sage px-3 py-1 text-sm font-semibold text-body">Closed</span>;
+  if (state === "reduced") return <span className="rounded-full bg-warning px-3 py-1 text-sm font-semibold text-ink">Reduced</span>;
   return cfg.vault ? (
     <span className="rounded-full bg-primary-pale px-3 py-1 text-sm font-semibold text-positive-deep">Open for deposits</span>
   ) : (

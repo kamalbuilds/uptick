@@ -10,7 +10,7 @@ import { Skeleton } from "./status";
 import { vaultAbi } from "@/lib/abis";
 import { addressUrl, robinhoodChain } from "@/lib/chain";
 import { num, shortAddress } from "@/lib/format";
-import { VAULTS, type VaultConfig } from "@/lib/vaults";
+import { SHARE_DECIMALS, VAULTS, type VaultConfig } from "@/lib/vaults";
 
 function PositionRow({ cfg, owner }: { cfg: VaultConfig; owner: `0x${string}` }) {
   const vault = cfg.vault;
@@ -26,7 +26,7 @@ function PositionRow({ cfg, owner }: { cfg: VaultConfig; owner: `0x${string}` })
     contracts: vault && sharesRaw ? [{ address: vault, abi: vaultAbi, functionName: "convertToAssets", args: [sharesRaw], chainId: robinhoodChain.id }] : [],
   });
 
-  const shares = sharesRaw !== undefined ? Number(formatUnits(sharesRaw, 18)) : undefined;
+  const shares = sharesRaw !== undefined ? Number(formatUnits(sharesRaw, SHARE_DECIMALS)) : undefined;
   const assets = conv.data?.[0] !== undefined ? Number(formatUnits(conv.data[0], 18)) : undefined;
 
   return (

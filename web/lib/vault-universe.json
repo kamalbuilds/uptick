@@ -56,8 +56,8 @@
       "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
       "open": true,
       "gate": {
-        "state": "open",
-        "reason": "Open: the weaker half of the 30-day replay kept -0.4% a year, above the -20% floor, across 842,504 swaps.",
+        "state": "reduced",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -0.4% a year, between the -20% floor and break-even, across 842,504 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -0.41611426355074616,
         "swaps": 842504,
@@ -77,8 +77,8 @@
       "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
       "open": true,
       "gate": {
-        "state": "open",
-        "reason": "Open: the weaker half of the 30-day replay kept -7.8% a year, above the -20% floor, across 171,538 swaps.",
+        "state": "reduced",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -7.8% a year, between the -20% floor and break-even, across 171,538 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -7.828602211849247,
         "swaps": 171538,

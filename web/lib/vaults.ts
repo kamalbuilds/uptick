@@ -62,3 +62,6 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
 export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
 
 export const getVault = (id: string) => VAULTS.find((v) => v.id === id);
+
+/** Vault share decimals: the 18-decimal Stock Token plus StockVault._decimalsOffset() = 6 (ERC-4626 inflation guard). */
+export const SHARE_DECIMALS = 24;

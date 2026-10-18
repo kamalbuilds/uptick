@@ -4,9 +4,15 @@ export const feeLabel = (pips: number): string => pips === 0x800000 ? "dynamic" 
 const poolLabel = (p: any) => p.fee_tier === 0x800000 ? `${p.kind} dynamic, avg ${+(effectiveTier(p) / 10_000).toFixed(4)}%` : `${p.kind} ${feeLabel(p.fee_tier)}`;
 const hookLabel = (h: string | null) => h ?? "none";
 
-/** A vault opens for deposits when the lower of its two half-window kept APRs (edge_apr_pct) is at least this. Any floor between
- *  -7.8 and -98.2 gives the same open set on the current replay. */
+/** A vault takes deposits at all only when the lower of its two half-window kept APRs (edge_apr_pct) is at least this. Any floor
+ *  between -7.8 and -98.2 gives the same open set on the current replay. */
 export const KEEP_FLOOR_APR = -20;
+
+/** Break-even: the lower half at or above this means LPs kept money in both halves, so deposits carry no cap. */
+export const KEEP_FULL_APR = 0;
+
+/** A vault between the floor and break-even still takes deposits, but a single deposit is capped at this many dollars of stock token. */
+export const REDUCED_CAP_STOCK_USD = 25_000;
 
 /** Table floor: a pool below this 30-day volume has too little flow for its replay to mean anything. */
 export const MIN_TABLE_VOLUME_USD = 250_000;
@@ -17,14 +23,19 @@ const effectiveTier = (p: any): number => p.fee_tier === 0x800000 ? Math.round((
 /** Percent to one decimal with its own sign: -0.4161 to "-0.4%". */
 const apr1 = (n: number) => `${n.toFixed(1)}%`;
 
-/** Deposit gate: the weaker of the replay's two half-window kept APRs against the floor, in a plain sentence. Built from the
- *  numbers the replay already carries (per-token swap count, window days) so the vault page can state why deposits are open or shut. */
-export function depositGate(worstHalfApr: number, swaps: number, days: number, floorApr: number = KEEP_FLOOR_APR) {
-  const open = worstHalfApr >= floorApr;
-  const reason = open
-    ? `Open: the weaker half of the ${days}-day replay kept ${apr1(worstHalfApr)} a year, above the ${floorApr}% floor, across ${swaps.toLocaleString("en-US")} swaps.`
-    : `Closed: the weaker half kept ${apr1(worstHalfApr)} a year, below the ${floorApr}% floor.`;
-  return { state: open ? "open" as const : "closed" as const, reason, floor_apr: floorApr, worst_half_apr: worstHalfApr, swaps, days };
+/** Deposit gate: the weaker of the replay's two half-window kept APRs, in a plain sentence, in one of three states. At or above
+ *  break-even is open, no cap. Between the floor and break-even is reduced: deposits are allowed but a single ticket is capped.
+ *  Below the floor is closed. Built from the numbers the replay already carries (per-token swap count, window days) so the vault
+ *  page can state why deposits are open, capped or shut. */
+export function depositGate(worstHalfApr: number, swaps: number, days: number, floorApr: number = KEEP_FLOOR_APR, fullApr: number = KEEP_FULL_APR) {
+  const state = worstHalfApr >= fullApr ? "open" as const : worstHalfApr >= floorApr ? "reduced" as const : "closed" as const;
+  const reason =
+    state === "open"
+      ? `Open: the weaker half of the ${days}-day replay kept ${apr1(worstHalfApr)} a year, at or above break-even, across ${swaps.toLocaleString("en-US")} swaps.`
+      : state === "reduced"
+        ? `Reduced: the weaker half of the ${days}-day replay kept ${apr1(worstHalfApr)} a year, between the ${floorApr}% floor and break-even, across ${swaps.toLocaleString("en-US")} swaps. Deposits are capped at $${REDUCED_CAP_STOCK_USD.toLocaleString("en-US")} per transaction.`
+        : `Closed: the weaker half kept ${apr1(worstHalfApr)} a year, below the ${floorApr}% floor.`;
+  return { state, reason, floor_apr: floorApr, worst_half_apr: worstHalfApr, swaps, days };
 }
 
 /** Shape read by web/lib/evidence.ts: chosen_pool, chosen_fee_tier, pools[{pool, fee_tier, fee_apr_pct}], fee_per_loss{regular,night,weekend},

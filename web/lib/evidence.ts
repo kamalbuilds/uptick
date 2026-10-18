@@ -3,8 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 export type SessionKey = "regular" | "night" | "weekend";
 export type PoolApr = { pool: string; feeTier: number; feeAprPct: number; label: string };
 export type Keep = { feeAprPct: number; markoutAprPct: number; costAprPct: number; keptAprPct: number; keptFirstHalf: number; keptSecondHalf: number };
-/** Why deposits are open or shut: the weaker half of the replay against the keeper's floor, in a sentence. */
-export type Gate = { state: "open" | "closed"; reason: string; floorApr: number; worstHalfApr: number; swaps: number; days: number };
+/** Why deposits are open, capped or shut: the weaker half of the replay against the keeper's floor, in a sentence. `reduced` means
+ *  deposits are allowed but a single ticket is capped at `REDUCED_CAP_STOCK_USD`. */
+export type Gate = { state: "open" | "reduced" | "closed"; reason: string; floorApr: number; worstHalfApr: number; swaps: number; days: number };
+
+/** Mirrors REDUCED_CAP_STOCK_USD in keeper/src/evidence.ts: the most a single deposit may add to a reduced vault, in dollars of stock token. */
+export const REDUCED_CAP_STOCK_USD = 25_000;
 export type Evidence = {
   chosenPool: string;
   chosenFeeTier: number;
@@ -31,7 +35,7 @@ export function parseEvidence(raw: unknown): Evidence {
   if (typeof cp !== "string" || !isNum(ct) || !isNum(n) || !isObj(w) || typeof w.start !== "string" || typeof w.end !== "string") throw bad("header");
   if (typeof open !== "boolean") throw bad("open");
   if (!isObj(k) || ![k.fee_apr_pct, k.markout_apr_pct, k.cost_apr_pct, k.kept_apr_pct, k.kept_first_half, k.kept_second_half].every(isNum)) throw bad("keep");
-  if (!isObj(g) || (g.state !== "open" && g.state !== "closed") || typeof g.reason !== "string" || !isNum(g.floor_apr) || !isNum(g.worst_half_apr) || !isNum(g.swaps) || !isNum(g.days)) throw bad("gate");
+  if (!isObj(g) || (g.state !== "open" && g.state !== "reduced" && g.state !== "closed") || typeof g.reason !== "string" || !isNum(g.floor_apr) || !isNum(g.worst_half_apr) || !isNum(g.swaps) || !isNum(g.days)) throw bad("gate");
   if (!Array.isArray(pools) || pools.length === 0) throw bad("pools");
   if (!isObj(fpl) || !isNum(fpl.regular) || !isNum(fpl.night) || !isNum(fpl.weekend)) throw bad("fee_per_loss");
   return {

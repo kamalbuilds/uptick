@@ -31,14 +31,16 @@ test("each list entry's evidence parses and names a pool that is in its own tabl
     assert.equal(e.chosenPool, v.pool);
     assert.equal(e.open, v.open);
     assert.ok(e.pools.every((p: { label: string }) => p.label.length > 0));
-    assert.equal(e.open, Math.min(e.keep.keptFirstHalf, e.keep.keptSecondHalf) >= -20);
+    const worst = Math.min(e.keep.keptFirstHalf, e.keep.keptSecondHalf);
+    assert.equal(e.open, worst >= -20);
     assert.ok(e.swapsReplayed > 10_000);
-    assert.equal(e.gate.state, e.open ? "open" : "closed");
+    assert.equal(e.gate.state, worst >= 0 ? "open" : worst >= -20 ? "reduced" : "closed");
     assert.equal(e.gate.floorApr, -20);
     assert.equal(e.gate.days, 30);
     assert.equal(e.gate.swaps, e.swapsReplayed);
-    assert.equal(e.gate.worstHalfApr, Math.min(e.keep.keptFirstHalf, e.keep.keptSecondHalf));
-    assert.ok(e.gate.reason.startsWith(e.open ? "Open" : "Closed"));
+    assert.equal(e.gate.worstHalfApr, worst);
+    assert.ok(e.gate.reason.startsWith(e.gate.state === "open" ? "Open" : e.gate.state === "reduced" ? "Reduced" : "Closed"));
+    if (e.gate.state === "reduced") assert.match(e.gate.reason, /capped at \$25,000/);
   }
 });
 

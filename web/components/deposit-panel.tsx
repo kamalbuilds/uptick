@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
-import { useEvidence } from "@/lib/evidence";
-import { num, pct } from "@/lib/format";
+import { REDUCED_CAP_STOCK_USD, useEvidence } from "@/lib/evidence";
+import { num, pct, usd } from "@/lib/format";
+import { useVaultStats } from "@/lib/hooks";
 import { errMessage, waitForReceipt } from "@/lib/tx";
-import type { VaultConfig } from "@/lib/vaults";
+import { SHARE_DECIMALS, type VaultConfig } from "@/lib/vaults";
 
 type Tx =
   | { phase: "idle" }
@@ -45,6 +46,7 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   const onChain = Boolean(vault && address && chainId === robinhoodChain.id);
   const parsed = parse(amount);
   const gate = useEvidence(cfg.id).data?.gate;
+  const priceUsd = useVaultStats(cfg.id).data?.chart?.chainlinkUsd;
 
   const reads = useReadContracts({
     allowFailure: false,
@@ -72,10 +74,13 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   const isMaxWithdraw = tab === "withdraw" && parsed !== null && maxWithdraw !== undefined && parsed === maxWithdraw;
   const needsApproval = tab === "deposit" && parsed !== null && allowance !== undefined && allowance < parsed;
   const overBalance = parsed !== null && maxIn !== undefined && parsed > maxIn;
+  // A reduced vault caps a single deposit at REDUCED_CAP_STOCK_USD of stock token, converted at the live Chainlink price.
+  const capTokens = gate?.state === "reduced" && priceUsd !== undefined && priceUsd > 0 ? REDUCED_CAP_STOCK_USD / priceUsd : null;
+  const overCap = tab === "deposit" && capTokens !== null && amountNum > capTokens;
   const busy = tx.phase === "signing" || tx.phase === "pending";
 
   const summary = useMemo(() => {
-    const sharesPart = preview.data !== undefined ? `${num(Number(formatUnits(preview.data, DECIMALS)), 6)} vault shares` : "vault shares";
+    const sharesPart = preview.data !== undefined ? `${num(Number(formatUnits(preview.data, SHARE_DECIMALS)), 6)} vault shares` : "vault shares";
     if (tab === "deposit") {
       return [
         needsApproval ? `First you approve the vault to move ${num(amountNum)} ${cfg.symbol}. That is one signature and moves nothing yet.` : null,
@@ -152,13 +157,19 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
           disabled={!vault || busy}
           onChange={(e) => { setAmount(e.target.value.trim()); if (tx.phase !== "idle" && !busy) setTx({ phase: "idle" }); }}
           className="figure h-14 min-w-0 flex-1 bg-transparent px-4 text-2xl outline-none placeholder:text-mute disabled:opacity-60"
-          aria-invalid={overBalance}
+          aria-invalid={overBalance || overCap}
           aria-describedby="amount-help"
         />
         <span className="pr-4 text-lg font-semibold">{cfg.symbol}</span>
       </div>
       <p id="amount-help" className="figure mt-1.5 min-h-5 text-xs text-body">
-        {overBalance ? <span className="text-negative-deep">Above your {tab === "deposit" ? "balance" : "withdrawable amount"}.</span> : ""}
+        {overBalance ? (
+          <span className="text-negative-deep">Above your {tab === "deposit" ? "balance" : "withdrawable amount"}.</span>
+        ) : overCap && capTokens !== null ? (
+          <span className="text-warning-deep">A reduced vault caps a single deposit at {usd(REDUCED_CAP_STOCK_USD)}, about {num(capTokens, 2)} {cfg.symbol} today.</span>
+        ) : (
+          ""
+        )}
       </p>
 
       <div className="mt-4 rounded-lg bg-sage p-4 text-sm leading-6" aria-live="polite">
@@ -184,14 +195,14 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
         ) : chainId !== robinhoodChain.id ? (
           <div className="[&>div>button]:w-full [&>button]:w-full"><WalletButton /></div>
         ) : (
-          <Button size="lg" className="w-full" disabled={!parsed || overBalance || busy || reads.isLoading} onClick={submit}>
+          <Button size="lg" className="w-full" disabled={!parsed || overBalance || overCap || busy || reads.isLoading} onClick={submit}>
             {busy ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {tx.phase === "signing" ? "Confirm in your wallet" : "Waiting for the chain"}</> : actionLabel}
           </Button>
         )}
       </div>
 
       <TxStatus tx={tx} />
-      {gate && <p className={`mt-3 text-sm ${gate.state === "closed" ? "text-negative-deep" : "text-body"}`}>{gate.reason}</p>}
+      {gate && <p className={`mt-3 text-sm ${gate.state === "closed" ? "text-negative-deep" : gate.state === "reduced" ? "text-warning-deep" : "text-body"}`}>{gate.reason}</p>}
       {!cfg.open && (
         <p className={`text-sm text-body ${gate ? "mt-1.5" : "mt-3"}`}>Fees {pct(cfg.feeAprPct)}, kept {pct(cfg.keptAprPct)} over the held-out 15 days.{gate ? "" : " Deposits open when kept APR stays above -20 in both halves."}</p>
       )}

@@ -118,7 +118,7 @@ export function WhyThisPool({ id, symbol, compact = false }: { id: string; symbo
       <div className="mt-8">
         <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-body" style={{ fontFamily: "var(--font-sans)", fontStretch: "100%", letterSpacing: "0.08em" }}>What LPs keep, annualised</h3>
         <Kept e={e} />
-        <p className={`mt-3 text-sm ${e.gate.state === "closed" ? "text-negative-deep" : "text-body"}`}>{e.gate.reason}</p>
+        <p className={`mt-3 text-sm ${e.gate.state === "closed" ? "text-negative-deep" : e.gate.state === "reduced" ? "text-warning-deep" : "text-body"}`}>{e.gate.reason}</p>
       </div>
       <Foot e={e} />
       <p className="mt-2 text-sm text-body">{FEE_CAP_LINE}</p>

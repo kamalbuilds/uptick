@@ -55,16 +55,40 @@ describe("evidence built from data/replay.json", () => {
     expect(open).toEqual(["GOOGL", "NVDA"]);
   });
 
-  test("NVDA's gate is open and names the weaker half of the replay", () => {
+  test("NVDA sits between the floor and break-even, so its gate is reduced and names the weaker half", () => {
     const ev: any = buildEvidence(replay.tokens.NVDA, replay);
-    expect(ev.gate.state).toBe("open");
+    expect(ev.gate.state).toBe("reduced");
     expect(ev.open).toBe(true);
-    expect(ev.gate.reason).toContain("Open");
+    expect(ev.gate.reason).toContain("Reduced");
+    expect(ev.gate.reason).toContain("capped at $25,000");
     expect(ev.gate.reason).toContain(ev.gate.worst_half_apr.toFixed(1));
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
     expect(ev.gate.floor_apr).toBe(KEEP_FLOOR_APR);
     expect(ev.gate.swaps).toBe(replay.tokens.NVDA.swaps_replayed);
     expect(ev.gate.days).toBe(replay.window.days);
+  });
+
+  test("every token's gate state matches its weaker half, and the reduced set is exactly GOOGL and NVDA", () => {
+    for (const s of syms) {
+      const ev: any = buildEvidence(replay.tokens[s], replay);
+      const worst = ev.gate.worst_half_apr;
+      expect(ev.gate.state).toBe(worst >= 0 ? "open" : worst >= KEEP_FLOOR_APR ? "reduced" : "closed");
+      expect(ev.gate.reason.startsWith(ev.gate.state === "open" ? "Open" : ev.gate.state === "reduced" ? "Reduced" : "Closed")).toBe(true);
+    }
+    const reduced = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "reduced").sort();
+    expect(reduced).toEqual(["GOOGL", "NVDA"]);
+    const closed = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "closed").sort();
+    expect(closed).toEqual(["CRCL", "SPCX"]);
+  });
+
+  test("a half at or above break-even opens the gate outright, with no cap", () => {
+    const open = depositGate(3.2, 120_000, 30);
+    expect(open.state).toBe("open");
+    expect(open.reason).toContain("Open");
+    expect(open.reason).not.toContain("capped");
+    const reduced = depositGate(-0.4, 120_000, 30);
+    expect(reduced.state).toBe("reduced");
+    expect(reduced.reason).toContain("capped at $25,000");
   });
 
   test("CRCL's gate is closed and states the floor it missed", () => {
