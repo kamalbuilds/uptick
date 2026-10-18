@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
+import { useEvidence } from "@/lib/evidence";
 import { num, pct } from "@/lib/format";
 import { errMessage, waitForReceipt } from "@/lib/tx";
 import type { VaultConfig } from "@/lib/vaults";
@@ -43,6 +44,7 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   const vault = cfg.vault;
   const onChain = Boolean(vault && address && chainId === robinhoodChain.id);
   const parsed = parse(amount);
+  const gate = useEvidence(cfg.id).data?.gate;
 
   const reads = useReadContracts({
     allowFailure: false,
@@ -189,8 +191,9 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
       </div>
 
       <TxStatus tx={tx} />
+      {gate && <p className={`mt-3 text-sm ${gate.state === "closed" ? "text-negative-deep" : "text-body"}`}>{gate.reason}</p>}
       {!cfg.open && (
-        <p className="mt-3 text-sm text-body">Fees {pct(cfg.feeAprPct)}, kept {pct(cfg.keptAprPct)} over the held-out 15 days. Deposits open when kept APR stays above -20 in both halves.</p>
+        <p className={`text-sm text-body ${gate ? "mt-1.5" : "mt-3"}`}>Fees {pct(cfg.feeAprPct)}, kept {pct(cfg.keptAprPct)} over the held-out 15 days.{gate ? "" : " Deposits open when kept APR stays above -20 in both halves."}</p>
       )}
       {cfg.open && !vault && (
         <p className="mt-3 text-sm text-body">The {cfg.symbol} vault is opening. Deposits unlock here the moment its address is live on Robinhood Chain.</p>

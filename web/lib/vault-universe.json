@@ -13,6 +13,14 @@
       "feeTier": "0.3%",
       "feed": "0x6652eDf64bA3731C4F2D3ce821A0Fb1f1f6b482a",
       "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -116.8% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -116.78258498940441,
+        "swaps": 105466,
+        "days": 30
+      },
       "feeAprPct": 170.65065052813173,
       "keptAprPct": -116.78258498940441
     },
@@ -26,6 +34,14 @@
       "feeTier": "0.05%",
       "feed": "0xB265810950ba6c5C0Ff821c9963014a56fD8Bffb",
       "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -98.2% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -98.23298884233273,
+        "swaps": 621165,
+        "days": 30
+      },
       "feeAprPct": 86.89222399922379,
       "keptAprPct": -98.23298884233273
     },
@@ -39,6 +55,14 @@
       "feeTier": "0.05%",
       "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
       "open": true,
+      "gate": {
+        "state": "open",
+        "reason": "Open: the weaker half of the 30-day replay kept -0.4% a year, above the -20% floor, across 842,504 swaps.",
+        "floor_apr": -20,
+        "worst_half_apr": -0.41611426355074616,
+        "swaps": 842504,
+        "days": 30
+      },
       "feeAprPct": 40.5574193924729,
       "keptAprPct": -0.41611426355074616
     },
@@ -52,6 +76,14 @@
       "feeTier": "0.05%",
       "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
       "open": true,
+      "gate": {
+        "state": "open",
+        "reason": "Open: the weaker half of the 30-day replay kept -7.8% a year, above the -20% floor, across 171,538 swaps.",
+        "floor_apr": -20,
+        "worst_half_apr": -7.828602211849247,
+        "swaps": 171538,
+        "days": 30
+      },
       "feeAprPct": 38.78232498320464,
       "keptAprPct": 2.513195536046313
     }

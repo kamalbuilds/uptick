@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { KEEP_FLOOR_APR, MIN_TABLE_VOLUME_USD, buildEvidence, feeLabel, replayFeeApr } from "../src/evidence.ts";
+import { KEEP_FLOOR_APR, MIN_TABLE_VOLUME_USD, buildEvidence, depositGate, feeLabel, replayFeeApr } from "../src/evidence.ts";
 import { readReplay } from "../src/registry.ts";
 
 const replay = readReplay();
@@ -53,6 +53,34 @@ describe("evidence built from data/replay.json", () => {
   test("the open set is exactly NVDA and GOOGL", () => {
     const open = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).open).sort();
     expect(open).toEqual(["GOOGL", "NVDA"]);
+  });
+
+  test("NVDA's gate is open and names the weaker half of the replay", () => {
+    const ev: any = buildEvidence(replay.tokens.NVDA, replay);
+    expect(ev.gate.state).toBe("open");
+    expect(ev.open).toBe(true);
+    expect(ev.gate.reason).toContain("Open");
+    expect(ev.gate.reason).toContain(ev.gate.worst_half_apr.toFixed(1));
+    expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
+    expect(ev.gate.floor_apr).toBe(KEEP_FLOOR_APR);
+    expect(ev.gate.swaps).toBe(replay.tokens.NVDA.swaps_replayed);
+    expect(ev.gate.days).toBe(replay.window.days);
+  });
+
+  test("CRCL's gate is closed and states the floor it missed", () => {
+    const ev: any = buildEvidence(replay.tokens.CRCL, replay);
+    expect(ev.gate.state).toBe("closed");
+    expect(ev.open).toBe(false);
+    expect(ev.gate.reason).toContain("Closed");
+    expect(ev.gate.reason).toContain(ev.gate.worst_half_apr.toFixed(1));
+    expect(ev.gate.worst_half_apr).toBeLessThan(KEEP_FLOOR_APR);
+  });
+
+  test("a zero floor would close NVDA", () => {
+    const ev: any = buildEvidence(replay.tokens.NVDA, replay);
+    const flipped = depositGate(ev.gate.worst_half_apr, ev.gate.swaps, ev.gate.days, 0);
+    expect(flipped.state).toBe("closed");
+    expect(flipped.reason).toContain("Closed");
   });
 
   test("a token whose session split has no loss to divide by yields no evidence rather than a null ratio", () => {

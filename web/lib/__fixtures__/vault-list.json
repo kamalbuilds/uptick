@@ -39,6 +39,14 @@
           "kept_second_half": -116.78258498940441
         },
         "open": false,
+        "gate": {
+          "state": "closed",
+          "reason": "Closed: the weaker half kept -116.8% a year, below the -20% floor.",
+          "floor_apr": -20,
+          "worst_half_apr": -116.78258498940441,
+          "swaps": 105466,
+          "days": 30
+        },
         "chosen_pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
         "chosen_fee_tier": 3000,
         "chosen_kind": "v3",
@@ -168,6 +176,14 @@
           "kept_second_half": -98.23298884233273
         },
         "open": false,
+        "gate": {
+          "state": "closed",
+          "reason": "Closed: the weaker half kept -98.2% a year, below the -20% floor.",
+          "floor_apr": -20,
+          "worst_half_apr": -98.23298884233273,
+          "swaps": 621165,
+          "days": 30
+        },
         "chosen_pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
         "chosen_fee_tier": 500,
         "chosen_kind": "v3",
@@ -323,6 +339,14 @@
           "kept_second_half": -0.41611426355074616
         },
         "open": true,
+        "gate": {
+          "state": "open",
+          "reason": "Open: the weaker half of the 30-day replay kept -0.4% a year, above the -20% floor, across 842,504 swaps.",
+          "floor_apr": -20,
+          "worst_half_apr": -0.41611426355074616,
+          "swaps": 842504,
+          "days": 30
+        },
         "chosen_pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
         "chosen_fee_tier": 500,
         "chosen_kind": "v3",
@@ -478,6 +502,14 @@
           "kept_second_half": 2.513195536046313
         },
         "open": true,
+        "gate": {
+          "state": "open",
+          "reason": "Open: the weaker half of the 30-day replay kept -7.8% a year, above the -20% floor, across 171,538 swaps.",
+          "floor_apr": -20,
+          "worst_half_apr": -7.828602211849247,
+          "swaps": 171538,
+          "days": 30
+        },
         "chosen_pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
         "chosen_fee_tier": 500,
         "chosen_kind": "v3",

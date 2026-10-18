@@ -14,6 +14,19 @@ export const MIN_TABLE_VOLUME_USD = 250_000;
 /** A dynamic-fee pool has no fee tier; it is shown at the average fee its swaps actually paid, in pips. */
 const effectiveTier = (p: any): number => p.fee_tier === 0x800000 ? Math.round((p.pool_fees_usd / p.volume_usd) * 1e6) : p.fee_tier;
 
+/** Percent to one decimal with its own sign: -0.4161 to "-0.4%". */
+const apr1 = (n: number) => `${n.toFixed(1)}%`;
+
+/** Deposit gate: the weaker of the replay's two half-window kept APRs against the floor, in a plain sentence. Built from the
+ *  numbers the replay already carries (per-token swap count, window days) so the vault page can state why deposits are open or shut. */
+export function depositGate(worstHalfApr: number, swaps: number, days: number, floorApr: number = KEEP_FLOOR_APR) {
+  const open = worstHalfApr >= floorApr;
+  const reason = open
+    ? `Open: the weaker half of the ${days}-day replay kept ${apr1(worstHalfApr)} a year, above the ${floorApr}% floor, across ${swaps.toLocaleString("en-US")} swaps.`
+    : `Closed: the weaker half kept ${apr1(worstHalfApr)} a year, below the ${floorApr}% floor.`;
+  return { state: open ? "open" as const : "closed" as const, reason, floor_apr: floorApr, worst_half_apr: worstHalfApr, swaps, days };
+}
+
 /** Shape read by web/lib/evidence.ts: chosen_pool, chosen_fee_tier, pools[{pool, fee_tier, fee_apr_pct}], fee_per_loss{regular,night,weekend},
  *  swaps_replayed, window{start,end}. Extra keys describe each pool (kind, hooks, volume) and the held-out half. */
 export function buildEvidence(tok: any, replay: any) {
@@ -32,10 +45,12 @@ export function buildEvidence(tok: any, replay: any) {
     }))
     .sort((a: any, b: any) => b.fee_apr_pct - a.fee_apr_pct);
   const f = row.full, first = row.calibration.edge_apr_pct, second = row.test.edge_apr_pct;
+  const worst = Math.min(first, second);
   const keep = { fee_apr_pct: f.fee_apr_pct, markout_apr_pct: f.markout_apr_pct, cost_apr_pct: f.cost_apr_pct, kept_apr_pct: f.edge_apr_pct };
   return {
     keep: { ...keep, kept_first_half: first, kept_second_half: second },
-    open: Math.min(first, second) >= KEEP_FLOOR_APR,
+    open: worst >= KEEP_FLOOR_APR,
+    gate: depositGate(worst, tok.swaps_replayed, replay.window.days),
     chosen_pool: chosen.id, chosen_fee_tier: chosen.fee_tier, chosen_kind: chosen.kind, chosen_fee_apr_pct: row.full.fee_apr_pct,
     pools,
     fee_per_loss: lost,

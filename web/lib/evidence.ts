@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 export type SessionKey = "regular" | "night" | "weekend";
 export type PoolApr = { pool: string; feeTier: number; feeAprPct: number; label: string };
 export type Keep = { feeAprPct: number; markoutAprPct: number; costAprPct: number; keptAprPct: number; keptFirstHalf: number; keptSecondHalf: number };
+/** Why deposits are open or shut: the weaker half of the replay against the keeper's floor, in a sentence. */
+export type Gate = { state: "open" | "closed"; reason: string; floorApr: number; worstHalfApr: number; swaps: number; days: number };
 export type Evidence = {
   chosenPool: string;
   chosenFeeTier: number;
@@ -12,6 +14,7 @@ export type Evidence = {
   /** What LPs keep in the chosen pool: fees less losses to informed traders and rebalancing cost. */
   keep: Keep;
   open: boolean;
+  gate: Gate;
   swapsReplayed: number;
   windowStart: string;
   windowEnd: string;
@@ -21,18 +24,20 @@ const isNum = (x: unknown): x is number => typeof x === "number" && Number.isFin
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null;
 const bad = (what: string) => new Error(`keeper evidence ${what} malformed`);
 
-/** Keeper `evidence` object: chosen_pool, chosen_fee_tier, pools[{pool, fee_tier, fee_apr_pct, label}], keep{...}, open, fee_per_loss{regular,night,weekend}, swaps_replayed, window{start,end}. */
+/** Keeper `evidence` object: chosen_pool, chosen_fee_tier, pools[{pool, fee_tier, fee_apr_pct, label}], keep{...}, open, gate{...}, fee_per_loss{regular,night,weekend}, swaps_replayed, window{start,end}. */
 export function parseEvidence(raw: unknown): Evidence {
   if (!isObj(raw)) throw bad("object");
-  const { keep: k, open, chosen_pool: cp, chosen_fee_tier: ct, pools, fee_per_loss: fpl, swaps_replayed: n, window: w } = raw;
+  const { keep: k, open, gate: g, chosen_pool: cp, chosen_fee_tier: ct, pools, fee_per_loss: fpl, swaps_replayed: n, window: w } = raw;
   if (typeof cp !== "string" || !isNum(ct) || !isNum(n) || !isObj(w) || typeof w.start !== "string" || typeof w.end !== "string") throw bad("header");
   if (typeof open !== "boolean") throw bad("open");
   if (!isObj(k) || ![k.fee_apr_pct, k.markout_apr_pct, k.cost_apr_pct, k.kept_apr_pct, k.kept_first_half, k.kept_second_half].every(isNum)) throw bad("keep");
+  if (!isObj(g) || (g.state !== "open" && g.state !== "closed") || typeof g.reason !== "string" || !isNum(g.floor_apr) || !isNum(g.worst_half_apr) || !isNum(g.swaps) || !isNum(g.days)) throw bad("gate");
   if (!Array.isArray(pools) || pools.length === 0) throw bad("pools");
   if (!isObj(fpl) || !isNum(fpl.regular) || !isNum(fpl.night) || !isNum(fpl.weekend)) throw bad("fee_per_loss");
   return {
     chosenPool: cp, chosenFeeTier: ct, swapsReplayed: n, windowStart: w.start, windowEnd: w.end,
     open,
+    gate: { state: g.state, reason: g.reason, floorApr: g.floor_apr, worstHalfApr: g.worst_half_apr, swaps: g.swaps, days: g.days },
     keep: { feeAprPct: k.fee_apr_pct as number, markoutAprPct: k.markout_apr_pct as number, costAprPct: k.cost_apr_pct as number, keptAprPct: k.kept_apr_pct as number, keptFirstHalf: k.kept_first_half as number, keptSecondHalf: k.kept_second_half as number },
     feePerLoss: { regular: fpl.regular, night: fpl.night, weekend: fpl.weekend },
     pools: pools.map((p) => {
