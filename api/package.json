@@ -1,0 +1,15 @@
+{
+  "name": "uptick-evidence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "test": "bun test",
+    "build": "wrangler deploy --dry-run --outdir dist"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261018.1",
+    "wrangler": "4.151.1"
+  }
+}
