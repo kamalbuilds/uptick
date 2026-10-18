@@ -78,8 +78,8 @@ describe("GET /vaults/:id", () => {
     };
 
     expect(body.id).toBe("nvda");
-    expect(body.gate.state).toBe("open");
-    expect(body.gate.reason).toContain("above the -20% floor");
+    expect(body.gate.state).toBe("reduced");
+    expect(body.gate.reason).toContain("between the -20% floor and break-even");
     expect(body.ticker).toBe("NVDA");
     expect(body.open).toBe(true);
     expect(body.pools.length).toBe(replay.tokens.NVDA.pools.length);

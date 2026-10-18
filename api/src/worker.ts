@@ -1,5 +1,6 @@
 import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
+import { handleMcp, type Env } from "./mcp";
 
 interface HalfStats {
   fee_apr_pct: number | null;
@@ -144,7 +145,10 @@ function health() {
   });
 }
 
-function handleRequest(request: Request): Response {
+function handleRequest(
+  request: Request,
+  env: Env = {},
+): Response | Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
 
@@ -153,9 +157,17 @@ function handleRequest(request: Request): Response {
       status: 204,
       headers: {
         ...CORS_HEADERS,
-        "access-control-allow-methods": "GET, OPTIONS",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-headers": "content-type",
       },
     });
+  }
+
+  if (path === "/mcp") {
+    if (request.method === "POST") {
+      return handleMcp(request, env);
+    }
+    return json({ error: "method_not_allowed", method: request.method }, 405);
   }
 
   if (request.method !== "GET") {
@@ -178,4 +190,4 @@ function handleRequest(request: Request): Response {
   return json({ error: "not_found", path }, 404);
 }
 
-export default { fetch: handleRequest } satisfies ExportedHandler;
+export default { fetch: handleRequest } satisfies ExportedHandler<Env>;
