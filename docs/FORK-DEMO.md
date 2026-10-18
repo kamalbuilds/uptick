@@ -24,6 +24,7 @@ Anvil fork of chain 4663 at http://127.0.0.1:8545. Only anvil default dev accoun
 
 ## Reproduce
 
+0. One command does all of this: `FORK_BLOCK=<Friday NYSE-hours block> scripts/fork-up.sh` (first run deploys and records `~/.cache/uptick-fork/fork.json`; later runs relaunch pinned to that block with the saved state).
 1. Fund account 0 with NVDA on the fork: set the balanceOf slot found with forge-std `stdstore` (`anvil_setStorageAt` on the NVDA proxy, slot 0x03b401b7b39ad5148aeb9ef28bef316a982c01bdaadee32abc45fed3bc7f4746) to 235e18, then `anvil_mine 1` so forge forks the new head.
 2. `ANVIL_KEY=<anvil account 0 dev key> forge script script/DeployFork.s.sol --rpc-url http://127.0.0.1:8545 --broadcast`
 3. rebalance() is keeper-gated for `minRebalanceInterval` (6 h) after deploy: `evm_increaseTime 21700`, `anvil_mine 1`, then `cast send <vault> "rebalance()" --unlocked --from <account 0>`. The advance keeps the real Chainlink round inside `maxStaleness` (90000 s).
