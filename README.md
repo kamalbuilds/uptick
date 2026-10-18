@@ -1,6 +1,6 @@
 # Uptick
 
-Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own. 
+Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
 
 Every vault page shows fee APR next to what LPs keep.
 

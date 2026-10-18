@@ -19,10 +19,10 @@ export default function Home() {
       <section className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.3fr_0.9fr] lg:items-start lg:gap-14 lg:pt-20">
         <div>
           <h1 className="rise display text-[clamp(3rem,12vw,5.5rem)] lg:text-[clamp(3.4rem,5.6vw,5.5rem)]" style={{ ["--i" as string]: 0 }}>
-            Stock Token yield,<br />chosen by the chain&rsquo;s own data.
+            Put your stock tokens<br />to work.
           </h1>
           <p className="rise mt-6 max-w-md text-xl text-body" style={{ ["--i" as string]: 2 }}>
-            Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.
+            Deposit NVDA or GOOGL and earn a share of every trade&rsquo;s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
           </p>
           <div className="rise mt-8" style={{ ["--i" as string]: 3 }}>
             <Button asChild size="lg">
@@ -37,8 +37,8 @@ export default function Home() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="how">
         <div className="rounded-xl bg-ink p-6 text-sage sm:p-10">
-          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">Fee APR beside what LPs keep</h2>
-          <p className="mt-3 max-w-2xl text-sage">Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.</p>
+          <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">How Uptick picks a pool</h2>
+          <p className="mt-3 max-w-2xl text-sage">Deposit NVDA or GOOGL and earn a share of every trade&rsquo;s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.</p>
           <ol className="relative mt-10 grid gap-8 border-t border-sage/25 pt-8 md:grid-cols-3 md:gap-10">
             {steps.map((s, i) => (
               <li key={s.title} className="relative">

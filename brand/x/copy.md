@@ -87,9 +87,9 @@ Quotes: @RobinhoodCrypto, "Stock Tokens put to work in new ways and markets" (21
 ```text
 Stock Tokens put to work, with the numbers to check the tradeoff.
 
-Uptick provides Uniswap v3 liquidity against USDG and measures fees against losses to informed traders across 5,113,049 swaps over 54 days.
+Uptick provides Uniswap v3 liquidity against USDG and measures fees against losses to informed traders across 5,113,049 swaps in 54 days.
 
-NVDA and GOOGL deposits are open when kept APR holds in both replay halves.
+NVDA and GOOGL deposits open when kept APR holds in both replay halves.
 ```
 
 ## Newsjack kit

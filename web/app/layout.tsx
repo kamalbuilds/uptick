@@ -10,8 +10,8 @@ const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree", displa
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Uptick: your Stock Tokens earn the swap fees",
-  description: "Fee APR beside what LPs keep for every Stock Token vault on Robinhood Chain. Deposits open where the kept figure holds in both halves of the replay.",
+  title: "Uptick: put your stock tokens to work",
+  description: "Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

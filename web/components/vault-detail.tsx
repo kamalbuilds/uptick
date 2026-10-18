@@ -79,7 +79,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
 
           <section aria-labelledby="fee">
             <h2 id="fee" className="text-3xl leading-none">Why this pool</h2>
-            <p className="mt-2 max-w-xl text-body">Uptick replays every Robinhood Chain swap to show what Stock Token liquidity earns and what it keeps after informed traders, and opens deposits only where it holds its own.</p>
+            <p className="mt-2 max-w-xl text-body">Deposit NVDA or GOOGL and earn a share of every trade&rsquo;s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.</p>
             <div className="mt-4 rounded-xl bg-sage p-1"><WhyThisPool id={cfg.id} symbol={cfg.symbol} /></div>
           </section>
 

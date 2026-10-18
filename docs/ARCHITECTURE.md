@@ -1,6 +1,8 @@
 # Architecture
 
-Uptick has three layers on Robinhood Chain (4663): an evidence engine that measures what Stock Token liquidity earns and what it keeps after informed traders, a vault layer that opens deposits in one click only where the kept figure holds in both replay halves, and a cap standard that bounds what the pools under the vault can take.
+Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
+
+Three layers sit behind it on Robinhood Chain (4663): an evidence engine that reads the chain's own swap history, a vault layer that opens deposits in one click, and a cap standard that bounds what the pools under the vault can take.
 
 ```
  chain swap history --> Evidence engine --> pool/tier pick per token --> keeper (daily refresh)
