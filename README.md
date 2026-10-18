@@ -1,5 +1,7 @@
 # Uptick
 
+**Put your stock tokens to work.**
+
 Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
 
 Every vault page shows fee APR next to what LPs keep.
