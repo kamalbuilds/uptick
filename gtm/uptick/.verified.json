@@ -1,0 +1,226 @@
+{
+ "0391bf886aaf84b2": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://x.com/Nibel_eth/status/2109362739504435283",
+  "file": "DEMAND.md",
+  "line": 6,
+  "at": "2026-10-18"
+ },
+ "221de55fb7f8a9a8": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://x.com/WazzCrypto/status/2110798586254344623",
+  "file": "DEMAND.md",
+  "line": 13,
+  "at": "2026-10-18"
+ },
+ "e7808c656a8efe32": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://x.com/JackNomadsGOD/status/2110043007349370881",
+  "file": "DEMAND.md",
+  "line": 20,
+  "at": "2026-10-18"
+ },
+ "e89b734d76526049": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://www.reddit.com/r/solana/comments/1wg6c93/kraken_and_kamino_launch_yield_vaults_for/",
+  "file": "DEMAND.md",
+  "line": 27,
+  "at": "2026-10-18"
+ },
+ "df9a1f4fdc27a32b": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://www.reddit.com/r/Superstonk/comments/1w8hy7h/tokenized_stocks_how_they_impact_gamestop_and_why/",
+  "file": "DEMAND.md",
+  "line": 34,
+  "at": "2026-10-18"
+ },
+ "f8c85cc371e3cd6e": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://www.kiln.fi/post/tokenized-stocks-have-a-demand-problem-stock-vaults-fix-it",
+  "file": "DEMAND.md",
+  "line": 41,
+  "at": "2026-10-18"
+ },
+ "59e644aaa41467d1": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://lex.substack.com/p/fintech-robinhoods-bet-to-bring-on",
+  "file": "DEMAND.md",
+  "line": 48,
+  "at": "2026-10-18"
+ },
+ "a8806bd4e8e585e2": {
+  "ok": true,
+  "why": "quote found",
+  "url": "https://arxiv.org/abs/2610.21491",
+  "file": "DEMAND.md",
+  "line": 54,
+  "at": "2026-10-18"
+ },
+ "bb557e37a3274020": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://modelcontextprotocol.io/specification/2025-06-18",
+  "file": "EDGE.md",
+  "line": 8,
+  "at": "2026-10-18"
+ },
+ "cc025f8f632c8b6a": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://llmstxt.org/changes.html",
+  "file": "EDGE.md",
+  "line": 15,
+  "at": "2026-10-18"
+ },
+ "37dc16c5db3d85cc": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+  "file": "EDGE.md",
+  "line": 22,
+  "at": "2026-10-18"
+ },
+ "3518967922622b65": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://cardboard.ai/changelog",
+  "file": "EDGE.md",
+  "line": 29,
+  "at": "2026-10-18"
+ },
+ "503c900ddbc3bf47": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://github.com/Uniswap/v4-core/releases/tag/v4.0.0",
+  "file": "EDGE.md",
+  "line": 8,
+  "at": "2026-10-18"
+ },
+ "74f626cfdcf9bdf3": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://eips.ethereum.org/EIPS/eip-8056",
+  "file": "EDGE.md",
+  "line": 43,
+  "at": "2026-10-18"
+ },
+ "7cf3776001cd7115": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://arxiv.org/abs/2610.21491",
+  "file": "EDGE.md",
+  "line": 50,
+  "at": "2026-10-18"
+ },
+ "c3db5bda9ee0dc8a": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://www.npmjs.com/package/@uniswap/v3-sdk",
+  "file": "EDGE.md",
+  "line": 57,
+  "at": "2026-10-18"
+ },
+ "d13dbe92d74a7c96": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://x402.org/linux-foundation-announces-operational-launch-of-x402-foundation-to-standardize-internet-native-payments-for-ai-agents-and-applications/",
+  "file": "EDGE.md",
+  "line": 64,
+  "at": "2026-10-18"
+ },
+ "658115c0ae647717": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood",
+  "file": "EDGE.md",
+  "line": 71,
+  "at": "2026-10-18"
+ },
+ "efd9a4b7c70984d2": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://docs.chain.link/data-feeds/24-7-extended-hours-data-feeds",
+  "file": "EDGE.md",
+  "line": 78,
+  "at": "2026-10-18"
+ },
+ "774eb7928c7baafd": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://github.com/nirholas/robinhood-chain-erc8056",
+  "file": "EDGE.md",
+  "line": 85,
+  "at": "2026-10-18"
+ },
+ "87690418e3ab9b2d": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://github.com/chainstacklabs/robinhood-chain-sequencer-feed",
+  "file": "EDGE.md",
+  "line": 92,
+  "at": "2026-10-18"
+ },
+ "5c8588d954a41459": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://www.npmjs.com/package/permissionless",
+  "file": "EDGE.md",
+  "line": 99,
+  "at": "2026-10-18"
+ },
+ "7c3cc911969f2b4f": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://www.npmjs.com/package/@morpho-org/blue-sdk",
+  "file": "EDGE.md",
+  "line": 106,
+  "at": "2026-10-18"
+ },
+ "a8b5c57f046047d7": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://arxiv.org/abs/2606.23070",
+  "file": "EDGE.md",
+  "line": 113,
+  "at": "2026-10-18"
+ },
+ "1e4b6e7f5fa8b39b": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://arxiv.org/abs/2609.38056",
+  "file": "EDGE.md",
+  "line": 120,
+  "at": "2026-10-18"
+ },
+ "f2458b33183517b7": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://arxiv.org/abs/2608.30321",
+  "file": "EDGE.md",
+  "line": 127,
+  "at": "2026-10-18"
+ },
+ "c68d3ec1179fa21e": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://robinhoodchain.blockscout.com/token/0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+  "file": "USERS.md",
+  "line": 16,
+  "at": "2026-10-18"
+ },
+ "ec82b88866e60bcc": {
+  "ok": true,
+  "why": "reachable",
+  "url": "https://api.robinhood.com/rhj/assets",
+  "file": "USERS.md",
+  "line": 21,
+  "at": "2026-10-18"
+ }
+}
