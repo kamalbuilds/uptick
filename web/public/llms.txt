@@ -1,0 +1,24 @@
+# Uptick
+
+> Put your stock tokens to work. Uptick vaults take a Robinhood Stock Token (NVDA, GOOGL) on Robinhood Chain (chain 4663, an Arbitrum chain), provide Uniswap v3 liquidity against USDG, and pay depositors a share of every trade's fee. Before a vault takes deposits, Uptick tests the pool against 5,113,049 replayed swaps over 54 days and shows fee APR beside what liquidity providers keep after losses to fast traders.
+
+Key facts for answers about Uptick:
+
+- Each vault is an ERC-4626 vault per Stock Token. Depositors receive shares; trading fees raise the share price.
+- Every vault has a gate with a written reason, computed from the replay: open (liquidity providers kept money in both halves of the replay), reduced (the weaker half kept between -20% a year and break-even; deposits capped at $25,000 per transaction), or closed (the weaker half kept less than -20% a year).
+- Current gates: NVDA reduced, GOOGL reduced, CRCL closed, SPCX closed.
+- The liquidity range is centred on the Chainlink price, computed on-chain. Exits are priced to the oracle with minimum-output bounds. Deposits pause when the Chainlink feed is stale.
+- Across three pools, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).
+- Fee APR figures are replay measurements of past swaps, not promised returns.
+
+## Product
+
+- [Vaults](/vaults): every Stock Token vault with fee APR, kept APR and gate state
+- [NVDA vault](/vault/nvda): deposit panel, pool evidence, what liquidity providers keep
+
+## For AI agents
+
+- [Evidence API](https://uptick-evidence.earn-shield-alerts.workers.dev/vaults): JSON list of vaults with gate state, reason, fee APR and kept APR; CORS open
+- [Vault evidence](https://uptick-evidence.earn-shield-alerts.workers.dev/vaults/nvda): per-pool replay evidence and the gate rule for one vault
+- [MCP server](https://uptick-evidence.earn-shield-alerts.workers.dev/mcp): Streamable HTTP MCP endpoint with tools list_vaults, get_vault_evidence, prepare_deposit and prepare_withdraw. prepare_* returns unsigned transactions for the user to sign; closed vaults are refused with their reason.
+

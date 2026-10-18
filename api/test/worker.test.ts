@@ -157,3 +157,14 @@ describe("errors and CORS", () => {
     }
   });
 });
+
+describe("GET /llms.txt", () => {
+  test("serves the agent context file without site-relative links", async () => {
+    const res = await get("/llms.txt");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body.startsWith("# Uptick")).toBe(true);
+    expect(body).toContain("/mcp");
+    expect(body).not.toContain("](/");
+  });
+});

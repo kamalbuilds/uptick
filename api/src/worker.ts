@@ -1,6 +1,7 @@
 import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
 import { handleMcp, type Env } from "./mcp";
+import LLMS from "./llms";
 
 interface HalfStats {
   fee_apr_pct: number | null;
@@ -174,6 +175,9 @@ function handleRequest(
     return json({ error: "method_not_allowed", method: request.method }, 405);
   }
 
+  if (path === "/llms.txt" && request.method === "GET") {
+    return new Response(LLMS, { headers: { ...CORS_HEADERS, "content-type": "text/plain; charset=utf-8" } });
+  }
   if (path === "/health") {
     return health();
   }
