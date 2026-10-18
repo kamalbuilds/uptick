@@ -1,0 +1,49 @@
+{
+ "token": "NVDA",
+ "window": {
+  "start": "2026-09-17T00:00:00+00:00",
+  "end": "2026-10-17T00:00:00+00:00",
+  "calibration_end": "2026-10-02T00:00:00+00:00",
+  "days": 30,
+  "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+  "fee_tier": 500,
+  "volume_usd": 348715391.8594023
+ },
+ "current": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "calibration_apr": 12.69648988138802,
+  "heldout_apr": 2.374861557616044
+ },
+ "candidates": [
+  {
+   "range_bps": 150,
+   "interval_h": 12,
+   "calibration_apr": 36.815392071249505,
+   "heldout_apr": 0.9951322269153094
+  },
+  {
+   "range_bps": 150,
+   "interval_h": 24,
+   "calibration_apr": 34.85437227239775,
+   "heldout_apr": 4.540864338850889
+  },
+  {
+   "range_bps": 150,
+   "interval_h": 6,
+   "calibration_apr": 28.596061702534403,
+   "heldout_apr": 2.0143460463700857
+  }
+ ],
+ "decision": "keep",
+ "proposed": null,
+ "margin_apr": -1.3797293307007346,
+ "rationale_facts": [
+  "Window 30 days ending 2026-10-17T00:00:00+00:00, capital $100,000, pool 0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3 at fee 500 ppm.",
+  "Calibration is the first 15 days, held-out the second 15 days.",
+  "Current setting rangeBps=500, interval=24h scores 12.70 APR on calibration and 2.37 APR on held-out.",
+  "Out of 24 grid settings the top three by calibration are: rangeBps=150, interval=12h: calibration 36.82, held-out 1.00; rangeBps=150, interval=24h: calibration 34.85, held-out 4.54; rangeBps=150, interval=6h: calibration 28.60, held-out 2.01.",
+  "No candidate beats current on held-out by 2.00 APR points while not being worse on calibration (best held-out margin -1.38), so the proposal is to keep the current setting."
+ ],
+ "calldata_hint": null
+}
