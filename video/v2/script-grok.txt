@@ -1,0 +1,78 @@
+
+                                                                                
+  Beat                 Seconds   ON SCREEN               VOICEOVER              
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 
+  Hook                 0–3       189,012 addresses       189,012 people hold    
+                                 hold NVDA Stock         NVDA Stock Tokens.     
+                                 Tokens. Robinhood       73,900 of them         
+                                 Earn: 523 million       already put 523        
+                                 dollars from 73,900     million dollars into   
+                                 holders.                Robinhood Earn         
+                                                         because they want      
+                                                         yield onchain.         
+  Pain                 3–12      Wallet balance          Their Stock Tokens     
+                                 showing NVDA Stock      sit idle in wallets.   
+                                 Tokens with no          Nothing is putting     
+                                 activity.               that money to work.    
+  Product              12–28     /vault/nvda deposit     I built Uptick so you  
+                                 panel with 10 NVDA      deposit NVDA or        
+                                 typed, then wallet      GOOGL, or dollars in   
+                                 confirm.                USDG, in one step.     
+                                                         The vault provides     
+                                                         liquidity in the       
+                                                         Uniswap pool and you   
+                                                         earn a share of every  
+                                                         trade fee.             
+  Proof                28–58     /vault/crcl Deposits    Most pools lose money  
+                                 closed with reason,     for people who supply  
+                                 then /vaults list       liquidity to fast      
+                                 with Open Reduced       traders. A competitor  
+                                 Closed chips, then      top pick replays at    
+                                 evidence API JSON in    minus 78.5 percent a   
+                                 a browser.              year. The CRCL pool    
+                                                         keeps minus 116.8      
+                                                         percent. We replayed   
+                                                         5.1 million past       
+                                                         trades over 54 days    
+                                                         and open a vault only  
+                                                         where it holds up.     
+                                                         NVDA and GOOGL are     
+                                                         reduced with deposits  
+                                                         capped at 25,000       
+                                                         dollars per            
+                                                         transaction. CRCL and  
+                                                         SPCX are closed and    
+                                                         the reason is shown    
+                                                         on every vault page.   
+                                                         On weekends people     
+                                                         earn 13.64 dollars     
+                                                         per dollar lost        
+                                                         versus 1.16 in NYSE    
+                                                         hours. The live NVDA   
+                                                         vault on a Robinhood   
+                                                         Chain mainnet fork     
+                                                         holds 233.05 NVDA,     
+                                                         about 50,008 dollars.  
+                                                         A fee-cap standard     
+                                                         stops 200 of 200       
+                                                         over-cap swaps by      
+                                                         hidden hook fees. The  
+                                                         public evidence API    
+                                                         is live.               
+  Why now and why us   58–78     Robinhood Chain and     Robinhood Chain is an  
+                                 Arbitrum logos beside   Arbitrum chain. Stock  
+                                 the /vaults list.       Tokens are here.       
+                                                         People already want    
+                                                         onchain yield. We      
+                                                         only open what the     
+                                                         history supports, we   
+                                                         show the reason, and   
+                                                         we publish the         
+                                                         evidence.              
+  Call to action       78–88     Headline: Put your      Put your stock tokens  
+                                 stock tokens to work.   to work.               
+                                 Deposit button.                                
+                                                                                
+
+They only open the vaults where the past trades hold up and they show you the   
+reason on the page.                                                             

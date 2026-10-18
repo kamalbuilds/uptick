@@ -1,0 +1,20 @@
+01|You own Nvidia on Robinhood Chain.
+02|Right now it just sits in your wallet, earning nothing.
+03|You could put it in a trading pool and earn a cut of every trade.
+04|But most pools quietly lose money to fast traders.
+05|One popular pick loses seventy eight percent a year.
+06|Uptick does the checking for you.
+07|Pick a stock, type an amount, and the vault puts it to work.
+08|Fees from every trade flow back to your share.
+09|Before any vault opens, Uptick replays five point one million real trades.
+10|It shows what you earn, and what you keep.
+11|Nvidia and Google are open, with a cap.
+12|Circle and SpaceX stay closed, and every page tells you why.
+13|Robinhood Chain runs on Arbitrum.
+14|A hundred and eighty nine thousand wallets already hold Nvidia tokens.
+15|Robinhood Earn holds five hundred twenty three million dollars. People want yield onchain.
+16|Our edge is the evidence.
+17|A public API serves every number, and a fee cap stops hidden hook fees.
+18|Our vault on a Robinhood Chain fork already holds fifty thousand dollars of Nvidia.
+19|Put your stock tokens to work.
+20|Uptick.
