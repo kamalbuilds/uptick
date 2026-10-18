@@ -41,6 +41,7 @@ interface Vault {
   open: boolean;
   feeAprPct: number;
   keptAprPct: number;
+  gate?: { state: string; reason: string; floor_apr: number; worst_half_apr: number; swaps: number; days: number };
 }
 
 interface ReplayWindow {
@@ -126,7 +127,7 @@ function vaultDetail(id: string): Response {
     kept_apr_pct: vault.keptAprPct,
     window_days: REPLAY.window.days,
     pools,
-    gate: GATE,
+    gate: { ...GATE, ...(vault.gate ?? {}) },
   });
 }
 

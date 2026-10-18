@@ -74,10 +74,12 @@ describe("GET /vaults/:id", () => {
         calibration_edge_apr_pct: number | null;
         test_edge_apr_pct: number | null;
       }>;
-      gate: { floor_apr: number; rule: string };
+      gate: { floor_apr: number; rule: string; state: string; reason: string };
     };
 
     expect(body.id).toBe("nvda");
+    expect(body.gate.state).toBe("open");
+    expect(body.gate.reason).toContain("above the -20% floor");
     expect(body.ticker).toBe("NVDA");
     expect(body.open).toBe(true);
     expect(body.pools.length).toBe(replay.tokens.NVDA.pools.length);
@@ -95,7 +97,7 @@ describe("GET /vaults/:id", () => {
       replay.tokens.NVDA.pools[0].test.edge_apr_pct,
     );
 
-    expect(body.gate).toEqual({
+    expect(body.gate).toMatchObject({
       floor_apr: -20,
       rule: "open when the lower of the two replay halves keeps at least -20% APR",
     });
