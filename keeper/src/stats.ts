@@ -20,8 +20,8 @@ export interface Band { from: number; to: number; center: number; lower: number;
  *  Weekends and holidays carry the previous band. Times are unix seconds; `cl` is [ts, usd] sorted by ts. */
 export function bandSegments(cl: [number, number][], fromSec: number, toSec: number, pct: number): Band[] {
   const out: Band[] = [];
-  const day = etDate(fromSec * 1000 - 86400_000);
-  for (let i = 0; i < Math.ceil((toSec - fromSec) / 86400) + 3; i++) {
+  const day = etDate(fromSec * 1000 - 4 * 86400_000); // reach back past a weekend or holiday for the band in force at fromSec
+  for (let i = 0; i < Math.ceil((toSec - fromSec) / 86400) + 6; i++) {
     const d = new Date(Date.UTC(day.y, day.m - 1, day.d + i));
     const s = sessionFor(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
     if (!s) continue;

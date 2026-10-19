@@ -31,23 +31,27 @@ describe("NYSE calendar", () => {
     expect(isEarlyClose(2026, 12, 24)).toBe(true);
     expect(isEarlyClose(2026, 10, 19)).toBe(false);
   });
-  test("recentre slot is open + 5 min: 13:35 UTC in EDT, 14:35 UTC in EST", () => {
-    expect(sessionFor(2026, 10, 19)!.recentreMs).toBe(utc("2026-10-19T13:35:00Z"));
-    expect(sessionFor(2026, 12, 1)!.recentreMs).toBe(utc("2026-12-01T14:35:00Z"));
+  test("recentre slot is 02:00 UTC on the evening after each trading session", () => {
+    expect(sessionFor(2026, 10, 19)!.recentreMs).toBe(utc("2026-10-20T02:00:00Z")); // Monday session, 22:00 ET
+    expect(sessionFor(2026, 12, 1)!.recentreMs).toBe(utc("2026-12-02T02:00:00Z")); // EST: 21:00 ET
     expect(sessionFor(2026, 11, 27)!.closeMs).toBe(utc("2026-11-27T18:00:00Z"));
   });
-  test("recentreDue only on a trading day, in the slot, once", () => {
-    const slot = utc("2026-10-19T13:35:00Z");
+  test("recentreDue in the slot window, once, never for a non-trading day", () => {
+    const slot = utc("2026-10-20T02:00:00Z");
     expect(recentreDue(slot - 1, 0)).toBe(false);
     expect(recentreDue(slot, 0)).toBe(true);
+    expect(recentreDue(slot + 5 * 3_600_000, 0)).toBe(true); // still inside the 6 h window after ET midnight
     expect(recentreDue(slot + 3_600_000, slot + 5_000)).toBe(false); // already sent
-    expect(recentreDue(utc("2026-10-19T20:30:00Z"), 0)).toBe(false); // after close
-    expect(recentreDue(utc("2026-10-17T13:40:00Z"), 0)).toBe(false); // Saturday
-    expect(recentreDue(utc("2026-11-26T13:40:00Z"), 0)).toBe(false); // Thanksgiving
+    expect(recentreDue(slot + 7 * 3_600_000, 0)).toBe(false); // window over
+    expect(recentreDue(utc("2026-10-17T02:00:00Z"), 0)).toBe(true); // Friday 16 Oct session, Saturday 02:00 UTC
+    expect(recentreDue(utc("2026-10-18T02:00:00Z"), 0)).toBe(false); // Saturday: no session
+    expect(recentreDue(utc("2026-10-19T02:00:00Z"), 0)).toBe(false); // Sunday: no session
+    expect(recentreDue(utc("2026-11-27T02:00:00Z"), 0)).toBe(false); // Thanksgiving: no session
     expect(sessionAt(utc("2026-10-17T13:40:00Z"))).toBeNull();
   });
-  test("next slot from Saturday is Monday 13:35 UTC; from Thanksgiving eve skips to Friday", () => {
-    expect(nextRecentreMs(utc("2026-10-17T04:00:00Z"))).toBe(utc("2026-10-19T13:35:00Z"));
-    expect(nextRecentreMs(utc("2026-11-25T20:00:00Z"))).toBe(utc("2026-11-27T14:35:00Z"));
+  test("next slot from Saturday is Tuesday 02:00 UTC; from Thanksgiving eve it is that evening, then Saturday", () => {
+    expect(nextRecentreMs(utc("2026-10-17T04:00:00Z"))).toBe(utc("2026-10-20T02:00:00Z"));
+    expect(nextRecentreMs(utc("2026-11-25T20:00:00Z"))).toBe(utc("2026-11-26T02:00:00Z"));
+    expect(nextRecentreMs(utc("2026-11-26T03:00:00Z"))).toBe(utc("2026-11-28T02:00:00Z"));
   });
 });

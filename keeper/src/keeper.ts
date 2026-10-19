@@ -49,8 +49,8 @@ async function lastRebalanceMs(t: Ticker): Promise<number> {
 interface State { lastMs: number; oorSince: number | null }
 
 function decide(t: Ticker, s: Snapshot, range: [number, number] | null, st: State, nowMs: number): { trigger: Trigger; note: string } {
-  if (!sessionAt(nowMs)) return { trigger: null, note: "not_a_trading_day" };
   if (recentreDue(nowMs, st.lastMs)) return { trigger: "scheduled", note: "recentre slot reached" };
+  if (!sessionAt(nowMs)) return { trigger: null, note: "not_a_trading_day" };
   if (range) {
     const oor = s.tick < range[0] || s.tick >= range[1];
     if (!oor) { st.oorSince = null; return { trigger: null, note: "in_range" }; }

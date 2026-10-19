@@ -84,11 +84,18 @@ export function etToUtcMs(y: number, m: number, d: number, hh: number, mm: numbe
 }
 
 export interface Session { openMs: number; closeMs: number; recentreMs: number }
-/** Regular session of an ET trading day. Recentre slot is open + 5 min = 13:35 UTC during EDT. */
+/** UTC hour of the daily recentre slot. */
+export const RECENTRE_UTC_HOUR = 2;
+/** How long after the slot a missed recentre may still run. */
+const RECENTRE_WINDOW_MS = 6 * 3_600_000;
+/** Regular session of an ET trading day. The recentre slot is RECENTRE_UTC_HOUR:00 UTC on the evening after the session
+ *  (22:00 ET in EDT, 21:00 ET in EST): keeper/strategist/RECENTRE-HOUR.md measured that recentring off the NYSE open keeps
+ *  2.5 APR points more on NVDA on held-out data, with only slots the vault can execute (fresh feed). */
 export function sessionFor(y: number, m: number, d: number): Session | null {
   if (!isTradingDay(y, m, d)) return null;
   const openMs = etToUtcMs(y, m, d, 9, 30);
-  return { openMs, closeMs: etToUtcMs(y, m, d, isEarlyClose(y, m, d) ? 13 : 16, 0), recentreMs: openMs + 5 * 60_000 };
+  const nextUtcDay = Date.UTC(y, m - 1, d + 1);
+  return { openMs, closeMs: etToUtcMs(y, m, d, isEarlyClose(y, m, d) ? 13 : 16, 0), recentreMs: nextUtcDay + RECENTRE_UTC_HOUR * 3_600_000 };
 }
 
 export function sessionAt(nowMs: number): Session | null {
@@ -96,10 +103,15 @@ export function sessionAt(nowMs: number): Session | null {
   return sessionFor(y, m, d);
 }
 
-/** Is the scheduled recentre due: trading day, past open+5min, before close, and nothing sent since the slot. */
+/** Is the scheduled recentre due: the slot of the latest ET trading day has passed, within its window, nothing sent since. */
 export function recentreDue(nowMs: number, lastRebalanceMs: number): boolean {
-  const s = sessionAt(nowMs);
-  return !!s && nowMs >= s.recentreMs && nowMs < s.closeMs && lastRebalanceMs < s.recentreMs;
+  const { y, m, d } = etDate(nowMs);
+  for (let i = 0; i >= -1; i--) {
+    const [yy, mm, dd] = shift(y, m, d, i);
+    const s = sessionFor(yy, mm, dd);
+    if (s && nowMs >= s.recentreMs && nowMs < s.recentreMs + RECENTRE_WINDOW_MS) return lastRebalanceMs < s.recentreMs;
+  }
+  return false;
 }
 
 /** Next recentre slot strictly after nowMs (for logging) */
