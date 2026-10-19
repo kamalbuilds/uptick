@@ -35,6 +35,8 @@ Say: "Every morning the keeper refreshes the evidence and recentres." Show `simu
 
 Say: "Session-fee hooks and hand-picked range vaults exist. None publishes a calibration. Uptick pairs the evidence engine, the cap standard and one-click vaults across Stock Tokens. NVDA first, SPCX next, every eligible token after."
 
+Robinhood issues the Stock Tokens, Chainlink publishes the equity feeds the vault prices against, and the Uniswap pools quote each token against USDG, all on Robinhood Chain (4663). Uptick runs where that asset and its liquidity already are, and the contracts scale the feed by the ERC-8056 split multiplier and price swaps by NYSE session.
+
 ## Checklist before recording
 
 - Fork pinned to a recent block of `https://rpc.mainnet.chain.robinhood.com`.

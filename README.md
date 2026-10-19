@@ -47,6 +47,10 @@ Kept APR is fees earned less losses to informed traders (1 hour markout) and reb
 
 Source: keeper `/vaults` (`evidence.keep`, `evidence.open`), read from `keeper/data/replay.json`.
 
+## Why Robinhood Chain
+
+Robinhood issues its Stock Tokens on Robinhood Chain (chain 4663, an Arbitrum Orbit chain), so the asset the vault holds lives here. Chainlink publishes the equity feeds the vault prices against on the same chain, and the Stock Tokens quote against USDG in Uniswap pools, so the hedge leg is native too. The vault sits where the token, the oracle and the pool are, instead of crossing a bridge on every valuation and every swap. The chain's own standards run in the contracts: `UptickHook` scales the Chainlink answer by the token's ERC-8056 `uiMultiplier` and prices swaps by NYSE session with holidays and DST compiled in (`contracts/src/hook/UptickHook.sol`), while `StockVault` refuses a stale, malformed or deviating feed read before any value-in or value-out path (`contracts/src/StockVault.sol`).
+
 ## Why the chain needs it
 
 Hooks carry 74.5% of v4 trades on Robinhood Chain, 0x labels 80% of 84K hooks malicious, and about $1.2M left traders in 49 hours to hooks keeping 5 to 11% while their pools quote 0 to 1%.[^5] Quoted fees no longer tell the price a liquidity provider or trader gets. Uptick's pick is measured, and its pools sit under a cap the chain enforces.

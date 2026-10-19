@@ -185,6 +185,10 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
         )}
       </div>
 
+      <p className="mt-4 text-xs text-body">
+        Stock Tokens are not offered to US persons. Check that you are eligible in your country before depositing.
+      </p>
+
       <div className="mt-4">
         {!cfg.open ? (
           <Button size="lg" className="w-full" disabled>Deposits closed</Button>
