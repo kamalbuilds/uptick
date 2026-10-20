@@ -10,6 +10,9 @@ import { ExitPreview } from "./exit-preview";
 import { GateFigure } from "./gate-scale";
 import { LeakFigure } from "./leak-bar";
 import { SectionTitle, StateChip, toneClass } from "./ledger";
+import { PriceLine } from "./price";
+import { Term } from "./term";
+import { PairLogo } from "./token-logo";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
@@ -72,16 +75,18 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
         </nav>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <PairLogo symbol={cfg.symbol} size={40} />
           <h1 className="text-[32px] font-medium leading-10 tracking-[-0.33px]">{cfg.symbol} vault</h1>
-          <StateChip state={cfg.gate.state} />
+          <StateChip state={cfg.gate.state} term />
           <span className="figure inline-flex h-6 items-center rounded-full border border-hairline px-2.5 text-[13px] text-mute" title={`${cfg.gate.swaps.toLocaleString("en-US")} swaps, ${isoDay(REPLAY_WINDOW.start)} to ${isoDay(REPLAY_WINDOW.end)}`}>
             Replay to {isoDay(REPLAY_WINDOW.end)} · {cfg.gate.swaps.toLocaleString("en-US")} swaps
           </span>
         </div>
         <p className="mt-2 text-mute">{cfg.name} in the {cfg.symbol} / USDG pool, {cfg.feeTier} fee tier</p>
+        <p className="mt-1"><PriceLine id={cfg.id} /></p>
 
         <p className="serif verdict mt-8 max-w-[900px] text-[30px] font-normal leading-[34px] sm:text-[44px] sm:leading-[48px]">
-          {cfg.symbol} kept <span className={toneClass(worst)}>{signed(worst)}</span> a year in its weaker half. {doorSentence(cfg)}
+          {cfg.symbol} kept <span className={toneClass(worst)}>{signed(worst)}</span> a year in its <span className="whitespace-nowrap"><Term id="worstHalf">weaker half</Term>.</span> {doorSentence(cfg)}
         </p>
 
         <div className="mt-12 space-y-14">

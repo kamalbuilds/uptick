@@ -8,12 +8,14 @@ import { CheckCircle, CircleNotch, WarningCircle, ArrowSquareOut } from "@phosph
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toneClass } from "./ledger";
+import { Term } from "./term";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, routerAbi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
 import { useEvidence } from "@/lib/evidence";
-import { depositRoom, num, perDepositLimitUsd, signed, usd, usdWhole } from "@/lib/format";
+import { depositRoom, num, shareOfBalance, perDepositLimitUsd, signed, usd, usdWhole } from "@/lib/format";
 import { useVaultStats } from "@/lib/hooks";
+import { usePrices } from "@/lib/prices";
 import { usdSigned, yearlyUsd } from "@/lib/leak";
 import { revertCopy } from "@/lib/revert";
 import { errMessage, waitForReceipt } from "@/lib/tx";
@@ -45,7 +47,7 @@ const txError = (err: unknown): string => revertCopy(err) ?? errMessage(err);
 
 /** The docked deposit ticket: one bar pinned to the bottom of the vault page. It carries the amount, what that amount earns at the
  *  worst-half rate, the vault size and the per-deposit limit, and opens a "before you sign" panel above itself once there is an amount. */
-export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
+export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "dock" is the bar pinned to the bottom of the vault page; "side" is the same form stacked in a column for the list page. */ layout?: "dock" | "side" }) {
   const { address, isConnected, chainId } = useAccount();
   const client = usePublicClient({ chainId: robinhoodChain.id });
   const { writeContractAsync } = useWriteContract();
@@ -63,7 +65,9 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   const parsedUsdg = parse(amount, USDG_DECIMALS);
   const parsedAmount = usdgMode ? parsedUsdg : parsed;
   const gate = useEvidence(cfg.id).data?.gate ?? cfg.gate;
-  const priceUsd = useVaultStats(cfg.id).data?.chart?.chainlinkUsd;
+  // The stats API quotes the chart price; the live Chainlink read stands in while it has none, so the cap and the USDG quote never wait on it.
+  const livePrice = usePrices().data?.byId.get(cfg.id)?.usd;
+  const priceUsd = useVaultStats(cfg.id).data?.chart?.chainlinkUsd ?? livePrice;
 
   const reads = useReadContracts({
     allowFailure: false,
@@ -239,32 +243,185 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
         ? { tone: "text-caution", text: capRoom.tokens > 0 ? `This vault takes up to ${num(capRoom.tokens, 4)} ${cfg.symbol} more, at its ${sizeCap} size cap.` : `This vault is at its ${sizeCap} size cap and takes no more deposits.` }
         : null;
   const detailsOpen = Boolean(parsedAmount) || tx.phase !== "idle";
+  const side = layout === "side";
 
-  return (
-    <div className="sticky bottom-0 z-10 border-t border-line bg-panel" role="region" aria-label={`Deposit and withdraw ${cfg.symbol}`}>
-      <div className="mx-auto max-w-[1280px] px-6 py-3 sm:py-4">
-        {detailsOpen && (
-          <div className="mb-3 max-h-[32dvh] overflow-y-auto border-b border-hairline pb-3 text-[13px] leading-5" aria-live="polite">
-            {parsedAmount ? (
-              <>
-                <p className="font-semibold text-fg">Before you sign</p>
-                <ul className="mt-1 space-y-1 text-mute">{summary.map((l) => <li key={l}>{l}</li>)}</ul>
-                {usdgMode && (
-                  <p id="quote-help" className="figure mt-1 text-mute">
-                    {quoteReady && quotedStock !== undefined && minShares !== undefined
-                      ? `About ${num(Number(formatUnits(quotedStock, DECIMALS)), 6)} ${cfg.symbol} deposited, at least ${num(Number(formatUnits(minShares, SHARE_DECIMALS)), 6)} shares`
-                      : priceUsd === undefined || priceUsd <= 0
-                        ? "Quote unavailable. USDG deposits need a live price."
-                        : "Quote unavailable. Deposits need a share estimate."}
-                  </p>
-                )}
-                <p className="mt-1 text-mute">Stock Tokens are not offered to US persons. Check that you are eligible in your country before depositing.</p>
-              </>
-            ) : null}
-            <TxStatus tx={tx} />
+  // 25/50/75/Max fill a share of the balance (deposit) or of what is withdrawable (withdraw), in the token's own base units.
+  const chipValue = (p: number): bigint | undefined => shareOfBalance(maxIn, p);
+  const activePct = parsedAmount === null ? undefined : [25, 50, 75, 100].find((p) => chipValue(p) === parsedAmount);
+  const canFill = Boolean(vault) && !busy && maxIn !== undefined && maxIn > 0n;
+  function fill(p: number) {
+    const v = chipValue(p);
+    if (v === undefined) return;
+    setAmount(formatUnits(v, payDecimals));
+    if (tx.phase !== "idle" && !busy) setTx({ phase: "idle" });
+  }
+
+  const tabsEl = (
+    <Tabs value={tab} onValueChange={(v) => { setTab(v as "deposit" | "withdraw"); setTx({ phase: "idle" }); setAmount(""); }}>
+      <TabsList aria-label="Deposit or withdraw" className={side ? "grid grid-cols-2 gap-0 border-b border-hairline" : undefined}>
+        <TabsTrigger value="deposit">Deposit</TabsTrigger>
+        <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
+      </TabsList>
+      <TabsContent value="deposit" />
+      <TabsContent value="withdraw" />
+    </Tabs>
+  );
+
+  const payEl = tab === "deposit" && ROUTER ? (
+    <div role="group" aria-label="Pay with" className={cn("flex gap-0.5 rounded-full bg-raised p-0.5", side && "w-full")}>
+      {([["stock", cfg.symbol], ["usdg", "USDG"]] as const).map(([mode, label]) => (
+        <button
+          key={mode}
+          type="button"
+          aria-pressed={payWith === mode}
+          onClick={() => switchPay(mode)}
+          className={cn("press h-8 rounded-full px-3 text-[13px] font-semibold", side && "flex-1", payWith === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  const amountEl = (
+    <div className={cn("min-w-0", !side && "lg:w-[270px] lg:shrink-0")}>
+      <label htmlFor="amount" className="flex items-baseline justify-between text-[13px] leading-5 text-mute">
+        <span>{tab === "deposit" ? "To deposit" : "To withdraw"}</span>
+        {maxIn !== undefined && (
+          <span className="figure">{tab === "deposit" ? "Balance" : "Available"} {num(Number(formatUnits(maxIn, payDecimals)), 6)}</span>
+        )}
+      </label>
+      <div className={cn("flex items-center rounded-lg border border-line bg-canvas focus-within:border-fg", side ? "h-14" : "h-11")}>
+        <input
+          id="amount"
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder="0.0"
+          value={amount}
+          disabled={!vault || busy}
+          onChange={(e) => { setAmount(e.target.value.trim()); if (tx.phase !== "idle" && !busy) setTx({ phase: "idle" }); }}
+          className={cn("figure h-full min-w-0 flex-1 bg-transparent px-3 outline-none placeholder:text-mute disabled:opacity-60", side ? "text-[24px]" : "text-[17px]")}
+          aria-invalid={overBalance || overCap || overRoom}
+          aria-describedby={help ? "amount-help" : undefined}
+        />
+        <span className="pr-3 text-[15px] font-semibold">{unit}</span>
+      </div>
+      {side && amountNum > 0 && <p className="figure mt-1 text-[13px] leading-5 text-mute">{`≈ ${usd(amountUsd, { compact: false })}`}</p>}
+      {help && <p id="amount-help" className={cn("figure mt-1 text-[12px] leading-4", help.tone)}>{help.text}</p>}
+      <div role="group" aria-label="Fill a share of the amount" className="mt-2 flex gap-2">
+        {[25, 50, 75, 100].map((p) => (
+          <button
+            key={p}
+            type="button"
+            disabled={!canFill}
+            aria-pressed={activePct === p}
+            onClick={() => fill(p)}
+            className={cn("press h-7 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-40", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-panel enabled:hover:text-fg")}
+          >
+            {p === 100 ? "Max" : `${p}%`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const ctaEl = opening ? (
+    <Button size="lg" disabled className={side ? "w-full" : undefined}>Vault opening</Button>
+  ) : !isConnected || chainId !== robinhoodChain.id ? (
+    <WalletButton size="lg" label={!isConnected ? "Connect wallet" : undefined} className={side ? "w-full" : undefined} />
+  ) : (
+    <Button size="lg" className={side ? "w-full" : undefined} disabled={!parsedAmount || overBalance || overCap || overRoom || busy || readsLoading || (usdgMode && !quoteReady)} onClick={submit}>
+      {busy ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {tx.phase === "signing" ? "Confirm in your wallet" : "Waiting for the chain"}</> : actionLabel}
+    </Button>
+  );
+
+  const estimateEl = (
+    <div className="min-w-0 text-[13px] leading-5">
+      {tab === "deposit" ? (
+        parsedAmount ? (
+          <>
+            <p className="text-[15px] font-medium"><span className="figure">{num(amountNum, 4)} {unit}</span> <span className="text-mute">≈</span> <span className={cn("figure", toneClass(yearly))}>{usdSigned(yearly)} a year</span></p>
+            <p className="text-mute">at the <Term id="worstHalf">worst-half</Term> rate, <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span>, on <span className="figure">{usd(amountUsd, { compact: false })}</span></p>
+          </>
+        ) : (
+          <>
+            <p className="text-[15px] font-medium"><Term id="worstHalf">Worst-half</Term> rate <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span> a year</p>
+            <p className="text-mute">Enter an amount to see it in dollars.</p>
+          </>
+        )
+      ) : (
+        <>
+          <p className="text-[15px] font-medium">Exit in kind is always open</p>
+          <p className="text-mute">Your share of both tokens, even when the price feed is stale.</p>
+        </>
+      )}
+    </div>
+  );
+
+  const factsEl = (
+    <dl className={cn("text-[13px] leading-5", side ? "border-t border-hairline pt-1" : "col-span-2 flex flex-wrap gap-x-5 lg:order-4 lg:shrink-0 lg:flex-col")}>
+      <div className={cn("flex gap-2", side && "justify-between border-b border-hairline py-2")}><dt className="text-mute">Vault size</dt><dd className="figure">{sizeCap}</dd></div>
+      <div className={cn("flex gap-2", side && "justify-between border-b border-hairline py-2")}><dt className="text-mute">Per-deposit limit</dt><dd className="figure">{limit}</dd></div>
+      {side && <div className="flex justify-between gap-2 py-2"><dt className="text-mute">Recentres</dt><dd>02:00 UTC after each NYSE session</dd></div>}
+    </dl>
+  );
+
+  const detailsEl = detailsOpen ? (
+    <div className={cn("text-[13px] leading-5", side ? "border-t border-hairline pt-3" : "mb-3 max-h-[32dvh] overflow-y-auto border-b border-hairline pb-3")} aria-live="polite">
+      {parsedAmount ? (
+        <>
+          <p className="font-semibold text-fg">Before you sign</p>
+          <ul className="mt-1 space-y-1 text-mute">{summary.map((l) => <li key={l}>{l}</li>)}</ul>
+          {usdgMode && (
+            <p id="quote-help" className="figure mt-1 text-mute">
+              {quoteReady && quotedStock !== undefined && minShares !== undefined
+                ? `About ${num(Number(formatUnits(quotedStock, DECIMALS)), 6)} ${cfg.symbol} deposited, at least ${num(Number(formatUnits(minShares, SHARE_DECIMALS)), 6)} shares`
+                : priceUsd === undefined || priceUsd <= 0
+                  ? "Quote unavailable. USDG deposits need a live price."
+                  : "Quote unavailable. Deposits need a share estimate."}
+            </p>
+          )}
+          <p className="mt-1 text-mute">Stock Tokens are not offered to US persons. Check that you are eligible in your country before depositing.</p>
+        </>
+      ) : null}
+      <TxStatus tx={tx} />
+    </div>
+  ) : null;
+
+  const openingNote = opening ? <p className={cn("mt-2 text-[13px] text-mute", !side && "hidden sm:block")}>The {cfg.symbol} vault is opening. Deposits unlock here the moment its address is live on Robinhood Chain.</p> : null;
+
+  if (side) {
+    return (
+      <div role="region" aria-label={`Deposit and withdraw ${cfg.symbol}`}>
+        {closed ? (
+          <div className="space-y-4">
+            <div>
+              <p className="font-semibold">Deposits are closed</p>
+              <p className="mt-1 text-[13px] leading-5 text-mute">{gate.reason}</p>
+            </div>
+            <Button size="lg" className="w-full" disabled>Deposits closed</Button>
+            {factsEl}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {tabsEl}
+            {payEl}
+            {amountEl}
+            {estimateEl}
+            {ctaEl}
+            {factsEl}
+            {openingNote}
           </div>
         )}
+        {detailsEl ? <div className="mt-4">{detailsEl}</div> : null}
+      </div>
+    );
+  }
 
+  return (
+    <div className="sticky bottom-[var(--ticker-h)] z-10 border-t border-line bg-panel" role="region" aria-label={`Deposit and withdraw ${cfg.symbol}`}>
+      <div className="mx-auto max-w-[1280px] px-6 py-3 sm:py-4">
+        {detailsEl}
         {closed ? (
           <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
             <p className="max-w-[760px] text-[13px] leading-5 text-mute"><span className="font-semibold text-fg">Deposits are closed. </span>{gate.reason}</p>
@@ -273,98 +430,16 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
         ) : (
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-2 lg:flex lg:items-center lg:gap-x-5">
             <div className="col-span-2 flex items-center justify-between gap-4 lg:col-auto lg:shrink-0 lg:justify-start lg:gap-5">
-              <Tabs value={tab} onValueChange={(v) => { setTab(v as "deposit" | "withdraw"); setTx({ phase: "idle" }); setAmount(""); }}>
-                <TabsList aria-label="Deposit or withdraw">
-                  <TabsTrigger value="deposit">Deposit</TabsTrigger>
-                  <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
-                </TabsList>
-                <TabsContent value="deposit" />
-                <TabsContent value="withdraw" />
-              </Tabs>
-              {tab === "deposit" && ROUTER && (
-                <div role="group" aria-label="Pay with" className="flex gap-0.5 rounded-full bg-raised p-0.5">
-                  {([["stock", cfg.symbol], ["usdg", "USDG"]] as const).map(([mode, label]) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      aria-pressed={payWith === mode}
-                      onClick={() => switchPay(mode)}
-                      className={cn("press h-8 rounded-full px-3 text-[13px] font-semibold", payWith === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {tabsEl}
+              {payEl}
             </div>
-
-            <div className="min-w-0 lg:w-[270px] lg:shrink-0">
-              <label htmlFor="amount" className="flex items-baseline justify-between text-[13px] leading-5 text-mute">
-                <span>{tab === "deposit" ? "To deposit" : "To withdraw"}</span>
-                {maxIn !== undefined && (
-                  <button type="button" className="figure underline underline-offset-4 hover:text-fg" onClick={() => setAmount(formatUnits(maxIn, payDecimals))}>
-                    {tab === "deposit" ? "Balance" : "Available"} {num(Number(formatUnits(maxIn, payDecimals)), 6)} · Max
-                  </button>
-                )}
-              </label>
-              <div className="flex h-11 items-center rounded-lg border border-line bg-canvas focus-within:border-fg">
-                <input
-                  id="amount"
-                  inputMode="decimal"
-                  autoComplete="off"
-                  placeholder="0.0"
-                  value={amount}
-                  disabled={!vault || busy}
-                  onChange={(e) => { setAmount(e.target.value.trim()); if (tx.phase !== "idle" && !busy) setTx({ phase: "idle" }); }}
-                  className="figure h-full min-w-0 flex-1 bg-transparent px-3 text-[17px] outline-none placeholder:text-mute disabled:opacity-60"
-                  aria-invalid={overBalance || overCap || overRoom}
-                  aria-describedby={help ? "amount-help" : undefined}
-                />
-                <span className="pr-3 text-[15px] font-semibold">{unit}</span>
-              </div>
-              {help && <p id="amount-help" className={cn("figure mt-1 text-[12px] leading-4", help.tone)}>{help.text}</p>}
-            </div>
-
-            <div className="lg:order-5 lg:shrink-0">
-              {opening ? (
-                <Button size="lg" disabled>Vault opening</Button>
-              ) : !isConnected || chainId !== robinhoodChain.id ? (
-                <WalletButton size="lg" label={!isConnected ? "Connect wallet" : undefined} />
-              ) : (
-                <Button size="lg" disabled={!parsedAmount || overBalance || overCap || overRoom || busy || readsLoading || (usdgMode && !quoteReady)} onClick={submit}>
-                  {busy ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {tx.phase === "signing" ? "Confirm in your wallet" : "Waiting for the chain"}</> : actionLabel}
-                </Button>
-              )}
-            </div>
-            <div className="col-span-2 min-w-0 text-[13px] leading-5 lg:order-3 lg:flex-1">
-              {tab === "deposit" ? (
-                parsedAmount ? (
-                  <>
-                    <p className="text-[15px] font-medium"><span className="figure">{num(amountNum, 4)} {unit}</span> <span className="text-mute">≈</span> <span className={cn("figure", toneClass(yearly))}>{usdSigned(yearly)} a year</span></p>
-                    <p className="text-mute">at the worst-half rate, <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span>, on <span className="figure">{usd(amountUsd, { compact: false })}</span></p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[15px] font-medium">Worst-half rate <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span> a year</p>
-                    <p className="text-mute">Enter an amount to see it in dollars.</p>
-                  </>
-                )
-              ) : (
-                <>
-                  <p className="text-[15px] font-medium">Exit in kind is always open</p>
-                  <p className="text-mute">Your share of both tokens, even when the price feed is stale.</p>
-                </>
-              )}
-            </div>
-
-            <dl className="col-span-2 flex flex-wrap gap-x-5 text-[13px] leading-5 lg:order-4 lg:shrink-0 lg:flex-col">
-              <div className="flex gap-2"><dt className="text-mute">Vault size</dt><dd className="figure">{sizeCap}</dd></div>
-              <div className="flex gap-2"><dt className="text-mute">Per-deposit limit</dt><dd className="figure">{limit}</dd></div>
-            </dl>
-
+            {amountEl}
+            <div className="lg:order-5 lg:shrink-0">{ctaEl}</div>
+            <div className="col-span-2 lg:order-3 lg:col-auto lg:flex-1">{estimateEl}</div>
+            {factsEl}
           </div>
         )}
-        {opening && <p className="mt-2 text-[13px] text-mute">The {cfg.symbol} vault is opening. Deposits unlock here the moment its address is live on Robinhood Chain.</p>}
+        {openingNote}
       </div>
     </div>
   );
