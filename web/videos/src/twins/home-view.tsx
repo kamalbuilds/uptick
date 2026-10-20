@@ -6,8 +6,13 @@ import { cn } from "@/lib/utils";
 import { byState, GATE_COUNTS, isoDay, REPLAY_WINDOW, REPLAYED_SWAPS, type Vault } from "../data";
 import { enter } from "../motion";
 
-/** vault-row.tsx ROW_GRID, copied: that file imports next/link, which a film cannot load. */
-const ROW_GRID = "grid grid-cols-[52px_minmax(0,1fr)_68px] items-center gap-x-3 sm:grid-cols-[64px_minmax(0,1fr)_minmax(180px,300px)_72px] sm:gap-x-5";
+/**
+ * vault-row.tsx ROW_GRID, copied (that file imports next/link, which a film cannot load) with the bar track capped at 240 px
+ * instead of 300 (and 190 at most) so the whole row fits the film's narrower column. Columns are inline styles: a new arbitrary class here
+ * would be picked up by the web app's own Tailwind scan of this folder.
+ */
+const ROW_GRID = "grid items-center";
+const ROW_COLUMNS = { gridTemplateColumns: "64px minmax(0,1fr) minmax(160px,190px) 72px", columnGap: 20 } as const;
 
 /**
  * Twin of RowBar (components/ledger.tsx): same markup and geometry (lib/leak.ts rowBar), with the bar growing from the zero tick.
@@ -38,12 +43,12 @@ export type RowAnim = { show: number; grow: number };
 export function RowTwin({ cfg, a, tickerHidden = false, target }: { cfg: Vault; a: RowAnim; tickerHidden?: boolean; target?: string }) {
   const keep = cfg.gate.worstHalfApr;
   return (
-    <div className={`${ROW_GRID} min-h-[52px] border-b border-hairline py-2`} style={enter(a.show, 10)} data-target={target}>
+    <div className={`${ROW_GRID} min-h-[52px] border-b border-hairline py-2`} style={{ ...ROW_COLUMNS, ...enter(a.show, 10) }} data-target={target}>
       <span>
         <span className="block font-semibold" data-target={target ? `${target}-ticker` : undefined} style={{ opacity: tickerHidden ? 0 : 1 }}>{cfg.symbol}</span>
       </span>
-      <span className="hidden min-w-0 truncate text-mute sm:block">{cfg.name.replace(" Stock Token", "")}, {cfg.feeTier}</span>
-      <span className="col-start-2 h-8 sm:col-start-auto">
+      <span className="min-w-0 truncate text-mute">{cfg.name.replace(" Stock Token", "")}, {cfg.feeTier}</span>
+      <span className="h-8">
         <RowBarTwin keep={keep} grow={a.grow} />
       </span>
       <span className="text-right text-[17px] font-medium"><Kept value={keep} /></span>
@@ -95,6 +100,8 @@ function Heading({ h }: { h: HeadingAnim }) {
 export type HomeAnim = {
   heading: HeadingAnim;
   intro: number;
+  /** Opacity of the whole left column (heading and sentence), so it can leave before the camera pans down the list. */
+  left?: number;
   header: number;
   open: number;
   reduced: number;
@@ -124,8 +131,8 @@ export function HomeTwin({ a }: { a: HomeAnim }) {
     { title: "Reduced", rows: reduced, anim: a.reduced },
   ];
   return (
-    <section className="mx-auto grid max-w-[1280px] gap-x-16 gap-y-10 lg:grid-cols-[340px_minmax(0,1fr)]">
-      <div>
+    <section className="grid gap-y-10" style={{ gridTemplateColumns: "300px minmax(0,1fr)", columnGap: 48 }}>
+      <div style={{ opacity: a.left ?? 1 }}>
         <Heading h={a.heading} />
         <p className="mt-5 text-mute" style={enter(a.intro, 12)}>
           Every vault sits behind one of three doors, set by {swapsLabel(REPLAYED_SWAPS)} swaps replayed over the {REPLAY_WINDOW.days} days to {isoDay(REPLAY_WINDOW.end)}.{" "}
@@ -135,9 +142,9 @@ export function HomeTwin({ a }: { a: HomeAnim }) {
 
       <div>
         <div className="mb-4" style={enter(a.header, 8)}>
-          <div className={`${ROW_GRID} pb-2 text-[13px] text-mute`}>
+          <div className={`${ROW_GRID} pb-2 text-[13px] text-mute`} style={ROW_COLUMNS}>
             <span className="col-span-2">You keep a year, weaker half</span>
-            <span className="hidden sm:block"><RowAxis /></span>
+            <span><RowAxis /></span>
             <span className="text-right" />
           </div>
         </div>

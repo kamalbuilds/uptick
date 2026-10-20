@@ -1,9 +1,9 @@
 import universe from "./vault-universe.snapshot.json";
 
 /**
- * A frozen copy of web/lib/vault-universe.json as committed at the replay the films announce (30 days to 2026-10-17, 17 vaults: 2 open, 5 reduced, 10 closed).
- * The site file is regenerated whenever the keeper replays again; a film is a dated artifact and keeps the numbers it was approved with.
- * Only what the films draw is mapped here; lib/vaults.ts pulls in viem and env, which a film must not.
+ * A frozen copy of web/lib/vault-universe.json as committed in 41b53ee (per-token bands, replay 30 days to 2026-10-17):
+ * 17 vaults, 2 open, 9 reduced, 6 closed. The site file is regenerated whenever the keeper replays again; a film is a dated artifact
+ * and keeps the numbers it was approved with. Only what the films draw is mapped here; lib/vaults.ts pulls in viem and env, which a film must not.
  */
 export type GateState = "open" | "reduced" | "closed";
 
@@ -41,6 +41,7 @@ export const REPLAYED_SWAPS = universe.vaults.reduce((n, v) => n + (v.gate?.swap
 
 export const byState = (state: GateState) => BY_KEEP.filter((v) => v.gate.state === state);
 
-const found = VAULTS.find((v) => v.symbol === "NVDA");
-if (!found) throw new Error("NVDA is missing from vault-universe.json");
-export const NVDA: Vault = found;
+/** The vault both films follow: the best-kept open door. */
+const found = VAULTS.find((v) => v.symbol === "AAPL");
+if (!found) throw new Error("AAPL is missing from vault-universe.json");
+export const AAPL: Vault = found;

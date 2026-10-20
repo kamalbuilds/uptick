@@ -1,7 +1,7 @@
 import { AbsoluteFill } from "remotion";
 
 import type { FilmProps } from "../../Root";
-import { NVDA } from "../../data";
+import { AAPL } from "../../data";
 import { TargetLog } from "../../kit/debug";
 import { useTime } from "../../kit/time";
 import { fall, rise } from "../../motion";
@@ -14,7 +14,7 @@ const ZOOM = 2; // 480 design px -> 960 screen px, 60 px margin each side
 const PASS_LENGTH = 0.5;
 const DIM = 0.45;
 
-/** Fee-loop film: 1:1, 8 s, seamless. Only the NVDA "Where a year of fees goes" figure moves; its heading and label sit still, so the loop closes on frame 0. */
+/** Fee-loop film: 1:1, 8 s, seamless. Only the AAPL "Where a year of fees goes" figure moves; its heading and label sit still, so the loop closes on frame 0. */
 export function FeeLoop({ debug }: FilmProps) {
   const t = useTime();
   // After the exit the figure is reset to the empty state it starts from, so the last frame equals the first.
@@ -38,11 +38,11 @@ export function FeeLoop({ debug }: FilmProps) {
     <AbsoluteFill style={{ background: "#0a0b0c", overflow: "hidden" }}>
       <div style={{ position: "absolute", left: 0, top: 0, width: WIDTH, transformOrigin: "0 0", translate: `${(1080 - WIDTH * ZOOM) / 2}px 130px`, scale: String(ZOOM) }}>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1 className="text-[32px] font-medium leading-10 tracking-[-0.33px]">{NVDA.symbol} vault</h1>
-          <StateChip state={NVDA.gate.state} />
+          <h1 className="text-[32px] font-medium leading-10 tracking-[-0.33px]">{AAPL.symbol} vault</h1>
+          <StateChip state={AAPL.gate.state} />
         </div>
         <div className="mt-12" data-target="leak">
-          <LeakFigureTwin cfg={NVDA} a={a} stacked />
+          <LeakFigureTwin cfg={AAPL} a={a} stacked barPx={WIDTH} />
         </div>
       </div>
       {debug ? <TargetLog /> : null}

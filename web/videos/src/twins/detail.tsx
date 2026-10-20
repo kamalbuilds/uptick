@@ -26,7 +26,11 @@ export function VaultHeaderTwin({ cfg, a }: { cfg: Vault; a: { rest: number; tic
   );
 }
 
-/** The verdict sentence of vault-detail.tsx without its door sentence, word by word. Every word keeps its slot, so the lines never re-flow while it builds. */
+/**
+ * The verdict of vault-detail.tsx, word by word, with its door sentence (doorSentence for a vault that is not deployed yet:
+ * an open door reads "Its vault is opening."). Every word keeps its slot, so the lines never re-flow while it builds.
+ */
+export const VERDICT_WORDS = 13;
 export function VerdictTwin({ cfg, t, at }: { cfg: Vault; t: number; at: readonly number[] }) {
   const worst = cfg.gate.worstHalfApr;
   const words: { text: string; tone?: string }[] = [
@@ -39,6 +43,10 @@ export function VerdictTwin({ cfg, t, at }: { cfg: Vault; t: number; at: readonl
     { text: "its" },
     { text: "weaker" },
     { text: "half." },
+    { text: "Its" },
+    { text: "vault" },
+    { text: "is" },
+    { text: "opening." },
   ];
   return (
     <p className="serif max-w-[900px] text-[30px] font-normal leading-[34px] sm:text-[44px] sm:leading-[48px]" data-target="verdict">

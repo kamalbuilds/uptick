@@ -6,9 +6,9 @@ Sources: https://uptick-fi.pages.dev, `web/DESIGN.md` (locked design system, win
 ## The brief (interview answers supplied by the launching agent)
 - Plays: Launch is an X post, muted autoplay. Fee-loop is a seamless loop. Format: Launch 16:9 1920x1080, 20 s. Fee-loop 1:1 1080x1080, 8 s.
 - Music: silent, no voiceover. Both read with the sound off.
-- Must show: the three doors list with to-scale bars, NVDA, the fee-split bar, the gate scale, the verdict line, the end card.
-- Ingredients: UI only plus the wordmark. Words are the product's own UI text and its serif verdict. Scenes connect with camera moves and one magic move (the NVDA ticker). No cursor, no partner logos, no texture.
-- Ending (Launch): the wordmark "Uptick" and `uptick-fi.pages.dev`. Fee-loop has none: it folds back to its first frame.
+- Must show: the three doors list with to-scale bars (2 open, 9 reduced, 6 closed), AAPL, the fee-split bar, the gate scale, the verdict line, the end card.
+- Ingredients: UI only plus the wordmark. Words are the product's own UI text and its serif verdict. Scenes connect with camera moves and one magic move (the AAPL ticker). No cursor, no partner logos, no texture.
+- Ending (Launch): the README line "Put your stock tokens to work." in the site's serif, then the wordmark "Uptick" and `uptick-fi.pages.dev` under one hairline. Fee-loop has none: it folds back to its first frame.
 
 ## Hard rules
 - Casing: sentence case, no uppercase caps labels (web/DESIGN.md refusals).
@@ -20,7 +20,7 @@ Sources: https://uptick-fi.pages.dev, `web/DESIGN.md` (locked design system, win
 - Claims: see Claims.
 
 ## Frame
-- Framing: full bleed on `#0a0b0c`. A twin is laid out at the site's own CSS px and scaled: home 1.5x (1160 design px), vault page 1.85x (930 design px), fee-loop 2x (480 design px). Content stays 75 px or more from the edges at rest.
+- Framing: full bleed on `#0a0b0c`. A twin is laid out at the site's own CSS px and scaled: home overview 1.8x then the list alone at 2.1x (980 design px column), vault page 1.85x (930 design px), fee-loop 2x (480 design px). Content stays 75 px or more from the edges at rest.
 - No wallet button, no wallet state anywhere (owner rule).
 
 ## Color
@@ -41,7 +41,7 @@ Hex only for anything that animates (`src/tokens.ts`). Classes in twins use the 
 
 ## Type
 - Fonts: the two variable woff2 files the site ships (next/font latin subsets) copied to `public/fonts/`, loaded by `src/fonts.ts`.
-- Sizes: the site's own px at the film scale. At 1080p the smallest label is 13 x 1.5 = 19.5 px (home), 24 px on the vault page, 26 px in the loop.
+- Sizes: the site's own px at the film scale. At 1080p the smallest label is 13 x 1.8 = 23.4 px on the home overview, 27 px on the list, 24 px on the vault page, 26 px in the loop.
 
 ## Components
 | Need | Component | In films |
@@ -59,14 +59,15 @@ Hex only for anything that animates (`src/tokens.ts`). Classes in twins use the 
 - Entrances are opacity, a short blur and a small lift. No glow, no particles, no bounce.
 
 ## Claims
-- The film may show: 17 vaults gated by a replay of the chain's own swaps (30 days to 2026-10-17), 2 open, 5 reduced, 10 closed; each vault's kept figure in its weaker half; NVDA fees 40.9% a year, 31.1% lost to informed traders, 2.8% recentring, kept +6.9% over 30 days and +1.8% in its weaker half.
+- The film may show: 17 vaults gated by a replay of the chain's own swaps (30 days to 2026-10-17, per-token bands, commit 41b53ee), 2 open, 9 reduced, 6 closed; each vault's kept figure in its weaker half; AAPL fees 18.8% a year, 13.9% lost to informed traders, 1.7% recentring, kept +3.2% over 30 days and +2.7% in its weaker half.
 - The film never shows: a deposit confirming, a transaction, a wallet address or state, live deposits, mainnet.
-- Approved lines: "Which of your stock tokens can earn, and how much you would keep." (home h1), "NVDA kept +1.8% a year in its weaker half." (vault verdict without its door sentence).
+- Approved lines: "Which of your stock tokens can earn, and how much you would keep." (home h1), "AAPL kept +2.7% a year in its weaker half. Its vault is opening." (vault verdict with the door sentence the site shows for a vault that is not deployed), "Put your stock tokens to work." (README).
 - Words to avoid: anything promising a yield.
 
 ## Workspace
 - `web/videos` is its own package (pnpm, `--ignore-workspace`), Remotion 4.0.537 and every `@remotion/*` at that exact version. `web/tsconfig.json` excludes `videos` so the app build never compiles it.
 - `webpack-override.ts` enables Tailwind v4 through Remotion's bundled copy, aliases `@` to the web root and pins one React.
 - `src/styles.css` imports the site's `app/globals.css`.
+- Data: `src/vault-universe.snapshot.json` is a frozen copy of `web/lib/vault-universe.json` at 41b53ee. Refresh it deliberately when the replay changes.
 - Scripts: `scripts/stills.ts` (review stills, `--debug` prints `[data-target]` boxes), `scripts/sheet.sh` (contact sheet), `scripts/media.ts` (Node API render; the `remotion render` CLI hung at "Getting composition" here), `scripts/render.ts` (240 fps master, tmix motion blur, X-ready H.264), `scripts/verify.py`, `scripts/beat-sheet.ts`.
 - Output: `out/<film>/vN/` (gitignored). Deliveries: `brand/x/films/`.

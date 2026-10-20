@@ -9,7 +9,7 @@ import { enter } from "../motion";
  * Frame-driven twin of web/components/leak-bar.tsx (LeakFigure). Same markup, classes and geometry (lib/leak.ts leakBar);
  * the difference is the clock: every segment, label and legend entry is drawn from the 0..1 values in `a`.
  * The fee total fills first as one neutral bar (`bg-line`, the control border), then each part takes its colour left to right.
- * At a = ALL_IN the output matches LeakFigure. `overdrawn` vaults (kept below zero) are not handled: NVDA keeps +6.9%.
+ * At a = ALL_IN the output matches LeakFigure. `overdrawn` vaults (kept below zero) are not handled: AAPL keeps +3.2%.
  */
 export type Triple = readonly [number, number, number];
 export type LeakAnim = {
@@ -38,7 +38,8 @@ const TONE = {
 
 const KEYS = ["kept", "cost", "markout"] as const;
 
-export function LeakFigureTwin({ cfg, a, stacked = false }: { cfg: Vault; a: LeakAnim; stacked?: boolean }) {
+/** `barPx` is the bar's width in design px: a part too narrow for its label in this layout goes without it, as the site's own legend carries the figure. */
+export function LeakFigureTwin({ cfg, a, stacked = false, barPx = Infinity }: { cfg: Vault; a: LeakAnim; stacked?: boolean; barPx?: number }) {
   const { feeApr, markoutApr, costApr, keptApr } = cfg.keep;
   const bar = leakBar({ feeApr, markoutApr, costApr, keptApr });
   if (bar.overdrawn) throw new Error(`${cfg.symbol} kept less than nothing; the twin draws the kept-positive bar only`);
@@ -53,7 +54,7 @@ export function LeakFigureTwin({ cfg, a, stacked = false }: { cfg: Vault; a: Lea
     return part;
   });
   const labelOf = (s: (typeof parts)[number]["s"]) =>
-    s.widthPct < 9 ? null : s.key === "markout" ? signed(-s.value) : s.key === "cost" ? (s.widthPct >= 18 ? <>Recentring {pct(s.value)}</> : pct(s.value)) : signed(s.value);
+    s.widthPct < 9 || (s.widthPct / 100) * barPx < 60 ? null : s.key === "markout" ? signed(-s.value) : s.key === "cost" ? (s.widthPct >= 18 ? <>Recentring {pct(s.value)}</> : pct(s.value)) : signed(s.value);
 
   return (
     <section>

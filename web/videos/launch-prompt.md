@@ -16,12 +16,12 @@ Banned: wallet state, deposits confirming, glow, gradients, anything the site do
 
 <structure>
 Bars 1-2 (0-3 s), the question. "Which of your / stock tokens / can earn?" lands one line group per beat on the home page's own heading at large scale. At bar 2 the "?" becomes the comma and the rest of the sentence lands.
-Bars 2-4 (2.5-6 s), the three doors. The camera pulls back; the sentence, the Open, Reduced and "10 closed" doors build in, each row's bar growing to scale from the zero tick.
-Bar 4 (6-7 s), zoom into NVDA. Rows step back; the ticker travels into the vault page title.
-Bars 5-6 (8-10.5 s), where a year of fees goes. +40.9% fills the bar as one total, then kept +6.9%, recentring 2.8% and informed traders -31.1% take their colours.
-Bars 6-7 (10.5-13.7 s), the verdict. "NVDA kept +1.8% a year in its weaker half." word by word.
-Bars 8-9 (14-16.5 s), the gate scale. Closed, Reduced, Open bands; the weaker half marker lands in Open.
-Bars 9-10 (16.5-20 s), end card. "Uptick" and `uptick-fi.pages.dev`.
+Bars 2-4 (2-7 s), the three doors. The camera pulls back, then the heading leaves and the camera follows the build down the list: Open 2, Reduced 9 (rows every 0.3 s, bars growing to scale from the zero tick), 6 closed.
+Bars 4-5 (7-8 s), zoom into AAPL. Rows step back; the ticker travels into the vault page title.
+Bars 5-6 (8.5-10.5 s), where a year of fees goes. +18.8% fills the bar as one total, then kept +3.2%, recentring 1.7% and informed traders -13.9% take their colours.
+Bars 6-7 (10.5-14 s), the verdict. "AAPL kept +2.7% a year in its weaker half. Its vault is opening." word by word.
+Bar 8 (14-16 s), the gate scale. Closed, Reduced, Open bands; the weaker half marker lands in Open.
+Bars 9-10 (16-20 s), end card. "Put your stock tokens to work.", then "Uptick" and `uptick-fi.pages.dev`.
 </structure>
 
 <gotchas>
