@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Article, DataTable, H2, P, SourceRef, Sources, TLDR } from "@/components/prose";
+import { Article, DataTable, H2, P, SourceRef, Sources, TLDR, PostFooter } from "@/components/prose";
 
 export const metadata: Metadata = {
   title: "Who liquidity providers lose to | Uptick",
@@ -140,6 +140,7 @@ export default function WhoLpsLoseToPage() {
           post-hoc checks.
         </SourceRef>
       </Sources>
+      <PostFooter slug="who-lps-lose-to" />
     </Article>
   );
 }

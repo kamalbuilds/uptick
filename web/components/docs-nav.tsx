@@ -28,7 +28,7 @@ function DocList({ pathname }: { pathname: string }) {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`block rounded-lg px-2.5 py-2 text-sm leading-5 transition-colors ${
+                    className={`block min-h-11 rounded-lg px-2.5 py-2.5 text-sm leading-5 lg:min-h-0 lg:py-2 transition-colors ${
                       active
                         ? "bg-primary-pale font-semibold text-ink"
                         : "text-body hover:bg-sage hover:text-ink"

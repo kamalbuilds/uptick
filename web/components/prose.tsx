@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { POSTS } from "@/lib/content";
 import type { ReactNode } from "react";
 
 function anchorFor(text: string): string {
@@ -28,7 +30,7 @@ export function Article({
         {eyebrow ? (
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-body">{eyebrow}</p>
         ) : null}
-        <h1 className="mt-3 display text-[clamp(2.6rem,6vw,4.4rem)] leading-[0.94]">{title}</h1>
+        <h1 className="mt-3 display text-[clamp(2.6rem,6vw,4.4rem)] leading-[1.02] [overflow-wrap:anywhere] sm:leading-[0.94]">{title}</h1>
         {lede ? <p className="mt-5 text-lg leading-8 text-body sm:text-xl">{lede}</p> : null}
         {date || author ? (
           <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-mute">
@@ -172,7 +174,7 @@ export function Figure({ children, caption }: { children: ReactNode; caption: st
 
 export function Code({ children }: { children: ReactNode }) {
   return (
-    <code className="rounded bg-sage px-1.5 py-0.5 figure text-[0.88em] text-ink">{children}</code>
+    <code className="rounded bg-sage px-1.5 py-0.5 figure text-[0.88em] text-ink [overflow-wrap:anywhere]">{children}</code>
   );
 }
 
@@ -206,5 +208,22 @@ export function Sources({ children }: { children: ReactNode }) {
       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-body">Sources</p>
       <div className="mt-2 space-y-1">{children}</div>
     </section>
+  );
+}
+
+/** End of a research post: back to the index and on to the next post, so a reader never dead-ends. */
+export function PostFooter({ slug }: { slug: string }) {
+  const i = POSTS.findIndex((p) => p.slug === slug);
+  const next = POSTS[(i + 1) % POSTS.length];
+  return (
+    <nav aria-label="More research" className="mt-16 flex max-w-[68ch] flex-col gap-3 border-t border-sage-line pt-6 sm:flex-row sm:items-start sm:justify-between">
+      <Link href="/research" className="text-sm font-semibold text-ink underline-offset-4 hover:underline">All research</Link>
+      {next && next.slug !== slug ? (
+        <Link href={`/research/${next.slug}`} className="group max-w-sm sm:text-right">
+          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-body">Next</span>
+          <span className="mt-1 block font-semibold text-ink underline-offset-4 group-hover:underline">{next.title}</span>
+        </Link>
+      ) : null}
+    </nav>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Article, DataTable, H2, P, SourceRef, Sources, TLDR } from "@/components/prose";
+import { Article, DataTable, H2, P, SourceRef, Sources, TLDR, PostFooter } from "@/components/prose";
 import universe from "@/lib/vault-universe.json";
 
 const usd = (n: number) =>
@@ -166,6 +166,7 @@ export default function SizingVaultsToPoolsPage() {
           The 17 caps and gate states at block 93099228, built from the keeper universe and replay.
         </SourceRef>
       </Sources>
+      <PostFooter slug="sizing-vaults-to-pools" />
     </Article>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Article, DataTable, H2, P, SourceRef, Sources, TLDR } from "@/components/prose";
+import { Article, DataTable, H2, P, SourceRef, Sources, TLDR, PostFooter } from "@/components/prose";
 
 export const metadata: Metadata = {
   title: "Why 02:00 UTC | Uptick",
@@ -131,6 +131,7 @@ export default function Why0200UtcPage() {
           NYSE sessions, holidays, early closes and the 02:00 UTC slot.
         </SourceRef>
       </Sources>
+      <PostFooter slug="why-0200-utc" />
     </Article>
   );
 }
