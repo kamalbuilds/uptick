@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { formatUnits, parseUnits, zeroAddress, type Hash } from "viem";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, usePublicClient, useReadContract, useReadContracts, useWriteContract } from "wagmi";
 import { CheckCircle, CircleNotch, WarningCircle, ArrowSquareOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   const { address, isConnected, chainId } = useAccount();
   const client = usePublicClient({ chainId: robinhoodChain.id });
   const { writeContractAsync } = useWriteContract();
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
   const [payWith, setPayWith] = useState<"stock" | "usdg">("stock");
   const [amount, setAmount] = useState("");
@@ -186,7 +188,10 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
       const receipt = await waitForReceipt(client, hash);
       if (receipt.status !== "success") throw new Error("The transaction reverted on-chain.");
       setTx({ phase: "confirmed", label, hash });
-      await Promise.all([reads.refetch(), usdgReads.refetch(), usdgPreview.refetch()]);
+      // The USDG reads are disabled in stock mode; awaiting their refetch never settled and left the amount uncleared after a deposit.
+      await Promise.all([reads.refetch(), ...(usdgMode ? [usdgReads.refetch(), usdgPreview.refetch()] : [])]);
+      // The exit card reads the same vault; refresh it now, since polling pauses in a background tab and lags by its interval in a foreground one.
+      void queryClient.invalidateQueries({ queryKey: ["readContracts"] });
       if (label !== "Approval") setAmount("");
     } catch (err) {
       setTx({ phase: "failed", label, error: usdgMode ? depositError(err) : errMessage(err), hash });
