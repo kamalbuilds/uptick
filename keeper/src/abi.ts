@@ -9,6 +9,11 @@ export const vaultAbi = parseAbi([
   "function pricePerShare() view returns (uint256)",
   "event Rebalanced(int24 tickLower, int24 tickUpper, uint256 fees0, uint256 fees1)",
   "event FeesCollected(uint256 fees0, uint256 fees1, uint256 feeValueInStock, uint256 treasuryShares)",
+  "error SpotOffTwap()",
+  "error OracleUnhealthy(uint8 status)",
+  "error TooSoon()",
+  "error NotKeeper()",
+  "error SwapBelowMinimum(uint256 got, uint256 wanted)",
 ]);
 
 export const poolAbi = parseAbi([

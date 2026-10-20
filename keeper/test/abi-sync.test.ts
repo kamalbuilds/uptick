@@ -14,3 +14,12 @@ test("every vault event and function the keeper reads exists in the compiled Sto
   const missing = used.filter((x) => !(x.type === "event" ? events : fns).has(x.type === "event" ? toEventSelector(sig(x)) : toFunctionSelector(sig(x)))).map(sig);
   expect(missing).toEqual([]);
 });
+
+test("every custom error the keeper decodes exists in the compiled StockVault ABI", () => {
+  const contract = compiled.abi as readonly { type: string; name?: string; inputs?: { type: string }[] }[];
+  const errors = new Set(contract.filter((x) => x.type === "error").map((x) => toFunctionSelector(`${x.name}(${x.inputs!.map((i) => i.type).join(",")})`)));
+  const used = vaultAbi.filter((x) => x.type === "error");
+  expect(used.length).toBeGreaterThan(0);
+  const missing = used.filter((x) => !errors.has(toFunctionSelector(`${x.name}(${x.inputs.map((i) => i.type).join(",")})`))).map((x) => x.name);
+  expect(missing).toEqual([]);
+});

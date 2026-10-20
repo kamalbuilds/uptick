@@ -7,6 +7,7 @@ import { loadTickers, withFactory } from "./registry.ts";
 import { recentreDue, sessionAt, nextRecentreMs } from "./calendar.ts";
 import { evaluateGuards } from "./guards.ts";
 import { log } from "./log.ts";
+import { simulateRebalance } from "./simulate.ts";
 import { priceFromTick } from "./price.ts";
 
 const DRY = process.argv.includes("--dry-run");
@@ -84,12 +85,9 @@ async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount
 
   const from: Address | undefined = account?.address ?? (process.env.VAULT_KEEPER_ADDRESS as Address | undefined);
   if (!from) return log("tick", { ...base, action: "skipped", why: "no signer: set VAULT_KEEPER_KEY (or VAULT_KEEPER_ADDRESS for dry-run simulation)" });
-  let request;
-  try {
-    ({ request } = await client.simulateContract({ address: t.vault, abi: vaultAbi, functionName: "rebalance", account: from }));
-  } catch (e) {
-    return log("simulate_failed", { ...base, action: "not_sent", error: String((e as Error).message).split("\n")[0].slice(0, 300) });
-  }
+  const sim = await simulateRebalance(client, t.vault, from);
+  if (!sim.ok) return log("simulate_failed", { ...base, action: "not_sent", error: sim.error, retry: "next_tick" });
+  const { request } = sim;
   log("simulate_ok", { ...base });
   if (DRY || !wallet || !account) return log("tick", { ...base, action: "dry_run_would_send" });
   const hash = await wallet.writeContract({ ...(request as any), account, chain: robinhood });
