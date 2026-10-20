@@ -61,7 +61,9 @@
   "decided_by": "full-replay calibration pick over 150..2000 bps (grid run 2026-10-20)",
   "decision": "keep",
   "calibration_apr": 4.84,
-  "heldout_apr": -10.77
+  "heldout_apr": -10.77,
+  "liveness_share": 0.15,
+  "liveness_reason": "deploy swap clears the Chainlink floor at every gap the 30 bp bound allows only at 15% of in-range depth (contracts/SECURITY.md R4-L2)"
  },
  "MSTR": {
   "range_bps": 350,

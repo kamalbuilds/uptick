@@ -390,7 +390,7 @@
       "entryFeeBps": 35,
       "feed": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
       "bandBps": 1500,
-      "depositCapUsd": 24118,
+      "depositCapUsd": 17025,
       "refPriceUsd": 706.86299023,
       "open": true,
       "gate": {

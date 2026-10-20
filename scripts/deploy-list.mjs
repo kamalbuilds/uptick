@@ -33,7 +33,7 @@ const gates = Object.fromEntries(
   JSON.parse(readFileSync(new URL("../web/lib/vault-universe.json", import.meta.url), "utf8")).vaults.map((v) => [v.symbol, v.gate?.state]),
 );
 
-const LIVENESS_SHARE = { META: 0.15 };
+const LIVENESS_SHARE = Object.fromEntries(Object.entries(params).filter(([, v]) => v.liveness_share).map(([k, v]) => [k, v.liveness_share]));
 
 const isDeployable = (symbol) => ["open", "reduced"].includes(gates[symbol]);
 const list = universe.tokens.filter((t) => t.eligible && (!openOnly || isDeployable(t.symbol))).map((t) => {
