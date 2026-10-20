@@ -16,9 +16,9 @@ A share is a pro-rata claim on three things the vault holds: idle balances of bo
 
 | Step | What happens |
 |---|---|
-| `deposit` / `mint` | Oracle gate, then the Stock Token is pulled in and shares are minted against the assets net of the entry fee. The fee (default: the pool's fee tier) stays in the vault, so it lifts the share price for everyone holding. `previewDeposit`, `previewMint` and `maxMint` include it to the wei. With `instantDeploy` the vault also swaps to the ratio the range needs and adds liquidity in the same transaction. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) below the TWAP; a spot above the TWAP cannot make shares cheaper, because deposits are priced at the lowest of Chainlink, TWAP and spot, so `UptickRouter.depositUsdg` can buy in the pool and deposit in one transaction at any size the pool and the Chainlink gate allow. Without `instantDeploy` the Stock Token sits idle, counted at face value, until the next rebalance. Shares minted in a block cannot be burned or transferred in that block. |
-| `rebalance()` | Keeper every `minRebalanceInterval`; anyone once 26 hours have passed since the last one. Collects fees and mints the treasury its cut, removes the position, snaps `price * (1 +- rangeBps)` to the tick spacing, swaps to the target ratio with a TWAP-based `minOut`, mints the new position with minimums derived from the same ratio. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP on either side, and while the TWAP sits more than `maxTwapOracleBps` (default 60 bp) from Chainlink, so a TWAP walked away from the feed is never traded against. |
-| `redeem` / `withdraw` | Oracle gate, harvest, then a pro-rata slice of idle balances and liquidity. The USDG leg is swapped back to the Stock Token with a Chainlink-based `minOut`. Every swap floor is the reference value less the pool fee less `slippageBps`, so a 1% pool and a 0.05% pool each keep the full `slippageBps` for price impact. `withdraw` sends exactly the requested assets; `redeem` sends the actual proceeds, between `previewRedeem` and the shares' NAV. |
+| `deposit` / `mint` | Oracle gate, then the Stock Token is pulled in and shares are minted against the assets net of the entry fee. The fee (default: 35 bp, or the pool's fee tier where that is higher) stays in the vault, so it lifts the share price for everyone holding. `previewDeposit`, `previewMint` and `maxMint` include it to the wei. With `instantDeploy` the vault also swaps to the ratio the range needs and adds liquidity in the same transaction. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) below the TWAP; a spot above the TWAP cannot make shares cheaper, because deposits are priced at the lowest of Chainlink, TWAP and spot, so `UptickRouter.depositUsdg` can buy in the pool and deposit in one transaction at any size the pool and the Chainlink gate allow. Without `instantDeploy` the Stock Token sits idle, counted at face value, until the next rebalance. Shares minted in a block cannot be burned or transferred in that block, which includes the shares `withdraw` mints back for the unspent part of the exit buffer: a whole-balance `redeem` right after a `withdraw` goes through in the next block. |
+| `rebalance()` | Keeper every `minRebalanceInterval`; anyone once 26 hours have passed since the last one. Collects fees and mints the treasury its cut, removes the position, snaps `price * (1 +- rangeBps)` to the tick spacing, swaps to the target ratio with a `minOut` set by the higher of the TWAP value and the Chainlink value of the input (less the pool fee and `slippageBps`), mints the new position with minimums derived from the same ratio. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP on either side, and while the TWAP sits more than `maxTwapOracleBps` (default 30 bp) from Chainlink, so a TWAP walked away from the feed is never traded against and a swap into a pool dragged below the feed reverts instead of filling. |
+| `redeem` / `withdraw` | Oracle gate, harvest, then a pro-rata slice of idle balances and liquidity. The USDG leg is swapped back to the Stock Token with a Chainlink-based `minOut`. Every swap floor is the reference value less the pool fee less `slippageBps`, so a 1% pool and a 0.05% pool each keep the full `slippageBps` for price impact. `withdraw` sends exactly the requested assets; `redeem` sends the actual proceeds, between `previewRedeem` and the shares' NAV. `previewRedeem` is the NAV less `exitBufferBps` less the pool's fee tier, so a normal exit on a 1% pool clears it. |
 | `redeemInKind` | The same pro-rata slice, paid out as both tokens. No oracle, no swap, no pause. If the Stock Token transfer reverts for the receiver (issuer pause or blocklist) the Stock Token leg is credited to the receiver and claimed later with `claimStockOwed(to)`. |
 
 ## Oracle gate
@@ -31,7 +31,7 @@ Every value-in and value-out path (`deposit`, `mint`, `withdraw`, `redeem`, `reb
 4. TWAP within `maxDeviationBps` of Chainlink (default 100).
 5. Spot within `maxDeviationBps` of Chainlink.
 
-`rebalance` adds a sixth check: TWAP within `maxTwapOracleBps` of Chainlink (default 60 bp, 10 to 500 bp). The default is the width that holds 95% of the 10-minute TWAP gaps measured on the NVDA and PLTR pools over 36 hours, NYSE hours and off-hours.
+`rebalance` adds a sixth check: TWAP within `maxTwapOracleBps` of Chainlink (default 30 bp, 10 to 500 bp). A walk inside the bound can take at most the bound times the one swap the rebalance makes, so the default is the narrowest the feeds' own lag allows: the 10-minute TWAP sat within 30 bp of the feed in 76% to 91% of NYSE-hours samples on the twelve vaulted pools (2-minute samples over 96 hours) and within 60 bp in 96% to 100%. The keeper retries every minute until the gap closes.
 
 `health()` returns the status and the three prices without reverting, for keepers and the app.
 
@@ -53,17 +53,17 @@ Every value-in and value-out path (`deposit`, `mint`, `withdraw`, `redeem`, `reb
 | `slippageBps` | 100 | 1 to 500 |
 | `exitBufferBps` | 30 | 0 to 200 |
 | `maxStaleness` | 90,000 s | 1 h to 7 d |
-| `twapWindow` | 600 s | 600 s to 1,800 s, and no more than the pool's observation cardinality |
+| `twapWindow` | 600 s | 600 s to 1,800 s, and shorter than the pool's observation cardinality |
 | `minRebalanceInterval` | 6 h | 1 h to 24 h |
 | `maxSpotTwapBps` (own setter) | 10 | 1 to 50 |
-| `maxTwapOracleBps` (own setter) | 60 | 10 to 500 |
-| `entryFee` (own setter, in pool-fee pips: 500 = 0.05%) | the pool's fee tier (500, 3000 or 10000) | pool fee tier to 20,000 (2%) |
+| `maxTwapOracleBps` (own setter) | 30 | 10 to 500 |
+| `entryFee` (own setter, in pool-fee pips: 500 = 0.05%) | the larger of the pool's fee tier (500, 3000 or 10000) and 3,500 (35 bp) | pool fee tier to 20,000 (2%) |
 
 Shares carry 24 decimals: the Stock Token's 18 plus a 6-digit virtual-share offset that makes first-depositor donation attacks cost more than they take.
 
 ## Views for the app
 
-`positionInfo()`, `totalValueInUSDG()`, `feesEarnedLifetime()`, `currentRange()`, `pricePerShare()`, `health()`, plus the ERC-4626 set. Events: `Deposited`, `Withdrawn`, `RedeemedInKind`, `Rebalanced(tickLower, tickUpper, fees0, fees1)`, `FeesCollected`, and the standard `Deposit` / `Withdraw`.
+`positionInfo()`, `totalValueInUSDG()`, `feesEarnedLifetime()`, `currentRange()`, `pricePerShare()`, `health()`, plus the ERC-4626 set. Events: the standard `Deposit` / `Withdraw`, `RedeemedInKind`, `Rebalanced(tickLower, tickUpper, fees0, fees1)` and `FeesCollected`.
 
 ## Addresses (chain 4663)
 
