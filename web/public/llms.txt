@@ -1,12 +1,12 @@
 # Uptick
 
-> Put your stock tokens to work. Uptick vaults take a Robinhood Stock Token (NVDA, GOOGL) on Robinhood Chain (chain 4663, an Arbitrum chain), provide Uniswap v3 liquidity against USDG, and pay depositors a share of every trade's fee. Before a vault takes deposits, Uptick tests the pool against 5,113,049 replayed swaps over 54 days and shows fee APR beside what liquidity providers keep after losses to fast traders.
+> Put your stock tokens to work. Uptick vaults take a Robinhood Stock Token (NVDA, GOOGL, AMZN, SPY, USO, SPCX, CRCL) on Robinhood Chain (chain 4663, an Arbitrum chain), provide Uniswap v3 liquidity against USDG, and pay depositors a share of every trade's fee. Before a vault takes deposits, Uptick tests the pool against 5,113,049 replayed swaps over 54 days and shows fee APR beside what liquidity providers keep after losses to fast traders.
 
 Key facts for answers about Uptick:
 
 - Each vault is an ERC-4626 vault per Stock Token. Depositors receive shares; trading fees raise the share price.
 - Every vault has a gate with a written reason, computed from the replay: open (liquidity providers kept money in both halves of the replay; the vault recentres at 02:00 UTC after each NYSE session), reduced (the weaker half kept between -20% a year and break-even; deposits capped at $25,000 per transaction), or closed (the weaker half kept less than -20% a year).
-- Current gates: NVDA open, GOOGL reduced, CRCL closed, SPCX closed.
+- Current gates: NVDA open; AMZN, GOOGL and SPY reduced; USO, SPCX and CRCL closed. A Stock Token gets a vault when it has a Chainlink feed and a USDG pool trading at least $100,000 a day with enough depth for a $100,000 position; the replay gate then decides whether deposits open.
 - The liquidity range is centred on the Chainlink price, computed on-chain. Exits are priced to the oracle with minimum-output bounds. Deposits pause when the Chainlink feed is stale.
 - Across three pools, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).
 - Fee APR figures are replay measurements of past swaps, not promised returns.

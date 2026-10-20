@@ -47,14 +47,23 @@ describe("GET /vaults", () => {
     expect(body.every((v) => v.window_days === replay.window.days)).toBe(true);
   });
 
-  test("nvda and googl are open, crcl and spcx are closed", async () => {
+  test("seven vaults: nvda, googl, amzn and spy take deposits, crcl, spcx and uso are closed", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const byId = Object.fromEntries(body.map((v) => [v.id, v.open]));
 
-    expect(byId.nvda).toBe(true);
-    expect(byId.googl).toBe(true);
-    expect(byId.crcl).toBe(false);
-    expect(byId.spcx).toBe(false);
+    expect(body.length).toBe(7);
+    expect(byId).toEqual({ nvda: true, googl: true, amzn: true, spy: true, crcl: false, spcx: false, uso: false });
+  });
+
+  test("every vault carries a gate state and a written reason", async () => {
+    const body = (await (await get("/vaults")).json()) as VaultSummary[];
+    const want: Record<string, string> = { nvda: "open", amzn: "reduced", googl: "reduced", spy: "reduced", uso: "closed", spcx: "closed", crcl: "closed" };
+    expect(body.length).toBeGreaterThan(0);
+    for (const v of body) {
+      const d = (await (await get(`/vaults/${v.id}`)).json()) as { gate: { state: string; reason: string } };
+      expect(d.gate.state).toBe(want[v.id]);
+      expect(d.gate.reason.toLowerCase().startsWith(want[v.id])).toBe(true);
+    }
   });
 });
 

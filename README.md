@@ -2,7 +2,7 @@
 
 **Put your stock tokens to work.**
 
-Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
+Deposit NVDA, GOOGL, AMZN, SPY and more, and earn a share of every trade's fee. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep after losses to fast traders, and opens a vault only where past trades say it holds up.
 
 Every vault page shows fee APR next to what LPs keep.
 
@@ -38,12 +38,17 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 Kept APR is fees earned less losses to informed traders (1 hour markout) and rebalancing cost, annualised, for a +-5% band recentred at 02:00 UTC after each NYSE session (`keeper/src/calendar.ts`). The replay splits its 30 days into a 15 day calibration half and a 15 day held-out half, and reports two accounting bounds: the conservative figure decides the gate, the upper figure is shown beside it. A vault is open when both halves keep at least break-even, reduced (deposits capped at $25,000 per transaction) when the weaker half sits between -20% and break-even, and closed below -20% (`KEEP_FLOOR_APR`, `KEEP_FULL_APR` in `keeper/src/evidence.ts`).
 
-| Vault | First half kept | Held-out half kept (conservative to upper) | Status |
-|---|---|---|---|
-| NVDA | +12.2% | +1.8% to +3.7% | Open |
-| GOOGL | -5.6% | +4.1% to +8.1% | Reduced |
-| SPCX | +45.1% | -89.4% to -71.5% | Closed |
-| CRCL | -46.6% | -114.2% to -93.3% | Closed |
+| Vault | First half kept | Held-out half kept (conservative to upper) | Status | Reason |
+|---|---|---|---|---|
+| NVDA | +12.2% | +1.8% to +3.7% | Open | Both halves at or above break-even |
+| AMZN | +0.6% | -9.9% to -4.4% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| GOOGL | -5.6% | +4.1% to +8.1% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| SPY | +3.3% | -0.5% to +0.5% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| USO | -24.9% | -21.9% to -18.7% | Closed | Both halves below the -20% floor, the gate shuts deposits |
+| SPCX | +45.1% | -89.4% to -71.5% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| CRCL | -46.6% | -114.2% to -93.3% | Closed | Both halves below the -20% floor, the gate shuts deposits |
+
+Seven tokens clear the registry rule in `keeper/src/universe.ts`: a Chainlink feed, a USDG pool trading at least $100K a day, and a $100K position that stays under 20% of in-range liquidity. The volume floor admits a token to a vault and the replay gate decides whether deposits open. Ten more tokens (AAPL, AMD, GME, INTC, META, MSTR, MU, PLTR, QQQ, TSLA) clear the volume floor and sit outside the registry because a $100K position would hold 22% to 58% of their in-range liquidity, above the 20% depth cap that keeps a vault a small share of its pool.
 
 Source: `keeper/data/replay.json` via `keeper/src/evidence.ts`, regenerated with `keeper/replay/replay.py`; schedule comparison in `keeper/replay/SCHEDULE-CHANGE.md`.
 
