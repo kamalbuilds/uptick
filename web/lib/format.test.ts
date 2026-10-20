@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom, perDepositLimitUsd } from "./format.ts";
+import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom, perDepositLimitUsd, shareOfBalance } from "./format.ts";
 import { parseVaultStats } from "./keeper.ts";
 
 const fx = (f: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url), "utf8"));
@@ -105,4 +105,15 @@ test("every vault in the list carries a positive size cap no larger than the ful
     assert.ok(v.refPriceUsd > 0, `${v.symbol} price`);
   }
   assert.ok(vaults.some((v: { depositCapUsd: number }) => v.depositCapUsd < 100_000), "thin-pool vaults carry less than the full size");
+});
+
+test("amount chips take a share of the balance in base units and Max is exact", () => {
+  const bal = 12_345_678_901_234_567_890n;
+  assert.equal(shareOfBalance(bal, 100), bal);
+  assert.equal(shareOfBalance(bal, 50), bal / 2n);
+  assert.equal(shareOfBalance(bal, 25), (bal * 25n) / 100n);
+  assert.equal(shareOfBalance(0n, 50), undefined);
+  assert.equal(shareOfBalance(undefined, 50), undefined);
+  assert.equal(shareOfBalance(bal, 0), undefined);
+  assert.equal(shareOfBalance(bal, 101), undefined);
 });

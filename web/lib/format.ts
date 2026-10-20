@@ -71,3 +71,9 @@ export function depositRoom(amount: bigint | null, max: bigint | undefined, capU
   const tokens = capUsd / priceUsd;
   return { tokens, source: "size", over: amount !== null && Number(amount) / 10 ** decimals > tokens };
 }
+
+/** What the 25/50/75/Max chips fill: `percent` of `max` in base units, rounded down. Undefined when there is no balance to take a share of. */
+export function shareOfBalance(max: bigint | undefined, percent: number): bigint | undefined {
+  if (max === undefined || max <= 0n || !Number.isInteger(percent) || percent < 1 || percent > 100) return undefined;
+  return percent === 100 ? max : (max * BigInt(percent)) / 100n;
+}
