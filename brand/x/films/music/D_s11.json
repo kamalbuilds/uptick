@@ -1,0 +1,12 @@
+{
+ "model": "acestep-v15-turbo",
+ "prompt": "Minimal modern fintech underscore, instrumental, 120 BPM. Intro: solo dry piano, a few questioning notes in a quiet room, no drums. Middle: a gentle four-on-the-floor electronic pulse with a soft side-chained synth pad joins the piano, gradually building. Final section: warm deep bass line, light claps, bright but soft synth chords, confident and optimistic, then a clean sustained ending chord. Clean mix, spacious, tasteful.",
+ "lyrics": "[Intro - sparse solo piano, curious, no drums]\n[Instrumental]\n\n[Build - soft electronic pulse and plucked arpeggio enter, steady build]\n[Instrumental]\n\n[Final - full, warm bass, soft kick, airy pads, confident, clean resolve]\n[Instrumental]",
+ "bpm": 120,
+ "key": "C Major",
+ "duration": 24.0,
+ "steps": 8,
+ "seed": 11,
+ "gen_seconds": 42.2,
+ "load_seconds": 39.5
+}

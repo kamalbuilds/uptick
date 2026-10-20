@@ -1,0 +1,12 @@
+{
+ "model": "acestep-v15-turbo",
+ "prompt": "Understated confident tech product launch music, instrumental. Starts with sparse intimate piano in a major key, curious. A soft marimba and glass pluck pattern with a subtle electronic heartbeat pulse enters and builds steadily. Ends full and assured: warm analog bass, soft kick and hi-hat, lush airy pads, piano still audible, resolving to a calm held chord. Modern, polished, optimistic, no vocals, no big drop, no cinematic drums.",
+ "lyrics": "[Instrumental]",
+ "bpm": 120,
+ "key": "C Major",
+ "duration": 24.0,
+ "steps": 8,
+ "seed": 404,
+ "gen_seconds": 60.4,
+ "load_seconds": 44.7
+}

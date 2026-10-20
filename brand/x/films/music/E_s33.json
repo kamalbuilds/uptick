@@ -1,0 +1,12 @@
+{
+ "model": "acestep-v15-turbo",
+ "prompt": "Calm modern fintech product film score, instrumental. Opens with sparse clean felt piano, curious and gentle, single notes with space between them. Then a light soft electronic pulse and a subtle plucked synth arpeggio enter under the piano, a steady build. Then fuller and confident, warm round bass, soft muted kick, airy pads, resolving cleanly on a sustained major chord. Polished, minimal, warm, modern. No vocals, no drop, no epic trailer drums.",
+ "lyrics": "[Intro - sparse solo piano, curious, no drums]\n[Instrumental]\n\n[Build - soft electronic pulse and plucked arpeggio enter, steady build]\n[Instrumental]\n\n[Final - full, warm bass, soft kick, airy pads, confident, clean resolve]\n[Instrumental]",
+ "bpm": 120,
+ "key": "C Major",
+ "duration": 24.0,
+ "steps": 8,
+ "seed": 33,
+ "gen_seconds": 66.7,
+ "load_seconds": 52.6
+}
