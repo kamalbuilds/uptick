@@ -36,8 +36,8 @@ export default function OracleAndPricingPage() {
             and rejects an answer older than 90,000 seconds.
           </li>
           <li>
-            NAV values the USDG leg at the lower of Chainlink and the TWAP, so a lagging feed cannot
-            misprice a deposit or a redemption.
+            Share value uses the lower of Chainlink and the TWAP; deposit pricing adds spot as a
+            third, lower view. A lagging feed cannot raise the price a depositor pays.
           </li>
         </ul>
       </TLDR>
@@ -45,9 +45,9 @@ export default function OracleAndPricingPage() {
       <H2>Three prices</H2>
       <P>
         Chainlink reports the stock's USD price from off-chain venues. It sets the band and the
-        minimum output of every swap the vault makes, and it is one of the two prices that value a
-        share. It is also the slowest of the three, with a 24 hour heartbeat, so it can lag a fast
-        move.
+        swap floor on deposits and exits, and it is one of the two prices that value a share. Deploy
+        swaps floor at the TWAP instead. Chainlink is the slowest of the three, with a 24 hour
+        heartbeat, so it can lag a fast move.
       </P>
       <P>
         The pool TWAP is the average tick of the Stock Token / USDG pool over at least 10 minutes.
@@ -61,7 +61,7 @@ export default function OracleAndPricingPage() {
           [
             "Chainlink",
             "AggregatorV3 answer in feed decimals, 24 hour heartbeat",
-            "Share value, swap minimums, the centre of the band, and one side of every deviation check.",
+            "Share value, deposit and exit swap floors, the centre of the band, and one side of every deviation check.",
           ],
           [
             "Pool TWAP",
@@ -71,13 +71,13 @@ export default function OracleAndPricingPage() {
           [
             "Pool spot",
             "slot0 sqrtPriceX96",
-            "A gate input only. It never sets a price on its own.",
+            "A gate input and the third price in deposit NAV. Total assets does not use it.",
           ],
         ]}
         caption="All three are read in the same call, so a decision cannot mix prices from different blocks."
       />
 
-      <H2>The gate&apos;s five checks</H2>
+      <H2>The gate&apos;s six checks</H2>
       <P>
         A single read produces one status. The checks run in order and the first failure is
         returned, while everything readable is still returned alongside it. A caller that only needs
@@ -89,7 +89,12 @@ export default function OracleAndPricingPage() {
           [
             "FeedInvalid",
             "The call reverted, the answer is zero or negative, the timestamp is zero or in the future, or answeredInRound is behind roundId.",
-            "The feed is broken or mid-update. This is the only status that makes the view functions revert.",
+            "The feed is broken or mid-update. This is the only status that makes the lenient price reads revert.",
+          ],
+          [
+            "CorporateAction",
+            "The Stock Token oracle is paused, or the token is inside its lead or lag window around a multiplier change.",
+            "A price-checked path closes until the window passes. redeemInKind does not read the gate.",
           ],
           [
             "FeedStale",
@@ -117,7 +122,7 @@ export default function OracleAndPricingPage() {
             "Deposits, withdrawals and rebalances may proceed.",
           ],
         ]}
-        caption="Status is an enum on the vault. health() returns it as the first of six values and never reverts for a bad feed."
+        caption="Status is an enum on the vault. health() returns it as the first of seven values and never reverts for a bad feed."
       />
 
       <H2>What each path trusts</H2>
@@ -131,12 +136,12 @@ export default function OracleAndPricingPage() {
           [
             "deposit, mint",
             "Required",
-            "Chainlink sets the swap minimum and the target ratio. NAV uses the lower of Chainlink and the TWAP.",
+            "Chainlink sets the swap minimum and the target ratio. Deposit NAV uses the lowest of Chainlink, the TWAP and spot.",
           ],
           [
             "withdraw, redeem",
             "Required",
-            "Position composition at the TWAP. The preview applies the exit buffer.",
+            "Position composition at the TWAP. Share value uses the lower of Chainlink and the TWAP. The preview applies the exit buffer.",
           ],
           [
             "rebalance",
@@ -176,7 +181,9 @@ export default function OracleAndPricingPage() {
       />
       <P>
         The TWAP, not spot, is the pool side of that comparison, so a same-block push cannot move
-        NAV. The same price converts fee value before the treasury cut is taken.
+        total assets. New shares are priced one step more conservatively, on the lowest of Chainlink,
+        the TWAP and spot. The same two-way price converts fee value before the treasury cut is
+        taken.
       </P>
 
       <H2>The 10 minute TWAP</H2>
@@ -194,9 +201,10 @@ export default function OracleAndPricingPage() {
       <H2>Staleness and deviation</H2>
       <P>
         The feed's heartbeat is 24 hours. The deployed staleness limit is 25 hours, which leaves an
-        hour of grace for a late update and still catches a feed that has stopped. The keeper runs a
-        tighter guard at 87,000 seconds, so it stops building transactions before the contract would
-        reject them.
+        hour of grace for a late update and still catches a feed that has stopped. The keeper's
+        send-time guard is 87,000 seconds, tighter than the contract's 90,000, so it stops a
+        transaction before the vault would reject it. Its universe filter is looser, allowing a feed
+        up to 346,200 seconds old so a pool stays eligible through a long weekend.
       </P>
       <P>
         Deviation is bounded at 100 bps on both the TWAP and spot comparisons. That is tight on

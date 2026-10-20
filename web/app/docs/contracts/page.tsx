@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: "Contracts | Uptick",
   description:
-    "StockVault, the capped-hook standard, the deployed addresses and the test surface.",
+    "StockVault, UptickRouter, VaultFactory, the v4 hook, the deployed components and the test surface.",
 };
 
 export default function ContractsPage() {
@@ -34,10 +34,11 @@ export default function ContractsPage() {
       <H2>StockVault</H2>
       <P>
         An ERC-4626 vault over one Stock Token. Deposits are managed as a single Uniswap v3 position on the
-        Stock Token / USDG pool, recentred once a day at +-rangeBps around the Chainlink price. Shares are a
-        pro-rata claim on idle balances plus both legs of the position. Valuation uses Chainlink for price and
-        the pool TWAP for the position's composition, and every value-in or value-out path reverts when feed,
-        TWAP and spot disagree.
+        Stock Token / USDG pool, recentred at 02:00 UTC after each NYSE trading day within a band of plus or
+        minus rangeBps around the Chainlink price. Shares are a pro-rata claim on idle balances plus both legs
+        of the position. Valuation uses Chainlink for price and the pool TWAP for the position&apos;s
+        composition, and every priced path (deposit, mint, withdraw, redeem, rebalance) reverts when feed, TWAP
+        and spot disagree.
       </P>
       <DataTable
         columns={["Function", "What it does"]}
@@ -120,6 +121,41 @@ export default function ContractsPage() {
         caption="Robinhood Chain 4663. The components table from the repository README."
       />
 
+
+      <H2>The v4 hook</H2>
+      <P>
+        StockVault trades on a Uniswap v3 pool. The separately deployed <Code>UptickHook</Code> is a
+        dynamic-fee hook for a v4 Stock Token / USDG pool, and it is built on{" "}
+        <Code>CappedTakeHook</Code>. The fee follows the NYSE session: regular hours, off hours, and
+        weekend, with the 20 observed NYSE full-day holidays of 2026 and 2027 compiled in. A swap
+        that pushes the pool further from Chainlink adds <Code>min(gapBps * surchargePipsPerBp,
+        maxSurcharge)</Code>; a swap that moves it toward the reference pays the session fee only.
+      </P>
+      <P>
+        The cap is a property of the bytecode. <Code>CappedTakeHook</Code> stores the declared maximum
+        as immutable and registers it in <Code>CapRegistry</Code>; the constructor rejects a schedule
+        whose worst fee plus surcharge exceeds it with <Code>BadSchedule</Code>,{" "}
+        <Code>beforeSwap</Code> refuses to quote above the cap with <Code>FeeAboveCap</Code>, and{" "}
+        <Code>afterSwap</Code> re-checks the realised take with <Code>TakeExceedsCap</Code>. The
+        nested-swap guard counts an inner swap against the same ceiling.
+      </P>
+      <P>
+        Session pricing is a measurement, not a preference. Fee per dollar of one-hour markout on the
+        NVDA, SPCX and TSLA pools ran 1.03 to 1.35 in NYSE hours and 3.94 to 33.27 on weekends; the
+        pooled figures are 1.16 and 13.64. The schedule is a deploy parameter, so a new pool can set
+        its own three fees within the same cap.
+      </P>
+
+      <H2>Test surface</H2>
+      <P>
+        The vault, router, factory and hook suites run against a fork of Robinhood Chain with the real
+        pools, position manager, router and feeds. Only <Code>latestRoundData</Code> is mocked, to set
+        price and age. Coverage includes fuzz and invariant suites for share accounting, safety tests
+        for the owner&apos;s limits, dust exits, minimum-output bounds, the router path, the factory,
+        and a hook suite that walks all 20 holidays and each daylight saving boundary with
+        independently generated timestamps.
+      </P>
+
       <Sources>
         <SourceRef path="contracts/src/StockVault.sol">
           The ERC-4626 vault, the position, the oracle gate and the exit paths.
@@ -129,6 +165,9 @@ export default function ContractsPage() {
         </SourceRef>
         <SourceRef path="contracts/src/VaultFactory.sol">
           CREATE2 deployment and the vault registry.
+        </SourceRef>
+        <SourceRef path="contracts/src/hook/README.md">
+          The session fees, the surcharge, the cap and the hook test coverage.
         </SourceRef>
         <SourceRef path="README.md">
           The chain components table and the deployed addresses.

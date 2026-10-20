@@ -228,9 +228,9 @@ rebalanced         hash, block, gas_used`}
       <H3>The backstop</H3>
       <P>
         The keeper is a convenience, not a single point of failure. <Code>rebalance()</Code> is open
-        to anyone once 26 hours have passed since the last one, and the keeper's own interval floor
-        is six hours. A vault keeps earning at its old band if the keeper stops, and anyone can move
-        it.
+        to anyone once 26 hours have passed since the last one, and the vault's own
+        <Code>minRebalanceInterval</Code> is six hours. A vault keeps earning at its old band if the
+        keeper stops, and anyone can move it.
       </P>
 
       <Sources>

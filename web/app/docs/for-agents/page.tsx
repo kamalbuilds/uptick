@@ -27,7 +27,7 @@ export default function ForAgentsPage() {
     >
       <TLDR>
         <ul>
-          <li>GET /vaults and GET /vaults/:id serve the gate, the replay and the caps as JSON. CORS is open.</li>
+          <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
           <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with four tools.</li>
           <li>prepare_deposit and prepare_withdraw return unsigned transactions. The user signs and sends.</li>
         </ul>

@@ -17,7 +17,7 @@ import universe from "@/lib/vault-universe.json";
 export const metadata: Metadata = {
   title: "Vault sizing | Uptick",
   description:
-    "Why a thin Uniswap pool carries a smaller vault instead of no vault, how the $100,000 ceiling and $10,000 floor apply, and the cap on each live vault.",
+    "How the $100,000 ceiling, the 20% share rule and the $10,000 minimum size set each live vault.",
 };
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -30,7 +30,7 @@ export default function VaultSizingPage() {
     <Article
       eyebrow="The evidence"
       title="Vault sizing"
-      lede="Every vault is sized to the pool it trades in. The ceiling is $100,000, the floor is $10,000, and the binding constraint is usually the pool."
+      lede="Every vault is sized to the pool it trades in. The ceiling is $100,000, a pool must carry at least $10,000 at the share limit, and the binding constraint is usually the pool."
     >
       <TLDR>
         <ul>
@@ -39,8 +39,8 @@ export default function VaultSizingPage() {
             own plus or minus 5% band.
           </li>
           <li>
-            That gives a cap of <Code>min($100,000, depth / 4)</Code>. A thin pool gets a smaller
-            vault, not a rejection.
+            That gives a cap of <Code>min($100,000, depth / 4)</Code>. A pool whose depth cannot
+            carry $10,000 is left out; above that it gets the largest vault it can carry.
           </li>
           <li>
             {atCeiling} of {vaults.length} live vaults sit at the $100,000 ceiling. The rest are
@@ -134,9 +134,10 @@ capUsd = min(100_000, floor(depth / 4))`}
         caption="The deepest USDG v3 pool by in-range depth is the one sized and replayed. v4 pools are replayed for comparison but do not enter eligibility, because StockVault holds a v3 position."
       />
       <P>
-        The checks are strict about the feed and loose about the pool. A token whose deepest pool is
-        too thin for a full vault still gets a vault at the size its pool can carry. That is how AMD
-        trades with an $18,436 cap while NVDA carries the full $100,000.
+        The checks are strict about the feed and looser about the pool. A token whose deepest pool
+        cannot carry a full vault still gets one at the size the pool supports, provided that size is
+        at least $10,000. That is how AMD trades with an $18,436 cap while NVDA carries the full
+        $100,000.
       </P>
 
       <H2>Worked examples</H2>

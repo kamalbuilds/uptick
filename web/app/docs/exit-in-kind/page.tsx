@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: "Exit in kind | Uptick",
   description:
-    "redeemInKind pays both tokens with no oracle and no swap, including when the Stock Token is paused.",
+    "redeemInKind pays both tokens with no oracle and no swap. A failed Stock Token transfer is credited for a later claim.",
 };
 
 export default function ExitInKindPage() {
@@ -22,13 +22,13 @@ export default function ExitInKindPage() {
     <Article
       eyebrow="Using a vault"
       title="Exit in kind"
-      lede="redeemInKind pays your proportional share of both tokens with no oracle gate and no swap, including when the feed is stale or the Stock Token is paused."
+      lede="redeemInKind pays your proportional share of both tokens with no oracle gate and no swap, including when the feed is stale. If the Stock Token transfer fails, the stock leg is credited for a later claim."
     >
       <TLDR>
         <ul>
           <li>redeem pays the Stock Token and needs a healthy oracle. redeemInKind pays both tokens and does not.</li>
           <li>The router's redeemInKindMin adds minimums on both legs.</li>
-          <li>A failed Stock Token transfer is credited and claimed later with claimStockOwed.</li>
+          <li>A failed Stock Token transfer is credited to the receiver and claimed later with claimStockOwed.</li>
         </ul>
       </TLDR>
 
@@ -96,9 +96,10 @@ export default function ExitInKindPage() {
         your share of the supply, not a swap at the moment you exit.
       </P>
       <P>
-        If the Stock Token transfer to your receiver reverts, an issuer pause or a blocklist, the stock leg is
-        credited to your receiver and to totalStockOwed. <Code>claimStockOwed</Code> pays it to the credited
-        address once the transfer succeeds.
+        If the Stock Token transfer to your receiver reverts, from an issuer pause or a blocklist, the stock leg
+        is credited to your receiver and to totalStockOwed. The credited receiver calls{" "}
+        <Code>claimStockOwed(to)</Code> once the transfer succeeds, and the vault pays the credit to{" "}
+        <Code>to</Code>.
       </P>
 
       <Sources>
