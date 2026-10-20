@@ -2,7 +2,7 @@
 
 **Put your stock tokens to work.**
 
-Deposit NVDA, GOOGL, AMZN, SPY and more, and earn a share of every trade's fee. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep after losses to fast traders, and opens a vault only where past trades say it holds up.
+Deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens, and earn a share of every trade's fee. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep after losses to fast traders, and opens a vault only where past trades say it holds up.
 
 Every vault page shows fee APR next to what LPs keep.
 

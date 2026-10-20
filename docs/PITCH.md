@@ -1,6 +1,6 @@
 # Uptick: 3 minute demo
 
-One line: Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
+One line: Deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
 
 ## 0:00 to 0:25 The problem, with a number
 

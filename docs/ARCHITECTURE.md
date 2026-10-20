@@ -1,6 +1,6 @@
 # Architecture
 
-Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
+Deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
 
 Three layers sit behind it on Robinhood Chain (4663): an evidence engine that reads the chain's own swap history, a vault layer that opens deposits in one click, and a cap standard that bounds what the pools under the vault can take.
 
