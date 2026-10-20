@@ -13,7 +13,7 @@ import { WalletButton } from "./wallet-button";
 import { erc20Abi, routerAbi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
 import { useEvidence } from "@/lib/evidence";
-import { depositRoom, num, shareOfBalance, perDepositLimitUsd, signed, usd, usdWhole } from "@/lib/format";
+import { depositRoom, entryFeePct, netOfEntryFee, num, shareOfBalance, perDepositLimitUsd, signed, usd, usdWhole } from "@/lib/format";
 import { useVaultStats } from "@/lib/hooks";
 import { usePrices } from "@/lib/prices";
 import { usdSigned, yearlyUsd } from "@/lib/leak";
@@ -186,7 +186,10 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   const rate = gate.worstHalfApr;
   const stockPriceUsd = priceUsd ?? cfg.refPriceUsd;
   const amountUsd = usdgMode ? amountNum : amountNum * stockPriceUsd;
-  const yearly = yearlyUsd(amountUsd, rate);
+  // The rate is earned on what the vault credits: the deposit less the entry fee, which stays in the vault.
+  const netUsd = netOfEntryFee(amountUsd, cfg.entryFeeBps);
+  const yearly = yearlyUsd(netUsd, rate);
+  const feeText = entryFeePct(cfg.entryFeeBps);
   const unit = usdgMode ? "USDG" : cfg.symbol;
 
   const summary = useMemo(() => {
@@ -198,13 +201,13 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
         return [
           needsApproval && ROUTER ? `First you approve ${num(amountNum)} USDG to the router. That is one signature and moves nothing yet.` : null,
           `The router swaps ${num(amountNum)} USDG for about ${stockPart} and deposits it into the ${cfg.symbol} vault.`,
-          `You receive about ${sharesPart}. The minimum is set from the live quote, so a worse fill reverts.`,
+          `The vault keeps a ${feeText} entry fee on the ${cfg.symbol} it receives. You receive about ${sharesPart}, net of it. The minimum is set from the live quote, so a worse fill reverts.`,
           `Your position is worth what ${cfg.symbol} is worth: its dollar value rises and falls with the ${cfg.symbol} price.`,
         ].filter(Boolean) as string[];
       }
       return [
         needsApproval ? `First you approve the vault to move ${num(amountNum)} ${cfg.symbol}. That is one signature and moves nothing yet.` : null,
-        `You send ${num(amountNum)} ${cfg.symbol}. You receive about ${sharesPart}.`,
+        `You send ${num(amountNum)} ${cfg.symbol}. The vault keeps ${feeText} of it as the entry fee and you receive about ${sharesPart}.`,
         `The vault holds your ${cfg.symbol} in the ${cfg.symbol}/USDG pool inside its price band. Fees raise the share price.`,
         `Your position is worth what ${cfg.symbol} is worth: its dollar value rises and falls with the ${cfg.symbol} price.`,
       ].filter(Boolean) as string[];
@@ -219,7 +222,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
       `You burn about ${sharesPart} and receive ${num(amountNum)} ${cfg.symbol} at the vault's share price.`,
       `Your share of the position leaves the pool. Fees already earned are part of what you receive.`,
     ];
-  }, [tab, inKind, usdgMode, needsApproval, amountNum, preview.data, minShares, quotedStock, cfg.symbol]);
+  }, [tab, inKind, usdgMode, needsApproval, amountNum, preview.data, minShares, quotedStock, cfg.symbol, feeText]);
 
   async function send(label: string, run: () => Promise<Hash>) {
     if (!client) return;
@@ -427,12 +430,13 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
         parsedAmount ? (
           <>
             <p className="text-[15px] font-medium"><span className="figure">{num(amountNum, 4)} {unit}</span> <span className="text-mute">≈</span> <span className={cn("figure", toneClass(yearly))}>{usdSigned(yearly)} a year</span></p>
-            <p className="text-mute">at the <Term id="worstHalf">worst-half</Term> rate, <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span>, on <span className="figure">{usd(amountUsd, { compact: false })}</span></p>
+            <p className="text-mute">at the <Term id="worstHalf">worst-half</Term> rate, <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span>, on <span className="figure">{usd(netUsd, { compact: false })}</span> after the entry fee</p>
+            <p className="text-mute"><Term id="entryFee" /> <span className="figure">{feeText}</span>, kept in the vault for existing holders</p>
           </>
         ) : (
           <>
             <p className="text-[15px] font-medium"><Term id="worstHalf">Worst-half</Term> rate <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span> a year</p>
-            <p className="text-mute">Enter an amount to see it in dollars.</p>
+            <p className="text-mute">Enter an amount to see it in dollars. <Term id="entryFee" /> <span className="figure">{feeText}</span>, kept in the vault for existing holders.</p>
           </>
         )
       ) : inKind ? (

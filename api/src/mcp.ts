@@ -49,6 +49,8 @@ interface Vault {
   pool: string;
   feeTierPips: number;
   feeTier: string;
+  /** Fee the vault keeps on deposit and mint, in bps: max(pool fee tier, 35). */
+  entryFeeBps: number;
   feed: string;
   /** Vault size in USD, sized to the pool depth; the vault is created with this deposit cap. */
   depositCapUsd: number;
@@ -168,6 +170,7 @@ function listVaults(): McpToolResult {
       gate_state: gate.state,
       open: vault.open,
       deposit_cap_usd: vault.depositCapUsd,
+      entry_fee_bps: vault.entryFeeBps,
       fee_apr_pct: vault.feeAprPct,
       kept_apr_pct: vault.keptAprPct,
       reason: gate.reason,
@@ -207,6 +210,7 @@ function getVaultEvidence(id: string): McpToolResult {
     pool: vault.pool,
     fee_tier_pips: vault.feeTierPips,
     fee_tier: vault.feeTier,
+    entry_fee_bps: vault.entryFeeBps,
     feed: vault.feed,
     fee_apr_pct: vault.feeAprPct,
     kept_apr_pct: vault.keptAprPct,
@@ -366,6 +370,8 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
     vault: id,
     asset,
     receiver,
+    entry_fee_bps: vault.entryFeeBps,
+    entry_fee_note: `The vault keeps a ${vault.entryFeeBps / 100}% entry fee from this deposit for its existing holders; shares are minted against the amount net of it.`,
     transactions,
     ...extra,
   };
@@ -443,7 +449,7 @@ const TOOLS: McpTool[] = [
   {
     name: "prepare_deposit",
     description:
-      "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Refuses an amount above the vault's deposit_cap_usd (its size, set from the pool's depth) or, for a reduced vault, above its per-transaction cap, whichever is lower; the vault contract also enforces the cap on-chain against its total. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router). The user signs and sends.",
+      "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Refuses an amount above the vault's deposit_cap_usd (its size, set from the pool's depth) or, for a reduced vault, above its per-transaction cap, whichever is lower; the vault contract also enforces the cap on-chain against its total. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router). The vault keeps an entry fee (the larger of the pool's fee tier and 0.35%, returned as entry_fee_bps) out of every deposit, for the holders who stay; shares are minted against the amount net of it. The user signs and sends.",
     inputSchema: {
       type: "object",
       properties: {

@@ -73,6 +73,16 @@ describe("GET /vaults", () => {
     expect(detail.deposit_cap_usd).toBe(cap.aapl);
   });
 
+  test("entry_fee_bps is the larger of the pool fee tier and 35 bp: 35 on nvda, 100 on the 1% GME pool, on the list and the detail", async () => {
+    const body = (await (await get("/vaults")).json()) as Array<VaultSummary & { entry_fee_bps: number }>;
+    const fee = Object.fromEntries(body.map((v) => [v.id, v.entry_fee_bps]));
+    expect(fee.nvda).toBe(35);
+    expect(fee.gme).toBe(100);
+    for (const u of vaultUniverse.vaults) expect(fee[u.id]).toBe(Math.max(u.feeTierPips, 3500) / 100);
+    const detail = (await (await get("/vaults/gme")).json()) as { entry_fee_bps: number };
+    expect(detail.entry_fee_bps).toBe(100);
+  });
+
   test("every vault carries a gate state and a written reason", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const want: Record<string, string> = {

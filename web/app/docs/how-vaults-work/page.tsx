@@ -13,7 +13,11 @@ import {
   Sources,
   TLDR,
 } from "@/components/prose";
+import { entryFeePct } from "@/lib/format";
 import { VAULTS } from "@/lib/vaults";
+
+const DEFAULT_ENTRY_BPS = Math.min(...VAULTS.map((v) => v.entryFeeBps));
+const HIGHER_ENTRY = VAULTS.filter((v) => v.entryFeeBps > DEFAULT_ENTRY_BPS);
 
 export const metadata: Metadata = {
   title: "How vaults work | Uptick",
@@ -32,6 +36,7 @@ export default function HowVaultsWorkPage() {
         <ul>
           <li>A share is a claim on idle balances, both legs of the position, and uncollected fees.</li>
           <li>The vault holds a band chosen per token and recentres at 02:00 UTC after each NYSE session.</li>
+          <li>Deposits keep an entry fee of {entryFeePct(DEFAULT_ENTRY_BPS)} in the vault for the holders who stay.</li>
           <li>Deposits and withdrawals pass the oracle gate. redeemInKind does not.</li>
         </ul>
       </TLDR>
@@ -115,6 +120,28 @@ export default function HowVaultsWorkPage() {
         ]}
         caption="The keeper's rebalance is the path that turns idle balances into a position outside a deposit transaction."
       />
+
+      <H2>The entry fee</H2>
+      <P>
+        Each deposit and mint leaves a fee in the vault. The fee is <Code>entryFee</Code>, set in
+        pool-fee pips: the larger of the pool&apos;s own fee tier and 3,500 pips, so it is{" "}
+        {entryFeePct(DEFAULT_ENTRY_BPS)} on most vaults
+        {HIGHER_ENTRY.length > 0 &&
+          ` and ${entryFeePct(HIGHER_ENTRY[0].entryFeeBps)} on ${HIGHER_ENTRY.map((v) => v.symbol).join(" and ")}, whose pools charge ${HIGHER_ENTRY[0].feeTier}`}
+        . Shares are minted against the assets net of the fee, so the fee is not paid to anyone: it stays
+        in the vault and raises the share price for every existing holder.{" "}
+        <Code>previewDeposit</Code> and <Code>previewMint</Code> include it exactly, and the
+        deposit panel quotes shares and the yearly figure on the net amount.
+      </P>
+      <P>
+        The fee prices the vault against a trade on a move the Chainlink feed has not printed yet.
+        Entering the vault costs at least what selling the same stock into the pool costs, so a
+        deposit made just before a price update does not pay. At the {entryFeePct(DEFAULT_ENTRY_BPS)} default the
+        break-even is a 70 bp move, and 97.2% of the round-to-round changes of the NVDA, AAPL,
+        GOOGL, SPY and QQQ feeds stay under it. The fee changes only through the owner&apos;s
+        24-hour queue, is capped at 2%, and never falls below the pool&apos;s fee tier. Exit in kind
+        charges nothing.
+      </P>
 
       <H2>The band and the recentre</H2>
       <P>
@@ -296,6 +323,7 @@ const [status, price, updatedAt, sqrtOracle, sqrtTwap, sqrtSpot] =
       <Sources>
         <SourceRef path="contracts/README.md">Share definition, deposit, rebalance, redeem, fees and the oracle gate.</SourceRef>
         <SourceRef path="keeper/README.md">The 60 second loop, triggers, guards and event lines.</SourceRef>
+        <SourceRef path="contracts/SECURITY.md">The entry fee rule, its break-even and the feed measurement behind the default.</SourceRef>
         <SourceRef path="web/public/llms.txt">Canonical gate states, caps and current values.</SourceRef>
       </Sources>
     </Article>

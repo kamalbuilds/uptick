@@ -41,6 +41,8 @@ interface Vault {
   pool: string;
   feeTierPips: number;
   feeTier: string;
+  /** Fee the vault keeps on deposit and mint, in bps: max(pool fee tier, 35). */
+  entryFeeBps: number;
   feed: string;
   /** Vault size in USD: the deposit cap the vault is created with, sized to its pool depth. */
   depositCapUsd: number;
@@ -93,6 +95,7 @@ function listVaults() {
     ticker: vault.symbol,
     open: vault.open,
     deposit_cap_usd: vault.depositCapUsd,
+    entry_fee_bps: vault.entryFeeBps,
     fee_apr_pct: vault.feeAprPct,
     kept_apr_pct: vault.keptAprPct,
     pool: vault.pool,
@@ -132,6 +135,7 @@ function vaultDetail(id: string): Response {
     pool: vault.pool,
     fee_tier_pips: vault.feeTierPips,
     fee_tier: vault.feeTier,
+    entry_fee_bps: vault.entryFeeBps,
     feed: vault.feed,
     fee_apr_pct: vault.feeAprPct,
     kept_apr_pct: vault.keptAprPct,

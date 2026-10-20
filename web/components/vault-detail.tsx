@@ -17,7 +17,7 @@ import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
-import { perDepositLimitUsd, shortAddress, signed, usd, usdWhole } from "@/lib/format";
+import { entryFeePct, perDepositLimitUsd, shortAddress, signed, usd, usdWhole } from "@/lib/format";
 import { REPLAY_WINDOW, USDG, isoDay, type VaultConfig } from "@/lib/vaults";
 
 function AddressRow({ label, address }: { label: string; address: string }) {
@@ -42,7 +42,7 @@ function AddressRow({ label, address }: { label: string; address: string }) {
   );
 }
 
-function Fact({ k, v }: { k: string; v: string }) {
+function Fact({ k, v }: { k: React.ReactNode; v: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-3">
       <dt className="text-mute">{k}</dt>
@@ -123,6 +123,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
                 <Fact k="Total value locked" v={!q.data ? "..." : q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)} />
                 <Fact k="Vault size" v={usdWhole(cfg.depositCapUsd)} />
                 <Fact k="Fee tier" v={cfg.feeTier} />
+                <Fact k={<Term id="entryFee" />} v={entryFeePct(cfg.entryFeeBps)} />
                 <Fact k="Replay window" v={`${isoDay(REPLAY_WINDOW.start)} to ${isoDay(REPLAY_WINDOW.end)}`} />
               </dl>
             </section>

@@ -36,6 +36,10 @@ export default function OracleAndPricingPage() {
             and rejects an answer older than 90,000 seconds.
           </li>
           <li>
+            Each deposit leaves an entry fee of at least 35 bp in the vault, which is what keeps a
+            trade on a price the feed has not printed yet from paying.
+          </li>
+          <li>
             Share value uses the lower of Chainlink and the TWAP; deposit pricing adds spot as a
             third, lower view. A lagging feed cannot raise the price a depositor pays.
           </li>
@@ -162,6 +166,25 @@ export default function OracleAndPricingPage() {
         caption="The in-kind path is the escape hatch: it works while the gate is failing because it never converts anything."
       />
 
+      <H2>The entry fee closes the stale-price trade</H2>
+      <P>
+        The Chainlink feed prints after a move of about half a percent, so the market can sit
+        slightly ahead of the feed. A depositor who sees that move first could deposit at the old
+        price and take the vault&apos;s tokens out in kind the next block. The entry fee prices that
+        trade. Each deposit and mint leaves <Code>entryFee</Code> in the vault for the holders who
+        stay: the larger of the pool&apos;s own fee tier and 35 bp, never below the tier and at most
+        2%. Shares are minted against the assets net of it, and <Code>previewDeposit</Code> and{" "}
+        <Code>previewMint</Code> include it exactly.
+      </P>
+      <P>
+        For an off-chain move m, a vault of value V, a deposit D and a USDG share u of the position
+        (about one half while it is in range), the stale-price trade gains D*V/(V+D) * (m*u - fee).
+        It pays only when m exceeds the fee over u, so the 35 bp default breaks even at a 70 bp
+        move. 97.2% of the round-to-round changes of the NVDA, AAPL, GOOGL, SPY and QQQ feeds
+        (1,769 changes over 54 to 120 days each) stay at or under 70 bp, so the trade does not pay
+        on those moves. A 0.3% pool carries a 30 bp tier and a 1% pool a 100 bp fee.
+      </P>
+
       <H2>Why NAV takes the lower price</H2>
       <P>
         The vault holds Stock Token and USDG. The Stock Token side is already in the unit of account.
@@ -265,6 +288,9 @@ if (status !== 0) throw new Error(\`oracle status \${status}\`);`}
         </SourceRef>
         <SourceRef path="contracts/README.md">
           The pricing model and the oracle gate in prose.
+        </SourceRef>
+        <SourceRef path="contracts/SECURITY.md">
+          The entry fee break-even and the feed measurement behind the 35 bp default.
         </SourceRef>
         <SourceRef path="keeper/src/config.ts">
           The keeper's own feed age and deviation guards.

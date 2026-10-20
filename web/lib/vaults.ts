@@ -9,6 +9,8 @@ export type VaultConfig = {
   pool: Address;
   /** Pool fee tier as shown, e.g. "0.05%". */
   feeTier: string;
+  /** Fee kept in the vault on deposit and mint, in bps: the larger of the pool fee tier and 35 bp (StockVault.entryFee default). */
+  entryFeeBps: number;
   /** Vault size in USD, sized to the pool depth so the vault stays within 20% of in-range liquidity; the vault is created with this deposit cap. */
   depositCapUsd: number;
   /** Half-width of the vault's band around Chainlink in bps, chosen per token (keeper/data/params.json). */
@@ -70,6 +72,7 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   token: v.token as Address,
   pool: v.pool as Address,
   feeTier: v.feeTier,
+  entryFeeBps: v.entryFeeBps,
   depositCapUsd: v.depositCapUsd,
   bandBps: v.bandBps,
   refPriceUsd: v.refPriceUsd,

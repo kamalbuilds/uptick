@@ -119,6 +119,7 @@ describe("list_vaults", () => {
     const nvda = vaults.find((v) => v.id === "nvda")!;
     expect(nvda.gate_state).toBe(NVDA_GATE.state);
     expect(typeof nvda.reason).toBe("string");
+    expect((nvda as { entry_fee_bps?: number }).entry_fee_bps).toBe(35);
     expect(typeof nvda.fee_apr_pct).toBe("number");
     expect(typeof nvda.kept_apr_pct).toBe("number");
   });
@@ -163,6 +164,8 @@ describe("prepare_deposit", () => {
     expect(body.structuredContent.network).toBe("robinhood-chain-fork");
 
     const txs = body.structuredContent.transactions as Array<{ to: string; data: string; value: string }>;
+    expect(body.structuredContent.entry_fee_bps).toBe(35);
+    expect(body.structuredContent.entry_fee_note).toContain("0.35% entry fee");
     expect(txs.length).toBe(2);
     expect(txs[0].data.startsWith("0x095ea7b3")).toBe(true);
     expect(txs[1].data.startsWith("0x6e553f65")).toBe(true);

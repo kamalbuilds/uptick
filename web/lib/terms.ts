@@ -1,7 +1,7 @@
 import { REDUCED_CAP_STOCK_USD } from "./evidence.ts";
 import { usdWhole } from "./format.ts";
 
-export type TermId = "taking" | "kept" | "worstHalf" | "open" | "reduced" | "closed";
+export type TermId = "taking" | "kept" | "worstHalf" | "open" | "reduced" | "closed" | "entryFee";
 
 /** One plain sentence or two for each word the list leans on. Every number is the gate's own: the -20% floor and the per-deposit cap. */
 export const TERMS: Record<TermId, { label: string; text: string }> = {
@@ -28,5 +28,9 @@ export const TERMS: Record<TermId, { label: string; text: string }> = {
   closed: {
     label: "Closed",
     text: "The worst half kept less than the -20% floor, so the vault takes no deposits. Exit in kind is never closed.",
+  },
+  entryFee: {
+    label: "Entry fee",
+    text: "Taken from each deposit and kept in the vault, so it accrues to the holders who stay. It is the larger of the pool's fee tier and 0.35%. Shares are minted against the deposit net of it.",
   },
 };

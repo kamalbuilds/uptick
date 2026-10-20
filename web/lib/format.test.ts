@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom, perDepositLimitUsd, shareOfBalance } from "./format.ts";
+import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom, perDepositLimitUsd, shareOfBalance, entryFeePct, netOfEntryFee } from "./format.ts";
 import { parseVaultStats } from "./keeper.ts";
 
 const fx = (f: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url), "utf8"));
@@ -116,4 +116,11 @@ test("amount chips take a share of the balance in base units and Max is exact", 
   assert.equal(shareOfBalance(undefined, 50), undefined);
   assert.equal(shareOfBalance(bal, 0), undefined);
   assert.equal(shareOfBalance(bal, 101), undefined);
+});
+
+test("entry fee: percent label and the net base for yearly figures", () => {
+  assert.equal(entryFeePct(35), "0.35%");
+  assert.equal(entryFeePct(100), "1%");
+  assert.equal(netOfEntryFee(10_000, 35), 9_965);
+  assert.equal(netOfEntryFee(10_000, 100), 9_900);
 });

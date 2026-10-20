@@ -77,3 +77,9 @@ export function shareOfBalance(max: bigint | undefined, percent: number): bigint
   if (max === undefined || max <= 0n || !Number.isInteger(percent) || percent < 1 || percent > 100) return undefined;
   return percent === 100 ? max : (max * BigInt(percent)) / 100n;
 }
+
+/** An entry fee in basis points as a percent: 35 -> "0.35%", 100 -> "1%". */
+export const entryFeePct = (bps: number): string => `${bps / 100}%`;
+
+/** What a deposit of `amountUsd` is worth once the vault keeps its entry fee: the base every yearly figure is earned on. */
+export const netOfEntryFee = (amountUsd: number, entryFeeBps: number): number => (amountUsd * (10_000 - entryFeeBps)) / 10_000;
