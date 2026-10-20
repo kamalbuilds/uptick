@@ -1,38 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowSquareOut, CopySimple } from "@phosphor-icons/react";
+import { ArrowSquareOut, CopySimple } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { BandChart, BandReadout } from "./band-chart";
 import { DepositPanel } from "./deposit-panel";
 import { ExitPreview } from "./exit-preview";
-import { NetOutcome } from "./net-outcome";
-import { VaultStatus } from "./vault-card";
+import { GateFigure } from "./gate-scale";
+import { LeakFigure } from "./leak-bar";
+import { SectionTitle, StateChip, toneClass } from "./ledger";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
-import { useEvidence } from "@/lib/evidence";
-import { num, pct, pitchLine, shortAddress, usd } from "@/lib/format";
-import { sourceLabel } from "@/lib/keeper";
-import { REPLAYED_SWAPS, VAULTS, USDG, type VaultConfig } from "@/lib/vaults";
+import { REDUCED_CAP_STOCK_USD } from "@/lib/evidence";
+import { shortAddress, signed, usd, usdWhole } from "@/lib/format";
+import { REPLAY_WINDOW, USDG, isoDay, type VaultConfig } from "@/lib/vaults";
 
 function AddressRow({ label, address }: { label: string; address: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-4 py-3">
-      <dt className="text-body">{label}</dt>
-      <dd className="figure flex items-center gap-3 text-sm">
+    <div className="flex items-center justify-between gap-4 border-b border-hairline py-3">
+      <dt className="text-mute">{label}</dt>
+      <dd className="figure flex items-center gap-3">
         <span title={address}>{shortAddress(address)}</span>
         <button
           aria-label={`Copy ${label} address`}
-          className="text-body hover:text-ink"
+          className="-m-2 p-2 text-mute hover:text-fg"
           onClick={async () => { await navigator.clipboard.writeText(address); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
         >
           {copied ? <span className="text-xs">Copied</span> : <CopySimple size={16} aria-hidden />}
         </button>
-        <a aria-label={`${label} on the explorer`} className="text-body hover:text-ink" href={addressUrl(address)} target="_blank" rel="noreferrer">
+        <a aria-label={`${label} on the explorer`} className="-m-2 p-2 text-mute hover:text-fg" href={addressUrl(address)} target="_blank" rel="noreferrer">
           <ArrowSquareOut size={16} aria-hidden />
         </a>
       </dd>
@@ -42,107 +42,97 @@ function AddressRow({ label, address }: { label: string; address: string }) {
 
 function Fact({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-3">
-      <dt className="text-body">{k}</dt>
-      <dd className="figure text-lg font-medium">{v}</dd>
+    <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-3">
+      <dt className="text-mute">{k}</dt>
+      <dd className="figure text-[17px] font-medium">{v}</dd>
     </div>
   );
 }
 
+/** The second sentence of the verdict: what the door is doing today. */
+function doorSentence(cfg: VaultConfig): string {
+  const live = Boolean(cfg.vault);
+  if (cfg.gate.state === "closed") return "Deposits are closed.";
+  if (cfg.gate.state === "reduced") return live ? `Deposits are capped at ${usdWhole(REDUCED_CAP_STOCK_USD)} each.` : `Its vault is opening, with deposits capped at ${usdWhole(REDUCED_CAP_STOCK_USD)} each.`;
+  return live ? "Deposits are open." : "Its vault is opening.";
+}
+
 export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
   const q = useVaultStats(cfg.id);
-  const evidence = useEvidence(cfg.id);
   const { address } = useAccount();
-  const other = VAULTS.find((v) => v.id !== cfg.id);
+  const worst = cfg.gate.worstHalfApr;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-8 pt-8 sm:px-6 lg:pt-12">
-      <Link href="/" className="-my-2 inline-flex items-center gap-1.5 py-2 text-sm font-semibold hover:text-ink-deep">
-        <ArrowLeft size={16} weight="bold" aria-hidden /> All vaults
-      </Link>
+    <>
+      <div className="mx-auto max-w-[1280px] px-6 pb-14 pt-8 lg:pt-10">
+        <nav aria-label="Breadcrumb" className="text-[13px] text-mute">
+          <Link href="/vaults" className="-my-2 inline-block py-2 hover:text-fg">Vaults</Link> / <span className="text-fg">{cfg.symbol}</span>
+        </nav>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <h1 className="display text-[clamp(3rem,8vw,6rem)]">{cfg.symbol} vault</h1>
-        <VaultStatus cfg={cfg} />
-      </div>
-      <p className="mt-2 text-body">{cfg.name}, held in the {cfg.symbol}/USDG pool at the {cfg.feeTier} fee tier.</p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1 className="text-[32px] font-medium leading-10 tracking-[-0.33px]">{cfg.symbol} vault</h1>
+          <StateChip state={cfg.gate.state} />
+          <span className="figure inline-flex h-6 items-center rounded-full border border-hairline px-2.5 text-[13px] text-mute" title={`${cfg.gate.swaps.toLocaleString("en-US")} swaps, ${isoDay(REPLAY_WINDOW.start)} to ${isoDay(REPLAY_WINDOW.end)}`}>
+            Replay to {isoDay(REPLAY_WINDOW.end)} · {cfg.gate.swaps.toLocaleString("en-US")} swaps
+          </span>
+        </div>
+        <p className="mt-2 text-mute">{cfg.name} in the {cfg.symbol} / USDG pool, {cfg.feeTier} fee tier</p>
 
-      <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-12">
-        <div className="min-w-0 space-y-12">
-          <section aria-labelledby="apr">
-            <h2 id="apr" className="text-sm font-semibold uppercase tracking-[0.08em] text-body" style={{ fontFamily: "var(--font-sans)", fontStretch: "100%", letterSpacing: "0.08em" }}>Fee APR</h2>
-            {q.isError ? (
-              <div className="mt-3"><FetchError what={cfg.symbol} onRetry={() => q.refetch()} /></div>
-            ) : !q.data ? (
-              <div className="mt-3 space-y-3"><Skeleton className="h-24 w-64" /><Skeleton className="h-5 w-80" /></div>
-            ) : (
-              <>
-                <p className="display text-[clamp(5rem,16vw,10rem)]">{pct(q.data.feeAprPct)}</p>
-                <p className="mt-2 text-body">{q.data.source === "replay" ? "Replay. " : ""}{sourceLabel(q.data)}.</p>
-              </>
-            )}
-          </section>
+        <p className="serif verdict mt-8 max-w-[900px] text-[30px] font-normal leading-[34px] sm:text-[44px] sm:leading-[48px]">
+          {cfg.symbol} kept <span className={toneClass(worst)}>{signed(worst)}</span> a year in its weaker half. {doorSentence(cfg)}
+        </p>
 
-          <section aria-labelledby="fee">
-            <h2 id="fee" className="text-3xl leading-none">Why this pool</h2>
-            <p className="mt-2 max-w-xl text-body">{pitchLine(VAULTS.length, REPLAYED_SWAPS)}</p>
-            <div className="mt-4 rounded-xl bg-sage p-1"><WhyThisPool id={cfg.id} symbol={cfg.symbol} /></div>
-          </section>
-
-          <section aria-labelledby="gate">
-            <h2 id="gate" className="text-3xl leading-none">How vaults open</h2>
-            <p className="mt-2 max-w-xl text-body">A vault opens for deposits when its kept APR, fees less losses to informed traders and rebalancing cost, is at least -20% in both halves of the 30-day replay. {cfg.symbol} {cfg.open ? "clears that line in both halves" : "sits below that line in at least one half, so deposits stay closed"}.</p>
-          </section>
-
-          <NetOutcome keep={evidence.data?.keep} symbol={cfg.symbol} />
+        <div className="mt-12 space-y-14">
+          <LeakFigure cfg={cfg} />
+          <GateFigure cfg={cfg} />
+          <ExitPreview vault={cfg.vault} symbol={cfg.symbol} user={address} />
 
           <section aria-labelledby="band">
-            <h2 id="band" className="text-3xl leading-none">The band follows the price</h2>
-            <p className="mt-2 max-w-xl text-body">The vault holds {cfg.symbol} inside a band around the Chainlink price and re-centres it at 02:00 UTC after each NYSE session. Fees accrue while the pool price is inside.</p>
+            <SectionTitle id="band">The band follows the price</SectionTitle>
+            <p className="mt-4 max-w-[690px] text-mute">The vault holds {cfg.symbol} inside a band around the Chainlink price and re-centres it at 02:00 UTC after each NYSE session. Fees accrue while the pool price is inside.</p>
             {q.isError ? (
-              <div className="mt-4"><FetchError what={cfg.symbol} onRetry={() => q.refetch()} /></div>
+              <div className="mt-4 max-w-xl"><FetchError what={cfg.symbol} onRetry={() => q.refetch()} /></div>
             ) : !q.data ? (
               <Skeleton className="mt-4 h-80 w-full" />
             ) : q.data.chart ? (
-              <div className="mt-4 rounded-xl bg-canvas p-4 sm:p-6">
+              <div className="mt-4">
                 <BandChart symbol={cfg.symbol} chart={q.data.chart} />
                 <BandReadout chart={q.data.chart} />
               </div>
             ) : (
-              <p className="mt-4 rounded-lg bg-sage p-4 text-body">The price chart is waiting on the pool and Chainlink reads.</p>
+              <p className="mt-4 text-mute">The price chart is waiting on the pool and Chainlink reads.</p>
             )}
           </section>
 
-          <section aria-labelledby="tvl">
-            <h2 id="tvl" className="text-3xl leading-none">Vault</h2>
-            <dl className="mt-4 divide-y divide-sage-line border-y border-sage-line">
-              <Fact k="Total value locked" v={!q.data ? "..." : q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)} />
-              <Fact k="Vault size cap" v={`$${num(cfg.depositCapUsd, 0)}`} />
-              <Fact k="Fee tier" v={cfg.feeTier} />
-            </dl>
+          <section aria-labelledby="fee">
+            <SectionTitle id="fee">Why this pool</SectionTitle>
+            <WhyThisPool id={cfg.id} symbol={cfg.symbol} />
           </section>
 
-          <section aria-labelledby="chain">
-            <h2 id="chain" className="text-3xl leading-none">On-chain</h2>
-            <dl className="mt-4 divide-y divide-sage-line border-y border-sage-line">
-              {cfg.vault && <AddressRow label="Vault" address={cfg.vault} />}
-              <AddressRow label={`${cfg.symbol} Stock Token`} address={cfg.token} />
-              <AddressRow label="Pool" address={cfg.pool} />
-              <AddressRow label="USDG" address={USDG} />
-            </dl>
-          </section>
+          <div className="grid gap-x-16 gap-y-14 lg:grid-cols-2">
+            <section aria-labelledby="tvl">
+              <SectionTitle id="tvl">Vault</SectionTitle>
+              <dl className="border-t-0">
+                <Fact k="Total value locked" v={!q.data ? "..." : q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)} />
+                <Fact k="Vault size" v={usdWhole(cfg.depositCapUsd)} />
+                <Fact k="Fee tier" v={cfg.feeTier} />
+                <Fact k="Replay window" v={`${isoDay(REPLAY_WINDOW.start)} to ${isoDay(REPLAY_WINDOW.end)}`} />
+              </dl>
+            </section>
+            <section aria-labelledby="chain">
+              <SectionTitle id="chain" aside="Robinhood Chain 4663">On-chain</SectionTitle>
+              <dl>
+                {cfg.vault && <AddressRow label="Vault" address={cfg.vault} />}
+                <AddressRow label={`${cfg.symbol} Stock Token`} address={cfg.token} />
+                <AddressRow label="Pool" address={cfg.pool} />
+                <AddressRow label="USDG" address={USDG} />
+              </dl>
+            </section>
+          </div>
         </div>
-
-        <aside className="lg:sticky lg:top-24" aria-label={`Deposit and withdraw ${cfg.symbol}`}>
-          <DepositPanel cfg={cfg} />
-          <ExitPreview vault={cfg.vault} symbol={cfg.symbol} user={address} />
-          {other && (
-            <p className="mt-4 text-sm text-body">
-              Also open to view: <Link className="inline-block py-2 font-semibold underline underline-offset-4" href={`/vault/${other.id}`}>{other.symbol} vault</Link>
-            </p>
-          )}
-        </aside>
       </div>
-    </div>
+
+      <DepositPanel cfg={cfg} />
+    </>
   );
 }

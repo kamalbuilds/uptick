@@ -81,51 +81,51 @@ export function BandChart({ symbol, chart, compact = false }: { symbol: string; 
             onPointerLeave={() => setHover(null)}
           >
             {!compact && ticks.map((p) => (
-              <line key={p} x1={padL} x2={width - padR} y1={y(p)} y2={y(p)} stroke="var(--color-sage-line)" strokeWidth={1} />
+              <line key={p} x1={padL} x2={width - padR} y1={y(p)} y2={y(p)} stroke="var(--color-hairline)" strokeWidth={1} />
             ))}
             {chart.bands.map((b) => {
               const a = Math.max(x(b.from), padL), z = x(Math.min(b.to, t1));
               return (
                 <g key={b.from}>
-                  <rect x={a} y={y(b.upper)} width={Math.max(0, z - a)} height={y(b.lower) - y(b.upper)} fill="var(--color-primary-pale)" />
-                  <line x1={a} x2={z} y1={y(b.upper)} y2={y(b.upper)} stroke="var(--color-positive-deep)" strokeWidth={1.5} strokeOpacity={0.55} />
-                  <line x1={a} x2={z} y1={y(b.lower)} y2={y(b.lower)} stroke="var(--color-positive-deep)" strokeWidth={1.5} strokeOpacity={0.55} />
+                  <rect x={a} y={y(b.upper)} width={Math.max(0, z - a)} height={y(b.lower) - y(b.upper)} fill="var(--color-raised)" />
+                  <line x1={a} x2={z} y1={y(b.upper)} y2={y(b.upper)} stroke="var(--color-line)" strokeWidth={1.5} />
+                  <line x1={a} x2={z} y1={y(b.lower)} y2={y(b.lower)} stroke="var(--color-line)" strokeWidth={1.5} />
                 </g>
               );
             })}
             {!compact && ticks.map((p) => (
-              <text key={p} x={width - padR + 8} y={y(p) + 4} fontSize={12} fill="var(--color-mute)" style={{ fontFamily: "var(--font-mono)" }}>{usd(p)}</text>
+              <text key={p} x={width - padR + 8} y={y(p) + 4} fontSize={12} fill="var(--color-mute)">{usd(p)}</text>
             ))}
             {!compact && dayTicks.map((t) => (
-              <text key={t} x={x(t)} y={H - 6} fontSize={12} textAnchor="middle" fill="var(--color-mute)" style={{ fontFamily: "var(--font-mono)" }}>{dayLabel(t)}</text>
+              <text key={t} x={x(t)} y={H - 6} fontSize={12} textAnchor="middle" fill="var(--color-mute)">{dayLabel(t)}</text>
             ))}
-            <path d={line} className="draw" pathLength={1000} style={{ ["--len" as string]: 1000 }} fill="none" stroke="var(--color-ink)" strokeWidth={compact ? 1.75 : 2} strokeLinejoin="round" strokeLinecap="round" />
-            {outRuns.map((d) => <path key={d} d={d} fill="none" stroke="var(--color-warning-deep)" strokeWidth={compact ? 2.25 : 2.5} strokeLinejoin="round" strokeLinecap="round" />)}
-            <circle cx={x(last.t)} cy={y(last.price)} r={compact ? 4.5 : 6} fill="var(--color-primary)" stroke="var(--color-ink)" strokeWidth={2} />
+            <path d={line} className="draw" pathLength={1000} style={{ ["--len" as string]: 1000 }} fill="none" stroke="var(--color-fg)" strokeWidth={compact ? 1.75 : 2} strokeLinejoin="round" strokeLinecap="round" />
+            {outRuns.map((d) => <path key={d} d={d} fill="none" stroke="var(--color-caution)" strokeWidth={compact ? 2.25 : 2.5} strokeLinejoin="round" strokeLinecap="round" />)}
+            <circle cx={x(last.t)} cy={y(last.price)} r={compact ? 4.5 : 6} fill="var(--color-fg)" stroke="var(--color-canvas)" strokeWidth={2} />
             {hp && hb && (
               <g pointerEvents="none">
-                <line x1={x(hp.t)} x2={x(hp.t)} y1={padT} y2={H - padB} stroke="var(--color-ink)" strokeWidth={1} strokeDasharray="3 3" />
-                <circle cx={x(hp.t)} cy={y(hp.price)} r={4.5} fill="var(--color-canvas)" stroke="var(--color-ink)" strokeWidth={2} />
+                <line x1={x(hp.t)} x2={x(hp.t)} y1={padT} y2={H - padB} stroke="var(--color-fg)" strokeWidth={1} strokeDasharray="3 3" />
+                <circle cx={x(hp.t)} cy={y(hp.price)} r={4.5} fill="var(--color-canvas)" stroke="var(--color-fg)" strokeWidth={2} />
               </g>
             )}
           </svg>
         )}
         {hp && hb && (
           <div
-            className="pointer-events-none absolute top-1 z-10 w-40 rounded-md bg-ink px-3 py-2 text-xs text-sage"
+            className="pointer-events-none absolute top-1 z-10 w-40 rounded-lg border border-line bg-raised px-3 py-2 text-xs text-mute"
             style={{ left: Math.min(Math.max(x(hp.t) - 80, 0), Math.max(0, width - 168)) }}
           >
             <p>{stamp(hp.t)}</p>
-            <p className="figure mt-0.5 text-sm text-canvas">{usd(hp.price)}</p>
+            <p className="figure mt-0.5 text-sm text-fg">{usd(hp.price)}</p>
             <p className="figure mt-0.5">Band {usd(hb.lower)} to {usd(hb.upper)}</p>
           </div>
         )}
       </div>
       {!compact && (
-        <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-body">
-          <li className="flex items-center gap-2"><span className="h-0.5 w-5 bg-ink" aria-hidden />Pool price</li>
-          <li className="flex items-center gap-2"><span className="h-3.5 w-5 rounded-[3px] border-y-[1.5px] border-positive-deep/55 bg-primary-pale" aria-hidden />Band, {chart.bandPct}% around the Chainlink price, re-centred at 02:00 UTC after each NYSE session</li>
-          <li className="flex items-center gap-2"><span className="h-0.5 w-5 bg-warning-deep" aria-hidden />Outside the band</li>
+        <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-mute">
+          <li className="flex items-center gap-2"><span className="h-0.5 w-5 bg-fg" aria-hidden />Pool price</li>
+          <li className="flex items-center gap-2"><span className="h-3.5 w-5 rounded-[3px] border-y-[1.5px] border-line bg-raised" aria-hidden />Band, {chart.bandPct}% around the Chainlink price, re-centred at 02:00 UTC after each NYSE session</li>
+          <li className="flex items-center gap-2"><span className="h-0.5 w-5 bg-caution" aria-hidden />Outside the band</li>
         </ul>
       )}
     </div>
@@ -144,11 +144,11 @@ export function BandReadout({ chart }: { chart: PriceChart }) {
     chart.inBand ? ["Room to the nearest edge", `${room.toFixed(1)}%`] : ["Position", "Outside the band"],
   ];
   return (
-    <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4">
+    <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
       {rows.map(([k, v]) => (
         <div key={k}>
-          <dt className="text-sm text-body">{k}</dt>
-          <dd className="figure mt-0.5 text-base font-medium sm:text-lg">{v}</dd>
+          <dt className="text-[13px] text-mute">{k}</dt>
+          <dd className="figure mt-0.5 text-[17px] font-medium">{v}</dd>
         </div>
       ))}
     </dl>
