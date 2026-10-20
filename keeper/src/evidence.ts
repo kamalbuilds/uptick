@@ -5,7 +5,7 @@ const poolLabel = (p: any) => p.fee_tier === 0x800000 ? `${p.kind} dynamic, avg 
 const hookLabel = (h: string | null) => h ?? "none";
 
 /** A vault takes deposits at all only when the lower of its two half-window kept APRs (edge_apr_pct) is at least this. Any floor
- *  between -7.8 and -98.2 gives the same open set on the current replay. */
+ *  between -5.6 and -89.4 gives the same open set on the current replay. */
 export const KEEP_FLOOR_APR = -20;
 
 /** Break-even: the lower half at or above this means LPs kept money in both halves, so deposits carry no cap. */
@@ -56,10 +56,11 @@ export function buildEvidence(tok: any, replay: any) {
     }))
     .sort((a: any, b: any) => b.fee_apr_pct - a.fee_apr_pct);
   const f = row.full, first = row.calibration.edge_apr_pct, second = row.test.edge_apr_pct;
+  const firstUpper = row.calibration.edge_apr_pct_upper, secondUpper = row.test.edge_apr_pct_upper;
   const worst = Math.min(first, second);
   const keep = { fee_apr_pct: f.fee_apr_pct, markout_apr_pct: f.markout_apr_pct, cost_apr_pct: f.cost_apr_pct, kept_apr_pct: f.edge_apr_pct };
   return {
-    keep: { ...keep, kept_first_half: first, kept_second_half: second },
+    keep: { ...keep, kept_first_half: first, kept_second_half: second, kept_apr_upper: Math.min(firstUpper, secondUpper), kept_first_half_upper: firstUpper, kept_second_half_upper: secondUpper },
     open: worst >= KEEP_FLOOR_APR,
     gate: depositGate(worst, tok.swaps_replayed, replay.window.days),
     chosen_pool: chosen.id, chosen_fee_tier: chosen.fee_tier, chosen_kind: chosen.kind, chosen_fee_apr_pct: row.full.fee_apr_pct,

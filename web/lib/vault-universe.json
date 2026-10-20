@@ -15,14 +15,15 @@
       "open": false,
       "gate": {
         "state": "closed",
-        "reason": "Closed: the weaker half kept -116.8% a year, below the -20% floor.",
+        "reason": "Closed: the weaker half kept -114.2% a year, below the -20% floor.",
         "floor_apr": -20,
-        "worst_half_apr": -116.78258498940441,
+        "worst_half_apr": -114.23707299127304,
         "swaps": 105466,
         "days": 30
       },
-      "feeAprPct": 170.65065052813173,
-      "keptAprPct": -116.78258498940441
+      "feeAprPct": 174.96399879308717,
+      "keptAprPct": -114.23707299127304,
+      "keptAprUpperPct": -93.29809454422386
     },
     {
       "id": "spcx",
@@ -36,14 +37,15 @@
       "open": false,
       "gate": {
         "state": "closed",
-        "reason": "Closed: the weaker half kept -98.2% a year, below the -20% floor.",
+        "reason": "Closed: the weaker half kept -89.4% a year, below the -20% floor.",
         "floor_apr": -20,
-        "worst_half_apr": -98.23298884233273,
+        "worst_half_apr": -89.44894961744878,
         "swaps": 621165,
         "days": 30
       },
-      "feeAprPct": 86.89222399922379,
-      "keptAprPct": -98.23298884233273
+      "feeAprPct": 86.48897852092718,
+      "keptAprPct": -89.44894961744878,
+      "keptAprUpperPct": -71.46662781858318
     },
     {
       "id": "nvda",
@@ -56,15 +58,16 @@
       "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
       "open": true,
       "gate": {
-        "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -0.4% a year, between the -20% floor and break-even, across 842,504 swaps. Deposits are capped at $25,000 per transaction.",
+        "state": "open",
+        "reason": "Open: the weaker half of the 30-day replay kept 1.8% a year, at or above break-even, across 842,504 swaps.",
         "floor_apr": -20,
-        "worst_half_apr": -0.41611426355074616,
+        "worst_half_apr": 1.81390365740869,
         "swaps": 842504,
         "days": 30
       },
-      "feeAprPct": 40.5574193924729,
-      "keptAprPct": -0.41611426355074616
+      "feeAprPct": 40.868075372067196,
+      "keptAprPct": 1.81390365740869,
+      "keptAprUpperPct": 3.70936435048276
     },
     {
       "id": "googl",
@@ -78,14 +81,15 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -7.8% a year, between the -20% floor and break-even, across 171,538 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -5.6% a year, between the -20% floor and break-even, across 171,538 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
-        "worst_half_apr": -7.828602211849247,
+        "worst_half_apr": -5.623820928690211,
         "swaps": 171538,
         "days": 30
       },
-      "feeAprPct": 38.78232498320464,
-      "keptAprPct": 2.513195536046313
+      "feeAprPct": 38.917153107140514,
+      "keptAprPct": 4.079477473287361,
+      "keptAprUpperPct": 8.138906465328887
     }
   ]
 }

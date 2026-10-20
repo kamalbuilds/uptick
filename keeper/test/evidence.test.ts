@@ -55,12 +55,12 @@ describe("evidence built from data/replay.json", () => {
     expect(open).toEqual(["GOOGL", "NVDA"]);
   });
 
-  test("NVDA sits between the floor and break-even, so its gate is reduced and names the weaker half", () => {
+  test("NVDA clears break-even on its weaker half, so its gate is open with no cap", () => {
     const ev: any = buildEvidence(replay.tokens.NVDA, replay);
-    expect(ev.gate.state).toBe("reduced");
+    expect(ev.gate.state).toBe("open");
     expect(ev.open).toBe(true);
-    expect(ev.gate.reason).toContain("Reduced");
-    expect(ev.gate.reason).toContain("capped at $25,000");
+    expect(ev.gate.reason).toContain("Open");
+    expect(ev.gate.reason).not.toContain("capped");
     expect(ev.gate.reason).toContain(ev.gate.worst_half_apr.toFixed(1));
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
     expect(ev.gate.floor_apr).toBe(KEEP_FLOOR_APR);
@@ -68,7 +68,16 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.days).toBe(replay.window.days);
   });
 
-  test("every token's gate state matches its weaker half, and the reduced set is exactly GOOGL and NVDA", () => {
+  test("GOOGL sits between the floor and break-even, so its gate is reduced and names the weaker half", () => {
+    const ev: any = buildEvidence(replay.tokens.GOOGL, replay);
+    expect(ev.gate.state).toBe("reduced");
+    expect(ev.open).toBe(true);
+    expect(ev.gate.reason).toContain("Reduced");
+    expect(ev.gate.reason).toContain("capped at $25,000");
+    expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
+  });
+
+  test("every token's gate state matches its weaker half, and the reduced set is exactly GOOGL", () => {
     for (const s of syms) {
       const ev: any = buildEvidence(replay.tokens[s], replay);
       const worst = ev.gate.worst_half_apr;
@@ -76,7 +85,7 @@ describe("evidence built from data/replay.json", () => {
       expect(ev.gate.reason.startsWith(ev.gate.state === "open" ? "Open" : ev.gate.state === "reduced" ? "Reduced" : "Closed")).toBe(true);
     }
     const reduced = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "reduced").sort();
-    expect(reduced).toEqual(["GOOGL", "NVDA"]);
+    expect(reduced).toEqual(["GOOGL"]);
     const closed = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "closed").sort();
     expect(closed).toEqual(["CRCL", "SPCX"]);
   });
@@ -100,11 +109,22 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.worst_half_apr).toBeLessThan(KEEP_FLOOR_APR);
   });
 
-  test("a zero floor would close NVDA", () => {
-    const ev: any = buildEvidence(replay.tokens.NVDA, replay);
+  test("a zero floor would close GOOGL", () => {
+    const ev: any = buildEvidence(replay.tokens.GOOGL, replay);
     const flipped = depositGate(ev.gate.worst_half_apr, ev.gate.swaps, ev.gate.days, 0);
     expect(flipped.state).toBe("closed");
     expect(flipped.reason).toContain("Closed");
+  });
+
+  test("the path-mode weaker half is exposed beside the conservative one", () => {
+    for (const s of syms) {
+      const ev: any = buildEvidence(replay.tokens[s], replay);
+      const row = replay.tokens[s].pools.find((p: any) => p.id === ev.chosen_pool);
+      expect(Number.isFinite(ev.keep.kept_apr_upper)).toBe(true);
+      expect(ev.keep.kept_first_half_upper).toBe(row.calibration.edge_apr_pct_upper);
+      expect(ev.keep.kept_second_half_upper).toBe(row.test.edge_apr_pct_upper);
+      expect(ev.keep.kept_apr_upper).toBe(Math.min(ev.keep.kept_first_half_upper, ev.keep.kept_second_half_upper));
+    }
   });
 
   test("a token whose session split has no loss to divide by yields no evidence rather than a null ratio", () => {

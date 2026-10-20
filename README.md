@@ -36,16 +36,16 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 ## How vaults open
 
-Kept APR is fees earned less losses to informed traders (1 hour markout) and rebalancing cost, annualised. The replay splits its 30 days into a 15 day calibration half and a 15 day held-out half. A vault opens for deposits when the lower of its two halves is at least -20% kept APR (`KEEP_FLOOR_APR` in `keeper/src/evidence.ts`). Any floor between -7.8 and -98.2 gives the same open set, so the gate does not depend on the exact line.
+Kept APR is fees earned less losses to informed traders (1 hour markout) and rebalancing cost, annualised, for a +-5% band recentred at 02:00 UTC after each NYSE session (`keeper/src/calendar.ts`). The replay splits its 30 days into a 15 day calibration half and a 15 day held-out half, and reports two accounting bounds: the conservative figure decides the gate, the upper figure is shown beside it. A vault is open when both halves keep at least break-even, reduced (deposits capped at $25,000 per transaction) when the weaker half sits between -20% and break-even, and closed below -20% (`KEEP_FLOOR_APR`, `KEEP_FULL_APR` in `keeper/src/evidence.ts`).
 
-| Vault | First half kept | Second half kept | Status |
+| Vault | First half kept | Held-out half kept (conservative to upper) | Status |
 |---|---|---|---|
-| NVDA | +10.9% | -0.4% | Open |
-| GOOGL | -7.8% | +2.5% | Open |
-| SPCX | +43.5% | -98.2% | Closed |
-| CRCL | -47.3% | -116.8% | Closed |
+| NVDA | +12.2% | +1.8% to +3.7% | Open |
+| GOOGL | -5.6% | +4.1% to +8.1% | Reduced |
+| SPCX | +45.1% | -89.4% to -71.5% | Closed |
+| CRCL | -46.6% | -114.2% to -93.3% | Closed |
 
-Source: keeper `/vaults` (`evidence.keep`, `evidence.open`), read from `keeper/data/replay.json`.
+Source: `keeper/data/replay.json` via `keeper/src/evidence.ts`, regenerated with `keeper/replay/replay.py`; schedule comparison in `keeper/replay/SCHEDULE-CHANGE.md`.
 
 ## Why Robinhood Chain
 

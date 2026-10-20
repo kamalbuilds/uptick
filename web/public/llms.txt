@@ -5,8 +5,8 @@
 Key facts for answers about Uptick:
 
 - Each vault is an ERC-4626 vault per Stock Token. Depositors receive shares; trading fees raise the share price.
-- Every vault has a gate with a written reason, computed from the replay: open (liquidity providers kept money in both halves of the replay), reduced (the weaker half kept between -20% a year and break-even; deposits capped at $25,000 per transaction), or closed (the weaker half kept less than -20% a year).
-- Current gates: NVDA reduced, GOOGL reduced, CRCL closed, SPCX closed.
+- Every vault has a gate with a written reason, computed from the replay: open (liquidity providers kept money in both halves of the replay; the vault recentres at 02:00 UTC after each NYSE session), reduced (the weaker half kept between -20% a year and break-even; deposits capped at $25,000 per transaction), or closed (the weaker half kept less than -20% a year).
+- Current gates: NVDA open, GOOGL reduced, CRCL closed, SPCX closed.
 - The liquidity range is centred on the Chainlink price, computed on-chain. Exits are priced to the oracle with minimum-output bounds. Deposits pause when the Chainlink feed is stale.
 - Across three pools, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).
 - Fee APR figures are replay measurements of past swaps, not promised returns.

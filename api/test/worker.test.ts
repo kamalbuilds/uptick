@@ -1,3 +1,5 @@
+import universeData from "../data/vault-universe.json";
+const NVDA_GATE = (universeData as { vaults: Array<{ id: string; gate: { state: string; reason: string } }> }).vaults.find((v) => v.id === "nvda")!.gate;
 import { describe, expect, test } from "bun:test";
 import worker from "../src/worker";
 import vaultUniverse from "../data/vault-universe.json";
@@ -78,8 +80,8 @@ describe("GET /vaults/:id", () => {
     };
 
     expect(body.id).toBe("nvda");
-    expect(body.gate.state).toBe("reduced");
-    expect(body.gate.reason).toContain("between the -20% floor and break-even");
+    expect(body.gate.state).toBe(NVDA_GATE.state);
+    expect(body.gate.reason).toBe(NVDA_GATE.reason);
     expect(body.ticker).toBe("NVDA");
     expect(body.open).toBe(true);
     expect(body.pools.length).toBe(replay.tokens.NVDA.pools.length);

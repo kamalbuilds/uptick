@@ -1,3 +1,5 @@
+import universeData from "../data/vault-universe.json";
+const NVDA_GATE = (universeData as { vaults: Array<{ id: string; gate: { state: string; reason: string } }> }).vaults.find((v) => v.id === "nvda")!.gate;
 import { describe, expect, test } from "bun:test";
 import { decodeFunctionData, parseAbi } from "viem";
 import worker from "../src/worker";
@@ -115,7 +117,7 @@ describe("list_vaults", () => {
     expect(ids).toContain("crcl");
 
     const nvda = vaults.find((v) => v.id === "nvda")!;
-    expect(nvda.gate_state).toBe("reduced");
+    expect(nvda.gate_state).toBe(NVDA_GATE.state);
     expect(typeof nvda.reason).toBe("string");
     expect(typeof nvda.fee_apr_pct).toBe("number");
     expect(typeof nvda.kept_apr_pct).toBe("number");
@@ -129,7 +131,7 @@ describe("get_vault_evidence", () => {
     expect(sc.id).toBe("nvda");
     expect(Array.isArray(sc.pools)).toBe(true);
     expect((sc.pools as unknown[]).length).toBeGreaterThan(0);
-    expect((sc.gate as { state: string }).state).toBe("reduced");
+    expect((sc.gate as { state: string }).state).toBe(NVDA_GATE.state);
     expect(typeof (sc.gate as { rule: string }).rule).toBe("string");
     expect(typeof (sc.window as { days: number }).days).toBe("number");
     expect(typeof sc.swaps).toBe("number");
