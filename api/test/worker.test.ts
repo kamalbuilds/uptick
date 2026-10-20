@@ -48,14 +48,14 @@ describe("GET /vaults", () => {
     expect(body.every((v) => v.window_days === replay.window.days)).toBe(true);
   });
 
-  test("seventeen vaults: nvda, aapl, googl, amzn, pltr, qqq and spy take deposits, the other ten are closed", async () => {
+  test("seventeen vaults: aapl, amd, amzn, googl, intc, nvda, pltr, qqq, spy and uso take deposits, the other seven are closed", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const byId = Object.fromEntries(body.map((v) => [v.id, v.open]));
 
     expect(body.length).toBe(17);
     expect(byId).toEqual({
-      nvda: true, aapl: true, googl: true, amzn: true, pltr: true, qqq: true, spy: true,
-      amd: false, crcl: false, gme: false, intc: false, meta: false, mstr: false, mu: false, spcx: false, tsla: false, uso: false,
+      nvda: true, aapl: true, googl: true, amzn: true, pltr: true, qqq: true, spy: true, amd: true, intc: true, uso: true,
+      crcl: false, gme: false, meta: false, mstr: false, mu: false, spcx: false, tsla: false,
     });
   });
 
@@ -76,8 +76,8 @@ describe("GET /vaults", () => {
   test("every vault carries a gate state and a written reason", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const want: Record<string, string> = {
-      nvda: "open", aapl: "open", amzn: "reduced", googl: "reduced", spy: "reduced", pltr: "reduced", qqq: "reduced",
-      uso: "closed", spcx: "closed", crcl: "closed", amd: "closed", gme: "closed", intc: "closed", meta: "closed", mstr: "closed", mu: "closed", tsla: "closed",
+      aapl: "open", nvda: "reduced", amzn: "reduced", googl: "reduced", spy: "reduced", pltr: "reduced", qqq: "reduced", amd: "reduced", intc: "reduced", uso: "reduced",
+      spcx: "closed", crcl: "closed", gme: "closed", meta: "closed", mstr: "closed", mu: "closed", tsla: "closed",
     };
     expect(body.length).toBeGreaterThan(0);
     for (const v of body) {
@@ -224,7 +224,7 @@ describe("GET /keeper/vaults/:id (the stats shape the web app reads)", () => {
     chart: unknown;
     fee_apr_pct: { replay_30d: number; "7d": number | null };
     replay: { window: { days: number } };
-    evidence: { open: boolean; gate: { state: string }; pools: unknown[]; chosen_pool: string; swaps_replayed: number };
+    evidence: { open: boolean; band_bps: number; gate: { state: string }; pools: unknown[]; chosen_pool: string; swaps_replayed: number };
   }
   const NVDA = "0x6852Adb5Fce1D73c08A9b3Aa7edE9A03437ac2fE";
   const getWith = (path: string, e: Record<string, unknown>) =>
@@ -244,6 +244,7 @@ describe("GET /keeper/vaults/:id (the stats shape the web app reads)", () => {
       expect(body.tvl_usd).toBeNull();
       expect(body.chart).toBeNull();
       expect(body.fee_apr_pct.replay_30d).toBe(v.feeAprPct);
+      expect(body.evidence.band_bps).toBe(v.bandBps);
       expect(body.replay.window.days).toBe(replay.window.days);
       expect(body.open).toBe(v.open);
       expect(body.evidence.gate.state).toBe(v.gate.state);
@@ -342,7 +343,7 @@ describe("GET /keeper/vaults/:id (the stats shape the web app reads)", () => {
         expect(body.source).toBe("replay");
         expect(body.tvl_usd).toBeNull();
         expect(typeof body.onchain_error).toBe("string");
-        expect(body.evidence.gate.state).toBe("open");
+        expect(body.evidence.gate.state).toBe("reduced");
       } finally {
         globalThis.fetch = realFetch;
       }

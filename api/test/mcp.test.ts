@@ -269,12 +269,13 @@ describe("deposit caps", () => {
   });
 
   test("a stock deposit is valued at the universe's Chainlink read before the cap applies", async () => {
-    const v = by("nvda");
+    const v = by("aapl");
+    expect(v.gate.state).toBe("open");
     const tokensAtCap = v.depositCapUsd / v.refPriceUsd;
-    const over = await callTool("prepare_deposit", { id: "nvda", amount: (tokensAtCap * 1.01).toFixed(6), receiver: RECEIVER, asset: "stock" }, withVaults);
+    const over = await callTool("prepare_deposit", { id: "aapl", amount: (tokensAtCap * 1.01).toFixed(6), receiver: RECEIVER, asset: "stock" }, withVaults);
     expect(over.isError).toBe(true);
-    expect(over.content[0].text).toContain("$100,000");
-    const under = await callTool("prepare_deposit", { id: "nvda", amount: (tokensAtCap * 0.99).toFixed(6), receiver: RECEIVER, asset: "stock" }, withVaults);
+    expect(over.content[0].text).toContain(`$${v.depositCapUsd.toLocaleString("en-US")}`);
+    const under = await callTool("prepare_deposit", { id: "aapl", amount: (tokensAtCap * 0.99).toFixed(6), receiver: RECEIVER, asset: "stock" }, withVaults);
     expect(under.isError).toBeUndefined();
   });
 
