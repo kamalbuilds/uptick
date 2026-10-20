@@ -38,17 +38,27 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 Kept APR is fees earned less losses to informed traders (1 hour markout) and rebalancing cost, annualised, for a +-5% band recentred at 02:00 UTC after each NYSE session (`keeper/src/calendar.ts`). The replay splits its 30 days into a 15 day calibration half and a 15 day held-out half, and reports two accounting bounds: the conservative figure decides the gate, the upper figure is shown beside it. A vault is open when both halves keep at least break-even, reduced (deposits capped at $25,000 per transaction) when the weaker half sits between -20% and break-even, and closed below -20% (`KEEP_FLOOR_APR`, `KEEP_FULL_APR` in `keeper/src/evidence.ts`).
 
-| Vault | First half kept | Held-out half kept (conservative to upper) | Status | Reason |
-|---|---|---|---|---|
-| NVDA | +12.2% | +1.8% to +3.7% | Open | Both halves at or above break-even |
-| AMZN | +0.6% | -9.9% to -4.4% | Reduced | Weaker half between -20% and break-even, deposits capped |
-| GOOGL | -5.6% | +4.1% to +8.1% | Reduced | Weaker half between -20% and break-even, deposits capped |
-| SPY | +3.3% | -0.5% to +0.5% | Reduced | Weaker half between -20% and break-even, deposits capped |
-| USO | -24.9% | -21.9% to -18.7% | Closed | Both halves below the -20% floor, the gate shuts deposits |
-| SPCX | +45.1% | -89.4% to -71.5% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
-| CRCL | -46.6% | -114.2% to -93.3% | Closed | Both halves below the -20% floor, the gate shuts deposits |
+| Vault | Vault size cap | First half kept | Held-out half kept (conservative to upper) | Status | Reason |
+|---|---|---|---|---|---|
+| AAPL | $73,983 | +2.5% | +3.5% to +9.1% | Open | Both halves at or above break-even |
+| NVDA | $100,000 | +12.2% | +1.8% to +3.7% | Open | Both halves at or above break-even |
+| SPY | $100,000 | +3.3% | -0.5% to +0.5% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| QQQ | $66,787 | +0.3% | -4.1% to -3.0% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| GOOGL | $100,000 | -5.6% | +4.1% to +8.1% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| AMZN | $68,501 | +2.3% | -6.8% to -2.8% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| PLTR | $24,207 | +63.1% | -16.9% to +4.0% | Reduced | Weaker half between -20% and break-even, deposits capped |
+| USO | $100,000 | -24.9% | -21.9% to -18.7% | Closed | Both halves below the -20% floor, the gate shuts deposits |
+| MSTR | $22,206 | -2.2% | -28.5% to -9.2% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| META | $24,118 | -1.2% | -40.8% to -34.5% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| GME | $49,212 | +88.4% | -45.5% to -4.8% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| TSLA | $83,206 | +12.0% | -49.2% to -34.6% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| AMD | $18,436 | -65.2% | -49.4% to -31.1% | Closed | Both halves below the -20% floor, the gate shuts deposits |
+| MU | $86,710 | -8.6% | -66.4% to -39.3% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| SPCX | $100,000 | +45.1% | -89.4% to -71.5% | Closed | Held-out half below the -20% floor, the gate shuts deposits |
+| INTC | $19,116 | -91.2% | -53.7% to -18.1% | Closed | Both halves below the -20% floor, the gate shuts deposits |
+| CRCL | $100,000 | -46.6% | -114.2% to -93.3% | Closed | Both halves below the -20% floor, the gate shuts deposits |
 
-Seven tokens clear the registry rule in `keeper/src/universe.ts`: a Chainlink feed, a USDG pool trading at least $100K a day, and a $100K position that stays under 20% of in-range liquidity. The volume floor admits a token to a vault and the replay gate decides whether deposits open. Ten more tokens (AAPL, AMD, GME, INTC, META, MSTR, MU, PLTR, QQQ, TSLA) clear the volume floor and sit outside the registry because a $100K position would hold 22% to 58% of their in-range liquidity, above the 20% depth cap that keeps a vault a small share of its pool.
+Seventeen tokens clear the registry rule in `keeper/src/universe.ts`: a Chainlink feed, a USDG pool trading at least $100K a day, and a vault sized to the pool. The vault size cap is the largest position that holds at most 20% of the pool's in-range liquidity, up to $100K and at least $10K, so a thinner pool gets a smaller vault instead of no vault; `StockVault` enforces the size on-chain through its `depositCap`. The replay simulates each vault at its own size, so every gate above reflects the vault a depositor can actually buy. The volume floor admits a token to a vault and the replay gate decides whether deposits open.
 
 Source: `keeper/data/replay.json` via `keeper/src/evidence.ts`, regenerated with `keeper/replay/replay.py`; schedule comparison in `keeper/replay/SCHEDULE-CHANGE.md`.
 

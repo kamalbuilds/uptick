@@ -26,7 +26,7 @@ Key handling: `VAULT_KEEPER_KEY` is read from the environment (Bun loads `keeper
 
 `data/universe.json` lists every Robinhood Stock Token on Robinhood Chain (196 in the RHJ registry, each confirmed with `eth_getCode`) with its Chainlink feed, every Uniswap v3 USDG pool (fee tiers 100, 500, 3000, 10000), the deepest pool's depth and 7-day volume, and an `eligible` flag with the first failing condition as `reason`. Built from public RPC reads at one block (recorded in the file) by `bun scripts/build-universe.ts`; `--reeval` re-applies the rule to the stored reads without any RPC.
 
-Fields per token: `symbol`, `name`, `token`, `multiplier`, `feed` (proxy, aggregator, description, decimals, price, age), `pool` (address, fee tier, tick spacing, pool price, `depth_usd_5pct`, `volume_7d_usd`, `volume_usd_per_day`, `swaps_7d`, `vault_share_100k`, `feed_deviation_bps`), `other_pools`, `eligible`, `reason`.
+Fields per token: `symbol`, `name`, `token`, `multiplier`, `feed` (proxy, aggregator, description, decimals, price, age), `pool` (address, fee tier, tick spacing, pool price, `depth_usd_5pct`, `volume_7d_usd`, `volume_usd_per_day`, `swaps_7d`, `vault_share_100k`, `feed_deviation_bps`), `cap_usd`, `other_pools`, `eligible`, `reason`.
 
 ### Eligibility rule
 
@@ -37,24 +37,39 @@ A Stock Token gets a vault when all of these hold (thresholds in `src/universe.t
 | Chainlink Stock Token feed | present in the Chainlink directory for 4663, `description()`, `decimals()` and `latestRoundData()` readable, answer positive |
 | Feed age | at most 4 days (heartbeat plus a long weekend) |
 | USDG pool | the deepest v3 pool by active liquidity across its +-5% band |
-| Pool volume | at least USD 1,000,000 per day, 7-day average |
-| Vault share | a USD 100,000 vault is at most 20% of in-range liquidity: `V / (depth + V)` |
+| Pool volume | at least USD 100,000 per day, 7-day average |
+| Vault size | the vault is sized to its pool: `cap_usd` = min(USD 100,000, the largest `V` with `V / (depth + V)` at most 20%), at least USD 10,000 (below that, gas and rebalance cost dominate). `StockVault` enforces it through `depositCap` |
 | Pool vs feed | within 300 bps at the read block |
 
-Where the numbers come from: the replay sizes a vault at USD 100,000 and rebalances it once a day, a swap of about half the deposit. One million dollars a day keeps that swap at or under 5% of the pool's daily flow (NVDA, at about USD 6.1M per day, qualifies; TSLA, at about USD 0.22M per day, does not). The 20% share line sits in the measured gap between GOOGL (15.5%) and AAPL (24.7%).
+Where the numbers come from: the volume floor admits a token to a vault and the replay gate decides whether deposits open. The vault is sized to its pool: a USD 100,000 position is the ceiling, and a thinner pool carries the largest position that holds at most 20% of its in-range liquidity (`cap_usd`, floored to whole dollars). Below USD 10,000 the daily rebalance, gas and swap impact cost more than the fees such a vault earns, so the pool is left out. `replay/replay.py` simulates each vault at its own `cap_usd`.
 
-| Token | Volume per day (7 d) | Vault share | Result |
-|---|---|---|---|
-| NVDA | USD 6.14M | 5.8% | eligible |
-| SPCX | USD 4.28M | 13.5% | eligible |
-| CRCL | USD 2.03M | 10.4% | eligible |
-| GOOGL | USD 1.84M | 15.5% | eligible |
-| USO | USD 0.99M | 5.3% | volume |
-| QQQ | USD 0.64M | 26.6% | volume, share |
-| AAPL | USD 0.59M | 24.7% | volume, share |
-| TSLA | USD 0.22M | 26.0% | volume, share |
+| Token | Volume per day (7 d) | Pool depth (+-5%) | Vault size cap | Result |
+|---|---|---|---|---|
+| NVDA | USD 7.76M | USD 1.61M | USD 100,000 | eligible |
+| SPCX | USD 4.86M | USD 582K | USD 100,000 | eligible |
+| CRCL | USD 1.96M | USD 857K | USD 100,000 | eligible |
+| GOOGL | USD 1.73M | USD 610K | USD 100,000 | eligible |
+| USO | USD 926K | USD 1.97M | USD 100,000 | eligible |
+| MU | USD 573K | USD 347K | USD 86,710 | eligible |
+| AAPL | USD 561K | USD 296K | USD 73,983 | eligible |
+| QQQ | USD 529K | USD 267K | USD 66,787 | eligible |
+| TSLA | USD 291K | USD 333K | USD 83,206 | eligible |
+| AMZN | USD 223K | USD 274K | USD 68,501 | eligible |
+| AMD | USD 179K | USD 74K | USD 18,436 | eligible |
+| INTC | USD 169K | USD 76K | USD 19,116 | eligible |
+| SPY | USD 166K | USD 470K | USD 100,000 | eligible |
+| MSTR | USD 160K | USD 89K | USD 22,206 | eligible |
+| META | USD 107K | USD 96K | USD 24,118 | eligible |
+| PLTR | USD 106K | USD 97K | USD 24,207 | eligible |
+| GME | USD 101K | USD 197K | USD 49,212 | eligible |
+| DELL | USD 94K | USD 57K | USD 14,282 | volume |
+| BABA | USD 85K | USD 31K | USD 7,770 | volume |
+| MSFT | USD 73K | USD 236K | USD 59,071 | volume |
+| SLV | USD 52K | USD 129K | USD 32,175 | volume |
 
-Of 196 tokens: 35 have a feed, 95 have a USDG v3 pool, 4 are eligible. v4 pools are replayed for the eligible tokens (below) but do not enter eligibility: StockVault holds a Uniswap v3 position.
+Of 196 tokens: 35 have a feed, 95 have a USDG v3 pool, 17 are eligible (block 93099228).
+
+v4 pools are replayed for the eligible tokens (below) but do not enter eligibility: StockVault holds a Uniswap v3 position.
 
 ## Pool choice (replay)
 
