@@ -1,0 +1,155 @@
+{
+ "AAPL": {
+  "range_bps": 350,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": 5.042094276605731,
+  "heldout_apr": 12.752066080714384,
+  "margin": 3.0368405556813656
+ },
+ "AMD": {
+  "range_bps": 2000,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": -38.34091671639806,
+  "heldout_apr": -11.72832518998161,
+  "margin": 89.31404764597906
+ },
+ "AMZN": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 3.874279893530059,
+  "heldout_apr": -4.924523312901166,
+  "margin": -5.700743365965978
+ },
+ "CRCL": {
+  "range_bps": 2000,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": 3.036422853564753,
+  "heldout_apr": -26.81736438676538,
+  "margin": 71.67248005487555
+ },
+ "GME": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 122.26413085250375,
+  "heldout_apr": -71.85390795591474,
+  "margin": -11.481840254843974
+ },
+ "GOOGL": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 0.020257301934346942,
+  "heldout_apr": 9.087639490820342,
+  "margin": -4.113591788126946
+ },
+ "INTC": {
+  "range_bps": 2000,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": -48.291316664465654,
+  "heldout_apr": -5.767555435534765,
+  "margin": 127.91195259620089
+ },
+ "META": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": -43.64800301286777,
+  "heldout_apr": -54.64351120171228,
+  "margin": -118.56467094287194
+ },
+ "MSTR": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 1.015443608707041,
+  "heldout_apr": -39.92971160531818,
+  "margin": -14.86491113307158
+ },
+ "MU": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 16.193276772996658,
+  "heldout_apr": -48.24012127656896,
+  "margin": -25.88331659155292
+ },
+ "NVDA": {
+  "range_bps": 150,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": 34.85437227239775,
+  "heldout_apr": 4.540864338850889,
+  "margin": 2.1660027812348446
+ },
+ "PLTR": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 70.33024281493337,
+  "heldout_apr": -43.57357302564421,
+  "margin": -22.99034441198907
+ },
+ "QQQ": {
+  "range_bps": 1000,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": 0.6971092950670933,
+  "heldout_apr": -1.202964399180597,
+  "margin": 2.7358152891316
+ },
+ "SPCX": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 48.634020374101326,
+  "heldout_apr": -73.60626293881164,
+  "margin": -28.724754982945228
+ },
+ "SPY": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 4.075305801817723,
+  "heldout_apr": 0.4797646671249605,
+  "margin": -4.8767193398316
+ },
+ "TSLA": {
+  "range_bps": 500,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "keep",
+  "calibration_apr": 22.54245818400956,
+  "heldout_apr": -37.08575908313069,
+  "margin": -53.68444230562671
+ },
+ "USO": {
+  "range_bps": 2000,
+  "interval_h": 24,
+  "decided_by": "strategist calibration pick",
+  "decision": "change",
+  "calibration_apr": -3.851732956865099,
+  "heldout_apr": -4.189714406696276,
+  "margin": 14.044375433908002
+ }
+}

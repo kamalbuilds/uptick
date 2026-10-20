@@ -3,7 +3,12 @@
 An agent proposes, the replay decides, the contract bounds. Nothing here signs or sends a transaction.
 
 Usage:
-  python3 strategist.py --token NVDA [--current-range-bps 500] [--current-interval-h 24] [--out proposal.json] [--explain]
+  python3 strategist.py --token NVDA [--current-range-bps 500] [--current-interval-h 24] [--interval-h 24] [--out proposal.json] [--explain]
+  python3 strategist.py --batch --interval-h 24 [--tokens A,B] [--params-out data/params.json] [--out-dir DIR]
+
+--interval-h restricts the grid to that one interval. --batch decides every eligible token of data/universe.json (or --tokens) and
+merges {SYM: {range_bps, interval_h, decided_by, calibration_apr, heldout_apr, margin}} into data/params.json, the per-token band
+replay/replay.py reads. The keeper recentres once a day, so batch mode requires --interval-h 24.
 
 Scoring mirrors replay/replay.py: window is the last 30 days to 2026-10-17 00:00 UTC, the first 15 days
 calibrate and the last 15 are held out; the metric is the out-of-sample edge APR = fee APR + markout APR
@@ -73,8 +78,8 @@ class Interval:
         return None
 
 
-def grid_candidates():
-    return [{"range_bps": r, "interval_h": h} for r in RANGE_BPS for h in INTERVAL_H]
+def grid_candidates(interval_h=None):
+    return [{"range_bps": r, "interval_h": h} for r in RANGE_BPS for h in INTERVAL_H if interval_h in (None, h)]
 
 
 def assert_candidate_in_bounds(c):
@@ -142,8 +147,11 @@ def load_token(sym):
     return tok
 
 
-def build_proposal(sym, current_range_bps, current_interval_h):
-    for c in grid_candidates():
+def build_proposal(sym, current_range_bps, current_interval_h, interval_h=None):
+    grid = grid_candidates(interval_h)
+    if not grid:
+        raise SystemExit(f"--interval-h {interval_h} is not on the grid {INTERVAL_H}")
+    for c in grid:
         assert_candidate_in_bounds(c)
     assert_candidate_in_bounds({"range_bps": current_range_bps, "interval_h": current_interval_h})
 
@@ -182,7 +190,7 @@ def build_proposal(sym, current_range_bps, current_interval_h):
     cur_held, _ = score(pl, ref, tm, t1, current_range_bps, current_interval_h)
 
     scored = []
-    for c in grid_candidates():
+    for c in grid:
         e, n = score(pl, ref, t0, tm, c["range_bps"], c["interval_h"])
         scored.append(dict(range_bps=c["range_bps"], interval_h=c["interval_h"], calibration_apr=e, rebalances=n))
     scored.sort(key=lambda c: c["calibration_apr"] if np.isfinite(c["calibration_apr"]) else -np.inf, reverse=True)
@@ -201,7 +209,7 @@ def build_proposal(sym, current_range_bps, current_interval_h):
         f"Window {DAYS:.0f} days ending {_iso(t1)}, capital ${CAP:,.0f}, pool {choice['id']} at fee {choice['fee_tier']} ppm.",
         f"Calibration is the first {half:.0f} days, held-out the second {half:.0f} days.",
         f"Current setting rangeBps={current_range_bps}, interval={current_interval_h}h scores {_fmt(cur_cal)} APR on calibration and {_fmt(cur_held)} APR on held-out.",
-        f"Out of {len(grid_candidates())} grid settings the top three by calibration are: "
+        f"Out of {len(grid)} grid settings the top three by calibration are: "
         + "; ".join(f"rangeBps={c['range_bps']}, interval={c['interval_h']}h: calibration {_fmt(c['calibration_apr'])}, held-out {_fmt(c['heldout_apr'])}"
                     for c in top) + ".",
     ]
@@ -241,16 +249,69 @@ def explain(facts):
         return None
 
 
+PARAMS_PATH = os.path.join(KEEPER, "data", "params.json")
+DECIDED_BY = "strategist calibration pick"
+
+
+def params_entry(res):
+    """One params.json row. On change it carries the picked candidate's scores, on keep the current setting's own; margin is the held-out edge the rule tested."""
+    if res["proposed"]:
+        scores = next(c for c in res["candidates"] if (c["range_bps"], c["interval_h"]) == (res["proposed"]["range_bps"], res["proposed"]["interval_h"]))
+        setting = res["proposed"]
+    else:
+        scores = setting = res["current"]
+    return dict(range_bps=setting["range_bps"], interval_h=setting["interval_h"], decided_by=DECIDED_BY, decision=res["decision"],
+                calibration_apr=scores["calibration_apr"], heldout_apr=scores["heldout_apr"], margin=res["margin_apr"])
+
+
+def batch(interval_h, tokens, params_out, out_dir, current_range_bps, current_interval_h):
+    if interval_h != 24:
+        raise SystemExit("--batch requires --interval-h 24: the keeper recentres once a day")
+    if not tokens:
+        tokens = [t["symbol"] for t in json.load(open(os.path.join(KEEPER, "data", "universe.json")))["tokens"] if t.get("eligible")]
+    if not tokens:
+        raise SystemExit("no eligible token in universe.json")
+    params = json.load(open(params_out)) if os.path.exists(params_out) else {}
+    failed = []
+    for sym in tokens:
+        try:
+            res = build_proposal(sym, current_range_bps, current_interval_h, interval_h)
+        except BaseException as e:  # a token with no pool raises SystemExit; that fails the token, not the batch
+            failed.append(sym)
+            print(f"{sym}: FAILED {type(e).__name__}: {e}", flush=True)
+            continue
+        if out_dir:
+            os.makedirs(out_dir, exist_ok=True)
+            json.dump(finite(res), open(os.path.join(out_dir, f"strat24-{sym}.json"), "w"), indent=1, allow_nan=False)
+        params[sym] = params_entry(res)
+        json.dump(finite(dict(sorted(params.items()))), open(params_out, "w"), indent=1, allow_nan=False)
+        e = params[sym]
+        print(f"{sym}: {res['decision']} range_bps={e['range_bps']} cal={_fmt(e['calibration_apr'])} held={_fmt(e['heldout_apr'])} margin={_fmt(e['margin'])}", flush=True)
+    if failed:
+        print(f"FAILED tokens: {','.join(failed)}", flush=True)
+        return 1
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Propose a rangeBps and minRebalanceInterval for a StockVault pool.")
-    ap.add_argument("--token", required=True)
+    ap.add_argument("--token")
+    ap.add_argument("--interval-h", type=int, default=None, help="restrict the grid to this interval")
+    ap.add_argument("--batch", action="store_true", help="decide every eligible token and write --params-out")
+    ap.add_argument("--tokens", default="", help="comma list for --batch; default every eligible token")
+    ap.add_argument("--params-out", default=PARAMS_PATH)
+    ap.add_argument("--out-dir", default=None, help="--batch: also write each token's full proposal here")
     ap.add_argument("--current-range-bps", type=int, default=500)
     ap.add_argument("--current-interval-h", type=int, default=24)
     ap.add_argument("--out", default="proposal.json")
     ap.add_argument("--explain", action="store_true")
     a = ap.parse_args(argv)
+    if a.batch:
+        return batch(a.interval_h, [x.strip().upper() for x in a.tokens.split(",") if x.strip()], a.params_out, a.out_dir, a.current_range_bps, a.current_interval_h)
+    if not a.token:
+        ap.error("--token is required unless --batch")
 
-    res = build_proposal(a.token.upper(), a.current_range_bps, a.current_interval_h)
+    res = build_proposal(a.token.upper(), a.current_range_bps, a.current_interval_h, a.interval_h)
     if a.explain:
         res["explanation"] = explain(res["rationale_facts"])
     json.dump(finite(res), open(a.out, "w"), indent=1, allow_nan=False)

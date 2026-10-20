@@ -56,6 +56,25 @@ def test_decision():
     assert d == "keep" and chosen is None, (d, chosen)
 
 
+def test_interval_filter():
+    full = st.grid_candidates()
+    day = st.grid_candidates(24)
+    assert day and len(day) < len(full), (len(day), len(full))
+    assert {c["interval_h"] for c in day} == {24}, day
+    assert {c["range_bps"] for c in day} == set(st.RANGE_BPS)
+    assert st.grid_candidates(7) == [], "an off-grid interval must yield an empty grid"
+
+
+def test_params_entry():
+    cur = dict(range_bps=500, interval_h=24, calibration_apr=1.0, heldout_apr=-9.0)
+    cands = [dict(range_bps=1500, interval_h=24, calibration_apr=4.0, heldout_apr=-2.0)]
+    chg = st.params_entry(dict(decision="change", proposed=dict(range_bps=1500, interval_h=24), current=cur, candidates=cands, margin_apr=7.0))
+    assert chg == dict(range_bps=1500, interval_h=24, decided_by="strategist calibration pick", decision="change",
+                       calibration_apr=4.0, heldout_apr=-2.0, margin=7.0), chg
+    keep = st.params_entry(dict(decision="keep", proposed=None, current=cur, candidates=cands, margin_apr=0.5))
+    assert keep["range_bps"] == 500 and keep["heldout_apr"] == -9.0 and keep["margin"] == 0.5, keep
+
+
 def test_real_nvda():
     out = os.path.join(tempfile.mkdtemp(prefix="strategist-test-"), "proposal.json")
     subprocess.run([sys.executable, os.path.join(HERE, "strategist.py"), "--token", "NVDA", "--out", out],
@@ -77,7 +96,7 @@ def test_real_nvda():
 
 
 if __name__ == "__main__":
-    for fn in (test_grid_in_bounds, test_decision, test_real_nvda):
+    for fn in (test_grid_in_bounds, test_decision, test_interval_filter, test_params_entry, test_real_nvda):
         fn()
         print("ok", fn.__name__)
-    print("3 tests passed")
+    print("5 tests passed")
