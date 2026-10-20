@@ -1,0 +1,29 @@
+{
+  "name": "uptick-films",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Uptick product films (Remotion). Own package: the web app build never installs or compiles this folder.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "render:launch": "bun scripts/render.ts Launch launch --duration 20 --size 1920x1080 --poster 14.2",
+    "render:fee-loop": "bun scripts/render.ts FeeLoop fee-loop --duration 8 --size 1080x1080 --poster 4.6"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.537",
+    "@remotion/cli": "4.0.537",
+    "@remotion/fonts": "4.0.537",
+    "@remotion/renderer": "4.0.537",
+    "@remotion/tailwind-v4": "4.0.537",
+    "@types/node": "26.6.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.537"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "7.0.2"
+  }
+}
