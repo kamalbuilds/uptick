@@ -3,14 +3,22 @@
 // The pool follows the keeper's registry rule (the replay's chosen v3 pool, else the universe's deepest) so the
 // factory's (stock, pool) key matches what the keeper looks up. depositCapTokens = cap_usd / Chainlink price in
 // Stock Token wei (floor), 0 (uncapped) when the universe carries no cap_usd.
-// Usage: node scripts/deploy-list.mjs [out.json]   (stdout when no path)
+// --open-only keeps tokens whose evidence gate (web/lib/vault-universe.json) is open or reduced: mainnet deploys only
+// vaults that take deposits; a closed token stays evidence-only until its gate flips.
+// Usage: node scripts/deploy-list.mjs [--open-only] [out.json]   (stdout when no path)
 import { readFileSync, writeFileSync } from "node:fs";
 
 const data = (f) => JSON.parse(readFileSync(new URL(`../keeper/data/${f}`, import.meta.url), "utf8"));
 const universe = data("universe.json");
 const replay = data("replay.json");
+const args = process.argv.slice(2);
+const openOnly = args.includes("--open-only");
+const outPath = args.find((a) => !a.startsWith("--"));
+const gates = Object.fromEntries(
+  JSON.parse(readFileSync(new URL("../web/lib/vault-universe.json", import.meta.url), "utf8")).vaults.map((v) => [v.symbol, v.gate?.state]),
+);
 
-const list = universe.tokens.filter((t) => t.eligible).map((t) => {
+const list = universe.tokens.filter((t) => t.eligible && (!openOnly || ["open", "reduced"].includes(gates[t.symbol]))).map((t) => {
   const chosen = replay.tokens?.[t.symbol]?.chosen;
   const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
   const answer = BigInt(Math.round(t.feed.usd * 10 ** t.feed.decimals));
@@ -25,5 +33,5 @@ const list = universe.tokens.filter((t) => t.eligible).map((t) => {
 if (!list.length) throw new Error("universe.json has no eligible token");
 
 const out = JSON.stringify(list, null, 2) + "\n";
-if (process.argv[2]) writeFileSync(process.argv[2], out);
+if (outPath) writeFileSync(outPath, out);
 else process.stdout.write(out);
