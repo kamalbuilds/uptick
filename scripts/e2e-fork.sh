@@ -106,6 +106,9 @@ health() { cast call "$V" 'health()(uint8,uint256,uint256,uint160,uint160,uint16
 # spot-to-TWAP distance in bp of price (price is the square of sqrtPrice), as the vault's health() reports both
 off_twap_bps() {
   python3 -c "import sys;t,s=map(int,sys.argv[1:]);print(abs(s*s-t*t)*10000//(t*t))" $(cast call "$V" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n '5p;6p' | num); }
+# distance in bp of price between the Chainlink-implied sqrt price and the TWAP (field 5) or spot (field 6) of health()
+off_feed_bps() {
+  python3 -c "import sys;o,x=map(int,sys.argv[1:]);print(abs(x*x-o*o)*10000//(o*o))" $(cast call "$V" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n "4p;${1}p" | num); }
 # the vault refuses deposits and rebalances while spot sits more than 10 bp from the 600 s TWAP: let one window pass with no trades
 gate_ready() { [ "$(off_twap_bps)" -le 5 ] || settle; }
 settle() { local before; before=$(off_twap_bps); warp $(( $(ts) + 700 )); chk "TWAP caught up with spot (was ${before} bp apart, now at most 1)" "$(off_twap_bps) <= 1"; }
@@ -127,6 +130,8 @@ chk "router is bound to that factory" "'$(call "$ROUTER" 'registry()(address)' |
 chk "router slippageBps is 100" "$(call "$ROUTER" 'slippageBps()(uint256)') == 100"
 WANT_CAP=$(node "$APP/scripts/deploy-list.mjs" 2>/dev/null | jq -r '.[] | select(.symbol=="NVDA") | .depositCapTokens')
 chk "NVDA depositCap is the deploy-list cap" "$(call "$V" 'depositCap()(uint256)') == $WANT_CAP and $WANT_CAP > 0"
+chk "entry fee defaults to the pool fee tier (500 pips = 5 bp)" "$(call "$V" 'entryFee()(uint24)') == 500 and $(call "$V" 'poolFee()(uint24)') == 500"
+chk "rebalance TWAP-to-Chainlink bound defaults to 60 bp" "$(call "$V" 'maxTwapOracleBps()(uint16)') == 60"
 chk "vault is keyed to anvil account 0" "'$(cast call "$V" 'keeper()(address)' -r "$R" | tr A-Z a-z)' == '$(echo $A0 | tr A-Z a-z)'"
 ANVIL0_KEY=$(cast wallet private-key "test test test test test test test test test test test junk") # public Foundry test mnemonic, account 0
 SNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
@@ -162,7 +167,7 @@ ev=$(evdata "$rc" "$V" 'Deposited(address,address,uint256,uint256,bool)'); [ -n 
 chk "Deposited.assets is the deposit" "$(word "${ev#*|}" 0) == $AMT"
 chk "Deposited.shares equals the share balance delta" "$(word "${ev#*|}" 1) == $dsh"
 chk "Deposited.deployed is false (factory vaults start with instantDeploy off: the deposit waits idle for the keeper)" "$(word "${ev#*|}" 2) == 0 and '$(call "$V" 'instantDeploy()(bool)')' == 'false'"
-chk "shares minted within 0.1% of previewDeposit" "abs($dsh - $prev) * 1000 <= $prev"
+chk "shares minted equal previewDeposit to the wei (entry fee included)" "$dsh == $prev"
 chk "20 NVDA mints about 20 whole shares at 24 decimals" "abs($dsh - 20 * 10**24) * 100 <= 20 * 10**24"
 chk "user NVDA fell by the deposit" "$(bal "$NVDA" "$USER") == 100000000000000000000 - $AMT"
 chk "totalAssets grew by about the deposit (+-1%)" "abs(($ta1 - $ta0) - $AMT) * 100 <= $AMT"
@@ -223,10 +228,14 @@ rd=$(revdata "$A0" "$V" 'setKeeper(address)' "$USER")
 chk "the owner cannot call setKeeper directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
 rd=$(revdata "$A0" "$V" 'setSpotTwapBand(uint16)' 50)
 chk "the owner cannot call setSpotTwapBand directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
+rd=$(revdata "$A0" "$V" 'setTwapOracleBand(uint16)' 40)
+chk "the owner cannot call setTwapOracleBand directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
+rd=$(revdata "$A0" "$V" 'setEntryFee(uint24)' 600)
+chk "the owner cannot call setEntryFee directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
 rd=$(revdata "$USER" "$V" 'queueChange(bytes)' "$SET_ID")
 chk "a stranger cannot queue (OwnableUnauthorizedAccount)" "'${rd:0:10}' == '$(cast sig 'OwnableUnauthorizedAccount(address)')'"
 rd=$(revdata "$A0" "$V" 'queueChange(bytes)' "$(cast calldata 'setDepositCap(uint256)' 1)")
-chk "the queue accepts only the four timelocked setters (ChangeNotAllowed)" "'${rd:0:10}' == '$(cast sig 'ChangeNotAllowed()')'"
+chk "the queue accepts only the six timelocked setters (ChangeNotAllowed)" "'${rd:0:10}' == '$(cast sig 'ChangeNotAllowed()')'"
 rc=$(send "$A0" "$V" 'queueChange(bytes)' "$SET_ID")
 ev=$(evdata "$rc" "$V" 'ChangeQueued(bytes32,uint256,bytes)'); [ -n "$ev" ] || die "no ChangeQueued event"
 eta=$(word "${ev#*|}" 0); qts=$(cast block "$(jq -r .blockNumber <<<"$rc" | xargs printf '%d')" --field timestamp -r "$R")
@@ -237,6 +246,16 @@ send "$A0" "$V" 'cancelChange(bytes32)' "$(cast keccak "$SET_ID")" >/dev/null
 rd=$(revdata "$A0" "$V" 'executeChange(bytes)' "$SET_ID")
 chk "after cancelChange the change is gone (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
 chk "instantDeploy is still off" "'$(call "$V" 'instantDeploy()(bool)')' == 'false'"
+# a queued change that nobody executes expires 7 days after its eta (inside a snapshot: the long warp is undone)
+QSNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
+KEEPER_SET=$(cast calldata 'setKeeper(address)' "$USER")
+rc=$(send "$A0" "$V" 'queueChange(bytes)' "$KEEPER_SET")
+ev=$(evdata "$rc" "$V" 'ChangeQueued(bytes32,uint256,bytes)'); qeta=$(word "${ev#*|}" 0)
+warp $((qeta + 7 * 86400 + 1))
+rd=$(revdata "$A0" "$V" 'executeChange(bytes)' "$KEEPER_SET")
+chk "executeChange after eta + 7 days reverts ChangeExpired(eta + 7 days)" "'${rd:0:10}' == '$(cast sig 'ChangeExpired(uint256)')' and int('${rd:10:64}',16) == $qeta + 7 * 86400"
+cast rpc evm_revert "$QSNAP" -r "$R" >/dev/null || die "evm_revert of the expiry snapshot failed"
+chk "the clock is back before the eta" "$(ts) < $qeta"
 pass
 
 # ---------------------------------------------------------------- 03 router: USDG -> shares
@@ -438,14 +457,52 @@ send "$USER" "$NVDA" 'approve(address,uint256)' "$V" 10000000000000000000 >/dev/
 chk "control: a deposit is accepted now (eth_call)" "$(cast call --from "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER" -r "$R" | num) > 0"
 cast call --from "$A0" "$V" 'rebalance()' -r "$R" >/dev/null 2>&1 || die "control: the keeper's rebalance does not simulate cleanly before the swap"
 liq_pre=$(liquidity)
-# one-way buys until spot is more than 10 bp off the TWAP, while the Chainlink gate (100 bp) stays Ok
-fund_usdg "$TRADER" 500000000000
-send "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPROUTER" 500000000000 >/dev/null
+fund_usdg "$TRADER" 2000000000000   # 2,000,000 USDG
+fund_nvda "$TRADER" 5000000000000000000000   # 5,000 NVDA
+send "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPROUTER" 2000000000000 >/dev/null
+send "$TRADER" "$NVDA" 'approve(address,uint256)' "$SWAPROUTER" 5000000000000000000000 >/dev/null
+
+# (1) the TWAP walks 65 to 95 bp away from Chainlink, inside the 100 bp gate: every path stays open except rebalance
+# (TwapOffOracle). Sells of 100 NVDA until the pool is that far from the feed, then one TWAP window with no trades.
+FSNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
+sells=0
+while [ "$(off_feed_bps 6)" -lt 65 ] && [ $sells -lt 40 ]; do swap "$TRADER" "$NVDA" "$USDG" 100000000000000000000; sells=$((sells + 1)); done
+settle
+FD=$(off_feed_bps 5)
+echo "  info: $sells sells of 100 NVDA, then a TWAP window: TWAP is $FD bp from Chainlink (rebalance bound 60, gate 100)" >&3
+chk "TWAP is between 60 and 100 bp from Chainlink" "$FD > 60 and $FD < 100"
+chk "the Chainlink gate is Ok, so only the rebalance bound can refuse (health status 0)" "$(health) == 0"
+chk "spot sits on the TWAP, so the spot-to-TWAP band is not what refuses" "$(off_twap_bps) <= 1"
+rd=$(revdata "$A0" "$V" 'rebalance()')
+chk "the keeper's rebalance reverts TwapOffOracle()" "'${rd:0:10}' == '$(cast sig 'TwapOffOracle()')'"
+chk "a deposit is still accepted (eth_call)" "$(cast call --from "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER" -r "$R" | num) > 0"
+cast rpc evm_revert "$FSNAP" -r "$R" >/dev/null || die "evm_revert of the feed-gap snapshot failed"
+chk "back at the start of the step: spot on the TWAP" "$(off_twap_bps) <= 1"
+
+# (2) a push UP leaves the deposit, the mint and the router zap open (shares are priced at the lowest of feed, TWAP and
+# spot, so a high spot cannot make them cheaper); the rebalance still refuses on either side.
+USNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
 buys=0
 while [ "$(off_twap_bps)" -lt 14 ] && [ $buys -lt 6 ]; do swap "$TRADER" "$USDG" "$NVDA" 30000000000; buys=$((buys + 1)); done
+echo "  info: $buys buys of 30,000 USDG put spot $(off_twap_bps) bp above the TWAP (band is 10 bp)" >&3
+chk "spot is more than the 10 bp band above the TWAP" "$(off_twap_bps) > 10 and $buys > 0"
+chk "the Chainlink gate is still Ok (health status 0)" "$(health) == 0"
+send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 1000000000 >/dev/null
+chk "deposit above the TWAP is accepted (eth_call)" "$(cast call --from "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER" -r "$R" | num) > 0"
+chk "mint above the TWAP is accepted (eth_call)" "$(cast call --from "$USER" "$V" 'mint(uint256,address)(uint256)' 1000000000000000000000000 "$USER" -r "$R" | num) > 0"
+chk "the router zap above the TWAP is accepted (eth_call)" "$(cast call --from "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$V" 1000000000 0 "$USER" -r "$R" | num) > 0"
+rd=$(revdata "$A0" "$V" 'rebalance()')
+chk "the keeper's rebalance still reverts SpotOffTwap() above the TWAP" "'${rd:0:10}' == '$(cast sig 'SpotOffTwap()')'"
+send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 0 >/dev/null
+cast rpc evm_revert "$USNAP" -r "$R" >/dev/null || die "evm_revert of the upward-push snapshot failed"
+chk "back at the start of the step: spot on the TWAP" "$(off_twap_bps) <= 1"
+
+# (3) a push DOWN closes deposit, mint, the zap and the rebalance, while the Chainlink gate (100 bp) stays Ok
+sells=0
+while [ "$(off_twap_bps)" -lt 14 ] && [ $sells -lt 6 ]; do swap "$TRADER" "$NVDA" "$USDG" 140000000000000000000; sells=$((sells + 1)); done
 OFF=$(off_twap_bps)
-echo "  info: $buys buys of 30,000 USDG put spot $OFF bp from the TWAP (band is 10 bp)" >&3
-chk "spot is more than the 10 bp band from the TWAP" "$OFF > 10 and $buys > 0"
+echo "  info: $sells sells of 140 NVDA put spot $OFF bp below the TWAP (band is 10 bp)" >&3
+chk "spot is more than the 10 bp band below the TWAP" "$OFF > 10 and $sells > 0"
 chk "the Chainlink gate is still Ok, so only the band can refuse (health status 0)" "$(health) == 0"
 sh0=$(bal "$V" "$USER"); n0=$(bal "$NVDA" "$USER")
 rd=$(revdata "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER")

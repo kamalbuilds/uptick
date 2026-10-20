@@ -30,7 +30,7 @@ call() { cast call "$@" -r $R; }
 revert_reason() {
   local d s; d=$(cast call "$1" "rebalance()" --from $A0 -r $R 2>&1 | grep -oE '0x[0-9a-f]{8,}' | tail -1) || true
   [ -n "$d" ] || { echo "(no revert data)"; return; }
-  for s in "SwapBelowMinimum(uint256,uint256)" "OracleUnhealthy(uint8)" "SpotOffTwap()" "TooSoon()" "NotKeeper()"; do
+  for s in "SwapBelowMinimum(uint256,uint256)" "OracleUnhealthy(uint8)" "SpotOffTwap()" "TwapOffOracle()" "TooSoon()" "NotKeeper()"; do
     if [ "${d:0:10}" = "$(cast sig "$s")" ]; then echo "$s $(cast decode-error "$d" --sig "$s" | tr '\n' ' ')"; return; fi
   done
   echo "$d"
