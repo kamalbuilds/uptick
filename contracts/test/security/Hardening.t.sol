@@ -429,7 +429,7 @@ contract HardeningTest is Base {
         assertEq(vault.maxDeposit(bob) <= 1e6, true, "the cap is used up to rounding");
         // the deposit-side valuation of everything now in the vault (previewMint of supply + virtual shares is
         // that valuation plus one) stays at or under the cap: the post-deposit total is what the cap bounds
-        uint256 taDeposit = vault.previewMint(vault.totalSupply() + 1e6) - 1;
+        uint256 taDeposit = vault.previewMint(vault.totalSupply() + 1e6) * (1e6 - vault.entryFee()) / 1e6 - 1; // net of the entry fee
         emit log_named_uint("deposit-side assets after the mint", taDeposit);
         assertLe(taDeposit, 500e18 + 1e6, "post-deposit total within the cap");
         vm.prank(bob);

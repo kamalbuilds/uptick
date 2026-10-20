@@ -80,10 +80,10 @@ contract StockVaultSafetyTest is Base {
 
     function test_smallMoveWithinBoundStillWorks() public {
         _deposit(alice, 50e18);
-        _pushPrice(50); // 0.5% < 1% bound
+        _pushPrice(-50); // 0.5% < 1% bound
         _fund(bob, 10e18);
         vm.prank(bob);
-        vm.expectRevert(StockVault.SpotOffTwap.selector); // the move is 50 bp off the 10-minute average
+        vm.expectRevert(StockVault.SpotOffTwap.selector); // the move is 50 bp under the 10-minute average
         vault.deposit(10e18, bob);
 
         vm.warp(block.timestamp + 11 minutes); // once the TWAP has followed, 0.5% is inside the Chainlink bound
@@ -316,8 +316,9 @@ contract StockVaultSafetyTest is Base {
 
         uint256 victimValue = vault.convertToAssets(victimShares);
         uint256 attackerValue = vault.convertToAssets(attackerShares);
-        // victim loses under 0.001% of the deposit
-        assertGe(victimValue * 1e5, victimDeposit * (1e5 - 1), "victim keeps >= 99.999%");
+        // the victim pays the entry fee (the pool tier, 5 bp on this pool) and loses under 0.001% more
+        uint256 afterFee = victimDeposit * (1e6 - vault.entryFee()) / 1e6;
+        assertGe(victimValue * 1e5, afterFee * (1e5 - 1), "victim keeps >= 99.999% net of the entry fee");
         // attacker lost about half of the donation to the victim's side of the pool
         assertLt(attackerValue, 1 + donation, "attack is unprofitable");
         assertLt(attackerValue + donation / 4, 1 + donation, "attacker down by a quarter of the donation or more");

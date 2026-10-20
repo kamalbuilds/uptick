@@ -54,7 +54,7 @@ interface IVaultRegistry {
 /// @title UptickRouter
 /// @notice USDG on-ramp for StockVault. Swaps USDG into the vault's Stock Token through the same Uniswap v3 router
 /// and pool fee the vault uses, then deposits to `receiver`. The swap floor is the Chainlink-implied stock amount
-/// from `health().price` less `slippageBps`, so a deposit reverts when the pool sits far below the oracle. It only
+/// from `health().price` less the pool fee and `slippageBps`, so a deposit reverts when the pool sits far below the oracle. It only
 /// serves vaults the VaultFactory registered, and measures what each swap delivers as a balance delta. The router
 /// holds no balances and leaves no allowances behind after any call.
 contract UptickRouter is ReentrancyGuard {
@@ -93,7 +93,7 @@ contract UptickRouter is ReentrancyGuard {
 
     /// @notice Pulls `usdgIn` from the caller, swaps it to the Stock Token and deposits to `receiver`.
     /// @dev Reverts Unhealthy when the vault oracle gate is not Ok. The min-out is the Chainlink value of `usdgIn`
-    /// in stock less `slippageBps`.
+    /// in stock less the pool fee and `slippageBps`.
     function depositUsdg(IStockVault vault, uint256 usdgIn, uint256 minShares, address receiver)
         external
         nonReentrant
@@ -111,7 +111,7 @@ contract UptickRouter is ReentrancyGuard {
         address vaultAddr = address(vault);
 
         uint256 impliedStock = _usdgToStock(stock, usdg, vault.feed(), usdgIn, price);
-        uint256 minStock = impliedStock.mulDiv(BPS - slippageBps, BPS);
+        uint256 minStock = impliedStock.mulDiv(1e6 - vault.poolFee(), 1e6).mulDiv(BPS - slippageBps, BPS);
 
         usdg.safeTransferFrom(msg.sender, address(this), usdgIn);
 
