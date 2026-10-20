@@ -1,11 +1,10 @@
 import { SectionTitle, toneClass } from "./ledger";
 import { GATE_AXIS, gateScale } from "@/lib/leak";
-import { REDUCED_CAP_STOCK_USD } from "@/lib/evidence";
-import { signed, usdWhole } from "@/lib/format";
+import { perDepositLimitUsd, signed, usdWhole } from "@/lib/format";
 import { REPLAY_WINDOW, isoDay, type VaultConfig } from "@/lib/vaults";
 import { cn } from "@/lib/utils";
 
-const TITLE = { open: "Why it is open", reduced: "Why deposits are capped", closed: "Why it is closed" } as const;
+const TITLE = { open: "Why it is open", reduced: "Why deposits are reduced", closed: "Why it is closed" } as const;
 
 /** The gate drawn as a scale: Closed below the floor, Reduced up to zero, Open from zero. The weaker half of the replay is the marker. */
 export function GateFigure({ cfg }: { cfg: VaultConfig }) {
@@ -51,7 +50,7 @@ export function GateFigure({ cfg }: { cfg: VaultConfig }) {
         <p className="text-[13px] leading-5">
           Worst half is the lower of the replay&rsquo;s two 15-day halves, the {worstIsFirst ? "first" : "last"} 15 days here, marked by the line. The {worstIsFirst ? "last" : "first"} 15 days kept{" "}
           <span className={cn("figure", toneClass(other))}>{signed(other)}</span>, the dot. 30-day is the whole window, {signed(keep.keptApr)}.
-          {gate.state === "reduced" ? ` While capped, one deposit adds up to ${usdWhole(REDUCED_CAP_STOCK_USD)} of ${cfg.symbol}.` : ""}
+          {gate.state === "reduced" ? ` While reduced, one deposit adds up to ${usdWhole(perDepositLimitUsd(cfg.depositCapUsd))} of ${cfg.symbol}.` : ""}
         </p>
       </div>
     </section>
