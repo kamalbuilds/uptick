@@ -4,10 +4,11 @@ pragma solidity 0.8.26;
 import {Script, console} from "forge-std/Script.sol";
 import {StockVault} from "../src/StockVault.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
-import {UptickRouter} from "../src/UptickRouter.sol";
+import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 
 /// @notice Deploys the VaultFactory, one StockVault per entry of the deploy list (through the factory, which pins
-/// StockVault's creation-code hash and registers every vault) and one UptickRouter. The same script runs on the
+/// StockVault's creation-code hash and registers every vault) and one UptickRouter bound to the factory registry
+/// (the router serves only vaults the factory deployed). The same script runs on the
 /// local fork and on mainnet: only --rpc-url and the key env differ. Without --broadcast it only simulates.
 /// Env: DEPLOY_LIST (path to the JSON written by scripts/deploy-list.mjs), DEPLOYER_KEY or ANVIL_KEY (the broadcaster,
 /// read by vm.envUint, never argv), OWNER (owns every vault, a multisig on mainnet), KEEPER, TREASURY.
@@ -66,7 +67,7 @@ contract DeployAll is Script {
             );
             console.log("StockVault", vm.parseJsonString(json, string.concat(k, ".symbol")), vault);
         }
-        router = new UptickRouter(vm.envOr("ROUTER_SLIPPAGE_BPS", uint256(100)));
+        router = new UptickRouter(vm.envOr("ROUTER_SLIPPAGE_BPS", uint256(100)), IVaultRegistry(address(factory)));
         console.log("UptickRouter", address(router));
         if (owner != me) factory.transferOwnership(owner);
         vm.stopBroadcast();
