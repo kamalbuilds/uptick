@@ -1,0 +1,66 @@
+{
+ "title": "Hyperliquid",
+ "h1": null,
+ "h2": null,
+ "h3": null,
+ "body": {
+  "text": "Announcements\nNew order type: Trailing stop\nAvailable for pe",
+  "font": "OurFont, system-ui, \"Segoe UI\", Roboto, Ubuntu, \"Helvetica Neue\", sans-serif",
+  "size": "16px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "normal",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgb(4, 37, 31)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(255, 255, 255)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": null,
+ "a": {
+  "text": "Trade",
+  "font": "OurFont, system-ui, \"Segoe UI\", Roboto, Ubuntu, \"Helvetica Neue\", sans-serif",
+  "size": "12px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "15px",
+  "color": "rgb(246, 254, 253)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(246, 254, 253)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "button": {
+  "text": "Connect",
+  "font": "OurFont, system-ui, \"Segoe UI\", Roboto, Ubuntu, \"Helvetica Neue\", sans-serif",
+  "size": "12px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "31px",
+  "color": "rgb(4, 6, 12)",
+  "bg": "rgb(80, 210, 193)",
+  "radius": "8px",
+  "padding": "0px 16px",
+  "border": "1px solid rgba(0, 0, 0, 0)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "input": null,
+ "loadedFonts": [
+  "OurFont",
+  "OurFontBold"
+ ],
+ "htmlBg": "rgb(15, 26, 30)",
+ "textLen": 20312,
+ "height": 900,
+ "url": "https://app.hyperliquid.xyz/vaults/0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+ "viewport": [
+  1440,
+  900
+ ],
+ "lumaStddev": 33.5
+}

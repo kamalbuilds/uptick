@@ -1,0 +1,93 @@
+{
+ "title": "ETH/USDC: Buy and sell on Uniswap",
+ "h1": {
+  "text": "ETH / USDC",
+  "font": "Basel, sans-serif",
+  "size": "16px",
+  "weight": "485",
+  "tracking": "normal",
+  "leading": "24px",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid oklch(1 0 0 / 0.1)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "h2": null,
+ "h3": {
+  "text": "ETH /",
+  "font": "Basel, sans-serif",
+  "size": "24px",
+  "weight": "485",
+  "tracking": "normal",
+  "leading": "28px",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid oklch(1 0 0 / 0.1)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "body": {
+  "text": "Uniswap\nTrade\nExplore\nLaunches\nBeta\nPool\nPortfolio\nConnect\nP",
+  "font": "Basel, sans-serif",
+  "size": "16px",
+  "weight": "485",
+  "tracking": "normal",
+  "leading": "24px",
+  "color": "oklch(0.985 0 0)",
+  "bg": "rgb(19, 19, 19)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid oklch(1 0 0 / 0.1)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": null,
+ "a": {
+  "text": "Uniswap",
+  "font": "Basel, sans-serif",
+  "size": "16px",
+  "weight": "485",
+  "tracking": "normal",
+  "leading": "24px",
+  "color": "rgb(255, 55, 199)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid oklch(1 0 0 / 0.1)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "button": {
+  "text": "Uniswap",
+  "font": "Basel, sans-serif",
+  "size": "16px",
+  "weight": "485",
+  "tracking": "normal",
+  "leading": "24px",
+  "color": "oklch(0.985 0 0)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid oklch(1 0 0 / 0.1)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "input": null,
+ "loadedFonts": [
+  "Basel"
+ ],
+ "htmlBg": "rgb(0, 0, 0)",
+ "textLen": 2012,
+ "height": 1512,
+ "url": "https://app.uniswap.org/explore/pools/ethereum/0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
+ "viewport": [
+  1440,
+  900
+ ],
+ "lumaStddev": 29.6
+}

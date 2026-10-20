@@ -1,0 +1,51 @@
+/* Tokens: web/DESIGN.md (Uptick-ink-and-hairline). Scoped to .lab so the production routes are untouched. */
+.lab {
+  --lab-canvas: #0a0b0c;
+  --lab-panel: #16181a;
+  --lab-raised: #1f2124;
+  --lab-hairline: #2a2e31;
+  --lab-border: #42494d;
+  --lab-text: #f4f5f5;
+  --lab-mute: #919fa6;
+  --lab-kept: #1fd16b;
+  --lab-kept-dim: #0f3d24;
+  --lab-loss: #ec5e2a;
+  --lab-loss-dim: #3a1d12;
+  --lab-caution: #f2b84b;
+  --lab-caution-dim: #352a12;
+  --lab-closed: #6b747a;
+  --lab-sans: var(--font-hanken), ui-sans-serif, sans-serif;
+  --lab-serif: var(--font-literata), Georgia, serif;
+  --lab-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  min-height: 100dvh;
+  background: var(--lab-canvas);
+  color: var(--lab-text);
+  font-family: var(--lab-sans);
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+html:has(.lab) { background: #0a0b0c; overflow-x: clip; }
+body:has(.lab) > * > header, body:has(.lab) > * > footer, body:has(.lab) > header, body:has(.lab) > footer { display: none; }
+
+@layer base {
+  .lab :is(h1, h2, h3, p) { font-family: inherit; font-weight: inherit; font-stretch: normal; letter-spacing: inherit; text-wrap: pretty; }
+  .lab :focus-visible { outline: 2px solid var(--lab-text); outline-offset: 3px; border-radius: 6px; }
+  .lab a { color: inherit; text-decoration: none; }
+}
+.lab .serif { font-family: var(--lab-serif); font-weight: 400; font-optical-sizing: auto; letter-spacing: -0.025em; font-style: normal; text-wrap: balance; }
+.lab .term { text-decoration: underline dotted var(--lab-mute); text-underline-offset: 4px; }
+.lab .btn { transition: transform 150ms var(--lab-ease), background-color 150ms var(--lab-ease); }
+.lab .btn:active { transform: scale(0.97); }
+.lab .row { transition: background-color 150ms var(--lab-ease); }
+.lab .row:hover { background: var(--lab-panel); }
+.lab .verdict { animation: lab-in 200ms var(--lab-ease) both; }
+@keyframes lab-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .lab .verdict { animation: none; }
+  .lab * { transition-duration: 0.01ms !important; }
+}
