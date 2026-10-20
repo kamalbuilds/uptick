@@ -157,18 +157,18 @@ console.log(nvda.open, nvda.kept_apr_pct, nvda.pools.length);`}
       <div className="space-y-6">
         {groups.map((group) => (
           <section key={group.section}>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-body">
+            <h3 className="text-[15px] font-semibold">
               {group.section}
             </h3>
-            <ul className="mt-2 divide-y divide-sage-line border-y border-sage-line">
+            <ul className="mt-2 divide-y divide-hairline border-y border-hairline">
               {group.pages.map((page) => (
                 <li key={page.slug}>
                   <Link
                     href={docHref(page.slug)}
-                    className="flex flex-col gap-1 py-3 text-body transition-colors hover:text-ink"
+                    className="row flex flex-col gap-1 py-3 text-mute transition-colors hover:text-fg"
                   >
-                    <span className="text-[17px] font-semibold leading-6 text-ink">{page.title}</span>
-                    <span className="text-sm leading-6">{page.summary}</span>
+                    <span className="text-[17px] font-semibold leading-6 text-fg">{page.title}</span>
+                    <span className="text-[14px] leading-6">{page.summary}</span>
                   </Link>
                 </li>
               ))}

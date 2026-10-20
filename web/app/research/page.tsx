@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Callout } from "@/components/prose";
 import { POSTS, postDate } from "@/lib/content";
 
@@ -12,58 +13,40 @@ export default function ResearchPage() {
   const posts = [...POSTS].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <section
-      aria-labelledby="research-title"
-      className="mx-auto max-w-5xl px-4 pb-20 pt-12 sm:px-6 lg:pt-16"
-    >
-      <header className="max-w-[68ch]">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-body">Research</p>
-        <h1
-          id="research-title"
-          className="mt-3 display text-[clamp(3rem,8vw,6rem)] leading-[0.92]"
-        >
+    <section aria-labelledby="research-title">
+      <header className="max-w-[690px]">
+        <h1 id="research-title" className="serif text-[34px] font-normal leading-10 sm:text-[44px] sm:leading-[48px]">
           Notes from the replay
         </h1>
-        <p className="mt-5 text-lg leading-8 text-body sm:text-xl">
+        <p className="mt-5 text-[18px] leading-7 text-mute">
           Every vault gate comes from replayed swaps. These notes record what the replay measured,
           which window it used, and what changed in the product as a result.
         </p>
       </header>
 
-      <div className="mt-12 flex items-baseline justify-between border-b border-ink pb-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-body">
-          {posts.length} notes
-        </p>
-        <p className="text-xs text-body">Newest first</p>
+      <div className="mt-12 flex items-baseline justify-between border-b border-hairline pb-3 text-[13px] text-mute">
+        <p>{posts.length} notes</p>
+        <p>Newest first</p>
       </div>
 
-      <ol className="divide-y divide-sage-line border-b border-sage-line">
+      <ol>
         {posts.map((post) => (
-          <li
-            key={post.slug}
-            id={post.slug}
-            className="grid scroll-mt-28 gap-3 py-8 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8"
-          >
-            <div className="flex items-center gap-3 sm:block">
-              <time dateTime={post.date} className="figure text-sm text-body">
+          <li key={post.slug} id={post.slug} className="scroll-mt-24 border-b border-hairline">
+            <Link href={`/research/${post.slug}`} className="row grid gap-x-8 gap-y-2 py-8 sm:grid-cols-[8.5rem_minmax(0,1fr)]">
+              <time dateTime={post.date} className="figure text-[13px] leading-8 text-mute">
                 {postDate(post.date)}
               </time>
-              <span className="inline-block rounded-full bg-primary-pale px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-ink sm:mt-2">
-                {post.category}
+              <span className="block">
+                <span className="block text-[24px] font-semibold leading-8 tracking-[-0.2px]">{post.title}</span>
+                <span className="mt-2 block max-w-[64ch] text-[15px] leading-6 text-mute">{post.summary}</span>
+                <span className="mt-3 block text-[13px] text-mute">{post.author}</span>
               </span>
-            </div>
-            <div>
-              <h2 className="text-[clamp(1.45rem,2.6vw,1.95rem)] leading-[1.08] tracking-[-0.01em]">
-                {post.title}
-              </h2>
-              <p className="mt-2 max-w-[64ch] text-[15px] leading-6 text-body">{post.summary}</p>
-              <p className="mt-3 text-xs text-body">{post.author}</p>
-            </div>
+            </Link>
           </li>
         ))}
       </ol>
 
-      <div className="mt-10 max-w-[68ch]">
+      <div className="mt-12 max-w-[690px]">
         <Callout label="Method">
           Each note starts from the same 30-day swap window. The first 15 days select the pool and
           the second 15 are held out. Vaults are sized to at most 20% of in-range liquidity, within a
