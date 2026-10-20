@@ -71,9 +71,13 @@ components:
   state-chip: Open (kept text on kept-dim), Reduced (caution on caution-dim), Closed (closed grey on hairline). Text always present, colour never alone.
   ticket: panel with 1px border, label/value rows, one white pill primary. Lists what you send, what you receive, where it goes, before the button.
   tabs: 16px text, 2px underline on the active one (robinhood-stock range tabs).
-  term: first use of a domain word is dotted-underlined and opens a plain definition (Coinbase glossary labels).
+  term: first use of a domain word is dotted-underlined and opens a plain definition (Coinbase glossary labels). The definition is a 280px panel that opens on hover and focus, stays in the DOM for aria-describedby, and closes on Escape. Defined words: taking deposits, kept, worst half, open, reduced, closed.
+  panel-beside-list: on the vaults list at 1024px and up, a row click loads that vault's deposit form in a 360px panel pinned at top-20 (Zona Lend, 877 table / 369 panel). The chevron at the row end opens the vault page. Under 1024px a row opens the page.
+  token-logo: 28px disc on rows, 32px pair (stock over USDG) in the panel, 40px pair on the vault page. Files are the token's own published icon (public/tokens/SOURCES.md); a missing file becomes a two-letter monogram chip.
+  summary-row: four label-over-value facts between hairlines, 24px figures, each with its window or origin under it. No TVL until a vault is on mainnet.
+  amount-chips: 25%, 50%, 75% and Max under the amount, 28px tall pills, disabled until a balance is read.
 
-motion: 120ms to 200ms ease-out on hover and tab change only. One entry: the verdict fades in 200ms. No ticker, no sparkline, no shimmer. prefers-reduced-motion collapses all of it.
+motion: 120ms to 200ms ease-out on hover and tab change only. One entry: the verdict fades in 200ms. One ticker: the bottom strip of live Chainlink prices, 36px, scrolling a full loop in 80s on transform only, paused on hover and focus; no sparkline, no other moving price. Loading skeletons may shimmer. prefers-reduced-motion stops the ticker, which then scrolls by hand, and collapses the rest.
 
 refusals:
   - no lime, no sage, no pill-shaped green CTA, nothing derived from Wise

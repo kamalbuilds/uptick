@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Term } from "./term";
 import { rowBar, ROW_AXIS } from "@/lib/leak";
 import { signed } from "@/lib/format";
 import type { GateState } from "@/lib/vaults";
@@ -13,8 +14,8 @@ const CHIP: Record<GateState, string> = {
 };
 
 /** The gate state as text on a tinted pill. The word is always there; colour never carries it alone. */
-export function StateChip({ state, className }: { state: GateState; className?: string }) {
-  return <span className={cn("inline-flex h-6 items-center rounded-full px-2.5 text-[13px] font-medium", CHIP[state], className)}>{GATE_LABEL[state]}</span>;
+export function StateChip({ state, className, term }: { state: GateState; className?: string; /** Open the plain definition of the state from the chip. Leave off inside a row that is itself a button. */ term?: boolean }) {
+  return <span className={cn("inline-flex h-6 items-center rounded-full px-2.5 text-[13px] font-medium", CHIP[state], className)}>{term ? <Term id={state} /> : GATE_LABEL[state]}</span>;
 }
 
 /** Colour is semantic: money kept is green, money lost is orange, zero is plain. */

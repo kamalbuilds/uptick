@@ -3,6 +3,7 @@ import { Hanken_Grotesk, Literata } from "next/font/google";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { PriceTicker } from "@/components/price-ticker";
 import { pitchLine } from "@/lib/format";
 import { REPLAYED_SWAPS, VAULTS } from "@/lib/vaults";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteHeader />
           <main>{children}</main>
           <SiteFooter />
+          <PriceTicker />
         </Providers>
       </body>
     </html>

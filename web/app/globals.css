@@ -25,11 +25,13 @@
   --radius-lg: 8px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ticker-h: 36px;
 }
 
 @layer base {
   html { background: var(--color-canvas); color: var(--color-fg); color-scheme: dark; overflow-x: clip; }
   body {
+    padding-bottom: var(--ticker-h);
     font-family: var(--font-sans);
     font-size: 15px;
     line-height: 24px;
@@ -58,16 +60,24 @@
   .press:active { transform: scale(0.97); }
   .row { transition: background-color 150ms var(--ease-out); }
   .row:hover { background: var(--color-panel); }
+  .row[data-selected="true"], .row[data-selected="true"]:hover { background: var(--color-raised); box-shadow: inset 2px 0 0 var(--color-fg); }
+  /* Bottom price strip: two copies of the list slide left by exactly one copy. Transform only. Paused while the pointer or focus is inside. */
+  .ticker-track { animation: ticker 80s linear infinite; }
+  .ticker:hover .ticker-track, .ticker:focus-within .ticker-track { animation-play-state: paused; }
   .draw { stroke-dasharray: var(--len, 2400); stroke-dashoffset: var(--len, 2400); animation: draw 1400ms var(--ease-out) 200ms forwards; }
   .shimmer { background: linear-gradient(90deg, var(--color-panel) 0%, var(--color-raised) 50%, var(--color-panel) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 }
 
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ticker { to { transform: translateX(-50%); } }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   .verdict, .shimmer { animation: none; }
   .draw { animation: none; stroke-dashoffset: 0; }
+  .ticker-track { animation: none; }
+  .ticker-viewport { overflow-x: auto; scrollbar-width: none; }
+  .ticker-dup { display: none; }
   * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }

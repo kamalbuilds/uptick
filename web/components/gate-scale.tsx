@@ -1,4 +1,5 @@
 import { SectionTitle, toneClass } from "./ledger";
+import { Term } from "./term";
 import { GATE_AXIS, gateScale } from "@/lib/leak";
 import { perDepositLimitUsd, signed, usdWhole } from "@/lib/format";
 import { REPLAY_WINDOW, isoDay, type VaultConfig } from "@/lib/vaults";
@@ -48,7 +49,7 @@ export function GateFigure({ cfg }: { cfg: VaultConfig }) {
       <div className="mt-6 grid max-w-[690px] gap-3 text-mute">
         <p>{gate.reason}</p>
         <p className="text-[13px] leading-5">
-          Worst half is the lower of the replay&rsquo;s two 15-day halves, the {worstIsFirst ? "first" : "last"} 15 days here, marked by the line. The {worstIsFirst ? "last" : "first"} 15 days kept{" "}
+          <Term id="worstHalf" /> is the lower of the replay&rsquo;s two 15-day halves, the {worstIsFirst ? "first" : "last"} 15 days here, marked by the line. The {worstIsFirst ? "last" : "first"} 15 days kept{" "}
           <span className={cn("figure", toneClass(other))}>{signed(other)}</span>, the dot. 30-day is the whole window, {signed(keep.keptApr)}.
           {gate.state === "reduced" ? ` While reduced, one deposit adds up to ${usdWhole(perDepositLimitUsd(cfg.depositCapUsd))} of ${cfg.symbol}.` : ""}
         </p>

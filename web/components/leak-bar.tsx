@@ -1,4 +1,5 @@
 import { SectionTitle } from "./ledger";
+import { Term } from "./term";
 import { leakBar } from "@/lib/leak";
 import { pct, signed } from "@/lib/format";
 import { REPLAY_WINDOW, isoDay, type VaultConfig } from "@/lib/vaults";
@@ -57,7 +58,7 @@ export function LeakFigure({ cfg }: { cfg: VaultConfig }) {
         {(["kept", "cost", "markout"] as const).map((k) => (
           <div key={k}>
             <span className={`mr-2 inline-block size-2.5 rounded-[2px] ${k === "kept" ? (keptApr >= 0 ? "bg-kept" : "bg-loss") : TONE[k].swatch}`} aria-hidden />
-            <span className="font-medium">{TONE[k].name}</span>
+            <span className="font-medium">{k === "kept" ? <><Term id="kept" /> over the full 30 days</> : TONE[k].name}</span>
             <span className="figure ml-2 text-mute">{k === "kept" ? signed(value[k]) : pct(value[k])}</span>
             <div className="pl-[18px] text-mute">{TONE[k].text}</div>
           </div>
