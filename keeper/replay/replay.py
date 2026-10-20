@@ -1,6 +1,6 @@
 """Replay of the vault strategy on every USDG pool of each eligible Stock Token, with an out-of-sample pool choice.
-Strategy (the vault's): the token's own vault size `cap_usd` from data/universe.json (at most USD 100,000, smaller where the pool is thin), +-5% around Chainlink, recentred at 02:00 UTC on the day after each NYSE
-session. A slot whose Chainlink feed is older than the vault's 25 h `maxStaleness` is skipped. Engine: spikes/stock-vaults/scripts/engine.py, unchanged; its data directory is pointed at data/engine/ (swap pulls from replay/pull.py).
+Strategy (the vault's): the token's own vault size `cap_usd` from data/universe.json (at most USD 100,000, smaller where the pool is thin), a band around Chainlink chosen per token (`range_bps` in data/params.json, default
+500 = +-5%), recentred at 02:00 UTC on the day after each NYSE session. A slot whose Chainlink feed is older than the vault's 25 h `maxStaleness` is skipped. Engine: spikes/stock-vaults/scripts/engine.py, unchanged; its data directory is pointed at data/engine/ (swap pulls from replay/pull.py).
 Window: last 30 days to 2026-10-17 00:00 UTC. First 15 days calibrate, last 15 days test.
 Choice: among v3 pools (the only kind StockVault can hold) the pool with the best calibration-half edge; its test-half result is the out-of-sample figure.
 Run: python3 replay/pull.py SYMBOL... && python3 replay/replay.py SYMBOL...   (needs numpy)
@@ -26,7 +26,9 @@ U = dt.timezone.utc
 NY = ZoneInfo("America/New_York")  # walk NYSE session dates in the exchange timezone
 CAP = 100_000.0  # ceiling on a vault; each token replays at its own universe.json cap_usd, never above this
 DAYS = 30
-BAND = 0.05
+DEFAULT_BAND_BPS = 500              # the band of a token with no entry in data/params.json
+RANGE_BPS_MIN, RANGE_BPS_MAX = 50, 2000   # StockVault._checkParams bounds
+PARAMS_PATH = os.environ.get("REPLAY_PARAMS") or os.path.join(KEEPER, "data", "params.json")
 RECENTRE_UTC_HOUR = 2
 MAX_STALENESS_S = 90_000.0
 MIN_TABLE_VOLUME_USD = 250_000      # below this a pool's 30-day flow is too thin for its replay to mean anything
@@ -37,6 +39,15 @@ MAX_MEDIAN_SWAP_USD = 1_000_000     # a median swap above this means the amounts
 MIN_CHOICE_VOLUME_USD = 1_000_000   # a pool must also carry this much to be the vault's target
 USDG = pull.USDG
 SESSION = {REG: "nyse_hours", NIGHT: "weeknight", WE: "weekend"}
+
+def band_bps_for(sym, params):
+    """The band the vault of `sym` runs, in bps: its params.json entry, else DEFAULT_BAND_BPS. The replay and the deployed vault read the same number."""
+    e = params.get(sym)
+    if e is None: return DEFAULT_BAND_BPS
+    bps = e["range_bps"]
+    assert isinstance(bps, int) and RANGE_BPS_MIN <= bps <= RANGE_BPS_MAX, f"{sym}: range_bps {bps!r} outside [{RANGE_BPS_MIN}, {RANGE_BPS_MAX}]"
+    assert e.get("interval_h", 24) == 24, f"{sym}: the keeper recentres once a day, interval_h must be 24"
+    return bps
 
 def finite(x):
     """Strict JSON has no NaN or Infinity; a pool the vault would swamp can make the engine produce them. They become null."""
@@ -60,7 +71,7 @@ def run_pair(pl, ref, t0, t1, plan, cap):
     return out
 
 class FeasibleStatic:
-    """+ -BAND around Chainlink at the initial deploy and at each fresh 02:00 UTC after-session slot.
+    """+ -w around Chainlink at the initial deploy and at each fresh 02:00 UTC after-session slot.
 
     A slot whose feed is older than ``MAX_STALENESS_S`` is dropped and the previous band is held, which is what the
     vault would do: the recentre transaction would revert on the bound, so no gas is spent and no new band is set.
@@ -114,7 +125,7 @@ def session_split(pl, ref, t0, t1, plan, cap):
         out[nm] = dict(vault_fee_usd=F, markout_loss_usd=M, pool_volume_usd=float(pl.vol[m].sum()), fee_per_dollar_lost=(F / M if M > 0 else None))
     return out
 
-def replay_token(u):
+def replay_token(u, band_bps):
     sym = u["symbol"]
     cap = float(u["cap_usd"])
     assert 0 < cap <= CAP, f"{sym}: cap_usd {cap} outside (0, {CAP}]"
@@ -122,7 +133,7 @@ def replay_token(u):
     t0, t1 = start.timestamp(), end.timestamp(); tm = t0 + (t1 - t0) / 2
     ref = Ref(sym)
     checkpoints, requested = recentre_slots(ref, t0, t1)
-    plan = FeasibleStatic(ref, BAND, checkpoints)
+    plan = FeasibleStatic(ref, band_bps / 10000.0, checkpoints)
     stock = u["token"].lower(); stock_is0 = int(stock, 16) < int(USDG, 16)
     pools = []
     v3 = ([u["pool"]] if u["pool"] else []) + [p for p in (u["other_pools"] or []) if (p.get("volume_7d_usd") or 0) > 0]
@@ -166,17 +177,19 @@ def replay_token(u):
 def main(symbols):
     u = json.load(open(os.path.join(KEEPER, "data", "universe.json")))
     res = {"generated_at": dt.datetime.now(U).isoformat(), "engine": "spikes/stock-vaults/scripts/engine.py", "capital_usd": CAP,
-           "band_pct": BAND * 100, "strategy": f"recentre at 02:00 UTC after each NYSE session, +-{BAND * 100:.0f}% around Chainlink, slots older than 25 h skipped", "share_modes": dict(edge_apr_pct="mixed (legacy conservative)", edge_apr_pct_upper="path (current engine default)"), "recentre_schedule": dict(utc_hour=RECENTRE_UTC_HOUR, session_days_only=True, max_staleness_s=MAX_STALENESS_S), "cost_model": "pool price impact + fee tier + gas, engine.IMPACT=1", "tokens": {}}
+           "default_band_bps": DEFAULT_BAND_BPS, "strategy": "recentre at 02:00 UTC after each NYSE session, a band chosen per token (band_bps) around Chainlink, slots older than 25 h skipped", "share_modes": dict(edge_apr_pct="mixed (legacy conservative)", edge_apr_pct_upper="path (current engine default)"), "recentre_schedule": dict(utc_hour=RECENTRE_UTC_HOUR, session_days_only=True, max_staleness_s=MAX_STALENESS_S), "cost_model": "pool price impact + fee tier + gas, engine.IMPACT=1", "tokens": {}}
+    params = json.load(open(PARAMS_PATH)) if os.path.exists(PARAMS_PATH) else {}
     for sym in symbols:
         tok = next(x for x in u["tokens"] if x["symbol"] == sym)
-        print(sym, flush=True)
-        t0, tm, t1, ref, rows, slots, plan, cap = replay_token(tok)
+        band_bps = band_bps_for(sym, params)
+        print(sym, f"band_bps={band_bps}", flush=True)
+        t0, tm, t1, ref, rows, slots, plan, cap = replay_token(tok, band_bps)
         res["window"] = dict(start=dt.datetime.fromtimestamp(t0, U).isoformat(), end=dt.datetime.fromtimestamp(t1, U).isoformat(), days=DAYS,
                              calibration_end=dt.datetime.fromtimestamp(tm, U).isoformat())
         v3 = [r for r in rows if r["vault_capable"] and r["volume_usd"] >= MIN_CHOICE_VOLUME_USD]
         chosen = max(v3, key=lambda r: r["calibration"]["edge_apr_pct"]) if v3 else None
         best_test = max(v3, key=lambda r: r["test"]["edge_apr_pct"]) if v3 else None
-        ent = dict(symbol=sym, capital_usd=cap, pools=[{k: v for k, v in r.items() if k != "_pl"} for r in rows])
+        ent = dict(symbol=sym, band_bps=band_bps, capital_usd=cap, pools=[{k: v for k, v in r.items() if k != "_pl"} for r in rows])
         if chosen:
             ent["chosen"] = dict(kind=chosen["kind"], id=chosen["id"], fee_tier=chosen["fee_tier"], confirmed_in_test=(best_test["id"] == chosen["id"]),
                                  rule="best calibration-half edge among v3 pools; test half is the out-of-sample figure")
