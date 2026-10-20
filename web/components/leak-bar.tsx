@@ -43,7 +43,7 @@ export function LeakFigure({ cfg }: { cfg: VaultConfig }) {
       <div className={`grid gap-x-10 gap-y-3 text-[13px] leading-5 sm:grid-cols-3 ${bar.overdrawn ? "mt-10" : "mt-4"}`}>
         {(["kept", "cost", "markout"] as const).map((k) => (
           <div key={k}>
-            <span className={`mr-2 inline-block size-2.5 rounded-[2px] ${TONE[k].swatch}`} aria-hidden />
+            <span className={`mr-2 inline-block size-2.5 rounded-[2px] ${k === "kept" && keptApr < 0 ? "ring-1 ring-mute" : TONE[k].swatch}`} aria-hidden />
             <span className="font-medium">{TONE[k].name}</span>
             <span className="figure ml-2 text-mute">{k === "kept" ? signed(value[k]) : pct(value[k])}</span>
             <div className="pl-[18px] text-mute">{TONE[k].text}</div>
