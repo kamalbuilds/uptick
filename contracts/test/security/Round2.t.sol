@@ -161,7 +161,7 @@ contract Round2Test is Base {
         uint256 sharesBob = _deposit(bob, 100e18);
         assertApproxEqAbs(vault.totalAssets(), taBefore + 100e18, 1e12, "the vault holds all 100");
         uint256 bobValue = vault.convertToAssets(sharesBob);
-        uint256 fee = 100e18 * uint256(vault.entryFee()) / 1e6;
+        uint256 fee = 100e18 * 500 / 1e6; // the NVDA pool's 0.05% tier, written out so a zero fee cannot satisfy the test
         // bob pays the fee and owns taBefore-weighted nothing of it back except his own pro-rata part of the pot
         uint256 loss = fee * taBefore / (taBefore + 100e18);
         assertApproxEqAbs(100e18 - bobValue, loss, 2e15, "bob's claim is net of the fee");

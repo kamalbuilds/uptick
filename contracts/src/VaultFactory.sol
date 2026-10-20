@@ -15,7 +15,7 @@ interface IFeedDescription {
 /// @notice Deploys one StockVault per (Stock Token, pool, Chainlink feed) and keeps the registry the app and the
 /// keeper read. The factory pins the keccak256 of StockVault's creation code, so the only contract it can ever
 /// register is the audited build.
-/// @dev StockVault's runtime is 24,245 bytes and its creation code 28,624, so a factory cannot embed it. The owner
+/// @dev StockVault's runtime is 24,479 bytes and its creation code 36,013, so a factory cannot embed it. The owner
 /// passes the creation code with each call; the factory checks it against `vaultCodeHash`, appends the constructor
 /// arguments itself and deploys with CREATE2. Pin the hash with
 /// `forge inspect StockVault bytecode | cast keccak`.
