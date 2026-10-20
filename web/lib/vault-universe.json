@@ -26,7 +26,7 @@
         "reason": "Closed: the weaker half kept -28.5% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -28.53260158684701,
-        "swaps": 110980,
+        "swaps": 69113,
         "days": 30
       },
       "keep": {
@@ -61,7 +61,7 @@
         "reason": "Closed: the weaker half kept -45.5% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -45.51829335488611,
-        "swaps": 229083,
+        "swaps": 215371,
         "days": 30
       },
       "keep": {
@@ -96,7 +96,7 @@
         "reason": "Closed: the weaker half kept -114.2% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -114.23707299127304,
-        "swaps": 105466,
+        "swaps": 63346,
         "days": 30
       },
       "keep": {
@@ -131,7 +131,7 @@
         "reason": "Closed: the weaker half kept -91.2% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -91.22496979875883,
-        "swaps": 42046,
+        "swaps": 38738,
         "days": 30
       },
       "keep": {
@@ -166,7 +166,7 @@
         "reason": "Closed: the weaker half kept -66.4% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -66.42749995995419,
-        "swaps": 48551,
+        "swaps": 42304,
         "days": 30
       },
       "keep": {
@@ -271,7 +271,7 @@
         "reason": "Closed: the weaker half kept -40.8% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -40.81311288779147,
-        "swaps": 495950,
+        "swaps": 467912,
         "days": 30
       },
       "keep": {
@@ -341,7 +341,7 @@
         "reason": "Closed: the weaker half kept -89.4% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -89.44894961744878,
-        "swaps": 621165,
+        "swaps": 473851,
         "days": 30
       },
       "keep": {
@@ -376,7 +376,7 @@
         "reason": "Closed: the weaker half kept -49.2% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -49.206583941016724,
-        "swaps": 112043,
+        "swaps": 90107,
         "days": 30
       },
       "keep": {
@@ -408,10 +408,10 @@
       "open": true,
       "gate": {
         "state": "open",
-        "reason": "Open: the weaker half of the 30-day replay kept 1.8% a year, at or above break-even, across 842,504 swaps.",
+        "reason": "Open: the weaker half of the 30-day replay kept 1.8% a year, at or above break-even, across 814,927 swaps.",
         "floor_apr": -20,
         "worst_half_apr": 1.81390365740869,
-        "swaps": 842504,
+        "swaps": 814927,
         "days": 30
       },
       "keep": {
@@ -478,10 +478,10 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -6.8% a year, between the -20% floor and break-even, across 42,307 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -6.8% a year, between the -20% floor and break-even, across 40,468 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -6.810000786773776,
-        "swaps": 42307,
+        "swaps": 40468,
         "days": 30
       },
       "keep": {
@@ -513,10 +513,10 @@
       "open": true,
       "gate": {
         "state": "open",
-        "reason": "Open: the weaker half of the 30-day replay kept 2.5% a year, at or above break-even, across 117,316 swaps.",
+        "reason": "Open: the weaker half of the 30-day replay kept 2.5% a year, at or above break-even, across 95,275 swaps.",
         "floor_apr": -20,
         "worst_half_apr": 2.478795574165938,
-        "swaps": 117316,
+        "swaps": 95275,
         "days": 30
       },
       "keep": {
@@ -548,10 +548,10 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -4.1% a year, between the -20% floor and break-even, across 64,843 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -4.1% a year, between the -20% floor and break-even, across 64,813 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -4.136358064670749,
-        "swaps": 64843,
+        "swaps": 64813,
         "days": 30
       },
       "keep": {
@@ -583,10 +583,10 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -0.5% a year, between the -20% floor and break-even, across 210,050 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -0.5% a year, between the -20% floor and break-even, across 171,364 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -0.5453251559514076,
-        "swaps": 210050,
+        "swaps": 171364,
         "days": 30
       },
       "keep": {

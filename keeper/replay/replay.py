@@ -30,6 +30,10 @@ BAND = 0.05
 RECENTRE_UTC_HOUR = 2
 MAX_STALENESS_S = 90_000.0
 MIN_TABLE_VOLUME_USD = 250_000      # below this a pool's 30-day flow is too thin for its replay to mean anything
+MAX_PRICE_GAP = 0.10                # a pool whose median price sits further than 10% from Chainlink is not the same market
+DYNAMIC_FEE = 0x800000              # v4 fee flag: the hook sets the fee per swap, which the engine cannot replay
+MAX_SANE_EDGE = 1000.0              # an edge beyond +-1000% a year is a model breakdown on thin data, not a measurement
+MAX_MEDIAN_SWAP_USD = 1_000_000     # a median swap above this means the amounts are mis-scaled (wrong decimals)
 MIN_CHOICE_VOLUME_USD = 1_000_000   # a pool must also carry this much to be the vault's target
 USDG = pull.USDG
 SESSION = {REG: "nyse_hours", NIGHT: "weeknight", WE: "weekend"}
@@ -136,10 +140,21 @@ def replay_token(u):
     out = []
     for p in pools:
         pl = p.pop("_pl"); m = (pl.t >= t0) & (pl.t < t1)
+        if p["kind"] == "v4" and p["fee_tier"] & DYNAMIC_FEE:
+            print(f"  {sym} v4 fee={p['fee_tier']} excluded: hook-set dynamic fee", flush=True); continue
+        if m.any() and float(np.median(pl.vol[m])) > MAX_MEDIAN_SWAP_USD:
+            print(f"  {sym} {p['kind']} fee={p['fee_tier']} excluded: median swap {float(np.median(pl.vol[m])):.3g} USD, amounts mis-scaled", flush=True); continue
         swaps = int(m.sum())
         if float(pl.vol[m].sum()) < MIN_TABLE_VOLUME_USD: continue
+        idx = np.flatnonzero(m)[:: max(1, int(m.sum()) // 2000)]
+        gap = float(np.median(np.abs(np.log(pl.P[idx] / np.array([ref.at(t) for t in pl.t[idx]])))))
+        if not np.isfinite(gap) or gap > MAX_PRICE_GAP:
+            print(f"  {sym} {p['kind']} fee={p['fee_tier']} excluded: median price {gap:.2f} log-gap from Chainlink", flush=True); continue
         row = dict(p, swaps=swaps, volume_usd=float(pl.vol[m].sum()), pool_fees_usd=float(pl.fee_usd[m].sum()),
                    full=run_pair(pl, ref, t0, t1, plan, cap), calibration=run_pair(pl, ref, t0, tm, plan, cap), test=run_pair(pl, ref, tm, t1, plan, cap))
+        edges = [row[h]["edge_apr_pct"] for h in ("full", "calibration", "test")] + [row["full"]["fee_apr_pct"]]
+        if not all(np.isfinite(e) and abs(e) <= MAX_SANE_EDGE for e in edges):
+            print(f"  {sym} {p['kind']} fee={p['fee_tier']} excluded: non-finite or beyond {MAX_SANE_EDGE:.0f}% a year", flush=True); continue
         row["_pl"] = pl
         out.append(row)
         print(f"  {sym} {row['kind']} fee={row['fee_tier']:>7} hook={str(row['hooks'])[:10]:>10} swaps={swaps:>7} vol=${row['volume_usd']/1e6:8.2f}M "

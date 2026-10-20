@@ -2,6 +2,12 @@
   "chainId": 4663,
   "source": "keeper/data/universe.json + keeper/data/replay.json",
   "universeBlock": 93099228,
+  "window": {
+    "start": "2026-09-17T00:00:00+00:00",
+    "end": "2026-10-17T00:00:00+00:00",
+    "days": 30,
+    "calibration_end": "2026-10-02T00:00:00+00:00"
+  },
   "vaults": [
     {
       "id": "mstr",
@@ -20,8 +26,19 @@
         "reason": "Closed: the weaker half kept -28.5% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -28.53260158684701,
-        "swaps": 110980,
+        "swaps": 69113,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 229.1253738312145,
+        "markout_apr_pct": 174.81563098616434,
+        "cost_apr_pct": 75.75956367125592,
+        "kept_apr_pct": -21.449820826205766,
+        "kept_first_half": -2.243514262781672,
+        "kept_second_half": -28.53260158684701,
+        "kept_apr_upper": -9.187927957468494,
+        "kept_first_half_upper": 26.85717733907359,
+        "kept_second_half_upper": -9.187927957468494
       },
       "feeAprPct": 229.1253738312145,
       "keptAprPct": -28.53260158684701,
@@ -44,8 +61,19 @@
         "reason": "Closed: the weaker half kept -45.5% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -45.51829335488611,
-        "swaps": 229083,
+        "swaps": 215371,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 219.78612931163735,
+        "markout_apr_pct": 118.12707102666529,
+        "cost_apr_pct": 80.52246548423587,
+        "kept_apr_pct": 21.136592800736175,
+        "kept_first_half": 88.3696297797316,
+        "kept_second_half": -45.51829335488611,
+        "kept_apr_upper": -4.7764034567455935,
+        "kept_first_half_upper": 131.28997118199408,
+        "kept_second_half_upper": -4.7764034567455935
       },
       "feeAprPct": 219.78612931163735,
       "keptAprPct": -45.51829335488611,
@@ -68,8 +96,19 @@
         "reason": "Closed: the weaker half kept -114.2% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -114.23707299127304,
-        "swaps": 105466,
+        "swaps": 63346,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 174.96399879308717,
+        "markout_apr_pct": 216.62656401942937,
+        "cost_apr_pct": 34.569977200815124,
+        "kept_apr_pct": -76.2325424271573,
+        "kept_first_half": -46.58444698580615,
+        "kept_second_half": -114.23707299127304,
+        "kept_apr_upper": -93.29809454422386,
+        "kept_first_half_upper": -9.458565090800201,
+        "kept_second_half_upper": -93.29809454422386
       },
       "feeAprPct": 174.96399879308717,
       "keptAprPct": -114.23707299127304,
@@ -92,8 +131,19 @@
         "reason": "Closed: the weaker half kept -91.2% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -91.22496979875883,
-        "swaps": 42046,
+        "swaps": 38738,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 143.95868210635274,
+        "markout_apr_pct": 138.13435002402633,
+        "cost_apr_pct": 73.46844944686937,
+        "kept_apr_pct": -67.64411736454299,
+        "kept_first_half": -91.22496979875883,
+        "kept_second_half": -53.67025076376909,
+        "kept_apr_upper": -42.37066561445006,
+        "kept_first_half_upper": -42.37066561445006,
+        "kept_second_half_upper": -18.114134903727372
       },
       "feeAprPct": 143.95868210635274,
       "keptAprPct": -53.67025076376909,
@@ -116,8 +166,19 @@
         "reason": "Closed: the weaker half kept -66.4% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -66.42749995995419,
-        "swaps": 48551,
+        "swaps": 42304,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 125.23827681022925,
+        "markout_apr_pct": 124.78069681694774,
+        "cost_apr_pct": 40.71501436352678,
+        "kept_apr_pct": -40.25743437024526,
+        "kept_first_half": -8.610599630165247,
+        "kept_second_half": -66.42749995995419,
+        "kept_apr_upper": -39.269841906566064,
+        "kept_first_half_upper": 20.86886874045123,
+        "kept_second_half_upper": -39.269841906566064
       },
       "feeAprPct": 125.23827681022925,
       "keptAprPct": -66.42749995995419,
@@ -143,6 +204,17 @@
         "swaps": 29915,
         "days": 30
       },
+      "keep": {
+        "fee_apr_pct": 106.74815422403874,
+        "markout_apr_pct": 108.63693966155546,
+        "cost_apr_pct": 55.150931828507055,
+        "kept_apr_pct": -57.03971726602375,
+        "kept_first_half": -65.19202797678946,
+        "kept_second_half": -49.40420699099236,
+        "kept_apr_upper": -31.14724493931774,
+        "kept_first_half_upper": -23.2110397623644,
+        "kept_second_half_upper": -31.14724493931774
+      },
       "feeAprPct": 106.74815422403874,
       "keptAprPct": -49.40420699099236,
       "keptAprUpperPct": -31.14724493931774
@@ -167,6 +239,17 @@
         "swaps": 53897,
         "days": 30
       },
+      "keep": {
+        "fee_apr_pct": 101.7343018984499,
+        "markout_apr_pct": 57.49201724832107,
+        "cost_apr_pct": 22.409143911866686,
+        "kept_apr_pct": 21.83314073826214,
+        "kept_first_half": 63.051152437627444,
+        "kept_second_half": -16.872722395852456,
+        "kept_apr_upper": 3.9631324311833036,
+        "kept_first_half_upper": 87.33170218711957,
+        "kept_second_half_upper": 3.9631324311833036
+      },
       "feeAprPct": 101.7343018984499,
       "keptAprPct": -16.872722395852456,
       "keptAprUpperPct": 3.9631324311833036
@@ -188,8 +271,19 @@
         "reason": "Closed: the weaker half kept -40.8% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -40.81311288779147,
-        "swaps": 495950,
+        "swaps": 467912,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 93.90133726952524,
+        "markout_apr_pct": 89.65133094273638,
+        "cost_apr_pct": 23.835356464961137,
+        "kept_apr_pct": -19.58535013817227,
+        "kept_first_half": -1.1645942950654766,
+        "kept_second_half": -40.81311288779147,
+        "kept_apr_upper": -34.47150354097451,
+        "kept_first_half_upper": 16.967891302015072,
+        "kept_second_half_upper": -34.47150354097451
       },
       "feeAprPct": 93.90133726952524,
       "keptAprPct": -40.81311288779147,
@@ -215,6 +309,17 @@
         "swaps": 59728,
         "days": 30
       },
+      "keep": {
+        "fee_apr_pct": 92.70716121786042,
+        "markout_apr_pct": 101.5510678329196,
+        "cost_apr_pct": 15.07787255848871,
+        "kept_apr_pct": -23.921779173547897,
+        "kept_first_half": -24.944021590576458,
+        "kept_second_half": -21.882707665160193,
+        "kept_apr_upper": -18.652188477239445,
+        "kept_first_half_upper": -18.102009936194815,
+        "kept_second_half_upper": -18.652188477239445
+      },
       "feeAprPct": 92.70716121786042,
       "keptAprPct": -21.882707665160193,
       "keptAprUpperPct": -18.652188477239445
@@ -236,8 +341,19 @@
         "reason": "Closed: the weaker half kept -89.4% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -89.44894961744878,
-        "swaps": 621165,
+        "swaps": 473851,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 86.48897852092718,
+        "markout_apr_pct": 96.30083275842308,
+        "cost_apr_pct": 10.827954437587604,
+        "kept_apr_pct": -20.639808675083522,
+        "kept_first_half": 45.06107345969793,
+        "kept_second_half": -89.44894961744878,
+        "kept_apr_upper": -71.46662781858318,
+        "kept_first_half_upper": 48.94653391007955,
+        "kept_second_half_upper": -71.46662781858318
       },
       "feeAprPct": 86.48897852092718,
       "keptAprPct": -89.44894961744878,
@@ -260,8 +376,19 @@
         "reason": "Closed: the weaker half kept -49.2% a year, below the -20% floor.",
         "floor_apr": -20,
         "worst_half_apr": -49.206583941016724,
-        "swaps": 112043,
+        "swaps": 90107,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 56.65985757516471,
+        "markout_apr_pct": 52.84873347529315,
+        "cost_apr_pct": 21.400180021436416,
+        "kept_apr_pct": -17.589055921564842,
+        "kept_first_half": 12.036901960022414,
+        "kept_second_half": -49.206583941016724,
+        "kept_apr_upper": -34.62479113586518,
+        "kept_first_half_upper": 24.50259391948422,
+        "kept_second_half_upper": -34.62479113586518
       },
       "feeAprPct": 56.65985757516471,
       "keptAprPct": -49.206583941016724,
@@ -281,11 +408,22 @@
       "open": true,
       "gate": {
         "state": "open",
-        "reason": "Open: the weaker half of the 30-day replay kept 1.8% a year, at or above break-even, across 842,504 swaps.",
+        "reason": "Open: the weaker half of the 30-day replay kept 1.8% a year, at or above break-even, across 814,927 swaps.",
         "floor_apr": -20,
         "worst_half_apr": 1.81390365740869,
-        "swaps": 842504,
+        "swaps": 814927,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 40.868075372067196,
+        "markout_apr_pct": 31.147717450126034,
+        "cost_apr_pct": 2.78344292875193,
+        "kept_apr_pct": 6.936914993189237,
+        "kept_first_half": 12.234676573655047,
+        "kept_second_half": 1.81390365740869,
+        "kept_apr_upper": 3.70936435048276,
+        "kept_first_half_upper": 12.88773283688805,
+        "kept_second_half_upper": 3.70936435048276
       },
       "feeAprPct": 40.868075372067196,
       "keptAprPct": 1.81390365740869,
@@ -311,6 +449,17 @@
         "swaps": 171538,
         "days": 30
       },
+      "keep": {
+        "fee_apr_pct": 38.917153107140514,
+        "markout_apr_pct": 35.579883861587135,
+        "cost_apr_pct": 5.140878457584682,
+        "kept_apr_pct": -1.8036092120313065,
+        "kept_first_half": -5.623820928690211,
+        "kept_second_half": 4.079477473287361,
+        "kept_apr_upper": -0.5328861855788888,
+        "kept_first_half_upper": -0.5328861855788888,
+        "kept_second_half_upper": 8.138906465328887
+      },
       "feeAprPct": 38.917153107140514,
       "keptAprPct": 4.079477473287361,
       "keptAprUpperPct": 8.138906465328887
@@ -329,11 +478,22 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -6.8% a year, between the -20% floor and break-even, across 42,307 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -6.8% a year, between the -20% floor and break-even, across 40,468 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -6.810000786773776,
-        "swaps": 42307,
+        "swaps": 40468,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 35.49575436365684,
+        "markout_apr_pct": 25.992216568138193,
+        "cost_apr_pct": 11.921953594016436,
+        "kept_apr_pct": -2.4184157984977825,
+        "kept_first_half": 2.2852827266018836,
+        "kept_second_half": -6.810000786773776,
+        "kept_apr_upper": -2.826545623461987,
+        "kept_first_half_upper": 4.824018646739592,
+        "kept_second_half_upper": -2.826545623461987
       },
       "feeAprPct": 35.49575436365684,
       "keptAprPct": -6.810000786773776,
@@ -353,11 +513,22 @@
       "open": true,
       "gate": {
         "state": "open",
-        "reason": "Open: the weaker half of the 30-day replay kept 2.5% a year, at or above break-even, across 117,316 swaps.",
+        "reason": "Open: the weaker half of the 30-day replay kept 2.5% a year, at or above break-even, across 95,275 swaps.",
         "floor_apr": -20,
         "worst_half_apr": 2.478795574165938,
-        "swaps": 117316,
+        "swaps": 95275,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 26.83442662244827,
+        "markout_apr_pct": 20.730453256367998,
+        "cost_apr_pct": 3.2482115634021773,
+        "kept_apr_pct": 2.8557618026781006,
+        "kept_first_half": 2.478795574165938,
+        "kept_second_half": 3.516293463573005,
+        "kept_apr_upper": 5.539060482382076,
+        "kept_first_half_upper": 5.539060482382076,
+        "kept_second_half_upper": 9.091526263533318
       },
       "feeAprPct": 26.83442662244827,
       "keptAprPct": 3.516293463573005,
@@ -377,11 +548,22 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -4.1% a year, between the -20% floor and break-even, across 64,843 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -4.1% a year, between the -20% floor and break-even, across 64,813 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -4.136358064670749,
-        "swaps": 64843,
+        "swaps": 64813,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 12.5359612244133,
+        "markout_apr_pct": 11.732969328640452,
+        "cost_apr_pct": 2.7960549720295114,
+        "kept_apr_pct": -1.9930630762566646,
+        "kept_first_half": 0.32688282191547935,
+        "kept_second_half": -4.136358064670749,
+        "kept_apr_upper": -3.0095911758944722,
+        "kept_first_half_upper": 1.4552171380597663,
+        "kept_second_half_upper": -3.0095911758944722
       },
       "feeAprPct": 12.5359612244133,
       "keptAprPct": -4.136358064670749,
@@ -401,11 +583,22 @@
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -0.5% a year, between the -20% floor and break-even, across 210,050 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -0.5% a year, between the -20% floor and break-even, across 171,364 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
         "worst_half_apr": -0.5453251559514076,
-        "swaps": 210050,
+        "swaps": 171364,
         "days": 30
+      },
+      "keep": {
+        "fee_apr_pct": 6.8480875144883155,
+        "markout_apr_pct": 4.309936879388041,
+        "cost_apr_pct": 1.1869242823217072,
+        "kept_apr_pct": 1.3512263527785677,
+        "kept_first_half": 3.2541417386036984,
+        "kept_second_half": -0.5453251559514076,
+        "kept_apr_upper": 0.5389345303368354,
+        "kept_first_half_upper": 4.08282177337793,
+        "kept_second_half_upper": 0.5389345303368354
       },
       "feeAprPct": 6.8480875144883155,
       "keptAprPct": -0.5453251559514076,

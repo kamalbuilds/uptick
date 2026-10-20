@@ -135,12 +135,20 @@ describe("GET /vaults/:id", () => {
     });
   });
 
-  test("carries a hook address for hook pools", async () => {
-    const res = await get("/vaults/crcl");
-    const body = (await res.json()) as {
-      pools: Array<{ hooks: string | null }>;
-    };
-    expect(body.pools.some((p) => typeof p.hooks === "string")).toBe(true);
+  test("serves no pool the replay cannot model: no hook-set dynamic fee, hooks null or an address", async () => {
+    let seen = 0;
+    for (const id of ["nvda", "crcl", "meta", "spcx", "qqq", "tsla"]) {
+      const body = (await (await get(`/vaults/${id}`)).json()) as {
+        pools: Array<{ hooks: string | null; fee_tier: number; volume_usd: number }>;
+      };
+      for (const p of body.pools) {
+        seen++;
+        expect(p.fee_tier & 0x800000).toBe(0);
+        expect(p.hooks === null || /^0x[0-9a-fA-F]{40}$/.test(p.hooks)).toBe(true);
+        expect(p.volume_usd).toBeLessThan(1e10);
+      }
+    }
+    expect(seen).toBeGreaterThan(10);
   });
 });
 
