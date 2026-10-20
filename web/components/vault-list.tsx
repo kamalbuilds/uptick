@@ -3,69 +3,65 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MagnifyingGlass } from "@phosphor-icons/react";
+import { Kept, RowAxis, RowBar, StateChip, GATE_LABEL } from "./ledger";
 import { FetchError, Skeleton } from "./status";
-import { VaultStatus } from "./vault-card";
 import { pct, signed } from "@/lib/format";
-import { sourceLabel, type VaultStats } from "@/lib/keeper";
+import { type VaultStats } from "@/lib/keeper";
 import { useVaultList } from "@/lib/vault-list";
 import { countLine, filterVaults, tiersOf } from "@/lib/vault-filter";
-import { VAULTS, type VaultConfig } from "@/lib/vaults";
+import { BY_KEEP, VAULTS, type VaultConfig } from "@/lib/vaults";
 import { cn } from "@/lib/utils";
 
-const chip = "rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150";
+const GRID = "grid grid-cols-[56px_minmax(0,1fr)_68px] items-center gap-x-3 sm:grid-cols-[64px_minmax(0,1fr)_minmax(140px,240px)_72px_88px_84px] sm:gap-x-5";
 
 function Row({ cfg, stats, pending }: { cfg: VaultConfig; stats: VaultStats | undefined; pending: boolean }) {
+  const keep = cfg.gate.worstHalfApr;
   return (
     <li>
-      <Link
-        href={`/vault/${cfg.id}`}
-        className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 rounded-lg px-4 py-4 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[1.4fr_1fr_1fr_9.5rem]"
-      >
-        <div>
-          <p className="display text-3xl">{cfg.symbol}</p>
-          <p className="text-sm text-body">{cfg.name}<span className="sm:hidden">, {cfg.feeTier} pool</span></p>
-        </div>
-        <p className="figure text-right text-xl font-medium sm:text-left">
-          {stats ? pct(stats.feeAprPct) : pending ? <Skeleton className="inline-block h-6 w-16 align-middle" /> : "Unavailable"}
-          <span className="block text-xs font-normal text-body">Fees 30d</span>
-        </p>
-        <p className="figure hidden text-xl font-medium sm:block">
-          {signed(cfg.keptAprPct)}
-          <span className="block text-xs font-normal text-body">Kept, held-out</span>
-        </p>
-        <span className="col-span-2 justify-self-start sm:col-span-1 sm:justify-self-end"><VaultStatus cfg={cfg} /></span>
+      <Link href={`/vault/${cfg.id}`} className={`row ${GRID} min-h-[56px] border-b border-hairline py-2`}>
+        <span>
+          <span className="block font-semibold">{cfg.symbol}</span>
+          <span className={cn("block text-[12px] leading-4 sm:hidden", cfg.gate.state === "open" ? "text-kept" : cfg.gate.state === "reduced" ? "text-caution" : "text-mute")}>{GATE_LABEL[cfg.gate.state]}</span>
+        </span>
+        <span className="hidden min-w-0 truncate text-mute sm:block">{cfg.name.replace(" Stock Token", "")}, {cfg.feeTier}</span>
+        <span className="col-start-2 h-8 sm:col-start-auto">
+          <RowBar keep={keep} label={`${cfg.symbol} keeps ${signed(keep)} a year in its weaker half`} />
+        </span>
+        <span className="text-right text-[17px] font-medium"><Kept value={keep} /></span>
+        <span className="hidden text-right text-mute sm:block">
+          {stats ? <><span className="figure text-fg">{pct(stats.feeAprPct)}</span> <span className="text-[12px]">{stats.aprWindowDays}d</span></> : pending ? <Skeleton className="ml-auto h-5 w-14" /> : "Unavailable"}
+        </span>
+        <span className="hidden justify-self-end sm:block"><StateChip state={cfg.gate.state} /></span>
       </Link>
     </li>
   );
 }
 
-/** Every eligible vault: search by ticker or company, filter by pool fee tier, best fee APR first once the stats API answers. */
+const chip = "press h-9 rounded-full border px-4 text-[13px] font-medium";
+
+/** Every eligible vault by what a holder keeps, search by ticker or company, filter by pool fee tier. The fee column is the stats API's live figure. */
 export function VaultList() {
   const q = useVaultList();
   const [query, setQuery] = useState("");
   const [tier, setTier] = useState("all");
   const tiers = useMemo(() => tiersOf(VAULTS), []);
   const stats = useMemo(() => new Map((q.data ?? []).map((s) => [s.id, s])), [q.data]);
-  const ordered = useMemo(
-    () => (q.data ? [...VAULTS].sort((a, b) => (stats.get(b.id)?.feeAprPct ?? -1) - (stats.get(a.id)?.feeAprPct ?? -1)) : VAULTS),
-    [q.data, stats],
-  );
-  const shown = filterVaults(ordered, query, tier);
+  const shown = filterVaults(BY_KEEP, query, tier);
 
   return (
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="figure text-lg font-medium" aria-live="polite">{countLine(shown.length, VAULTS.length)}</p>
+        <p className="figure text-[17px] font-medium" aria-live="polite">{countLine(shown.length, VAULTS.length)}</p>
         <label className="relative block sm:w-72">
           <span className="sr-only">Search vaults by ticker or company</span>
-          <MagnifyingGlass size={18} weight="bold" aria-hidden className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-body" />
+          <MagnifyingGlass size={18} weight="bold" aria-hidden className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search ticker or company"
             autoComplete="off"
-            className="h-11 w-full rounded-full border border-sage-line bg-canvas pl-11 pr-4 text-base text-ink placeholder:text-mute"
+            className="h-11 w-full rounded-full border border-line bg-transparent pl-11 pr-4 text-[15px] text-fg placeholder:text-mute"
           />
         </label>
       </div>
@@ -78,7 +74,7 @@ export function VaultList() {
               type="button"
               aria-pressed={tier === t}
               onClick={() => setTier(t)}
-              className={cn(chip, tier === t ? "bg-ink text-primary" : "bg-canvas text-ink hover:bg-primary-pale")}
+              className={cn(chip, tier === t ? "border-fg bg-fg text-canvas" : "border-line text-fg hover:bg-panel")}
             >
               {t === "all" ? "All pools" : `${t} pool`}
             </button>
@@ -86,19 +82,28 @@ export function VaultList() {
         </div>
       )}
 
-      {q.isError && <div className="mt-6"><FetchError what="the vault list" onRetry={() => q.refetch()} /></div>}
+      {q.isError && <div className="mt-6"><FetchError what="the live fee figures" onRetry={() => q.refetch()} /></div>}
 
       {shown.length === 0 ? (
-        <div className="mt-6 rounded-lg bg-canvas p-6">
+        <div className="mt-6 border-y border-hairline py-8">
           <p className="font-semibold">No vault matches{query.trim() ? ` "${query.trim()}"` : ""}{tier !== "all" ? ` in the ${tier} pool tier` : ""}.</p>
-          <button type="button" className="mt-2 text-sm font-semibold underline underline-offset-4" onClick={() => { setQuery(""); setTier("all"); }}>
+          <button type="button" className="mt-2 text-[13px] font-semibold underline underline-offset-4" onClick={() => { setQuery(""); setTier("all"); }}>
             Show all {VAULTS.length} vaults
           </button>
         </div>
       ) : (
-        <ul className="mt-6 divide-y divide-sage-line border-y border-sage-line">
-          {shown.map((v) => <Row key={v.id} cfg={v} stats={stats.get(v.id)} pending={q.isPending} />)}
-        </ul>
+        <>
+          <div className={`${GRID} mt-8 pb-2 text-[13px] text-mute`}>
+            <span className="col-span-2">You keep a year, weaker half</span>
+            <span className="hidden sm:block"><RowAxis /></span>
+            <span className="text-right">Keep</span>
+            <span className="hidden text-right sm:block">Fees</span>
+            <span className="hidden text-right sm:block">Deposits</span>
+          </div>
+          <ul className="border-t border-hairline">
+            {shown.map((v) => <Row key={v.id} cfg={v} stats={stats.get(v.id)} pending={q.isPending} />)}
+          </ul>
+        </>
       )}
     </div>
   );
