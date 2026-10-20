@@ -12,7 +12,8 @@ Stock Token yield vaults on Robinhood Chain (chain 4663). Deposit NVDA or SPCX, 
 
 ## Data
 
-- Stats come from the keeper API (`GET /vaults`, `/vaults/:id`, `/pools/:id/replay`) through the `/keeper/*` rewrite in `next.config.ts` (target `KEEPER_URL`, default `http://localhost:8790`). `feeApr` is read as a fraction (0.40 renders 40.0%).
+- Stats come from the keeper API (`GET /vaults`, `/vaults/:id`, `/pools/:id/replay`) through the `/keeper/*` rewrite in `next.config.ts` (target `KEEPER_URL`, default the local keeper on port 8790). `feeApr` is read as a fraction (0.40 renders 40.0%).
+- `pnpm build:pages` exports the static site to `out/` for Cloudflare Pages. The browser reads the same `/vaults` and `/vaults/:id` payloads from the `uptick-evidence` Worker (`/keeper/*`), set through `NEXT_PUBLIC_KEEPER_BASE`; the Worker serves the replay figures and reads TVL, share price and lifetime fees from a vault only when its address and a chain RPC are configured there.
 - Each figure carries its source. A `replay` figure is labelled with its window; an `onchain` figure is read from the vault.
 - Balances, allowances, previews and transactions go straight to the vault and token contracts over the chain RPC with wagmi and viem. ABIs are `parseAbi` constants.
 - A vault whose address env var is unset shows as Opening and its deposit button is disabled.

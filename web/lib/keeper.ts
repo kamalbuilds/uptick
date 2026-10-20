@@ -83,8 +83,11 @@ export function parseVaultStats(raw: unknown): VaultStats {
   return { id: raw.id, ticker: raw.ticker, source: raw.source, pool: raw.pool, feeAprPct, aprWindowDays, tvlUsd: raw.tvl_usd, chart: parseChart(raw.chart) };
 }
 
+/** Where the browser reads stats from: the local rewrite to the keeper by default, the evidence Worker origin plus "/keeper" in the static build. */
+export const KEEPER_BASE = process.env.NEXT_PUBLIC_KEEPER_BASE || "/keeper";
+
 export async function fetchVault(id: string): Promise<VaultStats> {
-  const res = await fetch(`/keeper/vaults/${id}`, { headers: { accept: "application/json" } });
+  const res = await fetch(`${KEEPER_BASE}/vaults/${id}`, { headers: { accept: "application/json" } });
   if (!res.ok) throw new Error(`stats API /vaults/${id} answered ${res.status}`);
   return parseVaultStats(await res.json());
 }

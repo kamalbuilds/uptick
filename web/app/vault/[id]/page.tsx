@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { VaultDetail } from "@/components/vault-detail";
 import { VAULTS, getVault } from "@/lib/vaults";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return VAULTS.map((v) => ({ id: v.id }));
 }

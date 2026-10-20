@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { KEEPER_BASE } from "./keeper.ts";
 
 export type SessionKey = "regular" | "night" | "weekend";
 export type PoolApr = { pool: string; feeTier: number; feeAprPct: number; label: string };
@@ -57,7 +58,7 @@ export const useEvidence = (id: string) =>
     queryKey: ["evidence", id],
     refetchInterval: 30_000,
     queryFn: async (): Promise<Evidence | null> => {
-      const res = await fetch(`/keeper/vaults/${id}`, { headers: { accept: "application/json" } });
+      const res = await fetch(`${KEEPER_BASE}/vaults/${id}`, { headers: { accept: "application/json" } });
       if (!res.ok) throw new Error(`stats API /vaults/${id} answered ${res.status}`);
       const body: unknown = await res.json();
       if (isObj(body) && body.evidence !== undefined && body.evidence !== null) return parseEvidence(body.evidence);
