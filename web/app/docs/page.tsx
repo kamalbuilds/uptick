@@ -97,7 +97,7 @@ export default function DocsPage() {
       <P>
         The gate is a replay measurement, not an opinion about the token. A 30-day window of swaps
         runs in two halves: the first 15 days select the pool, and the second 15 days are held out.
-        The weaker half decides the state. A vault needs positive net fees in both halves to open.
+        The weaker half decides the state. A vault needs net fees at or above break-even in both halves to open.
       </P>
       <DataTable
         columns={["State", "When the replay puts the vault there", "What deposits can do"]}
@@ -110,7 +110,7 @@ export default function DocsPage() {
           ],
           ["Closed", "The weaker half is below -20% a year.", "Deposits are refused."],
         ]}
-        caption="Net fees are fees earned minus losses to informed traders, measured in the Stock Token."
+        caption="Net fees are fees earned minus losses to informed traders and rebalancing cost, measured in the Stock Token."
       />
       <DataTable
         columns={["State", "Vaults today"]}
@@ -125,24 +125,27 @@ export default function DocsPage() {
       <H2>Where the numbers come from</H2>
       <P>
         The universe starts from 3,357,382 replayed swaps over 30 days. Each vault gets the largest
-        position that stays at or below 20% of in-range liquidity, within a $10,000 floor and a
-        $100,000 ceiling. A thin pool gets a smaller vault rather than no vault. The fee APR and
-        kept APR you see on a vault page are the replay outputs for that size.
+        position that stays at or below 20% of in-range liquidity, under a $100,000 ceiling. A pool
+        whose depth would carry less than $10,000 is left out; a pool between that floor and the
+        ceiling gets the largest size it can carry. The fee APR and kept APR you see on a vault page
+        are the replay outputs for that size.
       </P>
       <CodeBlock
         label="Read the gate"
-        code={`const res = await fetch(
-  "https://uptick-evidence.earn-shield-alerts.workers.dev/vaults",
-);
-const vaults = await res.json();
+        code={`const base = "https://uptick-evidence.earn-shield-alerts.workers.dev";
+const vaults = await (await fetch(\`\${base}/vaults\`)).json();
 
 for (const vault of vaults) {
-  console.log(vault.gate.state, vault.gate.reason);
-}`}
+  console.log(vault.id, vault.open, vault.deposit_cap_usd);
+}
+
+const nvda = await (await fetch(\`\${base}/vaults/nvda\`)).json();
+console.log(nvda.open, nvda.kept_apr_pct, nvda.pools.length);`}
       />
       <P>
-        The response carries each vault&apos;s gate state, the written reason, fee APR and kept APR.
-        The state is the gate&apos;s decision. The reason is the sentence that explains it.
+        The list carries each vault&apos;s open flag, deposit cap, fee APR and kept APR. The
+        per-vault response adds the name, token, feed and the pool table the choice came from. The
+        open flag is the gate&apos;s verdict; kept APR is the held-out half it was measured on.
       </P>
       <Callout tone="key" label="Fee APR is a measurement">
         Replay figures describe past swaps at a fixed size. They are not a forecast, a target, or a
