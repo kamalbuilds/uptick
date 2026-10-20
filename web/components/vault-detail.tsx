@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowSquareOut, CopySimple } from "@phosphor-icons/react";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { BandChart, BandReadout } from "./band-chart";
 import { DepositPanel } from "./deposit-panel";
+import { ExitPreview } from "./exit-preview";
+import { NetOutcome } from "./net-outcome";
 import { VaultStatus } from "./vault-card";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
+import { useEvidence } from "@/lib/evidence";
 import { num, pct, pitchLine, shortAddress, usd } from "@/lib/format";
 import { sourceLabel } from "@/lib/keeper";
 import { REPLAYED_SWAPS, VAULTS, USDG, type VaultConfig } from "@/lib/vaults";
@@ -47,6 +51,8 @@ function Fact({ k, v }: { k: string; v: string }) {
 
 export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
   const q = useVaultStats(cfg.id);
+  const evidence = useEvidence(cfg.id);
+  const { address } = useAccount();
   const other = VAULTS.find((v) => v.id !== cfg.id);
 
   return (
@@ -88,6 +94,8 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
             <p className="mt-2 max-w-xl text-body">A vault opens for deposits when its kept APR, fees less losses to informed traders and rebalancing cost, is at least -20% in both halves of the 30-day replay. {cfg.symbol} {cfg.open ? "clears that line in both halves" : "sits below that line in at least one half, so deposits stay closed"}.</p>
           </section>
 
+          <NetOutcome keep={evidence.data?.keep} symbol={cfg.symbol} />
+
           <section aria-labelledby="band">
             <h2 id="band" className="text-3xl leading-none">The band follows the price</h2>
             <p className="mt-2 max-w-xl text-body">The vault holds {cfg.symbol} inside a band around the Chainlink price and re-centres it at 02:00 UTC after each NYSE session. Fees accrue while the pool price is inside.</p>
@@ -127,6 +135,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
 
         <aside className="lg:sticky lg:top-24" aria-label={`Deposit and withdraw ${cfg.symbol}`}>
           <DepositPanel cfg={cfg} />
+          <ExitPreview vault={cfg.vault} symbol={cfg.symbol} user={address} />
           {other && (
             <p className="mt-4 text-sm text-body">
               Also open to view: <Link className="inline-block py-2 font-semibold underline underline-offset-4" href={`/vault/${other.id}`}>{other.symbol} vault</Link>
