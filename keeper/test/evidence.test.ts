@@ -50,13 +50,13 @@ describe("evidence built from data/replay.json", () => {
     });
   }
 
-  test("the deposit-taking set is exactly AAPL, AMZN, GOOGL, NVDA, PLTR, QQQ and SPY", () => {
+  test("the deposit-taking set is exactly AAPL, AMD, AMZN, GOOGL, INTC, NVDA, PLTR, QQQ, SPY and USO", () => {
     const open = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).open).sort();
-    expect(open).toEqual(["AAPL", "AMZN", "GOOGL", "NVDA", "PLTR", "QQQ", "SPY"]);
+    expect(open).toEqual(["AAPL", "AMD", "AMZN", "GOOGL", "INTC", "NVDA", "PLTR", "QQQ", "SPY", "USO"]);
   });
 
-  test("NVDA clears break-even on its weaker half, so its gate is open with no cap", () => {
-    const ev: any = buildEvidence(replay.tokens.NVDA, replay);
+  test("AAPL clears break-even on its weaker half, so its gate is open with no cap", () => {
+    const ev: any = buildEvidence(replay.tokens.AAPL, replay);
     expect(ev.gate.state).toBe("open");
     expect(ev.open).toBe(true);
     expect(ev.gate.reason).toContain("Open");
@@ -64,7 +64,7 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.reason).toContain(ev.gate.worst_half_apr.toFixed(1));
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
     expect(ev.gate.floor_apr).toBe(KEEP_FLOOR_APR);
-    expect(ev.gate.swaps).toBe(replay.tokens.NVDA.swaps_replayed);
+    expect(ev.gate.swaps).toBe(replay.tokens.AAPL.swaps_replayed);
     expect(ev.gate.days).toBe(replay.window.days);
   });
 
@@ -77,7 +77,7 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
   });
 
-  test("every token's gate state matches its weaker half, AAPL and NVDA are open, AMZN, GOOGL, PLTR, QQQ and SPY are reduced", () => {
+  test("every token's gate state matches its weaker half, AAPL is open, AMD, AMZN, GOOGL, INTC, NVDA, PLTR, QQQ, SPY and USO are reduced", () => {
     for (const s of syms) {
       const ev: any = buildEvidence(replay.tokens[s], replay);
       const worst = ev.gate.worst_half_apr;
@@ -85,11 +85,11 @@ describe("evidence built from data/replay.json", () => {
       expect(ev.gate.reason.startsWith(ev.gate.state === "open" ? "Open" : ev.gate.state === "reduced" ? "Reduced" : "Closed")).toBe(true);
     }
     const reduced = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "reduced").sort();
-    expect(reduced).toEqual(["AMZN", "GOOGL", "PLTR", "QQQ", "SPY"]);
+    expect(reduced).toEqual(["AMD", "AMZN", "GOOGL", "INTC", "NVDA", "PLTR", "QQQ", "SPY", "USO"]);
     const opened = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "open").sort();
-    expect(opened).toEqual(["AAPL", "NVDA"]);
+    expect(opened).toEqual(["AAPL"]);
     const closed = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "closed").sort();
-    expect(closed).toEqual(["AMD", "CRCL", "GME", "INTC", "META", "MSTR", "MU", "SPCX", "TSLA", "USO"]);
+    expect(closed).toEqual(["CRCL", "GME", "META", "MSTR", "MU", "SPCX", "TSLA"]);
   });
 
   test("a half at or above break-even opens the gate outright, with no cap", () => {

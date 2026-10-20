@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { buildEvidence } from "../src/evidence.ts";
-import { applyCreated, applyEnv, eligibleTickers, readReplay, readUniverse } from "../src/registry.ts";
+import { applyCreated, applyEnv, eligibleTickers, readParams, readReplay, readUniverse } from "../src/registry.ts";
 
-const universe = readUniverse(), replay = readReplay();
-const tickers = eligibleTickers(universe, replay);
+const universe = readUniverse(), replay = readReplay(), params = readParams();
+const tickers = eligibleTickers(universe, replay, params);
 const by = (s: string) => tickers.find((t) => t.symbol === s)!;
 
 describe("eligible tickers", () => {
@@ -31,6 +31,27 @@ describe("eligible tickers", () => {
     const t = eligibleTickers(universe, r).find((x) => x.symbol === "NVDA")!;
     expect(t.pool).toBe("0xB944cec30Bd4175855215D767ADC81F39e5f7E2B");
     expect(t.feeTier).toBe(3000);
+  });
+});
+
+describe("per-token band", () => {
+  test("params.json drives each vault's band: the replay row, the evidence and the ticker all carry range_bps", () => {
+    expect(tickers.length).toBeGreaterThanOrEqual(10);
+    for (const t of tickers) {
+      expect(params[t.symbol], `${t.symbol} has no params.json entry`).toBeDefined();
+      expect(t.rangeBps).toBe(params[t.symbol].range_bps);
+      expect(replay.tokens[t.symbol].band_bps, `${t.symbol}: replay.json was run at a band other than params.json; rerun replay/replay.py ${t.symbol}`).toBe(params[t.symbol].range_bps);
+      expect(buildEvidence(replay.tokens[t.symbol], replay)!.band_bps).toBe(params[t.symbol].range_bps);
+    }
+    expect(new Set(tickers.map((t) => t.rangeBps)).size).toBeGreaterThan(1); // the bands differ per token
+  });
+  test("a changed params entry changes the ticker's band, and a token without one gets 500", () => {
+    const p = structuredClone(params);
+    p.NVDA.range_bps = 777;
+    delete (p as any).SPY;
+    const t = eligibleTickers(universe, replay, p);
+    expect(t.find((x) => x.symbol === "NVDA")!.rangeBps).toBe(777);
+    expect(t.find((x) => x.symbol === "SPY")!.rangeBps).toBe(500);
   });
 });
 

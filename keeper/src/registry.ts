@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { parseAbi, type Address } from "viem";
 import { boundedLogs, client, retry } from "./chain.ts";
 import type { Ticker } from "./config.ts";
+import { DEFAULT_BAND_BPS } from "./evidence.ts";
 
 export const factoryAbi = parseAbi([
   "event VaultCreated(address indexed stock, address indexed pool, address indexed vault, address feed, uint24 feeTier, uint256 index)",
@@ -15,9 +16,12 @@ export const factoryAbi = parseAbi([
 const load = (name: string) => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url), "utf8"));
 export const readUniverse = () => load("universe.json");
 export const readReplay = () => load("replay.json");
+export const readParams = (): Record<string, { range_bps: number }> => load("params.json");
 
-/** One ticker per eligible token. The pool is the replay's chosen v3 pool, else the universe's deepest. */
-export function eligibleTickers(universe: any, replay: any): Ticker[] {
+export const DEFAULT_RANGE_BPS = DEFAULT_BAND_BPS;
+
+/** One ticker per eligible token. The pool is the replay's chosen v3 pool, else the universe's deepest; the band is its params.json range_bps. */
+export function eligibleTickers(universe: any, replay: any, params: Record<string, { range_bps: number }> = readParams()): Ticker[] {
   const out: Ticker[] = [];
   for (const t of universe.tokens) {
     if (!t.eligible) continue;
@@ -25,7 +29,7 @@ export function eligibleTickers(universe: any, replay: any): Ticker[] {
     const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
     out.push({
       id: t.symbol.toLowerCase(), symbol: t.symbol, name: t.name, stock: t.token, pool: pool.address, feeTier: pool.fee_tier,
-      feed: t.feed.address, capUsd: t.cap_usd, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
+      feed: t.feed.address, capUsd: t.cap_usd, rangeBps: params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
     });
   }
   return out;

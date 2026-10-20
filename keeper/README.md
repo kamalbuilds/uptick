@@ -73,7 +73,7 @@ v4 pools are replayed for the eligible tokens (below) but do not enter eligibili
 
 ## Pool choice (replay)
 
-`replay/pull.py` pulls 30 days of swaps (bounded 400,000-block pages, public RPC) for every v3 USDG pool of an eligible token and every v4 USDG pool without a fee-taking hook (hook address bits for swap and liquidity return deltas), plus the Chainlink rounds. `replay/replay.py` runs the spike engine (`spikes/stock-vaults/scripts/engine.py`, unchanged) on each pool with the vault's strategy: USD 100,000, +-5% around Chainlink, recentred daily at the NYSE open plus 5 minutes.
+`replay/pull.py` pulls 30 days of swaps (bounded 400,000-block pages, public RPC) for every v3 USDG pool of an eligible token and every v4 USDG pool without a fee-taking hook (hook address bits for swap and liquidity return deltas), plus the Chainlink rounds. `replay/replay.py` runs the spike engine (`spikes/stock-vaults/scripts/engine.py`, unchanged) on each pool with the vault's strategy: each token at its own size, a band around Chainlink chosen per token (`data/params.json`, written by `strategist/strategist.py --batch --interval-h 24`), recentred daily at the NYSE open plus 5 minutes.
 
 The window is 2026-09-17 to 2026-10-17. The first 15 days select, the last 15 days check. The vault's target is the v3 pool that did best on the first half among pools carrying at least USD 1M of volume; `confirmed_in_test` records whether it also led the second half, whose fee APR is reported as the out-of-sample figure.
 

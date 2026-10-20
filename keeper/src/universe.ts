@@ -29,7 +29,7 @@ export function valuePerLiquidity(p: number, pct = RANGE_PCT): number {
 /** Canonical liquidity (the replay engine's units): raw pool liquidity x 1e-12 for an 18 dp stock against a 6 dp USDG. */
 export const canonicalLiquidity = (rawL: bigint): number => Number(rawL) * 1e-12;
 
-/** USD value of the pool's active liquidity spread across the vault's +-5% band. */
+/** USD value of the pool's active liquidity within +-5% of price: the fixed window every vault is sized against, whatever band it runs. */
 export function bandDepthUsd(rawL: bigint, p: number): number {
   return canonicalLiquidity(rawL) * valuePerLiquidity(p);
 }

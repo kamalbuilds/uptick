@@ -14,6 +14,9 @@ export const KEEP_FULL_APR = 0;
 /** A vault between the floor and break-even still takes deposits, but a single deposit is capped at this many dollars of stock token. */
 export const REDUCED_CAP_STOCK_USD = 25_000;
 
+/** The band, in bps, of a token whose replay row carries no `band_bps` (rows written before per-token bands). */
+export const DEFAULT_BAND_BPS = 500;
+
 /** Table floor: a pool below this 30-day volume has too little flow for its replay to mean anything. */
 export const MIN_TABLE_VOLUME_USD = 250_000;
 
@@ -63,6 +66,7 @@ export function buildEvidence(tok: any, replay: any) {
     keep: { ...keep, kept_first_half: first, kept_second_half: second, kept_apr_upper: Math.min(firstUpper, secondUpper), kept_first_half_upper: firstUpper, kept_second_half_upper: secondUpper },
     open: worst >= KEEP_FLOOR_APR,
     gate: depositGate(worst, tok.swaps_replayed, replay.window.days),
+    band_bps: tok.band_bps ?? DEFAULT_BAND_BPS,
     chosen_pool: chosen.id, chosen_fee_tier: chosen.fee_tier, chosen_kind: chosen.kind, chosen_fee_apr_pct: row.full.fee_apr_pct,
     pools,
     fee_per_loss: lost,

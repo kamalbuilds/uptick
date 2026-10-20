@@ -16,7 +16,7 @@ let tickers: Ticker[] = loadTickers();
 
 export interface Band { from: number; to: number; center: number; lower: number; upper: number }
 
-/** The strategy band: +-pct around the latest Chainlink round at 02:00 UTC after each NYSE session, held until the next recentre.
+/** The strategy band: +-pct (the token's band_bps / 100) around the latest Chainlink round at 02:00 UTC after each NYSE session, held until the next recentre.
  *  Weekends and holidays carry the previous band. Times are unix seconds; `cl` is [ts, usd] sorted by ts. */
 export function bandSegments(cl: [number, number][], fromSec: number, toSec: number, pct: number): Band[] {
   const out: Band[] = [];
@@ -38,7 +38,7 @@ export function bandSegments(cl: [number, number][], fromSec: number, toSec: num
 async function chartFor(t: Ticker) {
   const h = history.tickers[t.symbol];
   if (!h) return null;
-  const pct = replay.band_pct;
+  const pct = t.rangeBps / 100;
   const snap = await snapshot(t);
   const points: [number, number][] = [...h.hourly.filter(([ts]: [number, number]) => ts < snap.ts), [snap.ts, snap.poolUsd]];
   const cl: [number, number][] = [...h.chainlink.filter(([ts]: [number, number]) => ts < snap.clUpdatedAt), [snap.clUpdatedAt, snap.clUsd]];
