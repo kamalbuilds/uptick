@@ -22,6 +22,7 @@ export interface Ticker {
   feeTier: number; // v3 fee in pips
   feed: Address; // Chainlink AggregatorV3 proxy
   stockIsToken0: boolean; // v3 orders by address; verified against pool.token0() at startup
+  capUsd: number; // vault size in USD (data/universe.json cap_usd): the deposit cap the vault is created with
   vault?: Address;
   deployBlock?: bigint;
 }

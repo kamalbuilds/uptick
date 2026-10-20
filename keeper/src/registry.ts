@@ -25,7 +25,7 @@ export function eligibleTickers(universe: any, replay: any): Ticker[] {
     const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
     out.push({
       id: t.symbol.toLowerCase(), symbol: t.symbol, name: t.name, stock: t.token, pool: pool.address, feeTier: pool.fee_tier,
-      feed: t.feed.address, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
+      feed: t.feed.address, capUsd: t.cap_usd, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
     });
   }
   return out;

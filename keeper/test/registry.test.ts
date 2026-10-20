@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { buildEvidence } from "../src/evidence.ts";
 import { applyCreated, applyEnv, eligibleTickers, readReplay, readUniverse } from "../src/registry.ts";
 
 const universe = readUniverse(), replay = readReplay();
@@ -13,6 +14,16 @@ describe("eligible tickers", () => {
     for (const t of tickers) expect(t.pool.toLowerCase()).toBe(replay.tokens[t.symbol].chosen.id.toLowerCase());
     expect(by("NVDA").stockIsToken0).toBe(false); // NVDA 0xd060 sorts above USDG 0x5fc5
     expect(by("SPCX").stockIsToken0).toBe(true);
+  });
+  test("each vault was replayed at its own size, the universe's cap_usd, and the ticker carries it", () => {
+    expect(tickers.length).toBeGreaterThanOrEqual(10);
+    for (const t of tickers) {
+      const row = universe.tokens.find((x: any) => x.symbol === t.symbol);
+      expect(t.capUsd).toBe(row.cap_usd);
+      expect(replay.tokens[t.symbol].capital_usd).toBe(row.cap_usd);
+      expect(buildEvidence(replay.tokens[t.symbol], replay)!.capital_usd).toBe(row.cap_usd);
+    }
+    expect(tickers.some((t) => t.capUsd < 100_000)).toBe(true); // thin-pool vaults are replayed small
   });
   test("a different replay choice flows through to the ticker", () => {
     const r = structuredClone(replay);

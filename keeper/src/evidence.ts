@@ -68,7 +68,7 @@ export function buildEvidence(tok: any, replay: any) {
     fee_per_loss: lost,
     swaps_replayed: tok.swaps_replayed,
     window: { start: replay.window.start, end: replay.window.end, days: replay.window.days },
-    strategy: replay.strategy, capital_usd: replay.capital_usd,
+    strategy: replay.strategy, capital_usd: tok.capital_usd ?? replay.capital_usd,
     out_of_sample: { window: { start: replay.window.calibration_end, end: replay.window.end, days: replay.window.days / 2 }, fee_apr_pct: row.test.fee_apr_pct, confirmed: chosen.confirmed_in_test },
     selection: "the v3 pool with the best first-half result, checked on the second half",
   };

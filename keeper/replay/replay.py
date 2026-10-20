@@ -1,5 +1,5 @@
 """Replay of the vault strategy on every USDG pool of each eligible Stock Token, with an out-of-sample pool choice.
-Strategy (the vault's): USD 100,000, +-5% around Chainlink, recentred at 02:00 UTC on the day after each NYSE
+Strategy (the vault's): the token's own vault size `cap_usd` from data/universe.json (at most USD 100,000, smaller where the pool is thin), +-5% around Chainlink, recentred at 02:00 UTC on the day after each NYSE
 session. A slot whose Chainlink feed is older than the vault's 25 h `maxStaleness` is skipped. Engine: spikes/stock-vaults/scripts/engine.py, unchanged; its data directory is pointed at data/engine/ (swap pulls from replay/pull.py).
 Window: last 30 days to 2026-10-17 00:00 UTC. First 15 days calibrate, last 15 days test.
 Choice: among v3 pools (the only kind StockVault can hold) the pool with the best calibration-half edge; its test-half result is the out-of-sample figure.
@@ -24,7 +24,7 @@ import pull
 
 U = dt.timezone.utc
 NY = ZoneInfo("America/New_York")  # walk NYSE session dates in the exchange timezone
-CAP = 100_000.0
+CAP = 100_000.0  # ceiling on a vault; each token replays at its own universe.json cap_usd, never above this
 DAYS = 30
 BAND = 0.05
 RECENTRE_UTC_HOUR = 2
@@ -41,17 +41,17 @@ def finite(x):
     if isinstance(x, list): return [finite(v) for v in x]
     return x
 
-def run_metrics(pl, ref, t0, t1, plan):
-    r = simulate(pl, CAP, t0, t1, plan, record=False)
-    d = r["days"]; a = lambda v: apr(v, CAP, d)
+def run_metrics(pl, ref, t0, t1, plan, cap):
+    r = simulate(pl, cap, t0, t1, plan, record=False)
+    d = r["days"]; a = lambda v: apr(v, cap, d)
     return dict(fee_apr_pct=a(r["F"]), markout_apr_pct=-a(r["mk"]), cost_apr_pct=a(r["C"]), edge_apr_pct=a(r["F"] + r["mk"] - r["C"]), rebalances=r["nreb"])
 
-def run_pair(pl, ref, t0, t1, plan):
+def run_pair(pl, ref, t0, t1, plan, cap):
     """The conservative (legacy ``mixed``) share keeps the existing field names; ``path`` is the current engine default."""
     engine.SHARE = "mixed"
-    out = run_metrics(pl, ref, t0, t1, plan)
+    out = run_metrics(pl, ref, t0, t1, plan, cap)
     engine.SHARE = "path"
-    out["edge_apr_pct_upper"] = run_metrics(pl, ref, t0, t1, plan)["edge_apr_pct"]
+    out["edge_apr_pct_upper"] = run_metrics(pl, ref, t0, t1, plan, cap)["edge_apr_pct"]
     engine.SHARE = "mixed"
     return out
 
@@ -97,9 +97,9 @@ def v4_pool(name, pid, usdg0, fee, spacing, hooks, t_lo, t_hi):
     json.dump({pid: [name, c0, c1, fee, spacing, hooks]}, open(sel, "w"))
     return Pool.from_v4(name, pid, gz=gz, sel=sel, t_lo=t_lo, t_hi=t_hi), len(rows)
 
-def session_split(pl, ref, t0, t1, plan):
+def session_split(pl, ref, t0, t1, plan, cap):
     engine.SHARE = "mixed"
-    r = simulate(pl, CAP, t0, t1, plan, record=True); a = r["arr"]
+    r = simulate(pl, cap, t0, t1, plan, record=True); a = r["arr"]
     slots = label_slots(t0, t1, trading_days())
     k = np.minimum(((pl.t - t0) // HALF).astype(int), len(slots) - 1); lab = slots[k]
     inwin = (pl.t >= t0) & (pl.t < t1)
@@ -112,6 +112,8 @@ def session_split(pl, ref, t0, t1, plan):
 
 def replay_token(u):
     sym = u["symbol"]
+    cap = float(u["cap_usd"])
+    assert 0 < cap <= CAP, f"{sym}: cap_usd {cap} outside (0, {CAP}]"
     end = dt.datetime(2026, 10, 17, tzinfo=U); start = end - dt.timedelta(days=DAYS)
     t0, t1 = start.timestamp(), end.timestamp(); tm = t0 + (t1 - t0) / 2
     ref = Ref(sym)
@@ -137,14 +139,14 @@ def replay_token(u):
         swaps = int(m.sum())
         if float(pl.vol[m].sum()) < MIN_TABLE_VOLUME_USD: continue
         row = dict(p, swaps=swaps, volume_usd=float(pl.vol[m].sum()), pool_fees_usd=float(pl.fee_usd[m].sum()),
-                   full=run_pair(pl, ref, t0, t1, plan), calibration=run_pair(pl, ref, t0, tm, plan), test=run_pair(pl, ref, tm, t1, plan))
+                   full=run_pair(pl, ref, t0, t1, plan, cap), calibration=run_pair(pl, ref, t0, tm, plan, cap), test=run_pair(pl, ref, tm, t1, plan, cap))
         row["_pl"] = pl
         out.append(row)
         print(f"  {sym} {row['kind']} fee={row['fee_tier']:>7} hook={str(row['hooks'])[:10]:>10} swaps={swaps:>7} vol=${row['volume_usd']/1e6:8.2f}M "
               f"feeAPR={row['full']['fee_apr_pct']:7.1f} edge cal={row['calibration']['edge_apr_pct']:7.1f} test={row['test']['edge_apr_pct']:7.1f}", flush=True)
     slots = dict(requested=len(requested), kept=len(checkpoints) - 1)
     slots["stale"] = slots["requested"] - slots["kept"]
-    return t0, tm, t1, ref, out, slots, plan
+    return t0, tm, t1, ref, out, slots, plan, cap
 
 def main(symbols):
     u = json.load(open(os.path.join(KEEPER, "data", "universe.json")))
@@ -153,17 +155,17 @@ def main(symbols):
     for sym in symbols:
         tok = next(x for x in u["tokens"] if x["symbol"] == sym)
         print(sym, flush=True)
-        t0, tm, t1, ref, rows, slots, plan = replay_token(tok)
+        t0, tm, t1, ref, rows, slots, plan, cap = replay_token(tok)
         res["window"] = dict(start=dt.datetime.fromtimestamp(t0, U).isoformat(), end=dt.datetime.fromtimestamp(t1, U).isoformat(), days=DAYS,
                              calibration_end=dt.datetime.fromtimestamp(tm, U).isoformat())
         v3 = [r for r in rows if r["vault_capable"] and r["volume_usd"] >= MIN_CHOICE_VOLUME_USD]
         chosen = max(v3, key=lambda r: r["calibration"]["edge_apr_pct"]) if v3 else None
         best_test = max(v3, key=lambda r: r["test"]["edge_apr_pct"]) if v3 else None
-        ent = dict(symbol=sym, pools=[{k: v for k, v in r.items() if k != "_pl"} for r in rows])
+        ent = dict(symbol=sym, capital_usd=cap, pools=[{k: v for k, v in r.items() if k != "_pl"} for r in rows])
         if chosen:
             ent["chosen"] = dict(kind=chosen["kind"], id=chosen["id"], fee_tier=chosen["fee_tier"], confirmed_in_test=(best_test["id"] == chosen["id"]),
                                  rule="best calibration-half edge among v3 pools; test half is the out-of-sample figure")
-            ent["sessions"] = session_split(chosen["_pl"], ref, t0, t1, plan)
+            ent["sessions"] = session_split(chosen["_pl"], ref, t0, t1, plan, cap)
             ent["swaps_replayed"] = sum(r["swaps"] for r in rows)
         ent["recentre"] = slots
         res["tokens"][sym] = ent

@@ -6,7 +6,7 @@ import { client, retry } from "../src/chain.ts";
 import { USDG } from "../src/config.ts";
 import { log } from "../src/log.ts";
 import { priceFromSqrt } from "../src/price.ts";
-import { RULE, VAULT_CAPITAL_USD, bandDepthUsd, cleanName, feedSymbol, rowVerdict, vaultShare } from "../src/universe.ts";
+import { RULE, VAULT_CAPITAL_USD, bandDepthUsd, cleanName, feedSymbol, rowVerdict, vaultCapUsd, vaultShare } from "../src/universe.ts";
 
 const REPO = new URL("../../../", import.meta.url).pathname;
 const FACTORY: Address = "0x1f7d7550B1b028f7571E69A784071F0205FD2EfA";
@@ -86,7 +86,7 @@ const counts = (rows: any[]) => ({ tokens: rows.length, with_code: rows.filter((
 /** `--reeval`: re-apply the rule in src/universe.ts to the rows already read from the chain. No RPC. */
 function reeval() {
   const doc = JSON.parse(readFileSync(OUT, "utf8"));
-  doc.tokens = doc.tokens.map((t: any) => ({ ...t, name: cleanName(t.name), ...rowVerdict(t) }));
+  doc.tokens = doc.tokens.map((t: any) => ({ ...t, name: cleanName(t.name), cap_usd: t.pool ? vaultCapUsd(t.pool.depth_usd_5pct) : null, ...rowVerdict(t) }));
   doc.rule = { ...doc.rule, ...RULE, vault_capital_usd: VAULT_CAPITAL_USD };
   doc.usdg = USDG;
   doc.counts = counts(doc.tokens);
@@ -200,7 +200,7 @@ async function main() {
       },
       other_pools: mine.slice(best ? 1 : 0).map((p) => ({ address: p.pool, fee_tier: p.fee, depth_usd_5pct: p.depthUsd, usdg_balance: p.usdgBalance, volume_7d_usd: p.volume7dUsd })),
     };
-    return { ...row, ...rowVerdict(row) };
+    return { ...row, cap_usd: best ? vaultCapUsd(best.depthUsd) : null, ...rowVerdict(row) };
   });
   const doc = {
     chain_id: 4663, usdg: USDG, generated_at: new Date().toISOString(), block: Number(head), block_ts: headTs,

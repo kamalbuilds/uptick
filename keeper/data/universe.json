@@ -1,9 +1,9 @@
 {
  "chain_id": 4663,
  "usdg": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
- "generated_at": "2026-10-20T01:54:18.855Z",
- "block": 93082560,
- "block_ts": 1792460873,
+ "generated_at": "2026-10-20T02:24:11.396Z",
+ "block": 93099228,
+ "block_ts": 1792462620,
  "sources": {
   "tokens": "docs/research/rhj-assets.json + docs/research/founder-house/nightmarket/raw/rhj-assets.json (Robinhood RHJ registry)",
   "feeds": "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
@@ -12,18 +12,19 @@
  "rule": {
   "minVolume7dUsdPerDay": 100000,
   "maxVaultShare": 0.2,
+  "minVaultCapUsd": 10000,
   "maxFeedDeviationBps": 300,
   "maxFeedAgeS": 346200,
   "vault_capital_usd": 100000,
   "volume_window_days": 7,
-  "volume_from_block": 87140209
+  "volume_from_block": 87157080
  },
  "counts": {
   "tokens": 196,
   "with_code": 196,
   "with_feed": 35,
   "with_pool": 95,
-  "eligible": 7
+  "eligible": 17
  },
  "tokens": [
   {
@@ -61,6 +62,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -79,32 +81,32 @@
     "decimals": 8,
     "usd": 342.58737216,
     "updated_at": 1792425189,
-    "age_s": 35684
+    "age_s": 37431
    },
    "pool": {
     "address": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": false,
-    "price_usd": 343.70564252357616,
-    "tick": 217923,
-    "liquidity_raw": "319230429616245527",
-    "depth_usd_5pct": 292485.7304890315,
-    "usdg_balance": 188315.366964,
-    "stock_balance": 161.84364294698,
-    "volume_7d_usd": 3930373.851266001,
-    "volume_usd_per_day": 561481.9787522858,
-    "swaps_7d": 12032,
-    "vault_share_100k": 0.2547863329334329,
-    "feed_deviation_bps": 32.64190260503579
+    "price_usd": 343.45886768959986,
+    "tick": 217930,
+    "liquidity_raw": "323110118791636796",
+    "depth_usd_5pct": 295934.08941015776,
+    "usdg_balance": 186189.086318,
+    "stock_balance": 168.03694317216252,
+    "volume_7d_usd": 3925009.847070002,
+    "volume_usd_per_day": 560715.6924385717,
+    "swaps_7d": 12021,
+    "vault_share_100k": 0.25256729004813616,
+    "feed_deviation_bps": 25.438635525446784
    },
    "other_pools": [
     {
      "address": "0x783C9bbB765047CFdD2b84b92b2Ca9F11D34b7Ed",
      "fee_tier": 3000,
-     "depth_usd_5pct": 35075.71395874438,
-     "usdg_balance": 62614.604331,
-     "volume_7d_usd": 101751.49273700001
+     "depth_usd_5pct": 35075.66968549443,
+     "usdg_balance": 62613.708483,
+     "volume_7d_usd": 101750.251374
     },
     {
      "address": "0x3714aa8105DE1f384481B425788Af413748C1837",
@@ -114,8 +116,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 25% of in-range liquidity, above 20%"
+   "cap_usd": 73983,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $74.0K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "ABCL",
@@ -136,6 +139,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -166,6 +170,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -188,6 +193,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -217,6 +223,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -246,6 +253,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -284,6 +292,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -306,6 +315,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -329,9 +339,9 @@
     "depth_usd_5pct": 127752.27597337187,
     "usdg_balance": 324046.992184,
     "stock_balance": 59666.6653388998,
-    "volume_7d_usd": 2160073.890281998,
-    "volume_usd_per_day": 308581.98432599974,
-    "swaps_7d": 4507,
+    "volume_7d_usd": 2147125.605286998,
+    "volume_usd_per_day": 306732.229326714,
+    "swaps_7d": 4499,
     "vault_share_100k": 0.43907354854136216,
     "feed_deviation_bps": null
    },
@@ -351,6 +361,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 31938,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -369,24 +380,24 @@
     "decimals": 8,
     "usd": 533.93534066,
     "updated_at": 1792460869,
-    "age_s": 4
+    "age_s": 1751
    },
    "pool": {
     "address": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 533.031048086512,
-    "tick": 213535,
+    "price_usd": 533.8926273382904,
+    "tick": 213518,
     "liquidity_raw": "64581020971889095",
-    "depth_usd_5pct": 73686.55105093225,
-    "usdg_balance": 51543.108425,
-    "stock_balance": 241.8087936885401,
-    "volume_7d_usd": 1252622.350221,
-    "volume_usd_per_day": 178946.05003157142,
-    "swaps_7d": 6051,
-    "vault_share_100k": 0.5757498170982494,
-    "feed_deviation_bps": -16.936368594185286
+    "depth_usd_5pct": 73746.07963731141,
+    "usdg_balance": 52751.273191,
+    "stock_balance": 239.55085338201764,
+    "volume_7d_usd": 1253112.828457,
+    "volume_usd_per_day": 179016.11835099998,
+    "swaps_7d": 6058,
+    "vault_share_100k": 0.5755525546748816,
+    "feed_deviation_bps": -0.7999718028925782
    },
    "other_pools": [
     {
@@ -404,8 +415,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 58% of in-range liquidity, above 20%"
+   "cap_usd": 18436,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $18.4K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "AMKR",
@@ -426,6 +438,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -442,26 +455,26 @@
     "aggregator": "0x93503dFc97157cdB8aADcCaf70452621d598FDeb",
     "description": "Robinhood AMZN / USD",
     "decimals": 8,
-    "usd": 263.301,
-    "updated_at": 1792437505,
-    "age_s": 23368
+    "usd": 264.66150427,
+    "updated_at": 1792462532,
+    "age_s": 88
    },
    "pool": {
     "address": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 262.4492857703763,
-    "tick": -220621,
-    "liquidity_raw": "570976001767297517",
-    "depth_usd_5pct": 457138.3142260388,
-    "usdg_balance": 339827.367179,
-    "stock_balance": 500.83052401258374,
-    "volume_7d_usd": 1545387.0279820003,
-    "volume_usd_per_day": 220769.57542600002,
-    "swaps_7d": 5436,
-    "vault_share_100k": 0.17948864302918613,
-    "feed_deviation_bps": -32.347550127939776
+    "price_usd": 264.4642548938065,
+    "tick": -220545,
+    "liquidity_raw": "340931626029225629",
+    "depth_usd_5pct": 274004.5975294179,
+    "usdg_balance": 353158.870724,
+    "stock_balance": 415.27201866938685,
+    "volume_7d_usd": 1560667.9462720007,
+    "volume_usd_per_day": 222952.56375314295,
+    "swaps_7d": 5442,
+    "vault_share_100k": 0.2673763923239857,
+    "feed_deviation_bps": -7.452892582076044
    },
    "other_pools": [
     {
@@ -486,8 +499,9 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 68501,
    "eligible": true,
-   "reason": "feed, volume and depth pass"
+   "reason": "feed and volume pass; vault capped at $68.5K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "ANET",
@@ -524,6 +538,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -546,6 +561,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -568,6 +584,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -586,7 +603,7 @@
     "decimals": 8,
     "usd": 1642.54437697,
     "updated_at": 1792460836,
-    "age_s": 37
+    "age_s": 1784
    },
    "pool": {
     "address": "0xedb22516B14Eb2d1C86927Db373B0E8bF70F5cD1",
@@ -599,9 +616,9 @@
     "depth_usd_5pct": 15779.041154567549,
     "usdg_balance": 9924.724674,
     "stock_balance": 9.090633832823192,
-    "volume_7d_usd": 40731.102578000005,
-    "volume_usd_per_day": 5818.728939714287,
-    "swaps_7d": 379,
+    "volume_7d_usd": 40596.37987700001,
+    "volume_usd_per_day": 5799.482839571429,
+    "swaps_7d": 376,
     "vault_share_100k": 0.8637141835239232,
     "feed_deviation_bps": 44.980026128056785
    },
@@ -614,6 +631,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 3944,
    "eligible": false,
    "reason": "7-day volume $5.8K/day is below $100.0K/day"
   },
@@ -643,6 +661,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -665,6 +684,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -687,6 +707,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -704,16 +725,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 333.94317785800894,
-    "tick": -218212,
+    "price_usd": 334.2599582645884,
+    "tick": -218202,
     "liquidity_raw": "62459475529557568",
-    "depth_usd_5pct": 56408.12845382207,
-    "usdg_balance": 89291.63119,
-    "stock_balance": 246.37283647190972,
-    "volume_7d_usd": 271730.574612,
-    "volume_usd_per_day": 38818.653516000006,
-    "swaps_7d": 1141,
-    "vault_share_100k": 0.6393529606712479,
+    "depth_usd_5pct": 56434.876648429476,
+    "usdg_balance": 89834.496699,
+    "stock_balance": 244.75285913299012,
+    "volume_7d_usd": 272216.143629,
+    "volume_usd_per_day": 38888.02051842857,
+    "swaps_7d": 1145,
+    "vault_share_100k": 0.6392436401809503,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -725,6 +746,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 14108,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -747,6 +769,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -769,6 +792,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -792,9 +816,9 @@
     "depth_usd_5pct": 47122.1891225996,
     "usdg_balance": 18966.63636,
     "stock_balance": 286.05725472011585,
-    "volume_7d_usd": 133873.051542,
-    "volume_usd_per_day": 19124.721648857143,
-    "swaps_7d": 420,
+    "volume_7d_usd": 133611.363311,
+    "volume_usd_per_day": 19087.33761585714,
+    "swaps_7d": 419,
     "vault_share_100k": 0.6797071236934095,
     "feed_deviation_bps": null
    },
@@ -807,6 +831,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 11780,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -823,33 +848,33 @@
     "aggregator": "0xFf5F85e4888782e66f1dd9cabaDF4822Fbeb1439",
     "description": "Robinhood BABA / USD",
     "decimals": 8,
-    "usd": 107.55560799,
-    "updated_at": 1792460720,
-    "age_s": 153
+    "usd": 107.00896329,
+    "updated_at": 1792462580,
+    "age_s": 40
    },
    "pool": {
     "address": "0xa57ab582b310dd6f9e934EA1EEEa152741545E6A",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 107.88363133003348,
-    "tick": 229511,
-    "liquidity_raw": "66919697373037367",
-    "depth_usd_5pct": 34350.955047828415,
-    "usdg_balance": 15166.373425,
-    "stock_balance": 415.9829701777153,
-    "volume_7d_usd": 596803.9899340001,
-    "volume_usd_per_day": 85257.7128477143,
-    "swaps_7d": 3715,
-    "vault_share_100k": 0.7443192343843064,
-    "feed_deviation_bps": 30.498022944929122
+    "price_usd": 107.2216414679377,
+    "tick": 229572,
+    "liquidity_raw": "60741243062854993",
+    "depth_usd_5pct": 31083.64719055202,
+    "usdg_balance": 13071.211707,
+    "stock_balance": 435.5210904699492,
+    "volume_7d_usd": 597231.302785,
+    "volume_usd_per_day": 85318.75754071427,
+    "swaps_7d": 3712,
+    "vault_share_100k": 0.7628716635770231,
+    "feed_deviation_bps": 19.87480033437338
    },
    "other_pools": [
     {
      "address": "0x9EDa4BCb3EBfEdE532f3cAE3864fC0CEFff782Aa",
      "fee_tier": 10000,
-     "depth_usd_5pct": 518.7504953427418,
-     "usdg_balance": 170.015018,
+     "depth_usd_5pct": 517.6263832585597,
+     "usdg_balance": 147.26915,
      "volume_7d_usd": null
     },
     {
@@ -860,6 +885,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 7770,
    "eligible": false,
    "reason": "7-day volume $85.3K/day is below $100.0K/day"
   },
@@ -898,6 +924,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 1405,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -915,16 +942,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 223.17223619798733,
-    "tick": 222241,
-    "liquidity_raw": "40029382238722127",
-    "depth_usd_5pct": 29553.303922599833,
-    "usdg_balance": 19972.103635,
-    "stock_balance": 328.42082369166593,
-    "volume_7d_usd": 830505.2274750001,
-    "volume_usd_per_day": 118643.60392500002,
+    "price_usd": 223.98457523655858,
+    "tick": 222205,
+    "liquidity_raw": "41863383905402347",
+    "depth_usd_5pct": 30963.52922910811,
+    "usdg_balance": 21110.110492,
+    "stock_balance": 323.34613747254105,
+    "volume_7d_usd": 831109.1220560005,
+    "volume_usd_per_day": 118729.87457942865,
     "swaps_7d": 5832,
-    "vault_share_100k": 0.7718830548678548,
+    "vault_share_100k": 0.7635713590541654,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -936,6 +963,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 7740,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -958,6 +986,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -987,6 +1016,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1009,6 +1039,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1047,6 +1078,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 384,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1077,6 +1109,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 155,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1099,6 +1132,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1121,6 +1155,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1151,6 +1186,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 2,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1181,6 +1217,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1197,9 +1234,9 @@
     "aggregator": "0xEff19B88E3c72f046e4a19A1E62544D5869d4275",
     "description": "Robinhood CLSK / USD",
     "decimals": 8,
-    "usd": 8.41975962,
-    "updated_at": 1792455169,
-    "age_s": 5704
+    "usd": 8.46290698,
+    "updated_at": 1792461531,
+    "age_s": 1089
    },
    "pool": null,
    "other_pools": [
@@ -1211,6 +1248,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no USDG pool with liquidity"
   },
@@ -1233,6 +1271,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1249,26 +1288,26 @@
     "aggregator": "0x30398b0B0df82a009bB2D507BC7fE1dc6d3ca294",
     "description": "Robinhood COIN / USD",
     "decimals": 8,
-    "usd": 167.12260452,
-    "updated_at": 1792459840,
-    "age_s": 1033
+    "usd": 167.99719104,
+    "updated_at": 1792460890,
+    "age_s": 1730
    },
    "pool": {
     "address": "0x3a6eC0aa6C702323414d449B5F60f4B742A82dED",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": false,
-    "price_usd": 167.9653408351307,
-    "tick": 225083,
+    "price_usd": 167.67897266561104,
+    "tick": 225100,
     "liquidity_raw": "4722521421200540",
-    "depth_usd_5pct": 3024.75946225607,
-    "usdg_balance": 3653.673839,
-    "stock_balance": 34.231048687860266,
-    "volume_7d_usd": 56603.29005500001,
-    "volume_usd_per_day": 8086.18429357143,
+    "depth_usd_5pct": 3022.1798695248467,
+    "usdg_balance": 3601.477016,
+    "stock_balance": 34.54222901739294,
+    "volume_7d_usd": 56627.375173000015,
+    "volume_usd_per_day": 8089.625024714288,
     "swaps_7d": 1493,
-    "vault_share_100k": 0.9706404608169533,
-    "feed_deviation_bps": 50.42623154127703
+    "vault_share_100k": 0.970664764875366,
+    "feed_deviation_bps": -18.94188661244822
    },
    "other_pools": [
     {
@@ -1293,6 +1332,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 755,
    "eligible": false,
    "reason": "7-day volume $8.1K/day is below $100.0K/day"
   },
@@ -1310,16 +1350,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 996.3209384992908,
+    "price_usd": 996.3397583836664,
     "tick": -207280,
-    "liquidity_raw": "205728020557711598",
-    "depth_usd_5pct": 320922.48460524424,
-    "usdg_balance": 392442.564299,
-    "stock_balance": 84.82418462905558,
-    "volume_7d_usd": 538708.8610659998,
-    "volume_usd_per_day": 76958.40872371427,
-    "swaps_7d": 1353,
-    "vault_share_100k": 0.23757343372565018,
+    "liquidity_raw": "205869310191381725",
+    "depth_usd_5pct": 321145.92043005105,
+    "usdg_balance": 392426.131171,
+    "stock_balance": 84.8246614168414,
+    "volume_7d_usd": 537510.2472379999,
+    "volume_usd_per_day": 76787.17817685714,
+    "swaps_7d": 1352,
+    "vault_share_100k": 0.23744739091354725,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -1331,6 +1371,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 80286,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1347,26 +1388,26 @@
     "aggregator": "0x901D8DF245E48Dfc82D6483FC45b5BE6ddc5281a",
     "description": "Robinhood CRCL / USD",
     "decimals": 8,
-    "usd": 81.03251704,
-    "updated_at": 1792455615,
-    "age_s": 5258
+    "usd": 81.47861944,
+    "updated_at": 1792460897,
+    "age_s": 1723
    },
    "pool": {
     "address": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 81.36367184020651,
-    "tick": 232332,
-    "liquidity_raw": "1576239545635772937",
-    "depth_usd_5pct": 702658.9114789913,
-    "usdg_balance": 784620.352828,
-    "stock_balance": 21296.31691194289,
-    "volume_7d_usd": 13715116.766125005,
-    "volume_usd_per_day": 1959302.3951607149,
-    "swaps_7d": 12829,
-    "vault_share_100k": 0.12458592132957012,
-    "feed_deviation_bps": 40.86690285617534
+    "price_usd": 81.48259366620306,
+    "tick": 232317,
+    "liquidity_raw": "1920887431523681349",
+    "depth_usd_5pct": 856922.2252184784,
+    "usdg_balance": 795372.549762,
+    "stock_balance": 21164.94597490258,
+    "volume_7d_usd": 13687933.282614004,
+    "volume_usd_per_day": 1955419.0403734292,
+    "swaps_7d": 12798,
+    "vault_share_100k": 0.10450170072825787,
+    "feed_deviation_bps": 0.4877630758069412
    },
    "other_pools": [
     {
@@ -1384,6 +1425,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": true,
    "reason": "feed, volume and depth pass"
   },
@@ -1406,6 +1448,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1428,6 +1471,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1450,6 +1494,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1468,7 +1513,7 @@
     "decimals": 8,
     "usd": 60.06101769,
     "updated_at": 1792460493,
-    "age_s": 380
+    "age_s": 2127
    },
    "pool": null,
    "other_pools": [
@@ -1480,6 +1525,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no USDG pool with liquidity"
   },
@@ -1502,6 +1548,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1524,6 +1571,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1546,6 +1594,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1591,6 +1640,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1607,9 +1657,9 @@
     "aggregator": "0xD6ed4e7D4ABA1111EB42A349899b5c72EE1C9FEF",
     "description": "Robinhood DELL-USD",
     "decimals": 8,
-    "usd": 452.27336562,
-    "updated_at": 1792460788,
-    "age_s": 85
+    "usd": 454.56269469,
+    "updated_at": 1792461508,
+    "age_s": 1112
    },
    "pool": {
     "address": "0xc30c89cB7815A1488b7998D15eEC73961707Fc5a",
@@ -1618,15 +1668,15 @@
     "stock_is_token0": false,
     "price_usd": 452.25395591035806,
     "tick": 215178,
-    "liquidity_raw": "54308139495076463",
-    "depth_usd_5pct": 57077.26855800593,
-    "usdg_balance": 42490.665618,
-    "stock_balance": 670.3120229490252,
-    "volume_7d_usd": 659655.545649,
-    "volume_usd_per_day": 94236.50652128572,
-    "swaps_7d": 1386,
-    "vault_share_100k": 0.6366293539352686,
-    "feed_deviation_bps": -0.42915880344459967
+    "liquidity_raw": "54357532779030367",
+    "depth_usd_5pct": 57129.18036642747,
+    "usdg_balance": 42512.568719,
+    "stock_balance": 670.3782423911568,
+    "volume_7d_usd": 657193.0719189999,
+    "volume_usd_per_day": 93884.72455985713,
+    "swaps_7d": 1382,
+    "vault_share_100k": 0.636419026477441,
+    "feed_deviation_bps": -50.790326760458036
    },
    "other_pools": [
     {
@@ -1637,8 +1687,9 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 14282,
    "eligible": false,
-   "reason": "7-day volume $94.2K/day is below $100.0K/day"
+   "reason": "7-day volume $93.9K/day is below $100.0K/day"
   },
   {
    "symbol": "DJT",
@@ -1654,16 +1705,16 @@
     "fee_tier": 10000,
     "tick_spacing": 200,
     "stock_is_token0": true,
-    "price_usd": 6.470234173172659,
-    "tick": -257651,
+    "price_usd": 6.46564087121959,
+    "tick": -257659,
     "liquidity_raw": "106215393680228731",
-    "depth_usd_5pct": 13352.252370986662,
-    "usdg_balance": 16616.176424,
-    "stock_balance": 23736.0381719739,
-    "volume_7d_usd": 149455.475506,
-    "volume_usd_per_day": 21350.782215142855,
+    "depth_usd_5pct": 13347.512062211172,
+    "usdg_balance": 16520.258548,
+    "stock_balance": 23751.017715483315,
+    "volume_7d_usd": 149527.02909099997,
+    "volume_usd_per_day": 21361.00415585714,
     "swaps_7d": 788,
-    "vault_share_100k": 0.8822056722147299,
+    "vault_share_100k": 0.8822425669573997,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -1689,6 +1740,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 3336,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1711,6 +1763,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1733,6 +1786,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1755,6 +1809,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1771,9 +1826,9 @@
     "aggregator": "0x105Cbe427BBD3225826a450f67EA80FeC6417F93",
     "description": "Robinhood EWY / USD",
     "decimals": 8,
-    "usd": 153.5144572,
-    "updated_at": 1792459880,
-    "age_s": 993
+    "usd": 154.28834713,
+    "updated_at": 1792461142,
+    "age_s": 1478
    },
    "pool": null,
    "other_pools": [
@@ -1792,6 +1847,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no USDG pool with liquidity"
   },
@@ -1809,16 +1865,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 12.188498582641806,
-    "tick": -251318,
-    "liquidity_raw": "353505235221133023",
-    "depth_usd_5pct": 60992.72333326859,
-    "usdg_balance": 15047.861213,
-    "stock_balance": 5149.619076313896,
-    "volume_7d_usd": 144399.141023,
-    "volume_usd_per_day": 20628.448717571428,
-    "swaps_7d": 258,
-    "vault_share_100k": 0.621146086168078,
+    "price_usd": 12.159813622340094,
+    "tick": -251342,
+    "liquidity_raw": "322216554294943579",
+    "depth_usd_5pct": 55528.811466578474,
+    "usdg_balance": 13343.140492,
+    "stock_balance": 5102.04593563965,
+    "volume_7d_usd": 146905.35152,
+    "volume_usd_per_day": 20986.47878857143,
+    "swaps_7d": 261,
+    "vault_share_100k": 0.6429676859035791,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -1830,6 +1886,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 13882,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1852,6 +1909,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1875,9 +1933,9 @@
     "depth_usd_5pct": 53341.196553605325,
     "usdg_balance": 35468.907837,
     "stock_balance": 3752.3248468492916,
-    "volume_7d_usd": 418065.975807,
-    "volume_usd_per_day": 59723.71082957143,
-    "swaps_7d": 787,
+    "volume_7d_usd": 417163.9572470001,
+    "volume_usd_per_day": 59594.85103528573,
+    "swaps_7d": 776,
     "vault_share_100k": 0.6521404700597977,
     "feed_deviation_bps": null
    },
@@ -1890,6 +1948,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 13335,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1912,6 +1971,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1950,6 +2010,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -1972,6 +2033,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2010,6 +2072,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2040,6 +2103,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2069,6 +2133,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2091,6 +2156,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2113,6 +2179,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2126,29 +2193,29 @@
    "has_code": true,
    "feed": null,
    "pool": {
-    "address": "0x7A6A053eCCf1446A2633E05aA6D40D09381997ec",
-    "fee_tier": 3000,
-    "tick_spacing": 60,
+    "address": "0xBA2f1ed4cEB2169D538d1e614D847E83C5A55913",
+    "fee_tier": 500,
+    "tick_spacing": 10,
     "stock_is_token0": false,
-    "price_usd": 378.52154351923195,
-    "tick": 216958,
-    "liquidity_raw": "1688534975377912638",
-    "depth_usd_5pct": 1623537.9013809809,
-    "usdg_balance": 494381.065988,
-    "stock_balance": 5250.330537500333,
-    "volume_7d_usd": 1222349.501736,
-    "volume_usd_per_day": 174621.35739085713,
-    "swaps_7d": 1316,
-    "vault_share_100k": 0.058020192024715686,
+    "price_usd": 378.88570833151965,
+    "tick": 216948,
+    "liquidity_raw": "1723610613069031449",
+    "depth_usd_5pct": 1658060.3777046155,
+    "usdg_balance": 386918.824553,
+    "stock_balance": 3200.7098786289175,
+    "volume_7d_usd": 9430427.271444004,
+    "volume_usd_per_day": 1347203.895920572,
+    "swaps_7d": 10196,
+    "vault_share_100k": 0.05688086784059343,
     "feed_deviation_bps": null
    },
    "other_pools": [
     {
-     "address": "0xBA2f1ed4cEB2169D538d1e614D847E83C5A55913",
-     "fee_tier": 500,
-     "depth_usd_5pct": 1586903.0017904707,
-     "usdg_balance": 358909.246501,
-     "volume_7d_usd": 9524330.930075003
+     "address": "0x7A6A053eCCf1446A2633E05aA6D40D09381997ec",
+     "fee_tier": 3000,
+     "depth_usd_5pct": 1623183.2373504576,
+     "usdg_balance": 494281.689853,
+     "volume_7d_usd": 1214329.857304
     },
     {
      "address": "0x32cb909aCF78354E08aa45639Ff5CD33767E730a",
@@ -2165,6 +2232,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2187,6 +2255,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2210,9 +2279,9 @@
     "depth_usd_5pct": 2415.2774227001737,
     "usdg_balance": 2229.572831,
     "stock_balance": 4354.367946332326,
-    "volume_7d_usd": 535473.3441119998,
-    "volume_usd_per_day": 76496.19201599997,
-    "swaps_7d": 1835,
+    "volume_7d_usd": 535233.584161,
+    "volume_usd_per_day": 76461.94059442857,
+    "swaps_7d": 1832,
     "vault_share_100k": 0.9764168248772928,
     "feed_deviation_bps": null
    },
@@ -2225,6 +2294,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 603,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2241,41 +2311,41 @@
     "aggregator": "0xf83Cde62D1Cd90dE8d2Bf3332B90c590985aD679",
     "description": "Robinhood GME / USD",
     "decimals": 8,
-    "usd": 26.1615,
-    "updated_at": 1792447576,
-    "age_s": 13297
+    "usd": 26.29364153,
+    "updated_at": 1792461230,
+    "age_s": 1390
    },
    "pool": {
     "address": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
     "fee_tier": 10000,
     "tick_spacing": 200,
     "stock_is_token0": true,
-    "price_usd": 26.38400548849872,
-    "tick": -243595,
+    "price_usd": 26.380574193740486,
+    "tick": -243597,
     "liquidity_raw": "775509306717614024",
-    "depth_usd_5pct": 196863.1582004998,
-    "usdg_balance": 173672.595321,
-    "stock_balance": 5593.956892944541,
-    "volume_7d_usd": 705865.821737,
-    "volume_usd_per_day": 100837.97453385715,
-    "swaps_7d": 2200,
-    "vault_share_100k": 0.3368555418131762,
-    "feed_deviation_bps": 85.05073810703468
+    "depth_usd_5pct": 196850.35655279437,
+    "usdg_balance": 173413.560111,
+    "stock_balance": 5603.874596453249,
+    "volume_7d_usd": 705878.4208450001,
+    "volume_usd_per_day": 100839.77440642858,
+    "swaps_7d": 2197,
+    "vault_share_100k": 0.3368700686812723,
+    "feed_deviation_bps": 33.0622381237307
    },
    "other_pools": [
     {
      "address": "0xE2b46c905E12Ab8E2f864e4821a4325884C1B126",
      "fee_tier": 500,
-     "depth_usd_5pct": 75992.31301417649,
-     "usdg_balance": 37108.061439,
-     "volume_7d_usd": 5355649.709253002
+     "depth_usd_5pct": 84340.63938813344,
+     "usdg_balance": 40227.767801,
+     "volume_7d_usd": 5301307.772943001
     },
     {
      "address": "0x0A0675689C2Ad2a3aDe86539BCbD27B6c0764e9d",
      "fee_tier": 3000,
      "depth_usd_5pct": 1705.1985141366254,
      "usdg_balance": 1592.887586,
-     "volume_7d_usd": 16179.73042
+     "volume_7d_usd": 16179.730419999996
     },
     {
      "address": "0xB7723619E09e9317b3e538E7531eCbB910Aec107",
@@ -2285,8 +2355,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 34% of in-range liquidity, above 20%"
+   "cap_usd": 49212,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $49.2K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "GOOGL",
@@ -2303,24 +2374,24 @@
     "decimals": 8,
     "usd": 343.8464424,
     "updated_at": 1792458726,
-    "age_s": 2147
+    "age_s": 3894
    },
    "pool": {
     "address": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": true,
-    "price_usd": 344.62548474003614,
-    "tick": -217897,
+    "price_usd": 344.7928792523428,
+    "tick": -217892,
     "liquidity_raw": "664977865118282521",
-    "depth_usd_5pct": 610081.6380496299,
-    "usdg_balance": 301114.483668,
-    "stock_balance": 1422.5457913920284,
-    "volume_7d_usd": 12155439.370985005,
-    "volume_usd_per_day": 1736491.3387121435,
-    "swaps_7d": 26023,
-    "vault_share_100k": 0.1408288774719882,
-    "feed_deviation_bps": 22.656693336668994
+    "depth_usd_5pct": 610229.7871631158,
+    "usdg_balance": 304114.286251,
+    "stock_balance": 1413.851071653967,
+    "volume_7d_usd": 12112218.243809007,
+    "volume_usd_per_day": 1730316.8919727153,
+    "swaps_7d": 25897,
+    "vault_share_100k": 0.14079950152391085,
+    "feed_deviation_bps": 27.524986029717297
    },
    "other_pools": [
     {
@@ -2328,7 +2399,7 @@
      "fee_tier": 3000,
      "depth_usd_5pct": 9975.974954539557,
      "usdg_balance": 6912.158175,
-     "volume_7d_usd": 24193.136654000005
+     "volume_7d_usd": 23983.00978
     },
     {
      "address": "0xA3617Bb4D7Dc9DD20f79165486097a54b3593164",
@@ -2345,6 +2416,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": true,
    "reason": "feed, volume and depth pass"
   },
@@ -2374,6 +2446,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2391,16 +2464,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 28.08894025322841,
-    "tick": 242968,
-    "liquidity_raw": "804237320568959898",
-    "depth_usd_5pct": 210648.7903201896,
-    "usdg_balance": 144527.475428,
-    "stock_balance": 11794.12998265971,
-    "volume_7d_usd": 6269783.831903,
-    "volume_usd_per_day": 895683.4045575715,
-    "swaps_7d": 7071,
-    "vault_share_100k": 0.32190693514991237,
+    "price_usd": 28.095115983278088,
+    "tick": 242966,
+    "liquidity_raw": "4020723048089719311",
+    "depth_usd_5pct": 1053238.300828937,
+    "usdg_balance": 173530.887712,
+    "stock_balance": 12574.410969802051,
+    "volume_7d_usd": 6220800.381754002,
+    "volume_usd_per_day": 888685.7688220002,
+    "swaps_7d": 7020,
+    "vault_share_100k": 0.0867123472469835,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -2419,6 +2492,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2457,6 +2531,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2495,6 +2570,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2512,24 +2588,24 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 236.44950868261867,
-    "tick": 221663,
+    "price_usd": 236.43044306627473,
+    "tick": 221664,
     "liquidity_raw": "103891185593614861",
-    "depth_usd_5pct": 78950.51732003217,
-    "usdg_balance": 75904.134913,
-    "stock_balance": 131.50576934790158,
-    "volume_7d_usd": 414894.3239709999,
-    "volume_usd_per_day": 59270.61771014285,
-    "swaps_7d": 1025,
-    "vault_share_100k": 0.5588136960853912,
+    "depth_usd_5pct": 78947.33425015405,
+    "usdg_balance": 75839.72702,
+    "stock_balance": 131.77899598626905,
+    "volume_7d_usd": 414958.731864,
+    "volume_usd_per_day": 59279.81883771428,
+    "swaps_7d": 1027,
+    "vault_share_100k": 0.5588236361219442,
     "feed_deviation_bps": null
    },
    "other_pools": [
     {
      "address": "0xA0A79bC62fC822f3bcDF0EBbc586031781c53a5B",
      "fee_tier": 10000,
-     "depth_usd_5pct": 17505.658373659415,
-     "usdg_balance": 11513.447881,
+     "depth_usd_5pct": 17503.48188758197,
+     "usdg_balance": 11512.284751,
      "volume_7d_usd": 15064.367542
     },
     {
@@ -2547,6 +2623,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 19736,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2569,6 +2646,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2614,6 +2692,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 217,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2636,6 +2715,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2658,6 +2738,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2674,30 +2755,31 @@
     "aggregator": "0x95fB52f75aEcBCa8E12aA4403f840C8bc18CFbd4",
     "description": "RHINTC / USD",
     "decimals": 8,
-    "usd": 90.9646069,
-    "updated_at": 1792460359,
-    "age_s": 514
+    "usd": 91.42937091,
+    "updated_at": 1792461049,
+    "age_s": 1571
    },
    "pool": {
     "address": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 91.21931335095431,
-    "tick": 231189,
-    "liquidity_raw": "159989128857915410",
-    "depth_usd_5pct": 75516.34166853264,
-    "usdg_balance": 63093.851792,
-    "stock_balance": 2778.6039010198037,
-    "volume_7d_usd": 1178254.986083,
-    "volume_usd_per_day": 168322.140869,
-    "swaps_7d": 7295,
-    "vault_share_100k": 0.5697475178057934,
-    "feed_deviation_bps": 28.000610307073398
+    "price_usd": 91.561536433188,
+    "tick": 231151,
+    "liquidity_raw": "161694886339216302",
+    "depth_usd_5pct": 76464.5066684723,
+    "usdg_balance": 65989.300714,
+    "stock_balance": 2747.0168161566125,
+    "volume_7d_usd": 1180733.552609,
+    "volume_usd_per_day": 168676.2218012857,
+    "swaps_7d": 7305,
+    "vault_share_100k": 0.5666861959264826,
+    "feed_deviation_bps": 14.455477695246564
    },
    "other_pools": [],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 57% of in-range liquidity, above 20%"
+   "cap_usd": 19116,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $19.1K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "INTU",
@@ -2718,6 +2800,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2736,7 +2819,7 @@
     "decimals": 8,
     "usd": 30.78879544,
     "updated_at": 1792460529,
-    "age_s": 344
+    "age_s": 2091
    },
    "pool": {
     "address": "0xbc44b11f569d3FEEd9B4088F5A3fC569D2E3c77F",
@@ -2756,6 +2839,7 @@
     "feed_deviation_bps": 664.0127772323566
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "7-day volume $0/day is below $100.0K/day"
   },
@@ -2778,6 +2862,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2800,6 +2885,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2817,16 +2903,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 253.67290780256585,
-    "tick": -220961,
+    "price_usd": 253.91232018885538,
+    "tick": -220952,
     "liquidity_raw": "32350400153503581",
-    "depth_usd_5pct": 25463.832580961956,
-    "usdg_balance": 5628.630103,
-    "stock_balance": 106.7467524021044,
-    "volume_7d_usd": 98344.85156400001,
-    "volume_usd_per_day": 14049.264509142859,
-    "swaps_7d": 381,
-    "vault_share_100k": 0.7970424459612285,
+    "depth_usd_5pct": 25475.84592374002,
+    "usdg_balance": 5872.445789,
+    "stock_balance": 105.78894570626483,
+    "volume_7d_usd": 98132.053251,
+    "volume_usd_per_day": 14018.864750142859,
+    "swaps_7d": 382,
+    "vault_share_100k": 0.7969661353052493,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -2835,7 +2921,7 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 1669.8609245926232,
      "usdg_balance": 2891.74099,
-     "volume_7d_usd": 4681.626987
+     "volume_7d_usd": 4618.2598
     },
     {
      "address": "0x44D79F520EacC47Fe958D6EA88B4eD1271971C1e",
@@ -2845,6 +2931,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 6368,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2867,6 +2954,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2889,6 +2977,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2911,6 +3000,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2933,6 +3023,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2955,6 +3046,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -2977,6 +3069,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3000,8 +3093,8 @@
     "depth_usd_5pct": 71339.9647807944,
     "usdg_balance": 3533.59586,
     "stock_balance": 24.613249612620113,
-    "volume_7d_usd": 160185.73116999996,
-    "volume_usd_per_day": 22883.675881428564,
+    "volume_7d_usd": 160185.73116999998,
+    "volume_usd_per_day": 22883.675881428568,
     "swaps_7d": 618,
     "vault_share_100k": 0.5836349979873993,
     "feed_deviation_bps": null
@@ -3010,18 +3103,19 @@
     {
      "address": "0xF4274130137eeE20bAD928B593d992716516CEB9",
      "fee_tier": 10000,
-     "depth_usd_5pct": 56530.53180063976,
-     "usdg_balance": 122348.26806,
+     "depth_usd_5pct": 55749.662112404076,
+     "usdg_balance": 121391.215901,
      "volume_7d_usd": 94327.185276
     },
     {
      "address": "0xF212D02146a897F5F686E9d629F6A73da534324a",
      "fee_tier": 500,
-     "depth_usd_5pct": 55069.49084040036,
-     "usdg_balance": 67594.079218,
-     "volume_7d_usd": 1597189.1551780012
+     "depth_usd_5pct": 55046.76971934201,
+     "usdg_balance": 67134.375681,
+     "volume_7d_usd": 1585451.3967920004
     }
    ],
+   "cap_usd": 17834,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3039,16 +3133,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 549.9148367085936,
-    "tick": -213224,
+    "price_usd": 549.9666426473909,
+    "tick": -213223,
     "liquidity_raw": "8454216743912100",
-    "depth_usd_5pct": 9797.790884816108,
-    "usdg_balance": 19211.207148,
-    "stock_balance": 10.876883538747812,
-    "volume_7d_usd": 106079.51328500001,
-    "volume_usd_per_day": 15154.21618357143,
-    "swaps_7d": 382,
-    "vault_share_100k": 0.9107651364762474,
+    "depth_usd_5pct": 9798.252385185873,
+    "usdg_balance": 19220.598165,
+    "stock_balance": 10.859947958573638,
+    "volume_7d_usd": 106105.305082,
+    "volume_usd_per_day": 15157.900726000002,
+    "swaps_7d": 388,
+    "vault_share_100k": 0.9107613083784577,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -3074,6 +3168,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 2449,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3096,6 +3191,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3113,16 +3209,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 97.36396190855838,
+    "price_usd": 97.3635326261288,
     "tick": -230538,
     "liquidity_raw": "309433534784140127",
-    "depth_usd_5pct": 150894.5544453082,
-    "usdg_balance": 16191.932872,
-    "stock_balance": 562.4905147985952,
-    "volume_7d_usd": 398344.9913619999,
-    "volume_usd_per_day": 56906.427337428555,
-    "swaps_7d": 1720,
-    "vault_share_100k": 0.3985738160841539,
+    "depth_usd_5pct": 150894.22179423738,
+    "usdg_balance": 16185.201837,
+    "stock_balance": 562.5598556894936,
+    "volume_7d_usd": 398222.4721269999,
+    "volume_usd_per_day": 56888.92458957142,
+    "swaps_7d": 1717,
+    "vault_share_100k": 0.3985743445379611,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -3141,6 +3237,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 37723,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3170,6 +3267,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3199,6 +3297,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3215,26 +3314,26 @@
     "aggregator": "0xc190B6164B9e320A6400cdaB0085a2e0E2b9738e",
     "description": "Robinhood META / USD",
     "decimals": 8,
-    "usd": 703.32453007,
-    "updated_at": 1792455665,
-    "age_s": 5208
+    "usd": 706.86299023,
+    "updated_at": 1792461337,
+    "age_s": 1283
    },
    "pool": {
     "address": "0x107a7Cb40d8665360ba10E59471Af06150A50922",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 704.8666574756245,
-    "tick": 210740,
+    "price_usd": 705.2573711720668,
+    "tick": 210735,
     "liquidity_raw": "73508362532483924",
-    "depth_usd_5pct": 96448.90512513134,
-    "usdg_balance": 67898.84481,
-    "stock_balance": 157.28715337073515,
-    "volume_7d_usd": 750529.445736,
-    "volume_usd_per_day": 107218.492248,
+    "depth_usd_5pct": 96475.63265377612,
+    "usdg_balance": 68441.290895,
+    "stock_balance": 156.52010203020996,
+    "volume_7d_usd": 748701.8605489999,
+    "volume_usd_per_day": 106957.40864985713,
     "swaps_7d": 2895,
-    "vault_share_100k": 0.5090382149816685,
-    "feed_deviation_bps": 21.92625651021971
+    "vault_share_100k": 0.5089689680562943,
+    "feed_deviation_bps": -22.71471388551308
    },
    "other_pools": [
     {
@@ -3252,8 +3351,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 51% of in-range liquidity, above 20%"
+   "cap_usd": 24118,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $24.1K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "MOD",
@@ -3274,6 +3374,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3304,6 +3405,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3321,27 +3423,28 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 226.5978571650325,
-    "tick": -222090,
+    "price_usd": 227.21225205303585,
+    "tick": -222063,
     "liquidity_raw": "145246552543956702",
-    "depth_usd_5pct": 108053.98846491746,
-    "usdg_balance": 104358.523568,
-    "stock_balance": 297.87364711035644,
-    "volume_7d_usd": 2719384.087573999,
-    "volume_usd_per_day": 388483.44108199986,
-    "swaps_7d": 6229,
-    "vault_share_100k": 0.48064447472422395,
+    "depth_usd_5pct": 108200.3774888009,
+    "usdg_balance": 107329.548441,
+    "stock_balance": 284.8192243550755,
+    "volume_7d_usd": 2720447.510585999,
+    "volume_usd_per_day": 388635.3586551427,
+    "swaps_7d": 6224,
+    "vault_share_100k": 0.48030652588696193,
     "feed_deviation_bps": null
    },
    "other_pools": [
     {
      "address": "0xA34d0667334074DF2d5BfD259e79E6B9cf1fA8Bf",
      "fee_tier": 10000,
-     "depth_usd_5pct": 34902.95903563799,
-     "usdg_balance": 54448.368361,
-     "volume_7d_usd": 185143.45337500004
+     "depth_usd_5pct": 35318.730904684955,
+     "usdg_balance": 54640.576872,
+     "volume_7d_usd": 185143.45337499998
     }
    ],
+   "cap_usd": 27050,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3359,16 +3462,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 234.75048014474626,
-    "tick": 221736,
+    "price_usd": 235.13088875707803,
+    "tick": 221719,
     "liquidity_raw": "2377996657180781",
-    "depth_usd_5pct": 1800.6178622592731,
-    "usdg_balance": 3260.733123,
-    "stock_balance": 31.22783533562167,
-    "volume_7d_usd": 26329.208493999995,
-    "volume_usd_per_day": 3761.3154991428564,
-    "swaps_7d": 827,
-    "vault_share_100k": 0.9823123090991885,
+    "depth_usd_5pct": 1802.076204902774,
+    "usdg_balance": 3290.330781,
+    "stock_balance": 31.10223395355614,
+    "volume_7d_usd": 26290.128973999996,
+    "volume_usd_per_day": 3755.732710571428,
+    "swaps_7d": 826,
+    "vault_share_100k": 0.982298237206129,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -3377,9 +3480,10 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 881.1523064375956,
      "usdg_balance": 3524.675864,
-     "volume_7d_usd": 5834.815641
+     "volume_7d_usd": 5834.815640999999
     }
    ],
+   "cap_usd": 450,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3398,24 +3502,24 @@
     "decimals": 8,
     "usd": 532.57888904,
     "updated_at": 1792446199,
-    "age_s": 14674
+    "age_s": 16421
    },
    "pool": {
     "address": "0xeb60bCD1D920ad6E102690CCFC6fB488899E1510",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 533.5476335737136,
+    "price_usd": 533.5510636748706,
     "tick": 213525,
     "liquidity_raw": "206987347234108302",
-    "depth_usd_5pct": 236285.71543316508,
-    "usdg_balance": 266631.389926,
-    "stock_balance": 265.4781908547381,
-    "volume_7d_usd": 512929.4241880001,
-    "volume_usd_per_day": 73275.63202685716,
-    "swaps_7d": 3463,
-    "vault_share_100k": 0.2973661842020002,
-    "feed_deviation_bps": 18.18969083546987
+    "depth_usd_5pct": 236286.47495541925,
+    "usdg_balance": 266647.189415,
+    "stock_balance": 265.4501073988823,
+    "volume_7d_usd": 512948.42275500007,
+    "volume_usd_per_day": 73278.34610785716,
+    "swaps_7d": 3466,
+    "vault_share_100k": 0.2973655125834507,
+    "feed_deviation_bps": 18.25409633909833
    },
    "other_pools": [
     {
@@ -3440,6 +3544,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 59071,
    "eligible": false,
    "reason": "7-day volume $73.3K/day is below $100.0K/day"
   },
@@ -3458,32 +3563,32 @@
     "decimals": 8,
     "usd": 135.45459963,
     "updated_at": 1792460501,
-    "age_s": 372
+    "age_s": 2119
    },
    "pool": {
     "address": "0x17578C0e0D15da44f31677263114F71aE76653EA",
     "fee_tier": 10000,
     "tick_spacing": 200,
     "stock_is_token0": false,
-    "price_usd": 135.5770699811823,
-    "tick": 227226,
-    "liquidity_raw": "151872536578316217",
-    "depth_usd_5pct": 87393.56149538889,
-    "usdg_balance": 75218.833604,
-    "stock_balance": 3243.9803852986483,
-    "volume_7d_usd": 1132582.3102159998,
-    "volume_usd_per_day": 161797.472888,
-    "swaps_7d": 2277,
-    "vault_share_100k": 0.5336362637115505,
-    "feed_deviation_bps": 9.04143170603537
+    "price_usd": 135.54896988005245,
+    "tick": 227228,
+    "liquidity_raw": "154375634015272182",
+    "depth_usd_5pct": 88824.73789426668,
+    "usdg_balance": 75856.850264,
+    "stock_balance": 3250.014996235449,
+    "volume_7d_usd": 1120395.644957,
+    "volume_usd_per_day": 160056.52070814284,
+    "swaps_7d": 2248,
+    "vault_share_100k": 0.5295916261565022,
+    "feed_deviation_bps": 6.966928425482785
    },
    "other_pools": [
     {
      "address": "0x2C08bCEf714bc8124972B7181494FC598e8Ed111",
      "fee_tier": 3000,
-     "depth_usd_5pct": 3638.0899192588217,
-     "usdg_balance": 1692.911561,
-     "volume_7d_usd": 46915.92481299999
+     "depth_usd_5pct": 3640.345422947805,
+     "usdg_balance": 1738.687928,
+     "volume_7d_usd": 46835.11007399999
     },
     {
      "address": "0xa8F372b32b9487Ec4d77Fb2046A3bd4a8c6d8a8f",
@@ -3493,8 +3598,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 53% of in-range liquidity, above 20%"
+   "cap_usd": 22206,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $22.2K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "MTSI",
@@ -3515,6 +3621,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3533,24 +3640,24 @@
     "decimals": 8,
     "usd": 892.33501133,
     "updated_at": 1792460527,
-    "age_s": 346
+    "age_s": 2093
    },
    "pool": {
     "address": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 893.2026473194142,
-    "tick": 208372,
+    "price_usd": 894.6195333812057,
+    "tick": 208356,
     "liquidity_raw": "234643139924183174",
-    "depth_usd_5pct": 346569.174644055,
-    "usdg_balance": 157191.579137,
-    "stock_balance": 1247.841124471913,
-    "volume_7d_usd": 4015572.6974909985,
-    "volume_usd_per_day": 573653.2424987141,
-    "swaps_7d": 12561,
-    "vault_share_100k": 0.22392947314311734,
-    "feed_deviation_bps": 9.723209090730673
+    "depth_usd_5pct": 346843.94680868235,
+    "usdg_balance": 162768.192151,
+    "stock_balance": 1241.6213952721723,
+    "volume_7d_usd": 4013095.871946998,
+    "volume_usd_per_day": 573299.4102781425,
+    "swaps_7d": 12547,
+    "vault_share_100k": 0.22379177499033084,
+    "feed_deviation_bps": 25.60161847511281
    },
    "other_pools": [
     {
@@ -3561,8 +3668,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 22% of in-range liquidity, above 20%"
+   "cap_usd": 86710,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $86.7K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "MXL",
@@ -3583,6 +3691,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3605,6 +3714,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3621,9 +3731,9 @@
     "aggregator": "0xE50c4775FeFc1E3C9206771dd0056AEe30F51b2F",
     "description": "Robinhood NBIS / USD",
     "decimals": 8,
-    "usd": 167.56976782,
-    "updated_at": 1792460836,
-    "age_s": 37
+    "usd": 167.56691164,
+    "updated_at": 1792462096,
+    "age_s": 524
    },
    "pool": null,
    "other_pools": [
@@ -3635,6 +3745,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no USDG pool with liquidity"
   },
@@ -3658,9 +3769,9 @@
     "depth_usd_5pct": 11199.233909434246,
     "usdg_balance": 6103.493037,
     "stock_balance": 94.29379096874223,
-    "volume_7d_usd": 194545.270485,
-    "volume_usd_per_day": 27792.181497857142,
-    "swaps_7d": 2177,
+    "volume_7d_usd": 194136.66430399998,
+    "volume_usd_per_day": 27733.80918628571,
+    "swaps_7d": 2169,
     "vault_share_100k": 0.8992867709992012,
     "feed_deviation_bps": null
    },
@@ -3670,7 +3781,7 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 686.9139211474811,
      "usdg_balance": 5251.201805,
-     "volume_7d_usd": 4200.536045
+     "volume_7d_usd": 4200.536044999999
     },
     {
      "address": "0xFdB45d6c7c27144C1BA128F38745b0bfc3a8f18F",
@@ -3680,6 +3791,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 2799,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3703,9 +3815,9 @@
     "depth_usd_5pct": 134230.02277662416,
     "usdg_balance": 47317.484676,
     "stock_balance": 2179.3114355128623,
-    "volume_7d_usd": 461986.3593250001,
-    "volume_usd_per_day": 65998.05133214287,
-    "swaps_7d": 1306,
+    "volume_7d_usd": 459725.2873649999,
+    "volume_usd_per_day": 65675.04105214284,
+    "swaps_7d": 1304,
     "vault_share_100k": 0.4269307530032818,
     "feed_deviation_bps": null
    },
@@ -3718,6 +3830,7 @@
      "volume_7d_usd": 3631.996123999999
     }
    ],
+   "cap_usd": 33557,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3740,6 +3853,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3770,6 +3884,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3808,6 +3923,7 @@
      "volume_7d_usd": 22390.140244000002
     }
    ],
+   "cap_usd": 2357,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3826,24 +3942,24 @@
     "decimals": 8,
     "usd": 217.07190821,
     "updated_at": 1792455039,
-    "age_s": 5834
+    "age_s": 7581
    },
    "pool": {
     "address": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": false,
-    "price_usd": 217.1797642022616,
-    "tick": 222514,
-    "liquidity_raw": "2213629500083925169",
-    "depth_usd_5pct": 1612210.2655052664,
-    "usdg_balance": 880114.553646,
-    "stock_balance": 10452.175010861116,
-    "volume_7d_usd": 54494472.73883504,
-    "volume_usd_per_day": 7784924.676976434,
-    "swaps_7d": 53182,
-    "vault_share_100k": 0.05840404184849949,
-    "feed_deviation_bps": 4.9686757328934865
+    "price_usd": 217.3014678201408,
+    "tick": 222508,
+    "liquidity_raw": "2213828739540999264",
+    "depth_usd_5pct": 1612807.0778974188,
+    "usdg_balance": 889218.384244,
+    "stock_balance": 10351.50753358136,
+    "volume_7d_usd": 54299991.307601035,
+    "volume_usd_per_day": 7757141.6153715765,
+    "swaps_7d": 52872,
+    "vault_share_100k": 0.058383691479577754,
+    "feed_deviation_bps": 10.575279502252119
    },
    "other_pools": [
     {
@@ -3856,9 +3972,9 @@
     {
      "address": "0xB944cec30Bd4175855215D767ADC81F39e5f7E2B",
      "fee_tier": 3000,
-     "depth_usd_5pct": 18815.95005940989,
-     "usdg_balance": 7385.770322,
-     "volume_7d_usd": 63879.228378
+     "depth_usd_5pct": 18824.392952379985,
+     "usdg_balance": 7557.122274,
+     "volume_7d_usd": 64050.58033
     },
     {
      "address": "0xb75d2D02B0Ec3DE50d32e40A4F1A8DAE8acC4333",
@@ -3868,6 +3984,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": true,
    "reason": "feed, volume and depth pass"
   },
@@ -3890,6 +4007,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3912,6 +4030,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3942,6 +4061,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 1227,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3964,6 +4084,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -3982,10 +4103,11 @@
     "decimals": 8,
     "usd": 129.47871485,
     "updated_at": 1792455759,
-    "age_s": 5114
+    "age_s": 6861
    },
    "pool": null,
    "other_pools": [],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no USDG pool with liquidity"
   },
@@ -4008,6 +4130,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4037,6 +4160,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4059,6 +4183,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4089,6 +4214,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 4,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4118,6 +4244,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4135,16 +4262,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 29.40042447401241,
-    "tick": 242512,
+    "price_usd": 29.395148132029142,
+    "tick": 242514,
     "liquidity_raw": "134692325873541882",
-    "depth_usd_5pct": 36093.310896041476,
-    "usdg_balance": 24645.008195,
-    "stock_balance": 476.5278534006262,
-    "volume_7d_usd": 105227.024575,
-    "volume_usd_per_day": 15032.432082142857,
-    "swaps_7d": 480,
-    "vault_share_100k": 0.734789971245447,
+    "depth_usd_5pct": 36090.07201088722,
+    "usdg_balance": 24579.470906,
+    "stock_balance": 478.76388889938977,
+    "volume_7d_usd": 104704.32627399999,
+    "volume_usd_per_day": 14957.760896285714,
+    "swaps_7d": 479,
+    "vault_share_100k": 0.7348074589305824,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -4156,6 +4283,7 @@
      "volume_7d_usd": 1452.402987
     }
    ],
+   "cap_usd": 9022,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4178,6 +4306,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4196,28 +4325,29 @@
     "decimals": 8,
     "usd": 193.905,
     "updated_at": 1792439568,
-    "age_s": 21305
+    "age_s": 23052
    },
    "pool": {
     "address": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 193.904388743964,
-    "tick": 223647,
+    "price_usd": 194.08820567275993,
+    "tick": 223638,
     "liquidity_raw": "140640584397943273",
-    "depth_usd_5pct": 96785.77933428253,
-    "usdg_balance": 51267.161326,
-    "stock_balance": 246.72977173026806,
-    "volume_7d_usd": 747553.29001,
-    "volume_usd_per_day": 106793.32714428571,
-    "swaps_7d": 3766,
-    "vault_share_100k": 0.5081668011697569,
-    "feed_deviation_bps": -0.0315234798481324
+    "depth_usd_5pct": 96831.64382060879,
+    "usdg_balance": 52198.143422,
+    "stock_balance": 241.94667857441607,
+    "volume_7d_usd": 744648.3813499999,
+    "volume_usd_per_day": 106378.34019285713,
+    "swaps_7d": 3752,
+    "vault_share_100k": 0.508048391300026,
+    "feed_deviation_bps": 9.448218084109495
    },
    "other_pools": [],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 51% of in-range liquidity, above 20%"
+   "cap_usd": 24207,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $24.2K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "POET",
@@ -4246,6 +4376,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 158,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4268,6 +4399,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4290,6 +4422,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4320,6 +4453,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4342,6 +4476,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4371,6 +4506,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4393,6 +4529,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4411,24 +4548,24 @@
     "decimals": 8,
     "usd": 715.96830414,
     "updated_at": 1792458732,
-    "age_s": 2141
+    "age_s": 3888
    },
    "pool": {
     "address": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": false,
-    "price_usd": 718.4392811018046,
-    "tick": 210549,
+    "price_usd": 718.7083345553889,
+    "tick": 210546,
     "liquidity_raw": "201637239112234216",
-    "depth_usd_5pct": 267099.3596132354,
-    "usdg_balance": 185840.057582,
-    "stock_balance": 1177.303795503558,
-    "volume_7d_usd": 3707534.511609003,
-    "volume_usd_per_day": 529647.7873727147,
-    "swaps_7d": 10638,
-    "vault_share_100k": 0.2724058143423539,
-    "feed_deviation_bps": 34.51237921450512
+    "depth_usd_5pct": 267149.3689042688,
+    "usdg_balance": 186853.426901,
+    "stock_balance": 1175.8968906179573,
+    "volume_7d_usd": 3700209.4487010003,
+    "volume_usd_per_day": 528601.3498144286,
+    "swaps_7d": 10637,
+    "vault_share_100k": 0.2723687100387586,
+    "feed_deviation_bps": 38.27027536756875
    },
    "other_pools": [
     {
@@ -4436,7 +4573,7 @@
      "fee_tier": 3000,
      "depth_usd_5pct": 9218.498154881445,
      "usdg_balance": 1992.156102,
-     "volume_7d_usd": 9025.644755000001
+     "volume_7d_usd": 8928.848558000002
     },
     {
      "address": "0x4539019B527211998642fEC342C85dcB44c7e5E4",
@@ -4446,8 +4583,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 27% of in-range liquidity, above 20%"
+   "cap_usd": 66787,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $66.8K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "QUBT",
@@ -4468,10 +4606,10 @@
     "liquidity_raw": "43197731011214472",
     "depth_usd_5pct": 5408.4310987956305,
     "usdg_balance": 5452.792076,
-    "stock_balance": 10787.656409751009,
-    "volume_7d_usd": 67221.532293,
-    "volume_usd_per_day": 9603.076041857143,
-    "swaps_7d": 672,
+    "stock_balance": 12693.290365999108,
+    "volume_7d_usd": 65562.64956899999,
+    "volume_usd_per_day": 9366.092795571427,
+    "swaps_7d": 649,
     "vault_share_100k": 0.9486907162698732,
     "feed_deviation_bps": null
    },
@@ -4481,7 +4619,7 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 3163.3523945490397,
      "usdg_balance": 1945.011758,
-     "volume_7d_usd": 10328.752388
+     "volume_7d_usd": 10139.75759
     },
     {
      "address": "0xbAD5559F6b39a341cBF62D7DD7FFEc6F9E242599",
@@ -4491,6 +4629,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 1352,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4512,7 +4651,7 @@
     "tick": 237090,
     "liquidity_raw": "124404188153263260",
     "depth_usd_5pct": 43716.220900218694,
-    "usdg_balance": 78560.675342,
+    "usdg_balance": 79011.398049,
     "stock_balance": 395.5446183027959,
     "volume_7d_usd": 111485.90574699998,
     "volume_usd_per_day": 15926.55796385714,
@@ -4524,9 +4663,9 @@
     {
      "address": "0x1BDB8e3A79Cb1a7F228808739311E23098D33d43",
      "fee_tier": 3000,
-     "depth_usd_5pct": 30995.598645819297,
-     "usdg_balance": 42442.159346,
-     "volume_7d_usd": 372480.28914199997
+     "depth_usd_5pct": 30974.022654906556,
+     "usdg_balance": 42005.579503,
+     "volume_7d_usd": 372866.98831900005
     },
     {
      "address": "0x153601C37e9372b82021aC84a485807e20054C46",
@@ -4536,6 +4675,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 10929,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4559,13 +4699,14 @@
     "depth_usd_5pct": 2514.66736540094,
     "usdg_balance": 2836.341199,
     "stock_balance": 4730.568105507939,
-    "volume_7d_usd": 13784.250926,
-    "volume_usd_per_day": 1969.1787037142858,
+    "volume_7d_usd": 13784.250925999997,
+    "volume_usd_per_day": 1969.1787037142853,
     "swaps_7d": 285,
     "vault_share_100k": 0.9754701699763829,
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 628,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4583,16 +4724,16 @@
     "fee_tier": 10000,
     "tick_spacing": 200,
     "stock_is_token0": true,
-    "price_usd": 155.20218243389803,
-    "tick": -225875,
-    "liquidity_raw": "507542926825866021",
-    "depth_usd_5pct": 312484.7023934098,
-    "usdg_balance": 278187.273642,
-    "stock_balance": 2465.8975135761843,
-    "volume_7d_usd": 1974901.166969,
-    "volume_usd_per_day": 282128.73813842854,
-    "swaps_7d": 1471,
-    "vault_share_100k": 0.242433233086604,
+    "price_usd": 155.1849529557535,
+    "tick": -225876,
+    "liquidity_raw": "507883735918350781",
+    "depth_usd_5pct": 312677.1751083402,
+    "usdg_balance": 277946.220144,
+    "stock_balance": 2468.786942231016,
+    "volume_7d_usd": 1974053.9831810002,
+    "volume_usd_per_day": 282007.71188300004,
+    "swaps_7d": 1466,
+    "vault_share_100k": 0.24232016217942506,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -4611,6 +4752,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 78169,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4633,6 +4775,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4649,9 +4792,9 @@
     "aggregator": "0x42B1C5174cE84Be751A23489d7DbDc969Bc17eA2",
     "description": "Robinhood RGTI / USD",
     "decimals": 8,
-    "usd": 11.57647727,
-    "updated_at": 1792458467,
-    "age_s": 2406
+    "usd": 11.63579761,
+    "updated_at": 1792460987,
+    "age_s": 1633
    },
    "pool": null,
    "other_pools": [
@@ -4663,6 +4806,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no USDG pool with liquidity"
   },
@@ -4686,9 +4830,9 @@
     "depth_usd_5pct": 18511.552052704526,
     "usdg_balance": 1733.033721,
     "stock_balance": 2156.9361817001068,
-    "volume_7d_usd": 37391.173983,
-    "volume_usd_per_day": 5341.596283285714,
-    "swaps_7d": 708,
+    "volume_7d_usd": 37369.896836999986,
+    "volume_usd_per_day": 5338.556690999998,
+    "swaps_7d": 705,
     "vault_share_100k": 0.8437995981651472,
     "feed_deviation_bps": null
    },
@@ -4698,7 +4842,7 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 5652.794129934965,
      "usdg_balance": 13268.495043,
-     "volume_7d_usd": 23852.346810000006
+     "volume_7d_usd": 23852.346810000003
     },
     {
      "address": "0x6e3dFc2FBFc48cC10f28025472256e64aE2c5991",
@@ -4708,6 +4852,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 4627,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4726,7 +4871,7 @@
     "decimals": 8,
     "usd": 50.88458513,
     "updated_at": 1792460531,
-    "age_s": 342
+    "age_s": 2089
    },
    "pool": {
     "address": "0xa9888De1B9D64A93eaeb495A39FE9B3d00654928",
@@ -4746,6 +4891,7 @@
     "feed_deviation_bps": 933.1333772090908
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "7-day volume $0/day is below $100.0K/day"
   },
@@ -4775,6 +4921,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4797,6 +4944,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4835,6 +4983,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4853,7 +5002,7 @@
     "decimals": 8,
     "usd": 101.32038527,
     "updated_at": 1792454467,
-    "age_s": 6406
+    "age_s": 8153
    },
    "pool": {
     "address": "0xfAb520051f96F4D2a32c22B6a3dD7fFfdf231bFe",
@@ -4866,9 +5015,9 @@
     "depth_usd_5pct": 16253049.087007446,
     "usdg_balance": 900353.402609,
     "stock_balance": 2360.4727725485814,
-    "volume_7d_usd": 21679.646753999998,
-    "volume_usd_per_day": 3097.092393428571,
-    "swaps_7d": 427,
+    "volume_7d_usd": 21655.174411000004,
+    "volume_usd_per_day": 3093.596344428572,
+    "swaps_7d": 426,
     "vault_share_100k": 0.006115067561281299,
     "feed_deviation_bps": -27.942558592183065
    },
@@ -4878,7 +5027,7 @@
      "fee_tier": 500,
      "depth_usd_5pct": 9114973.770473717,
      "usdg_balance": 282705.040894,
-     "volume_7d_usd": 177744.313236
+     "volume_7d_usd": 175576.554952
     },
     {
      "address": "0xFfb376Bfc48668f16719b42ed8AEEF5b98dBc4f1",
@@ -4888,6 +5037,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": false,
    "reason": "7-day volume $3.1K/day is below $100.0K/day"
   },
@@ -4905,19 +5055,20 @@
     "fee_tier": 10000,
     "tick_spacing": 200,
     "stock_is_token0": false,
-    "price_usd": 171.76314439868224,
+    "price_usd": 171.76280534918646,
     "tick": 224860,
     "liquidity_raw": "7021472157887052",
-    "depth_usd_5pct": 4547.788286383987,
-    "usdg_balance": 4033.452572,
-    "stock_balance": 8.848797861029732,
-    "volume_7d_usd": 9698.952426,
-    "volume_usd_per_day": 1385.5646322857142,
-    "swaps_7d": 174,
-    "vault_share_100k": 0.956500387421622,
+    "depth_usd_5pct": 4547.783797859734,
+    "usdg_balance": 4033.361749,
+    "stock_balance": 8.84933197232277,
+    "volume_7d_usd": 9699.043248999998,
+    "volume_usd_per_day": 1385.5776069999997,
+    "swaps_7d": 175,
+    "vault_share_100k": 0.9565004284868175,
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 1136,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4947,6 +5098,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4969,6 +5121,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -4986,16 +5139,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 138.49844174179228,
-    "tick": 227012,
-    "liquidity_raw": "80966497425649148",
-    "depth_usd_5pct": 47090.669562667914,
-    "usdg_balance": 36656.848146,
-    "stock_balance": 258.9912424849699,
-    "volume_7d_usd": 1134457.1950450013,
-    "volume_usd_per_day": 162065.31357785733,
-    "swaps_7d": 10960,
-    "vault_share_100k": 0.6798527758240644,
+    "price_usd": 139.29974319011302,
+    "tick": 226955,
+    "liquidity_raw": "68325447252745162",
+    "depth_usd_5pct": 39853.338760083185,
+    "usdg_balance": 39234.606072,
+    "stock_balance": 240.5129723954758,
+    "volume_7d_usd": 1138191.509260001,
+    "volume_usd_per_day": 162598.787037143,
+    "swaps_7d": 10989,
+    "vault_share_100k": 0.7150347706145854,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -5014,6 +5167,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 9963,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5036,6 +5190,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5052,26 +5207,26 @@
     "aggregator": "0xcdF6F7043b3aF6Afa0CAAACe1230B355096B5386",
     "description": "Robinhood SLV / USD",
     "decimals": 8,
-    "usd": 50.96278019,
-    "updated_at": 1792459078,
-    "age_s": 1795
+    "usd": 51.49463837,
+    "updated_at": 1792462499,
+    "age_s": 121
    },
    "pool": {
     "address": "0x8cB787e6c315D464775289BaD00FDD67d53Ecb3D",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 51.14739608731822,
-    "tick": -236975,
-    "liquidity_raw": "298430295332288492",
-    "depth_usd_5pct": 105477.96510160071,
-    "usdg_balance": 46565.874576,
-    "stock_balance": 4787.8329361454935,
-    "volume_7d_usd": 363819.99328200007,
-    "volume_usd_per_day": 51974.28475457144,
-    "swaps_7d": 1298,
-    "vault_share_100k": 0.48667018845818316,
-    "feed_deviation_bps": 36.225633026678906
+    "price_usd": 51.45427268859167,
+    "tick": -236916,
+    "liquidity_raw": "363046304773277810",
+    "depth_usd_5pct": 128700.37497917128,
+    "usdg_balance": 53556.179607,
+    "stock_balance": 4651.999677368851,
+    "volume_7d_usd": 363704.652501,
+    "volume_usd_per_day": 51957.80750014285,
+    "swaps_7d": 1292,
+    "vault_share_100k": 0.43725332767428754,
+    "feed_deviation_bps": -7.838812483406292
    },
    "other_pools": [
     {
@@ -5079,16 +5234,17 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 13425.058908686337,
      "usdg_balance": 3313.348749,
-     "volume_7d_usd": 26551.468775999994
+     "volume_7d_usd": 26454.115150999995
     },
     {
      "address": "0x37ED4621D1Eb3aBC9e551a888E6AaF0A41F7be8e",
      "fee_tier": 500,
-     "depth_usd_5pct": 87.52622651475296,
-     "usdg_balance": 212.189734,
+     "depth_usd_5pct": 87.79551981660052,
+     "usdg_balance": 217.641481,
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 32175,
    "eligible": false,
    "reason": "7-day volume $52.0K/day is below $100.0K/day"
   },
@@ -5111,6 +5267,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5141,6 +5298,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5170,6 +5328,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5193,9 +5352,9 @@
     "depth_usd_5pct": 42276.77721009444,
     "usdg_balance": 33444.282395,
     "stock_balance": 4581.684026178226,
-    "volume_7d_usd": 376949.1171759999,
-    "volume_usd_per_day": 53849.873882285705,
-    "swaps_7d": 954,
+    "volume_7d_usd": 376625.4981769999,
+    "volume_usd_per_day": 53803.64259671427,
+    "swaps_7d": 950,
     "vault_share_100k": 0.7028553918699887,
     "feed_deviation_bps": null
    },
@@ -5222,6 +5381,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 10569,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5240,7 +5400,7 @@
     "decimals": 8,
     "usd": 1351.89116844,
     "updated_at": 1792460858,
-    "age_s": 15
+    "age_s": 1762
    },
    "pool": {
     "address": "0xA1e1C9519cD5ae47e9A935645E1A7b935b944559",
@@ -5253,8 +5413,8 @@
     "depth_usd_5pct": 9633.882241225498,
     "usdg_balance": 6733.423349,
     "stock_balance": 19.711528967781778,
-    "volume_7d_usd": 48942.937905,
-    "volume_usd_per_day": 6991.848272142857,
+    "volume_7d_usd": 48942.937905000006,
+    "volume_usd_per_day": 6991.848272142858,
     "swaps_7d": 902,
     "vault_share_100k": 0.9121267801132114,
     "feed_deviation_bps": -6.747286335369707
@@ -5268,6 +5428,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 2408,
    "eligible": false,
    "reason": "7-day volume $7.0K/day is below $100.0K/day"
   },
@@ -5306,6 +5467,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 92,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5344,6 +5506,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5373,6 +5536,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5390,16 +5554,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 497.685866534784,
-    "tick": 214221,
+    "price_usd": 498.257201105386,
+    "tick": 214209,
     "liquidity_raw": "8104845106381770",
-    "depth_usd_5pct": 8935.717759777512,
-    "usdg_balance": 1539.34637,
-    "stock_balance": 17.050838635659325,
-    "volume_7d_usd": 46143.560517,
-    "volume_usd_per_day": 6591.937216714286,
-    "swaps_7d": 449,
-    "vault_share_100k": 0.9179725626861673,
+    "depth_usd_5pct": 8940.845311571557,
+    "usdg_balance": 1643.412123,
+    "stock_balance": 16.842486219857353,
+    "volume_7d_usd": 46131.41841699999,
+    "volume_usd_per_day": 6590.202630999999,
+    "swaps_7d": 448,
+    "vault_share_100k": 0.9179293561932563,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -5411,6 +5575,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 2235,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5429,39 +5594,39 @@
     "decimals": 8,
     "usd": 147.58573292,
     "updated_at": 1792458500,
-    "age_s": 2373
+    "age_s": 4120
    },
    "pool": {
     "address": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": true,
-    "price_usd": 147.93321604000784,
-    "tick": -226354,
-    "liquidity_raw": "969201294010790950",
-    "depth_usd_5pct": 582577.7640865382,
-    "usdg_balance": 484141.8639,
-    "stock_balance": 6731.468231302417,
-    "volume_7d_usd": 33978528.35878403,
-    "volume_usd_per_day": 4854075.479826289,
-    "swaps_7d": 94434,
-    "vault_share_100k": 0.14650345390876496,
-    "feed_deviation_bps": 23.54449262356497
+    "price_usd": 147.9971012012421,
+    "tick": -226350,
+    "liquidity_raw": "967233552407541917",
+    "depth_usd_5pct": 581520.4977085732,
+    "usdg_balance": 486556.174952,
+    "stock_balance": 6258.578802059197,
+    "volume_7d_usd": 33985722.12822,
+    "volume_usd_per_day": 4855103.161174285,
+    "swaps_7d": 94482,
+    "vault_share_100k": 0.14673072979642243,
+    "feed_deviation_bps": 27.87317399203322
    },
    "other_pools": [
     {
      "address": "0xEb07d9587eFD1778dFb9c385Ec43EF6d5F9fE401",
      "fee_tier": 3000,
-     "depth_usd_5pct": 289550.92509728944,
-     "usdg_balance": 223451.003364,
-     "volume_7d_usd": 3377404.3225060003
+     "depth_usd_5pct": 289596.0230873306,
+     "usdg_balance": 224366.285444,
+     "volume_7d_usd": 3373871.1770870006
     },
     {
      "address": "0xfbB32C09488e3fc33fe6fD84fe6aE442B4d13a31",
      "fee_tier": 10000,
      "depth_usd_5pct": 16024.218381788376,
      "usdg_balance": 6428.605988,
-     "volume_7d_usd": 57140.42399399999
+     "volume_7d_usd": 56968.181435000006
     },
     {
      "address": "0x87C58b43537005189cfc7B512d818dc9125E94FC",
@@ -5471,6 +5636,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": true,
    "reason": "feed, volume and depth pass"
   },
@@ -5493,6 +5659,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5511,24 +5678,24 @@
     "decimals": 8,
     "usd": 768.86115412,
     "updated_at": 1792454453,
-    "age_s": 6420
+    "age_s": 8167
    },
    "pool": {
     "address": "0xa7Bb1AC63BBaB0C44316E6c8C455213441689167",
     "fee_tier": 500,
     "tick_spacing": 10,
     "stock_is_token0": true,
-    "price_usd": 768.4707051835871,
-    "tick": -209877,
-    "liquidity_raw": "339385588657802594",
-    "depth_usd_5pct": 464958.4285451522,
-    "usdg_balance": 150833.724868,
-    "stock_balance": 123.69068118670218,
-    "volume_7d_usd": 1161783.4113299996,
-    "volume_usd_per_day": 165969.05876142852,
-    "swaps_7d": 5265,
-    "vault_share_100k": 0.17700417401951882,
-    "feed_deviation_bps": -5.078276283313899
+    "price_usd": 768.8330092769672,
+    "tick": -209872,
+    "liquidity_raw": "342844422844442443",
+    "depth_usd_5pct": 469807.7420424838,
+    "usdg_balance": 152990.233704,
+    "stock_balance": 120.88031371619292,
+    "volume_7d_usd": 1162940.7278829995,
+    "volume_usd_per_day": 166134.38969757134,
+    "swaps_7d": 5266,
+    "vault_share_100k": 0.1754977909593657,
+    "feed_deviation_bps": -0.3660588505738554
    },
    "other_pools": [
     {
@@ -5536,7 +5703,7 @@
      "fee_tier": 3000,
      "depth_usd_5pct": 27815.328786771086,
      "usdg_balance": 9767.952461,
-     "volume_7d_usd": 16161.351803999996
+     "volume_7d_usd": 16161.351803999998
     },
     {
      "address": "0x62FDE201C424d6d07730B77450Dd73928EBAc5f5",
@@ -5546,6 +5713,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 100000,
    "eligible": true,
    "reason": "feed, volume and depth pass"
   },
@@ -5575,6 +5743,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5597,6 +5766,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5619,6 +5789,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5648,6 +5819,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5677,6 +5849,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5695,24 +5868,24 @@
     "decimals": 8,
     "usd": 365.9258702,
     "updated_at": 1792458664,
-    "age_s": 2209
+    "age_s": 3956
    },
    "pool": {
     "address": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 366.29239421082184,
-    "tick": -217287,
-    "liquidity_raw": "351843136440638188",
-    "depth_usd_5pct": 332789.8742627603,
-    "usdg_balance": 281552.347807,
-    "stock_balance": 557.3410222377576,
-    "volume_7d_usd": 2043259.5187380007,
-    "volume_usd_per_day": 291894.21696257155,
-    "swaps_7d": 6075,
-    "vault_share_100k": 0.23105901026530687,
-    "feed_deviation_bps": 10.016345950656428
+    "price_usd": 366.3330253700779,
+    "tick": -217286,
+    "liquidity_raw": "351863867504914638",
+    "depth_usd_5pct": 332827.9406973346,
+    "usdg_balance": 281926.674468,
+    "stock_balance": 556.321155083105,
+    "volume_7d_usd": 2038747.8446139998,
+    "volume_usd_per_day": 291249.69208771427,
+    "swaps_7d": 6062,
+    "vault_share_100k": 0.23103868904324598,
+    "feed_deviation_bps": 11.126711807923042
    },
    "other_pools": [
     {
@@ -5720,14 +5893,14 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 13896.652022824912,
      "usdg_balance": 12483.541845,
-     "volume_7d_usd": 35162.71981000001
+     "volume_7d_usd": 35051.980343
     },
     {
      "address": "0xc4f0172D6ac8DD294Dd1137D047d5E1893760236",
      "fee_tier": 500,
-     "depth_usd_5pct": 7024.612843307674,
-     "usdg_balance": 9386.785812,
-     "volume_7d_usd": 400582.939717
+     "depth_usd_5pct": 7023.759344052925,
+     "usdg_balance": 9369.574293,
+     "volume_7d_usd": 400595.33109699975
     },
     {
      "address": "0x7868622Ff2C3b1B6C8acb15fE0bDAEBF043DDa48",
@@ -5737,8 +5910,9 @@
      "volume_7d_usd": null
     }
    ],
-   "eligible": false,
-   "reason": "a $100.0K vault would hold 23% of in-range liquidity, above 20%"
+   "cap_usd": 83206,
+   "eligible": true,
+   "reason": "feed and volume pass; vault capped at $83.2K to stay within 20% of in-range liquidity"
   },
   {
    "symbol": "TSM",
@@ -5755,7 +5929,7 @@
     "decimals": 8,
     "usd": 419.22998033,
     "updated_at": 1792455652,
-    "age_s": 5221
+    "age_s": 6968
    },
    "pool": {
     "address": "0x07e8Ea83D4C1340774c8965125e26e12bf943bf1",
@@ -5768,9 +5942,9 @@
     "depth_usd_5pct": 35846.21167629473,
     "usdg_balance": 19031.39265,
     "stock_balance": 185.58069344241804,
-    "volume_7d_usd": 68604.652384,
-    "volume_usd_per_day": 9800.664626285714,
-    "swaps_7d": 424,
+    "volume_7d_usd": 67034.20377200001,
+    "volume_usd_per_day": 9576.31482457143,
+    "swaps_7d": 418,
     "vault_share_100k": 0.7361265269456908,
     "feed_deviation_bps": 65.03268948752483
    },
@@ -5790,8 +5964,9 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 8961,
    "eligible": false,
-   "reason": "7-day volume $9.8K/day is below $100.0K/day"
+   "reason": "7-day volume $9.6K/day is below $100.0K/day"
   },
   {
    "symbol": "TTD",
@@ -5812,6 +5987,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5829,16 +6005,16 @@
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": true,
-    "price_usd": 205.69637631729105,
-    "tick": -223058,
+    "price_usd": 205.68080090189085,
+    "tick": -223059,
     "liquidity_raw": "108468074503313096",
-    "depth_usd_5pct": 76881.58370177487,
-    "usdg_balance": 26665.261963,
-    "stock_balance": 664.0168651875756,
-    "volume_7d_usd": 395051.92395299993,
-    "volume_usd_per_day": 56435.989136142845,
-    "swaps_7d": 2682,
-    "vault_share_100k": 0.5653499810845292,
+    "depth_usd_5pct": 76878.67289388122,
+    "usdg_balance": 26606.363161,
+    "stock_balance": 664.3040762200216,
+    "volume_7d_usd": 395109.269586,
+    "volume_usd_per_day": 56444.181369428574,
+    "swaps_7d": 2685,
+    "vault_share_100k": 0.5653592847793201,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -5864,6 +6040,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 19219,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5894,6 +6071,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5923,6 +6101,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5946,9 +6125,9 @@
     "depth_usd_5pct": 22326.878050287083,
     "usdg_balance": 11331.114569,
     "stock_balance": 231.89235215814955,
-    "volume_7d_usd": 65914.43146300002,
-    "volume_usd_per_day": 9416.347351857145,
-    "swaps_7d": 153,
+    "volume_7d_usd": 58985.65572700002,
+    "volume_usd_per_day": 8426.522246714288,
+    "swaps_7d": 135,
     "vault_share_100k": 0.8174818289639602,
     "feed_deviation_bps": null
    },
@@ -5958,9 +6137,10 @@
      "fee_tier": 3000,
      "depth_usd_5pct": 16082.984255231806,
      "usdg_balance": 9878.8334,
-     "volume_7d_usd": 49342.92595299999
+     "volume_7d_usd": 43872.923100999986
     }
    ],
+   "cap_usd": 5581,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -5977,26 +6157,26 @@
     "aggregator": "0x76ba75c6c362900B275D9D4d5C422F0275e85578",
     "description": "Robinhood USAR-USD",
     "decimals": 8,
-    "usd": 10.00205156,
-    "updated_at": 1792458596,
-    "age_s": 2277
+    "usd": 10.0522517,
+    "updated_at": 1792460907,
+    "age_s": 1713
    },
    "pool": {
     "address": "0x04391780F519B7d3ba59c9590459D76e23d225C4",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 10.037091002711984,
-    "tick": 253259,
+    "price_usd": 10.047513475732014,
+    "tick": 253249,
     "liquidity_raw": "30328767796083107",
-    "depth_usd_5pct": 4748.601950998959,
-    "usdg_balance": 2458.453283,
-    "stock_balance": 6947.87051659848,
-    "volume_7d_usd": 253271.09669799998,
-    "volume_usd_per_day": 36181.585242571426,
-    "swaps_7d": 1898,
-    "vault_share_100k": 0.9546666794348211,
-    "feed_deviation_bps": 35.03225563454682
+    "depth_usd_5pct": 4751.066775431352,
+    "usdg_balance": 2508.504069,
+    "stock_balance": 6942.906678257508,
+    "volume_7d_usd": 253303.27548799998,
+    "volume_usd_per_day": 36186.182212571424,
+    "swaps_7d": 1900,
+    "vault_share_100k": 0.9546442158377553,
+    "feed_deviation_bps": -4.713594933148364
    },
    "other_pools": [
     {
@@ -6014,6 +6194,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 1187,
    "eligible": false,
    "reason": "7-day volume $36.2K/day is below $100.0K/day"
   },
@@ -6032,24 +6213,24 @@
     "decimals": 8,
     "usd": 161.30320354,
     "updated_at": 1792458124,
-    "age_s": 2749
+    "age_s": 4496
    },
    "pool": {
     "address": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
     "fee_tier": 3000,
     "tick_spacing": 60,
     "stock_is_token0": false,
-    "price_usd": 161.27142987609432,
+    "price_usd": 161.2714335627957,
     "tick": 225490,
-    "liquidity_raw": "3131797480251207697",
-    "depth_usd_5pct": 1965529.0107756623,
-    "usdg_balance": 1393051.298854,
-    "stock_balance": 4723.335270108976,
-    "volume_7d_usd": 6530696.642571,
-    "volume_usd_per_day": 932956.6632244287,
-    "swaps_7d": 5492,
-    "vault_share_100k": 0.04841374750889956,
-    "feed_deviation_bps": -1.9698098493005176
+    "liquidity_raw": "3131687262325207504",
+    "depth_usd_5pct": 1965459.860016318,
+    "usdg_balance": 1392914.33849,
+    "stock_balance": 4723.2695706423165,
+    "volume_7d_usd": 6482428.891799001,
+    "volume_usd_per_day": 926061.2702570001,
+    "swaps_7d": 5474,
+    "vault_share_100k": 0.04841536838155255,
+    "feed_deviation_bps": -1.9695812920682203
    },
    "other_pools": [
     {
@@ -6057,9 +6238,10 @@
      "fee_tier": 10000,
      "depth_usd_5pct": 123425.39823604045,
      "usdg_balance": 111037.505641,
-     "volume_7d_usd": 229517.84280399984
+     "volume_7d_usd": 229517.8428039998
     }
    ],
+   "cap_usd": 100000,
    "eligible": true,
    "reason": "feed, volume and depth pass"
   },
@@ -6082,6 +6264,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6112,6 +6295,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6134,6 +6318,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6156,6 +6341,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6186,6 +6372,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 17698,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6215,6 +6402,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6237,6 +6425,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6260,13 +6449,14 @@
     "depth_usd_5pct": 407.6245079246307,
     "usdg_balance": 1648.271758,
     "stock_balance": 245.2284618771595,
-    "volume_7d_usd": 3693.3057510000003,
-    "volume_usd_per_day": 527.6151072857143,
-    "swaps_7d": 126,
+    "volume_7d_usd": 3680.239115,
+    "volume_usd_per_day": 525.748445,
+    "swaps_7d": 125,
     "vault_share_100k": 0.9959403032396962,
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 101,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6305,6 +6495,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 95,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6335,6 +6526,7 @@
     "feed_deviation_bps": null
    },
    "other_pools": [],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6357,6 +6549,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6374,16 +6567,16 @@
     "fee_tier": 10000,
     "tick_spacing": 200,
     "stock_is_token0": false,
-    "price_usd": 168.237661916855,
-    "tick": 225067,
+    "price_usd": 193.9988127606991,
+    "tick": 223642,
     "liquidity_raw": "179269176984",
-    "depth_usd_5pct": 0.11491436098725213,
-    "usdg_balance": 0.745319,
-    "stock_balance": 0.014940763564084324,
+    "depth_usd_5pct": 0.12339916767472296,
+    "usdg_balance": 0.91874,
+    "stock_balance": 0.013990435106776106,
     "volume_7d_usd": null,
     "volume_usd_per_day": null,
     "swaps_7d": null,
-    "vault_share_100k": 0.9999988508577107,
+    "vault_share_100k": 0.999998766009846,
     "feed_deviation_bps": null
    },
    "other_pools": [
@@ -6395,6 +6588,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": 0,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6417,6 +6611,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6439,6 +6634,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   },
@@ -6461,6 +6657,7 @@
      "volume_7d_usd": null
     }
    ],
+   "cap_usd": null,
    "eligible": false,
    "reason": "no Chainlink feed"
   }

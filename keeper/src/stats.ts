@@ -59,7 +59,7 @@ function replayVault(t: Ticker) {
     id: t.id, ticker: t.symbol, name: t.name, source: "replay" as const, pool: t.pool, fee_tier: t.feeTier,
     vault: null, tvl_usd: null,
     fee_apr_pct: { replay_30d: replayFeeApr(tok) },
-    replay: { strategy: replay.strategy, capital_usd: replay.capital_usd, window: replay.window },
+    replay: { strategy: replay.strategy, capital_usd: tok?.capital_usd ?? replay.capital_usd, window: replay.window },
     evidence: buildEvidence(tok, replay),
     open: buildEvidence(tok, replay)?.open ?? false,
   };
