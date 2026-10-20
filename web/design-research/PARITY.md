@@ -45,3 +45,7 @@ One row per interactive element or information unit a direct competitor shows on
 | Request-a-pair banner | - | - | Y | - | - | | skip: the universe is every eligible Stock Token, no request needed |
 | Next recentre / epoch schedule | - | Y | - | - | - | | build: fact row "Recentres 02:00 UTC after each NYSE session" |
 | Mobile: stacked cards with a primary button per card | Y | - | - | - | - | | skip: rows open the vault page, which docks the same deposit bar |
+
+## Checked against the build (2026-10-20)
+
+Screens: design-research/build2/f-vaults-1440.png, f-vaults-390.png, f-home-1440.png, f-home-390.png, f-vault-nvda-1440.png, f-vault-nvda-390.png (wallet button masked before capture). Every "build" row above is visible in those screens or was exercised in the browser: row click moved the panel from AAPL to GOOGL, the Kept tooltip opened on keyboard focus and closed on Escape, a broken token image became a monogram chip, and under prefers-reduced-motion the ticker animation is none with the duplicate list hidden and the strip scrolling by hand. Not exercised: the 25/50/75/Max fill against a real balance (needs a funded wallet; the share arithmetic is covered by lib/format.test.ts).

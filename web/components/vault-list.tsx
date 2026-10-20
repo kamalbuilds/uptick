@@ -206,10 +206,10 @@ export function VaultList() {
           </div>
         ) : (
           <>
-            <p className="mt-6 max-w-[690px] text-[13px] leading-5 text-mute [text-wrap:balance]">
+            <p className="mb-8 mt-6 max-w-[690px] text-[13px] leading-5 text-mute [text-wrap:balance]">
               <Term id="kept" /> is a year of the pool&rsquo;s fees less what leaks, read in the <Term id="worstHalf">worst half</Term> of a 30-day replay. Each vault is <Term id="open" />, <Term id="reduced" /> or <Term id="closed" />.
             </p>
-            <div className="mt-4">
+            <div>
               {taking.length > 0 && (
                 <section aria-labelledby="taking">
                   <SectionTitle id="taking" aside={<>Open takes any amount. Reduced takes up to {usdWhole(REDUCED_CAP_STOCK_USD)} a deposit.</>}>

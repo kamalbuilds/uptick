@@ -316,7 +316,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
             disabled={!canFill}
             aria-pressed={activePct === p}
             onClick={() => fill(p)}
-            className={cn("press h-7 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-40", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-panel enabled:hover:text-fg")}
+            className={cn("press h-7 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-55", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-panel enabled:hover:text-fg")}
           >
             {p === 100 ? "Max" : `${p}%`}
           </button>
