@@ -4,7 +4,7 @@ pragma solidity 0.8.26;
 import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Test} from "forge-std/Test.sol";
-import {Base, Addrs} from "./Base.t.sol";
+import {Base, Addrs, Band} from "./Base.t.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IAggregatorV3, IUniswapV3Pool} from "../src/interfaces/IUniswapV3.sol";
 import {StockVault} from "../src/StockVault.sol";
@@ -48,6 +48,7 @@ contract Handler is Test, Addrs {
     /// @dev Stands in for arbitrage: before every action the oracle is pointed at the pool's own price with a fresh
     /// timestamp, so the vault's own swap impact never trips the deviation gate. Gate behaviour has its own tests.
     function _sync() internal returns (uint256 price) {
+        vm.roll(vm.getBlockNumber() + 1); // every action is its own block: shares minted in a block cannot leave in it
         (uint160 sp,,,,,,) = IUniswapV3Pool(POOL).slot0();
         uint256 p96 = Math.mulDiv(sp, sp, 1 << 96);
         price = Math.mulDiv(1e26, 1 << 96, p96) / 1e6;
@@ -59,12 +60,19 @@ contract Handler is Test, Addrs {
     }
 
     function deposit(uint256 who, uint256 amount, bool instant_) external {
+        if (Band.off(vault)) vm.warp(vm.getBlockTimestamp() + 11 minutes); // no arbitrageurs here: let the TWAP settle
         uint256 price = _sync();
         address a = actors[who % 3];
         amount = bound(amount, 1e12, 300e18);
         if (vault.instantDeploy() != instant_) {
+            bytes memory data = abi.encodeCall(StockVault.setInstantDeploy, (instant_));
+            uint256 t0 = vm.getBlockTimestamp(); // not block.timestamp: via_ir re-reads it after the warp below
             vm.prank(owner);
-            vault.setInstantDeploy(instant_);
+            vault.queueChange(data);
+            vm.warp(t0 + vault.CHANGE_DELAY());
+            vm.prank(owner);
+            vault.executeChange(data);
+            vm.warp(t0);
         }
         deal(NVDA, a, amount);
         vm.prank(a);
@@ -154,7 +162,8 @@ contract Handler is Test, Addrs {
         vm.prank(keeper);
         try vault.rebalance() {}
         catch (bytes memory err) {
-            if (bytes4(err) == StockVault.OracleUnhealthy.selector) return;
+            // the oracle gate and the spot-to-TWAP band are the only refusals
+            if (bytes4(err) == StockVault.OracleUnhealthy.selector || bytes4(err) == StockVault.SpotOffTwap.selector) return;
             lastRebalanceRevert = err;
             lastSupply = vault.totalSupply();
             lastTokenId = vault.tokenId();

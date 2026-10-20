@@ -31,6 +31,7 @@ contract StockVaultSpcxTest is Test {
         if (blk == 0) vm.createSelectFork(url);
         else vm.createSelectFork(url, blk);
         (feedRound,,,,) = IAggregatorV3(FEED).latestRoundData();
+        vm.warp(block.timestamp + 11 minutes); // TWAP equals spot: the live pool's last 10 minutes cannot unsettle the band
         _setFeed(_poolPrice());
         vault = new StockVault(
             StockVault.Config({
@@ -91,6 +92,7 @@ contract StockVaultSpcxTest is Test {
         IERC20(SPCX).approve(address(vault), type(uint256).max);
         shares = vault.deposit(amount, alice);
         vm.stopPrank();
+        vm.roll(vm.getBlockNumber() + 1); // shares minted in a block cannot leave in it
     }
 
     function test_oracleMappingMatchesPoolForTokenZeroStock() public view {
@@ -101,8 +103,14 @@ contract StockVaultSpcxTest is Test {
     }
 
     function test_roundTripAndRebalanceWithTokenZeroStock() public {
+        bytes memory data = abi.encodeCall(StockVault.setInstantDeploy, (true));
+        uint256 t0 = vm.getBlockTimestamp(); // not block.timestamp: via_ir re-reads it after the warp below
         vm.prank(owner);
-        vault.setInstantDeploy(true);
+        vault.queueChange(data);
+        vm.warp(t0 + vault.CHANGE_DELAY());
+        vm.prank(owner);
+        vault.executeChange(data);
+        vm.warp(t0);
         uint256 amount = 100e18;
         uint256 shares = _deposit(amount);
         StockVault.PositionInfo memory info = vault.positionInfo();

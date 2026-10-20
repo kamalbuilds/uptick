@@ -146,6 +146,8 @@ contract MinOutTest is Base {
 
     // ------------------------------------------------------------- rebalance
 
+    bytes internal lastRebalanceErr;
+
     /// @dev Both holders deposit, the market moves `honest` bps with the feed following, then after the keeper
     /// interval the attacker pushes the pool `push` bps off the oracle around the keeper's rebalance.
     function _rebalanceNav(int256 push, uint256 size, int256 honest)
@@ -167,7 +169,7 @@ contract MinOutTest is Base {
             devBps = _devBps(p0);
         }
         vm.prank(keeper);
-        (ok,) = address(vault).call(abi.encodeCall(vault.rebalance, ()));
+        (ok, lastRebalanceErr) = address(vault).call(abi.encodeCall(vault.rebalance, ()));
         _restore(sqrt0);
         nav = vault.totalAssets();
         atkBps = (int256(_val(trader)) - int256(atk0)) * 1e4 / int256(nav);
@@ -188,13 +190,12 @@ contract MinOutTest is Base {
     }
 
     /// @dev After a 3% market move the keeper's recentre has to swap a large share of the vault. The attacker pushes
-    /// the pool the other way inside the gate. The vault's cost is bounded by the swap minOut, so it stays well under
-    /// the push, and an oversized vault whose swap would cross minOut reverts instead.
+    /// the pool the other way by 8 bp, the most the spot-to-TWAP band lets through. The vault's cost stays under half
+    /// the push and the attacker does not profit.
     function test_rebalanceSandwichBoundedByPush() public {
-        uint256 lossesSeen;
         for (uint256 j; j < 2; ++j) {
             uint256 snap = vm.snapshotState();
-            (bool ok, int256 dev, int256 loss, int256 atk) = _rebalanceLoss(_signed(90, j == 1), 100e18, 300);
+            (bool ok, int256 dev, int256 loss, int256 atk) = _rebalanceLoss(_signed(8, j == 1), 100e18, 300);
             emit log_named_int("rebalance pool dev bps", dev);
             emit log_named_int("  vault NAV loss vs unattacked rebalance bps", loss);
             emit log_named_int("  attacker net bps of NAV", atk);
@@ -202,17 +203,29 @@ contract MinOutTest is Base {
             int256 push = dev < 0 ? -dev : dev;
             assertLe(loss, push / 2, "vault loss under half the push");
             assertLe(atk, 0, "attacker never profits");
-            if (loss > 10) lossesSeen++;
             vm.revertToState(snap);
             _setFeed(_poolPrice());
         }
-        assertGt(lossesSeen, 0, "the unfavourable direction does cost the vault something");
     }
 
-    /// @dev Larger vault, same push: the recentre swap would fill below Chainlink less slippage, so it reverts.
+    /// @dev The same sandwich with a 90 bp push (inside the 100 bp Chainlink gate, past the 10 bp band): the keeper's
+    /// rebalance is refused with SpotOffTwap in both directions.
+    function test_rebalanceSandwichPastTheBandReverts() public {
+        for (uint256 j; j < 2; ++j) {
+            uint256 snap = vm.snapshotState();
+            (bool ok,,,) = _rebalanceLoss(_signed(90, j == 1), 100e18, 300);
+            assertFalse(ok, "rebalance into a pushed pool is refused");
+            assertEq(bytes4(lastRebalanceErr), StockVault.SpotOffTwap.selector, "refused by the band, not by something else");
+            vm.revertToState(snap);
+            _setFeed(_poolPrice());
+        }
+    }
+
+    /// @dev Larger vault, same 90 bp push: refused by the band before any swap is attempted.
     function test_rebalanceSandwichOversizedSwapReverts() public {
         (bool ok,,,) = _rebalanceLoss(90, 300e18, 300);
-        assertFalse(ok, "swap minOut stops the keeper from rebalancing into a pushed pool");
+        assertFalse(ok, "the keeper does not rebalance into a pushed pool");
+        assertEq(bytes4(lastRebalanceErr), StockVault.SpotOffTwap.selector, "refused by the band");
     }
 
     // ------------------------------------------------------------ redeemInKind
@@ -265,8 +278,7 @@ contract MinOutTest is Base {
         _instant();
         _deposit(bob, 100e18);
         if (!deployed) {
-            vm.prank(owner);
-            vault.setInstantDeploy(false);
+            _ownerDo(abi.encodeCall(StockVault.setInstantDeploy, (false)));
         }
         _setFeed(uint256(int256(_poolPrice()) * (1e4 + gapBps) / 1e4));
         uint256 shares = _deposit(alice, d);
@@ -305,8 +317,7 @@ contract MinOutTest is Base {
             _instant();
             _deposit(bob, 100e18);
             if (k == 1) {
-                vm.prank(owner);
-                vault.setInstantDeploy(false);
+                _ownerDo(abi.encodeCall(StockVault.setInstantDeploy, (false)));
             }
             uint160 sqrt0 = _spotSqrt();
             uint256 t0 = _val(trader);

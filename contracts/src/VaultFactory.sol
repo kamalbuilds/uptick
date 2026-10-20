@@ -7,6 +7,10 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {StockVault} from "./StockVault.sol";
 import {IUniswapV3Pool} from "./interfaces/IUniswapV3.sol";
 
+interface IFeedDescription {
+    function description() external view returns (string memory);
+}
+
 /// @title VaultFactory
 /// @notice Deploys one StockVault per (Stock Token, pool, Chainlink feed) and keeps the registry the app and the
 /// keeper read. The factory pins the keccak256 of StockVault's creation code, so the only contract it can ever
@@ -55,6 +59,7 @@ contract VaultFactory is Ownable2Step {
     error DeployFailed();
     error ZeroAddress();
     error OutOfRange();
+    error BadFeed(address feed);
 
     constructor(address factoryOwner, bytes32 vaultCodeHash_, Defaults memory d) Ownable(factoryOwner) {
         _setDefaults(d);
@@ -92,6 +97,7 @@ contract VaultFactory is Ownable2Step {
 
         Defaults memory d = _defaults;
         string memory sym = IERC20Metadata(stock).symbol();
+        _requireFeedFor(feed, sym);
         bytes memory initcode = bytes.concat(
             creationCode,
             abi.encode(
@@ -133,6 +139,23 @@ contract VaultFactory is Ownable2Step {
         _vaultsOfStock[stock].push(vault);
         _entries.push(Entry(stock, pool, feed, vault, fee));
         emit VaultCreated(stock, pool, vault, feed, fee, _entries.length - 1);
+    }
+
+    /// @dev The feed's description must end with "<symbol> / USD" ("Robinhood NVDA / USD", "RHNVDA / USD" on the
+    /// deployed Chainlink proxies), so a feed of another ticker, or one with no description, cannot be wired in.
+    function _requireFeedFor(address feed, string memory sym) private view {
+        if (feed.code.length == 0) revert BadFeed(feed);
+        bytes memory tail = bytes(string.concat(sym, " / USD"));
+        try IFeedDescription(feed).description() returns (string memory d) {
+            bytes memory b = bytes(d);
+            if (b.length >= tail.length) {
+                uint256 off = b.length - tail.length;
+                uint256 i;
+                while (i < tail.length && b[off + i] == tail[i]) ++i;
+                if (i == tail.length) return;
+            }
+        } catch {}
+        revert BadFeed(feed);
     }
 
     // ------------------------------------------------------------- registry

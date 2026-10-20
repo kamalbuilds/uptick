@@ -41,6 +41,7 @@ contract VaultFactoryTest is Test {
         string memory url = vm.envOr("FORK_URL", string("robinhood"));
         if (blk == 0) vm.createSelectFork(url);
         else vm.createSelectFork(url, blk);
+        vm.warp(block.timestamp + 11 minutes); // TWAP equals spot, so the live pools' last 10 minutes cannot trip the band
         code = vm.getCode("StockVault.sol:StockVault");
         factory = new VaultFactory(factoryOwner, keccak256(code), _defaults(keeper));
     }
@@ -234,6 +235,19 @@ contract VaultFactoryTest is Test {
         vm.expectRevert(abi.encodeWithSelector(VaultFactory.VaultExists.selector, address(v)));
         factory.createVault(code, NVDA, NVDA_POOL, NVDA_FEED, 0);
         assertEq(factory.vaultCount(), 1);
+    }
+
+    /// @dev A feed that does not end in "<symbol> / USD", or has no description, is refused before any deploy.
+    function test_feedOfAnotherTickerIsRefused() public {
+        bytes memory err = abi.encodeWithSelector(VaultFactory.BadFeed.selector, GOOGL_FEED);
+        vm.prank(factoryOwner);
+        vm.expectRevert(err);
+        factory.createVault(code, NVDA, NVDA_POOL, GOOGL_FEED, 0);
+
+        vm.prank(factoryOwner);
+        vm.expectRevert(abi.encodeWithSelector(VaultFactory.BadFeed.selector, stranger));
+        factory.createVault(code, NVDA, NVDA_POOL, stranger, 0);
+        assertEq(factory.vaultCount(), 0);
     }
 
     function test_aPoolOfAnotherTokenBubblesStockVaultsBadConfig() public {

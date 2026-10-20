@@ -366,7 +366,7 @@ contract StockVaultTest is Base {
         StockVault.Params memory p = _defaultParams();
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, stranger));
-        vault.setParams(p);
+        vault.queueChange(abi.encodeCall(StockVault.setParams, (p)));
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, stranger));
         vault.pause();
@@ -374,26 +374,35 @@ contract StockVaultTest is Base {
         vm.expectRevert(StockVault.BadConfig.selector);
         vault.renounceOwnership();
 
+        // bounds are enforced when the queued change executes
         p.twapWindow = 599; // the TWAP must span at least 10 minutes
-        vm.prank(owner);
-        vm.expectRevert(StockVault.BadParams.selector);
-        vault.setParams(p);
+        _expectExecuteReverts(abi.encodeCall(StockVault.setParams, (p)), StockVault.BadParams.selector);
         p = _defaultParams();
         p.perfFeeBps = 2001;
-        vm.prank(owner);
-        vm.expectRevert(StockVault.BadParams.selector);
-        vault.setParams(p);
+        _expectExecuteReverts(abi.encodeCall(StockVault.setParams, (p)), StockVault.BadParams.selector);
         p = _defaultParams();
         p.maxDeviationBps = 501;
-        vm.prank(owner);
-        vm.expectRevert(StockVault.BadParams.selector);
-        vault.setParams(p);
+        _expectExecuteReverts(abi.encodeCall(StockVault.setParams, (p)), StockVault.BadParams.selector);
+        _expectExecuteReverts(abi.encodeCall(StockVault.setSpotTwapBand, (51)), StockVault.BadParams.selector);
+        _expectExecuteReverts(abi.encodeCall(StockVault.setSpotTwapBand, (0)), StockVault.BadParams.selector);
         p = _defaultParams();
         p.rangeBps = 300;
-        vm.prank(owner);
-        vault.setParams(p);
+        _ownerDo(abi.encodeCall(StockVault.setParams, (p)));
         (uint16 rb,,,,,,,) = vault.params();
         assertEq(rb, 300);
+    }
+
+    function _expectExecuteReverts(bytes memory data, bytes4 err) internal {
+        uint256 t0 = vm.getBlockTimestamp(); // not block.timestamp: via_ir re-reads it after the warp below
+        vm.prank(owner);
+        vault.queueChange(data);
+        vm.warp(t0 + vault.CHANGE_DELAY());
+        vm.prank(owner);
+        vm.expectRevert(err);
+        vault.executeChange(data);
+        vm.prank(owner);
+        vault.cancelChange(keccak256(data));
+        vm.warp(t0);
     }
 
     function _abs(int24 x) internal pure returns (int24) {

@@ -15,6 +15,19 @@ import {IAggregatorV3, IUniswapV3Pool, ISwapRouter02} from "../src/interfaces/IU
 /// (the equity feeds go stale over weekends and trade off the pool by tens of bp), and tests then move it to
 /// follow, or deliberately diverge from, the price moves they make in the real pool. test_realFeedUnmocked reads
 /// the real feed untouched.
+/// @dev Whether pool spot sits further from the pool TWAP than the vault's spot-to-TWAP band allows.
+library Band {
+    function off(StockVault v) internal view returns (bool) {
+        (,,,, uint160 twap, uint160 spot) = v.health();
+        if (twap == 0 || spot == 0) return false; // feed unusable: no snapshot to compare
+        uint256 pt = Math.mulDiv(twap, twap, 1 << 96);
+        uint256 ps = Math.mulDiv(spot, spot, 1 << 96);
+        uint256 hi = ps > pt ? ps : pt;
+        uint256 lo = ps > pt ? pt : ps;
+        return hi * 1e4 > lo * (1e4 + v.maxSpotTwapBps());
+    }
+}
+
 abstract contract Addrs {
     address constant NVDA = 0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC;
     address constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
@@ -44,6 +57,9 @@ abstract contract Base is Test, Addrs {
         if (blk == 0) vm.createSelectFork(url);
         else vm.createSelectFork(url, blk);
         (feedRound,,,,) = IAggregatorV3(FEED).latestRoundData();
+        // The live pool trades while tests run: spot can sit tens of bp off its 10-minute TWAP at fork time. Moving
+        // past the TWAP window makes the TWAP equal to spot, so every test starts inside the spot-to-TWAP band.
+        vm.warp(block.timestamp + 11 minutes);
         _setFeed(_poolPrice());
 
         vault = _deploy(_defaultParams());
@@ -92,15 +108,38 @@ abstract contract Base is Test, Addrs {
         IERC20(NVDA).approve(address(vault), type(uint256).max);
     }
 
+    /// @dev Deposits and moves to the next block: shares minted in a block cannot leave the account in that block
+    /// (StockVault._update), so every test that exits after depositing starts from the next block. Tests of the
+    /// lock itself call vault.deposit directly.
     function _deposit(address who, uint256 amount) internal returns (uint256 shares) {
+        _settle();
         _fund(who, amount);
         vm.prank(who);
         shares = vault.deposit(amount, who);
+        vm.roll(vm.getBlockNumber() + 1);
+    }
+
+    /// @dev Deposits are refused while spot sits off the TWAP, and the vault's own deploy swap (or a test's push)
+    /// does that until arbitrage and time pull them together. Tests have no arbitrageurs, so a test that deposits
+    /// after moving the pool lets the TWAP window pass first. Tests of the band call vault.deposit directly.
+    function _settle() internal {
+        if (Band.off(vault)) vm.warp(vm.getBlockTimestamp() + 11 minutes);
+    }
+
+    /// @dev The owner's timelocked path: queue, wait CHANGE_DELAY, execute, then put the clock back so the test's
+    /// own timeline (feed timestamps, rebalance intervals) is unchanged.
+    function _ownerDo(bytes memory data) internal {
+        uint256 t0 = vm.getBlockTimestamp(); // not block.timestamp: via_ir re-reads it after the warp below
+        vm.prank(owner);
+        vault.queueChange(data);
+        vm.warp(t0 + vault.CHANGE_DELAY());
+        vm.prank(owner);
+        vault.executeChange(data);
+        vm.warp(t0);
     }
 
     function _instant() internal {
-        vm.prank(owner);
-        vault.setInstantDeploy(true);
+        _ownerDo(abi.encodeCall(StockVault.setInstantDeploy, (true)));
     }
 
     function _spotTick() internal view returns (int24 t) {

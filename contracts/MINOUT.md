@@ -14,12 +14,12 @@ Measured on the unmodified contract:
 | `redeem` | -39, -60, -70 bps | victim at NAV (surplus stays in the vault); attacker net -44 to -75 |
 | `withdraw` (full) | +40, -40, -70 bps succeed and pay exactly the assets; +70, +90, -90 revert | other holder NAV +11, +51, +65 bps |
 | `redeemInKind` | +-50, +-90, +-300 bps | redeemer 0 to 49 bps above NAV; attacker net -31 to -252 |
-| `rebalance` after a 3% recentre, 100 NVDA per holder | +89 bps | vault NAV -24 bps vs unattacked rebalance; attacker net -17 |
+| `rebalance` after a 3% recentre, 100 NVDA per holder | +89 bps | vault NAV -24 bps vs unattacked rebalance; attacker net -17 (since the 2026-10-20 review: refused with `SpotOffTwap`, the band is 10 bp) |
 | same | -89 bps | vault NAV +25 bps; attacker net -59 |
-| `rebalance`, 300 NVDA per holder | +90 bps | reverts `Too little received` (swap minOut) |
+| `rebalance`, 300 NVDA per holder | +90 bps | reverts `Too little received` (swap minOut); since the 2026-10-20 review: refused with `SpotOffTwap` before the swap |
 | `rebalance`, oracle unchanged | +-50 and +99 bps | vault NAV change 0 bps (no recentre swap) |
 
-Why the zero minimums do not cost anything: removing liquidity while the pool is pushed returns a composition that is worth at least the unpushed composition at the true price (the pushed price is an arbitrage, and the pusher pays for it). The loss in each path comes from the swap that follows, and that swap is already bounded: exits by the `ExitBelowMinimum` floor (NAV less `exitBufferBps`, 30 bps), rebalance and deploy swaps by the Chainlink `minOut` (`slippageBps`). A per-leg floor derived from the oracle sqrt price at the 1% tolerance would reject honest 20% leg shifts, and a value floor would sit above the existing ones. `src` unchanged for this item; `MinOut.t.sol` keeps the bounds as regression tests.
+Why the zero minimums do not cost anything: removing liquidity while the pool is pushed returns a composition that is worth at least the unpushed composition at the true price (the pushed price is an arbitrage, and the pusher pays for it). The loss in each path comes from the swap that follows, and that swap is already bounded: exits by the `ExitBelowMinimum` floor (NAV less `exitBufferBps`, 30 bps), rebalance and deploy swaps by the TWAP-based `minOut` (`slippageBps`) behind the 10 bp spot-to-TWAP band. A per-leg floor derived from the oracle sqrt price at the 1% tolerance would reject honest 20% leg shifts, and a value floor would sit above the existing ones. `src` unchanged for this item; `MinOut.t.sol` keeps the bounds as regression tests.
 
 Worst case seen: redeem 28 bps (inside the 30 bps buffer), rebalance 24 bps of NAV at 89 bps of deviation (about a quarter of the push; capped by `slippageBps` on the swapped notional). The attacker's net result was negative in every row.
 
@@ -60,3 +60,8 @@ Residual: an attacker who makes the gap himself (push the pool 60 bps below the 
 `forge test` with `FORK_BLOCK=90902380`: 86 passed, 0 failed (7 in MinOut.t.sol). Unpinned (anvil head) the existing `test_rebalanceRecentresAfterRealPriceMove` fails with `ERC721: token already minted` on the unmodified contract too, so runs should pin the block.
 
 Blind spots: one pool (NVDA 0.05%), one position size (100 NVDA per holder), a mocked feed at a fixed price, no live mempool, and gas costs are not in the attacker figures.
+
+## Update from the 2026-10-20 review
+
+- Rebalance and `instantDeploy` swaps floor at the TWAP value less `slippageBps` and run only while spot is within `maxSpotTwapBps` (10 bp by default) of the TWAP; the position mint carries minimums. `test_rebalanceSandwichBoundedByPush` now pushes 8 bp (the largest push the band admits), `test_rebalanceSandwichPastTheBandReverts` pushes 90 bp and expects `SpotOffTwap`.
+- `_navPrice` (reported share price, fee and refund mints) is still min(Chainlink, TWAP), so a same-block push cannot move it. New shares are priced separately: `previewDeposit` / `previewMint` use the lowest of Chainlink, TWAP and spot, which closes the feed-lag round trip for a market that has moved ahead of both the feed and the TWAP (`test_M1_inKindRoundTripAfterDrop`).

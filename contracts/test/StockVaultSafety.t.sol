@@ -83,6 +83,11 @@ contract StockVaultSafetyTest is Base {
         _pushPrice(50); // 0.5% < 1% bound
         _fund(bob, 10e18);
         vm.prank(bob);
+        vm.expectRevert(StockVault.SpotOffTwap.selector); // the move is 50 bp off the 10-minute average
+        vault.deposit(10e18, bob);
+
+        vm.warp(block.timestamp + 11 minutes); // once the TWAP has followed, 0.5% is inside the Chainlink bound
+        vm.prank(bob);
         vault.deposit(10e18, bob);
         assertGt(vault.balanceOf(bob), 0);
     }
@@ -286,8 +291,7 @@ contract StockVaultSafetyTest is Base {
     function test_swapMinOutBlocksBadFill() public {
         StockVault.Params memory p = _defaultParams();
         p.slippageBps = 1; // 0.01% is below the pool's own 0.05% fee
-        vm.prank(owner);
-        vault.setParams(p);
+        _ownerDo(abi.encodeCall(StockVault.setParams, (p)));
         _instant();
         _fund(alice, 100e18);
         vm.prank(alice);

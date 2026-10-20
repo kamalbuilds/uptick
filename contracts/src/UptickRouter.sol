@@ -18,7 +18,8 @@ interface IStockVault {
         FeedStale,
         TwapUnavailable,
         TwapDeviates,
-        SpotDeviates
+        SpotDeviates,
+        CorporateAction
     }
 
     function usdg() external view returns (address);
@@ -45,11 +46,17 @@ interface IStockVault {
         returns (uint256 stockOut, uint256 usdgOut);
 }
 
+/// @notice The slice of VaultFactory the router needs: the registry of vaults the factory deployed.
+interface IVaultRegistry {
+    function isVault(address vault) external view returns (bool);
+}
+
 /// @title UptickRouter
 /// @notice USDG on-ramp for StockVault. Swaps USDG into the vault's Stock Token through the same Uniswap v3 router
 /// and pool fee the vault uses, then deposits to `receiver`. The swap floor is the Chainlink-implied stock amount
-/// from `health().price` less `slippageBps`, so a deposit reverts when the pool sits far below the oracle. The
-/// router holds no balances and leaves no allowances behind after any call.
+/// from `health().price` less `slippageBps`, so a deposit reverts when the pool sits far below the oracle. It only
+/// serves vaults the VaultFactory registered, and measures what each swap delivers as a balance delta. The router
+/// holds no balances and leaves no allowances behind after any call.
 contract UptickRouter is ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Math for uint256;
@@ -59,16 +66,29 @@ contract UptickRouter is ReentrancyGuard {
     /// @notice Maximum adverse move between the Chainlink price and the swap, in basis points.
     uint256 public immutable slippageBps;
 
+    /// @notice The VaultFactory whose `isVault` registry decides which vaults the router will call.
+    IVaultRegistry public immutable registry;
+
     error Unhealthy(IStockVault.Status status);
     error ZeroAmount();
     error InsufficientShares(uint256 shares, uint256 minShares);
     error MinStockOut(uint256 stockOut, uint256 minStock);
     error MinUsdgOut(uint256 usdgOut, uint256 minUsdg);
     error BadConfig();
+    error NotRegisteredVault(address vault);
 
-    constructor(uint256 slippageBps_) {
-        if (slippageBps_ > BPS) revert BadConfig();
+    constructor(uint256 slippageBps_, IVaultRegistry registry_) {
+        if (slippageBps_ > BPS || address(registry_) == address(0)) revert BadConfig();
         slippageBps = slippageBps_;
+        registry = registry_;
+    }
+
+    /// @dev The vault argument is attacker-supplied: its `stock()`, `usdg()`, `router()` and `feed()` decide which
+    /// tokens the router approves and moves. Only a vault the factory deployed (and so only the pinned StockVault
+    /// build) is trusted.
+    modifier onlyRegistered(IStockVault vault) {
+        if (!registry.isVault(address(vault))) revert NotRegisteredVault(address(vault));
+        _;
     }
 
     /// @notice Pulls `usdgIn` from the caller, swaps it to the Stock Token and deposits to `receiver`.
@@ -77,6 +97,7 @@ contract UptickRouter is ReentrancyGuard {
     function depositUsdg(IStockVault vault, uint256 usdgIn, uint256 minShares, address receiver)
         external
         nonReentrant
+        onlyRegistered(vault)
         returns (uint256 shares)
     {
         if (usdgIn == 0) revert ZeroAmount();
@@ -94,6 +115,7 @@ contract UptickRouter is ReentrancyGuard {
 
         usdg.safeTransferFrom(msg.sender, address(this), usdgIn);
 
+        uint256 stockBefore = stock.balanceOf(address(this));
         usdg.forceApprove(address(swapRouter), usdgIn);
         swapRouter.exactInputSingle(
             ISwapRouter02.ExactInputSingleParams(
@@ -102,7 +124,7 @@ contract UptickRouter is ReentrancyGuard {
         );
         usdg.forceApprove(address(swapRouter), 0);
 
-        uint256 stockReceived = stock.balanceOf(address(this));
+        uint256 stockReceived = stock.balanceOf(address(this)) - stockBefore;
         if (stockReceived < minStock) revert MinStockOut(stockReceived, minStock);
 
         stock.forceApprove(vaultAddr, stockReceived);
@@ -117,6 +139,7 @@ contract UptickRouter is ReentrancyGuard {
     function redeemInKindMin(IStockVault vault, uint256 shares, uint256 minStock, uint256 minUsdg, address receiver)
         external
         nonReentrant
+        onlyRegistered(vault)
         returns (uint256 stockOut, uint256 usdgOut)
     {
         if (shares == 0) revert ZeroAmount();

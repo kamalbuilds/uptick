@@ -4,7 +4,8 @@ pragma solidity 0.8.26;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Base} from "./Base.t.sol";
 import {StockVault} from "../src/StockVault.sol";
-import {UptickRouter, IStockVault} from "../src/UptickRouter.sol";
+import {VaultFactory} from "../src/VaultFactory.sol";
+import {UptickRouter, IStockVault, IVaultRegistry} from "../src/UptickRouter.sol";
 
 /// @dev Drives the real vault on the real Robinhood Chain fork. USDG is dealt to the actors and the router swaps
 /// against the same pool the vault uses. The oracle is the mocked Chainlink proxy from Base, pointed at the pool by
@@ -13,10 +14,27 @@ contract UptickRouterTest is Base {
     uint256 internal constant USDG_IN = 100e6;
 
     UptickRouter internal rt;
+    VaultFactory internal factory;
 
+    /// @dev The vault under test comes out of a VaultFactory, which is what the router trusts.
     function setUp() public override {
         super.setUp();
-        rt = new UptickRouter(100);
+        bytes memory code = vm.getCode("StockVault.sol:StockVault");
+        factory = new VaultFactory(
+            address(this),
+            keccak256(code),
+            VaultFactory.Defaults({
+                usdg: USDG,
+                positionManager: NPM,
+                router: ROUTER,
+                vaultOwner: owner,
+                keeper: keeper,
+                treasury: treasury,
+                params: _defaultParams()
+            })
+        );
+        vault = StockVault(factory.createVault(code, NVDA, POOL, FEED, 0));
+        rt = new UptickRouter(100, IVaultRegistry(address(factory)));
     }
 
     // ---------------------------------------------------------------- helpers
@@ -89,7 +107,7 @@ contract UptickRouterTest is Base {
     /// @dev With a tight tolerance, a pool that sits inside the oracle gate (so health stays Ok) but below the feed
     /// still fails the swap's minimum output. The gate and the slippage floor are separate guards.
     function test_depositUsdgRevertsOnPoolSlippage() public {
-        UptickRouter tight = new UptickRouter(10); // 0.10%
+        UptickRouter tight = new UptickRouter(10, IVaultRegistry(address(factory))); // 0.10%
         deal(USDG, alice, USDG_IN);
         vm.prank(alice);
         IERC20(USDG).approve(address(tight), type(uint256).max);
@@ -144,6 +162,51 @@ contract UptickRouterTest is Base {
     /// @dev A tolerance above 100% cannot be configured.
     function test_constructorRejectsBadSlippage() public {
         vm.expectRevert(UptickRouter.BadConfig.selector);
-        new UptickRouter(10_001);
+        new UptickRouter(10_001, IVaultRegistry(address(factory)));
+    }
+
+    function test_constructorRejectsZeroRegistry() public {
+        vm.expectRevert(UptickRouter.BadConfig.selector);
+        new UptickRouter(100, IVaultRegistry(address(0)));
+    }
+
+    // ------------------------------------------------------------ registry (L3)
+
+    /// @dev A StockVault the factory did not deploy is refused on both entry points, before any transfer.
+    function test_unregisteredVaultIsRefused() public {
+        StockVault rogue = _deploy(_defaultParams());
+        assertFalse(factory.isVault(address(rogue)), "setup: not registered");
+        _dealUsdg(alice, USDG_IN);
+
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(UptickRouter.NotRegisteredVault.selector, address(rogue)));
+        rt.depositUsdg(IStockVault(address(rogue)), USDG_IN, 0, alice);
+
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(UptickRouter.NotRegisteredVault.selector, address(rogue)));
+        rt.redeemInKindMin(IStockVault(address(rogue)), 1, 0, 0, alice);
+        assertEq(IERC20(USDG).balanceOf(alice), USDG_IN, "nothing was pulled");
+    }
+
+    /// @dev An address that is not a vault at all is refused the same way.
+    function test_arbitraryAddressIsRefused() public {
+        _dealUsdg(alice, USDG_IN);
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(UptickRouter.NotRegisteredVault.selector, stranger));
+        rt.depositUsdg(IStockVault(stranger), USDG_IN, 0, alice);
+    }
+
+    /// @dev Stock Token stranded in the router is not swept into the next caller's deposit: the deposit is the swap
+    /// output measured as a balance delta, and the stranded balance stays where it was.
+    function test_strandedStockIsNotDeposited() public {
+        deal(NVDA, address(rt), 5e18);
+        _dealUsdg(alice, USDG_IN);
+        uint256 sharesRef = vault.previewDeposit(_impliedStock(USDG_IN));
+
+        vm.prank(alice);
+        uint256 shares = rt.depositUsdg(IStockVault(address(vault)), USDG_IN, 0, alice);
+
+        assertEq(IERC20(NVDA).balanceOf(address(rt)), 5e18, "stranded stock untouched");
+        _assertClose(shares, sharesRef, 100, "shares are for the swap output only");
     }
 }

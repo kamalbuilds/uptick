@@ -16,8 +16,8 @@ A share is a pro-rata claim on three things the vault holds: idle balances of bo
 
 | Step | What happens |
 |---|---|
-| `deposit` / `mint` | Oracle gate, then the Stock Token is pulled in and shares are minted. With `instantDeploy` the vault also swaps to the ratio the range needs and adds liquidity in the same transaction. Otherwise the Stock Token sits idle, counted at face value, until the next rebalance. |
-| `rebalance()` | Keeper every `minRebalanceInterval`; anyone once 26 hours have passed since the last one. Collects fees and mints the treasury its cut, removes the position, snaps `price * (1 +- rangeBps)` to the tick spacing, swaps to the target ratio with a Chainlink-based `minOut`, mints the new position. |
+| `deposit` / `mint` | Oracle gate, then the Stock Token is pulled in and shares are minted. With `instantDeploy` the vault also swaps to the ratio the range needs and adds liquidity in the same transaction. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP. Without `instantDeploy` the Stock Token sits idle, counted at face value, until the next rebalance. Shares minted in a block cannot be burned or transferred in that block. |
+| `rebalance()` | Keeper every `minRebalanceInterval`; anyone once 26 hours have passed since the last one. Collects fees and mints the treasury its cut, removes the position, snaps `price * (1 +- rangeBps)` to the tick spacing, swaps to the target ratio with a TWAP-based `minOut`, mints the new position with minimums derived from the same ratio. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP. |
 | `redeem` / `withdraw` | Oracle gate, harvest, then a pro-rata slice of idle balances and liquidity. The USDG leg is swapped back to the Stock Token with a Chainlink-based `minOut`. `withdraw` sends exactly the requested assets; `redeem` sends the actual proceeds, between `previewRedeem` and the shares' NAV. |
 | `redeemInKind` | The same pro-rata slice, paid out as both tokens. No oracle, no swap, no pause. If the Stock Token transfer reverts for the receiver (issuer pause or blocklist) the Stock Token leg is credited to the receiver and claimed later with `claimStockOwed(to)`. |
 
@@ -37,7 +37,7 @@ Every value-in and value-out path (`deposit`, `mint`, `withdraw`, `redeem`, `reb
 
 | Role | Can | Cannot |
 |---|---|---|
-| Owner (multisig, two-step transfer) | pause deposits, set bounded parameters, set keeper, treasury, deposit cap, `instantDeploy` | move user funds, block withdrawals or `redeemInKind`, renounce |
+| Owner (multisig, two-step transfer) | pause deposits, set deposit cap and treasury; bounded parameters, keeper, `instantDeploy` and the spot-to-TWAP band through a 24-hour queue | move user funds, block withdrawals or `redeemInKind`, renounce |
 | Keeper | call `rebalance()` | anything else |
 | Anyone | `rebalance()` after 26 h, `redeemInKind`, all views | |
 
@@ -97,7 +97,7 @@ Installed with `forge install --no-git <repo>@<tag>`:
 | Uniswap/v4-core (TickMath, SqrtPriceMath only) | v4.0.0 | `e50237c43811bd9b526eff40f26772152a42daba` |
 | foundry-rs/forge-std | v1.17.0 | `f3dae6e6ee381f25eb6a246f7da9b85c91a68219` |
 
-Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. Runtime code is 24,245 bytes, under the 24,576 byte limit.
+Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. StockVault's runtime code is 23,223 bytes, under the 24,576 byte limit; the pure tick and liquidity maths sit in `VaultMath`, deployed by each vault's constructor.
 
 ## Test
 
