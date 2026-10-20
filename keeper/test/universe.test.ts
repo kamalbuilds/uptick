@@ -63,11 +63,20 @@ describe("data/universe.json, read from the chain", () => {
     expect(u.tokens.every((t: any) => t.has_code)).toBe(true);
     for (const t of u.tokens) expect(rowVerdict(t)).toEqual({ eligible: t.eligible, reason: t.reason });
   });
-  test("NVDA passes and TSLA fails on volume and depth, the replay's two reference cases", () => {
+  test("NVDA passes; TSLA clears the volume floor and is held out by depth alone", () => {
     expect(by("NVDA").eligible).toBe(true);
     expect(by("TSLA").eligible).toBe(false);
-    expect(by("TSLA").pool.volume_usd_per_day).toBeLessThan(RULE.minVolume7dUsdPerDay);
+    expect(by("TSLA").pool.volume_usd_per_day).toBeGreaterThanOrEqual(RULE.minVolume7dUsdPerDay);
     expect(by("TSLA").pool.vault_share_100k).toBeGreaterThan(RULE.maxVaultShare);
+    expect(by("TSLA").reason).toContain("of in-range liquidity");
+  });
+  test("a feed token under the volume floor is rejected on volume, and the floor is USD 100K/day", () => {
+    expect(RULE.minVolume7dUsdPerDay).toBe(100_000);
+    const thin = u.tokens.filter((t: any) => t.feed && t.pool && t.pool.volume_usd_per_day < RULE.minVolume7dUsdPerDay);
+    expect(thin.length).toBeGreaterThan(0);
+    for (const t of thin) { expect(t.eligible).toBe(false); expect(t.reason).toContain("7-day volume"); }
+    const admitted = u.tokens.filter((t: any) => t.feed && t.pool && t.pool.volume_usd_per_day >= RULE.minVolume7dUsdPerDay);
+    expect(admitted.some((t: any) => t.pool.volume_usd_per_day < 1_000_000)).toBe(true); // the old USD 1M floor would have dropped these
   });
   test("tokens without a feed are never eligible, whatever their pools carry", () => {
     const noFeed = u.tokens.filter((t: any) => !t.feed);

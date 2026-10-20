@@ -3,11 +3,11 @@
 export const VAULT_CAPITAL_USD = 100_000;
 export const RANGE_PCT = 5;
 
-/** The rule. A Stock Token is eligible when it has a Chainlink feed AND its deepest USDG pool is deep and busy enough
- *  that a USD 100,000 vault is a small share of it. Thresholds come from the replay: NVDA (about USD 10.5M/day) supports
- *  the vault, TSLA (about USD 0.2M/day) does not. */
+/** The rule. A Stock Token is eligible for a vault when it has a Chainlink feed AND its deepest USDG pool is deep and busy
+ *  enough that a USD 100,000 vault is a small share of it. The volume floor admits a token to a vault; the replay gate in
+ *  keeper/src/evidence.ts decides whether deposits open, reduce or close. */
 export const RULE = {
-  minVolume7dUsdPerDay: 1_000_000, // pool volume, 7-day average
+  minVolume7dUsdPerDay: 100_000, // pool volume, 7-day average
   maxVaultShare: 0.2, // the vault's share of in-range liquidity once deposited: V / (depth + V)
   maxFeedDeviationBps: 300, // pool price vs Chainlink at read time
   maxFeedAgeS: 86_400 + 600 + 3 * 86_400, // a feed silent beyond heartbeat plus a long weekend is broken, not closed
