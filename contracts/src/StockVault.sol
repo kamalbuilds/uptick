@@ -502,10 +502,11 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         return _convertToAssets(shares, Math.Rounding.Floor) * (1e4 - params.exitBufferBps) / 1e4 * (1e6 - poolFee) / 1e6;
     }
 
-    /// @dev Shares burned to receive exactly `assets`: fair shares for assets grossed up by the exit buffer and the
-    /// pool fee.
+    /// @dev Shares burned to receive exactly `assets`: fair shares for assets grossed up by the pool fee and then the
+    /// exit buffer, the inverse of previewRedeem's buffer-then-fee order, so withdraw(maxWithdraw(owner)) never asks for
+    /// more shares than the owner holds.
     function previewWithdraw(uint256 assets) public view override returns (uint256) {
-        uint256 gross = Math.ceilDiv(Math.ceilDiv(assets * 1e4, 1e4 - params.exitBufferBps) * 1e6, 1e6 - poolFee);
+        uint256 gross = Math.ceilDiv(Math.ceilDiv(assets * 1e6, 1e6 - poolFee) * 1e4, 1e4 - params.exitBufferBps);
         return _convertToShares(gross, Math.Rounding.Ceil);
     }
 
