@@ -33,7 +33,7 @@ function niceTicks(min: number, max: number, want: number): number[] {
 
 const bandAt = (c: PriceChart, t: number) => c.bands.find((b) => t >= b.from && t < b.to) ?? c.bands[c.bands.length - 1];
 
-/** The pool price against the strategy band: the band steps to the oracle price at each NYSE open, the line is the pool price. */
+/** The pool price against the strategy band: the band steps to the oracle price at 02:00 UTC after each NYSE session, the line is the pool price. */
 export function BandChart({ symbol, chart, compact = false }: { symbol: string; chart: PriceChart; compact?: boolean }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
@@ -124,7 +124,7 @@ export function BandChart({ symbol, chart, compact = false }: { symbol: string; 
       {!compact && (
         <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-body">
           <li className="flex items-center gap-2"><span className="h-0.5 w-5 bg-ink" aria-hidden />Pool price</li>
-          <li className="flex items-center gap-2"><span className="h-3.5 w-5 rounded-[3px] border-y-[1.5px] border-positive-deep/55 bg-primary-pale" aria-hidden />Band, {chart.bandPct}% around the Chainlink price, re-centred at each NYSE open</li>
+          <li className="flex items-center gap-2"><span className="h-3.5 w-5 rounded-[3px] border-y-[1.5px] border-positive-deep/55 bg-primary-pale" aria-hidden />Band, {chart.bandPct}% around the Chainlink price, re-centred at 02:00 UTC after each NYSE session</li>
           <li className="flex items-center gap-2"><span className="h-0.5 w-5 bg-warning-deep" aria-hidden />Outside the band</li>
         </ul>
       )}

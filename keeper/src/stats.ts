@@ -16,7 +16,7 @@ let tickers: Ticker[] = loadTickers();
 
 export interface Band { from: number; to: number; center: number; lower: number; upper: number }
 
-/** The strategy band: +-pct around the latest Chainlink round at each NYSE open + 5 min, held until the next recentre.
+/** The strategy band: +-pct around the latest Chainlink round at 02:00 UTC after each NYSE session, held until the next recentre.
  *  Weekends and holidays carry the previous band. Times are unix seconds; `cl` is [ts, usd] sorted by ts. */
 export function bandSegments(cl: [number, number][], fromSec: number, toSec: number, pct: number): Band[] {
   const out: Band[] = [];

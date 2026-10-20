@@ -18,7 +18,7 @@ Screen: web app, NVDA vault.
 Say: "This is NVDA. Every USDG pool and fee tier, measured on the chain's own swaps." Open the tier comparison: fee per dollar of 1 hour markout for each tier, out-of-sample. Open the session evidence: NYSE hours, weeknights, weekends for the selected pool.
 
 Say: "The engine picked this pool and tier on the first half of the window and scored it on the second. That is the number the vault acts on." Connect, deposit NVDA in one click, show shares minted and the position range around the Chainlink price.
-Open the stats panel: fees lifetime, 24 h, 7 d, share price. "The NVDA vault replays at 40.6 percent fee APR over 30 days, recentred every morning at the NYSE open."
+Open the stats panel: fees lifetime, 24 h, 7 d, share price. "The NVDA vault replays at 40.9 percent fee APR over 30 days, recentred at 02:00 UTC after every NYSE session."
 
 ## 1:25 to 2:15 Killer moment 2: a skim hook reverts against the cap
 

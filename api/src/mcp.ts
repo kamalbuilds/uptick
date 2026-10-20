@@ -205,7 +205,7 @@ function getVaultEvidence(id: string): McpToolResult {
     gate: {
       state: gate.state,
       rule:
-        "Open when the lower of the two replay halves keeps at least the floor APR; between the floor and break-even is reduced with a per-transaction cap; below the floor is closed.",
+        "Open when the lower of the two replay halves keeps at least break-even; between the floor APR and break-even it is reduced with a per-transaction cap; below the floor it is closed.",
       reason: gate.reason,
       floor_apr: gate.floor_apr,
       worst_half_apr: gate.worst_half_apr,

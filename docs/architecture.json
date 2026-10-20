@@ -50,7 +50,7 @@
           "web",
           "feed"
         ],
-        "note": "The keeper recentres at the NYSE open; the stats API serves fee APR and the tier comparison."
+        "note": "The keeper recentres at 02:00 UTC after each NYSE session; the stats API serves fee APR and the tier comparison."
       }
     ],
     "viewBox": [
@@ -319,7 +319,7 @@
       "items": [
         "One click per Stock Token",
         "Deposits into the selected pool and tier",
-        "Recentred daily at the NYSE open"
+        "Recentred at 02:00 UTC after each NYSE session"
       ]
     },
     {

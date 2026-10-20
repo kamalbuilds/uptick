@@ -161,7 +161,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
       </div>
       <ol style="font-size:25px;line-height:1.4;margin:26px 0 0 28px;color:var(--ink)">
         <li>Every value-in and value-out passes an oracle gate: Chainlink fresh, TWAP and spot within bounds.</li>
-        <li>Keeper recentres daily at the NYSE open, 13:35 UTC in EDT, after an <b>eth_call</b> simulation passes.</li>
+        <li>Keeper recentres at 02:00 UTC after each NYSE session, after an <b>eth_call</b> simulation passes.</li>
         <li><b>redeemInKind</b> pays both tokens with no oracle, no swap, no pause.<sup>1</sup></li>
       </ol>
     </div>
@@ -187,7 +187,7 @@ th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute
       2.99% under cap 300 : passes 60/60<br>
       delete the cap revert : tests go red; restore : green
     </div>
-    <div class="card" style="flex:.8;background:var(--lime);color:var(--ink)"><div class="num" style="font-size:96px">40.6%</div><div class="lab" style="color:var(--ink)">NVDA vault fee APR, 30 day replay, daily recentre, 5% band<sup>3</sup></div></div>
+    <div class="card" style="flex:.8;background:var(--lime);color:var(--ink)"><div class="num" style="font-size:96px">40.9%</div><div class="lab" style="color:var(--ink)">NVDA vault fee APR, 30 day replay, daily recentre, 5% band<sup>3</sup></div></div>
   </div>
   <div class="fn"><b>Sources.</b> [1] spikes/capped-hooks/FINDINGS.md (verdict table, mutation run, gas table). [2] spikes/stock-vaults/FINDINGS.md. [3] stock-vaults-app/README.md, Evidence table (keeper /vaults).</div>
 </section>

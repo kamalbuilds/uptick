@@ -14,7 +14,7 @@ bun src/keeper.ts                         # live loop, needs VAULT_KEEPER_KEY in
 Per vault, every 60 s:
 
 1. Reads pool `slot0`, the Chainlink proxy `latestRoundData`, and the vault `currentRange()`.
-2. Decides a trigger. `scheduled`: NYSE trading day, 5 minutes after the open (13:35 UTC in EDT, 14:35 UTC in EST), before the close, nothing sent since the slot. `out_of_range`: pool tick outside the vault range for 30 minutes and at least 2 hours since the last rebalance (the spike engine parameters). Weekends and NYSE holidays never trigger.
+2. Decides a trigger. `scheduled`: 02:00 UTC on the evening after each NYSE session (22:00 ET in EDT, 21:00 ET in EST), within a 6 hour window, nothing sent since the slot. `out_of_range` applies during NYSE trading days only. `out_of_range`: pool tick outside the vault range for 30 minutes and at least 2 hours since the last rebalance (the spike engine parameters). Weekends and NYSE holidays never trigger.
 3. Guards: Chainlink age at most 87,000 s (24 h heartbeat plus grace) and pool vs Chainlink deviation at most 200 bps. A failed guard logs `blocked_by_guard` and retries next minute until the close.
 4. `eth_call` simulation of `rebalance()`. Only a successful simulation is signed and sent. The receipt wait retries through RPC errors and falls back to a direct receipt lookup. Result is read from the receipt status.
 

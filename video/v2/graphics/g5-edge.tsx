@@ -19,8 +19,8 @@ export default function Graphic({ time, width, height }) {
         {card(api, "Public evidence API", (
           <div style={{ color: C.canvas, fontSize: 36, lineHeight: 1.5, fontFamily: "Inter, sans-serif" }}>
             <div>GET /vaults/nvda</div>
-            <div style={{ color: C.lime }}>gate: reduced</div>
-            <div>fee 40.6% · kept -0.4%</div>
+            <div style={{ color: C.lime }}>gate: open</div>
+            <div>fee 40.9% · kept +1.8%</div>
             <div>842,504 swaps</div>
           </div>
         ))}

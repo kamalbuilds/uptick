@@ -68,7 +68,7 @@ const CORS_HEADERS: Record<string, string> = {
 
 const GATE = {
   floor_apr: -20,
-  rule: "open when the lower of the two replay halves keeps at least -20% APR",
+  rule: "open when the lower of the two replay halves keeps at least break-even; between -20% and break-even it is reduced with a $25,000 per-transaction cap; below -20% it is closed",
 };
 
 function json(body: unknown, status = 200): Response {
