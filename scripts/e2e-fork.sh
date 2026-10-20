@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # End-to-end run of every user path against the local Robinhood Chain fork (scripts/fork-up.sh must be running on :8545).
+# Uses the NVDA vault the VaultFactory deployed and the factory-bound router, both read from ~/.cache/uptick-fork/fork.json.
 # Prints `PASS <step>` / `FAIL <step>: <detail>` and exits non-zero at the first broken step. Each step asserts a
 # post-condition only completion can produce (balance deltas, share deltas, decoded event logs), never a tx hash alone.
 # The whole run sits between evm_snapshot and evm_revert, so the shared fork is unchanged afterwards (E2E_KEEP=1 skips the revert).
@@ -22,6 +23,7 @@ SWAPROUTER=0xCaf681a66D020601342297493863E78C959E5cb2
 FEED=0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15
 A0=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266   # deployer, vault owner and keeper
 USER=0x70997970C51812dc3A010C7d01b50e0d17dc79C8  # anvil account 1: the fresh user
+USER2=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 # anvil account 4: a second fresh user, for the same-block exit checks
 TREASURY=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 TRADER=0x90F79bf6EB2c4f870365E785982E1f101E93b906 # anvil account 3: swap volume
 NVDA_NS=0x52c63247e1f47db19d5ce0460030c497f067ca4cebf71ba98eeadabe20bace00 # OZ ERC-7201 ERC20 storage base: balance slot = keccak(holder . NVDA_NS)
@@ -46,6 +48,7 @@ cleanup() {
   if [ $rc -ne 0 ] && [ ! -f "$TMP/failed" ]; then
     report "FAIL $STEP: unexpected error (exit $rc) near line $(cat "$TMP/errline" 2>/dev/null || echo '?')"
   fi
+  cast rpc anvil_setAutomine true -r "$R" >/dev/null 2>&1 || true   # a failure between the automine-off steps must not leave the fork not mining
   if [ -n "$SNAP" ] && [ "${E2E_KEEP:-0}" != 1 ]; then
     cast rpc evm_revert "$SNAP" -r "$R" >/dev/null 2>&1 || report "WARN fork revert failed, run scripts/fork-up.sh state check"
   fi
@@ -100,6 +103,12 @@ uncollected() { cast call "$V" 'positionInfo()((uint256,int24,int24,uint128,uint
 pps() { call "$V" 'convertToAssets(uint256)(uint256)' 1000000000000000000000000; }
 tick() { cast call "$POOL" 'slot0()(uint160,int24,uint16,uint16,uint16,uint8,bool)' -r "$R" | sed -n 2p | num; }
 health() { cast call "$V" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n 1p | num; }
+# spot-to-TWAP distance in bp of price (price is the square of sqrtPrice), as the vault's health() reports both
+off_twap_bps() {
+  python3 -c "import sys;t,s=map(int,sys.argv[1:]);print(abs(s*s-t*t)*10000//(t*t))" $(cast call "$V" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n '5p;6p' | num); }
+# the vault refuses deposits and rebalances while spot sits more than 10 bp from the 600 s TWAP: let one window pass with no trades
+gate_ready() { [ "$(off_twap_bps)" -le 5 ] || settle; }
+settle() { local before; before=$(off_twap_bps); warp $(( $(ts) + 700 )); chk "TWAP caught up with spot (was ${before} bp apart, now at most 1)" "$(off_twap_bps) <= 1"; }
 feedupdated() { cast call "$FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | sed -n 4p | num; }
 swap() { # FROM tokenIn tokenOut amountIn -> receipt (fee 500 pool, recipient = FROM)
   send "$1" "$SWAPROUTER" 'exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))(uint256)' "($2,$3,500,$1,$4,0,0)" >/dev/null
@@ -107,11 +116,17 @@ swap() { # FROM tokenIn tokenOut amountIn -> receipt (fee 500 pool, recipient = 
 
 # ---------------------------------------------------------------- 00 preflight
 [ -f "$FORK_JSON" ] || die "no $FORK_JSON, start scripts/fork-up.sh"
-V=$(jq -r .vault "$FORK_JSON")
+V=$(jq -r '.vaults.NVDA.address // empty' "$FORK_JSON"); ROUTER=$(jq -r '.router // empty' "$FORK_JSON"); FACTORY=$(jq -r '.factory // empty' "$FORK_JSON")
+[ -n "$V" ] && [ -n "$ROUTER" ] && [ -n "$FACTORY" ] || die "fork.json lacks vaults.NVDA, router or factory: run scripts/fork-up.sh on the current bytecode"
 cast chain-id -r "$R" >"$TMP/cid" 2>&1 || die "no RPC at $R: $(cat "$TMP/cid")"
 chk "fork chain id" "$(cat "$TMP/cid") == 4663"
 [ "$(cast code "$V" -r "$R" | wc -c)" -gt 100 ] || die "no vault code at $V"
 chk "vault share decimals are 24" "$(call "$V" 'decimals()(uint8)') == 24"
+chk "NVDA vault is registered in the factory" "'$(call "$FACTORY" 'isVault(address)(bool)' "$V")' == 'true'"
+chk "router is bound to that factory" "'$(call "$ROUTER" 'registry()(address)' | tr A-Z a-z)' == '$(echo "$FACTORY" | tr A-Z a-z)'"
+chk "router slippageBps is 100" "$(call "$ROUTER" 'slippageBps()(uint256)') == 100"
+WANT_CAP=$(node "$APP/scripts/deploy-list.mjs" 2>/dev/null | jq -r '.[] | select(.symbol=="NVDA") | .depositCapTokens')
+chk "NVDA depositCap is the deploy-list cap" "$(call "$V" 'depositCap()(uint256)') == $WANT_CAP and $WANT_CAP > 0"
 chk "vault is keyed to anvil account 0" "'$(cast call "$V" 'keeper()(address)' -r "$R" | tr A-Z a-z)' == '$(echo $A0 | tr A-Z a-z)'"
 ANVIL0_KEY=$(cast wallet private-key "test test test test test test test test test test test junk") # public Foundry test mnemonic, account 0
 SNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
@@ -120,6 +135,9 @@ START_SUPPLY=$(call "$V" 'totalSupply()(uint256)')
 T0=$(ts)
 warp $((T0 + 1))   # anvil's wall clock can sit behind the head after a restart: pin the chain clock at the head first
 chk "chain clock moves forward" "$(ts) == $((T0 + 1))"
+echo "  info: spot is $(off_twap_bps) bp from the TWAP at start; instantDeploy=$(call "$V" 'instantDeploy()(bool)'), depositCap=$(call "$V" 'depositCap()(uint256)')" >&3
+if [ "$(off_twap_bps)" -gt 5 ]; then settle; fi
+chk "spot is within the 10 bp band of the TWAP before the first deposit" "$(off_twap_bps) <= 5"
 pass
 
 # ---------------------------------------------------------------- 01 fund the fresh user
@@ -143,22 +161,88 @@ dsh=$(py "$sh1 - $sh0")
 ev=$(evdata "$rc" "$V" 'Deposited(address,address,uint256,uint256,bool)'); [ -n "$ev" ] || die "no Deposited event"
 chk "Deposited.assets is the deposit" "$(word "${ev#*|}" 0) == $AMT"
 chk "Deposited.shares equals the share balance delta" "$(word "${ev#*|}" 1) == $dsh"
-chk "Deposited.deployed is true (position topped up)" "$(word "${ev#*|}" 2) == 1"
+chk "Deposited.deployed is false (factory vaults start with instantDeploy off: the deposit waits idle for the keeper)" "$(word "${ev#*|}" 2) == 0 and '$(call "$V" 'instantDeploy()(bool)')' == 'false'"
 chk "shares minted within 0.1% of previewDeposit" "abs($dsh - $prev) * 1000 <= $prev"
 chk "20 NVDA mints about 20 whole shares at 24 decimals" "abs($dsh - 20 * 10**24) * 100 <= 20 * 10**24"
 chk "user NVDA fell by the deposit" "$(bal "$NVDA" "$USER") == 100000000000000000000 - $AMT"
 chk "totalAssets grew by about the deposit (+-1%)" "abs(($ta1 - $ta0) - $AMT) * 100 <= $AMT"
-chk "position liquidity grew" "$liq1 > $liq0"
+chk "position liquidity unchanged (idle until the next rebalance)" "$liq1 == $liq0"
 SH_STEP2=$dsh
+pass
+
+step 02b-deposit-above-cap-reverts
+room=$(call "$V" 'maxDeposit(address)(uint256)' "$USER")
+chk "room under the cap is positive and finite" "$room > 0 and $room < 10**30"
+fund_nvda "$USER" $(py "$room * 2")
+rd=$(revdata "$USER" "$V" 'deposit(uint256,address)(uint256)' "$(py "$room + 1")" "$USER")
+chk "deposit one wei above maxDeposit reverts with the ERC-4626 max error" "'${rd:0:10}' == '$(cast sig 'ERC4626ExceededMaxDeposit(address,uint256,uint256)')'"
+fund_nvda "$USER" $(py "100 * 10**18 - $AMT")   # back to 100 NVDA less the 20 deposited
+chk "user NVDA is again 100 less the deposit" "$(bal "$NVDA" "$USER") == 100 * 10**18 - $AMT"
+pass
+
+step 02c-shares-locked-in-the-block-they-are-minted
+# A fresh account (no older shares to exit with). Automine off: deposit, redeem and transfer land in ONE block; the vault
+# must mint the deposit and refuse both exits. The lock is amount-aware, so an account that already held shares could
+# still move those; only the shares minted this block stay put.
+fund_nvda "$USER2" 5000000000000000000
+chk "USER2 starts with no shares" "$(bal "$V" "$USER2") == 0"
+send "$USER2" "$NVDA" 'approve(address,uint256)' "$V" 1000000000000000000 >/dev/null
+sh0=$(bal "$V" "$USER2"); n0=$(bal "$NVDA" "$USER2"); tr_before=$(bal "$V" "$TREASURY")
+nonce=$(cast nonce "$USER2" -r "$R")
+cast rpc anvil_setAutomine false -r "$R" >/dev/null
+asend() { cast send --unlocked --from "$USER2" --gas-limit 3000000 --nonce "$1" --async -r "$R" "${@:2}"; }
+h1=$(asend "$nonce" "$V" 'deposit(uint256,address)' 1000000000000000000 "$USER2") || die "deposit not accepted into the mempool"
+h2=$(asend $((nonce + 1)) "$V" 'redeem(uint256,address,address)' 500000000000000000000000 "$USER2" "$USER2") || die "redeem not accepted"
+h3=$(asend $((nonce + 2)) "$V" 'transfer(address,uint256)' "$TREASURY" 500000000000000000000000) || die "transfer not accepted"
+cast rpc anvil_mine 1 -r "$R" >/dev/null
+cast rpc anvil_setAutomine true -r "$R" >/dev/null
+r1=$(cast receipt "$h1" --json -r "$R"); r2=$(cast receipt "$h2" --json -r "$R"); r3=$(cast receipt "$h3" --json -r "$R")
+chk "all three txs are in the same block" "$(jq -r .blockNumber <<<"$r1") == $(jq -r .blockNumber <<<"$r2") == $(jq -r .blockNumber <<<"$r3")"
+chk "the deposit succeeded" "'$(jq -r .status <<<"$r1")' == '0x1'"
+chk "the same-block redeem was refused" "'$(jq -r .status <<<"$r2")' == '0x0'"
+chk "the same-block transfer was refused" "'$(jq -r .status <<<"$r3")' == '0x0'"
+for h in "$h2" "$h3"; do
+  out=$(cast rpc debug_traceTransaction "$h" '{"tracer":"callTracer"}' -r "$R" | jq -r '.output // empty')
+  chk "revert of $h is SharesLocked()" "'${out:0:10}' == '$(cast sig 'SharesLocked()')'"
+done
+dsh=$(py "$(bal "$V" "$USER2") - $sh0")
+chk "the deposit minted about one whole share and nothing left the account" "$dsh > 0 and abs($dsh - 10**24) * 100 <= 10**24 and $(bal "$V" "$TREASURY") == $tr_before"
+chk "user NVDA fell by exactly the deposit" "$(bal "$NVDA" "$USER2") == $n0 - 10**18"
+# next block: the lock is gone
+mine
+rc=$(send "$USER2" "$V" 'redeem(uint256,address,address)(uint256)' "$dsh" "$USER2" "$USER2")
+chk "one block later the same shares redeem" "$(bal "$V" "$USER2") == $sh0"
+pass
+
+# ---------------------------------------------------------------- 02d owner changes go through the 24 h queue
+step 02d-owner-changes-wait-in-the-queue
+SET_ID=$(cast calldata 'setInstantDeploy(bool)' true)
+rd=$(revdata "$A0" "$V" 'setInstantDeploy(bool)' true)
+chk "the owner cannot call setInstantDeploy directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
+rd=$(revdata "$A0" "$V" 'setKeeper(address)' "$USER")
+chk "the owner cannot call setKeeper directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
+rd=$(revdata "$A0" "$V" 'setSpotTwapBand(uint16)' 50)
+chk "the owner cannot call setSpotTwapBand directly (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
+rd=$(revdata "$USER" "$V" 'queueChange(bytes)' "$SET_ID")
+chk "a stranger cannot queue (OwnableUnauthorizedAccount)" "'${rd:0:10}' == '$(cast sig 'OwnableUnauthorizedAccount(address)')'"
+rd=$(revdata "$A0" "$V" 'queueChange(bytes)' "$(cast calldata 'setDepositCap(uint256)' 1)")
+chk "the queue accepts only the four timelocked setters (ChangeNotAllowed)" "'${rd:0:10}' == '$(cast sig 'ChangeNotAllowed()')'"
+rc=$(send "$A0" "$V" 'queueChange(bytes)' "$SET_ID")
+ev=$(evdata "$rc" "$V" 'ChangeQueued(bytes32,uint256,bytes)'); [ -n "$ev" ] || die "no ChangeQueued event"
+eta=$(word "${ev#*|}" 0); qts=$(cast block "$(jq -r .blockNumber <<<"$rc" | xargs printf '%d')" --field timestamp -r "$R")
+chk "ChangeQueued eta is queue time plus 24 h" "$eta == $qts + 86400"
+rd=$(revdata "$A0" "$V" 'executeChange(bytes)' "$SET_ID")
+chk "executeChange before the eta reverts ChangeTooEarly(eta)" "'${rd:0:10}' == '$(cast sig 'ChangeTooEarly(uint256)')' and int('${rd:10:64}',16) == $eta"
+send "$A0" "$V" 'cancelChange(bytes32)' "$(cast keccak "$SET_ID")" >/dev/null
+rd=$(revdata "$A0" "$V" 'executeChange(bytes)' "$SET_ID")
+chk "after cancelChange the change is gone (ChangeNotQueued)" "'${rd:0:10}' == '$(cast sig 'ChangeNotQueued()')'"
+chk "instantDeploy is still off" "'$(call "$V" 'instantDeploy()(bool)')' == 'false'"
 pass
 
 # ---------------------------------------------------------------- 03 router: USDG -> shares
 step 03-router-deposit-usdg
-cd "$APP/contracts"
-out=$(forge create src/UptickRouter.sol:UptickRouter --unlocked --from "$USER" --broadcast --json --rpc-url "$R" --constructor-args 100 2>&1) || die "forge create failed: $(printf '%s' "$out" | tail -3)"
-ROUTER=$(jq -r .deployedTo <<<"$out") || die "no deployedTo in: $out"
+gate_ready
 chk "router has code" "$(cast code "$ROUTER" -r "$R" | wc -c) > 100"
-chk "router slippageBps is 100" "$(call "$ROUTER" 'slippageBps()(uint256)') == 100"
 USDG_IN=10000000000   # 10,000 USDG
 send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" $USDG_IN >/dev/null
 quote=$(cast call --from "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$V" $USDG_IN 0 "$USER" -r "$R" | num)
@@ -183,6 +267,7 @@ SH_STEP3=$dsh
 pass
 
 step 03b-router-minout-reverts
+gate_ready
 ABSURD=$(py "$quote * 10")
 send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" $USDG_IN >/dev/null
 rd=$(revdata "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$V" $USDG_IN "$ABSURD" "$USER")
@@ -192,6 +277,29 @@ sh0=$(bal "$V" "$USER"); u0=$(bal "$USDG" "$USER")
 send_reverts "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)' "$V" $USDG_IN "$ABSURD" "$USER"
 chk "reverted deposit minted no shares" "$(bal "$V" "$USER") == $sh0"
 chk "reverted deposit kept the user's USDG" "$(bal "$USDG" "$USER") == $u0"
+send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 0 >/dev/null
+pass
+
+step 03c-router-refuses-unregistered-vaults
+NPM=0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3
+send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" $USDG_IN >/dev/null
+JUNK=0x000000000000000000000000000000000000dEaD
+rd=$(revdata "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$JUNK" $USDG_IN 0 "$USER")
+chk "depositUsdg on an arbitrary address reverts NotRegisteredVault(address)" "'${rd:0:10}' == '$(cast sig 'NotRegisteredVault(address)')' and int('${rd:10:64}',16) == int('$JUNK',16)"
+rd=$(revdata "$USER" "$ROUTER" 'redeemInKindMin(address,uint256,uint256,uint256,address)(uint256,uint256)' "$JUNK" 1 0 0 "$USER")
+chk "redeemInKindMin on an arbitrary address reverts NotRegisteredVault(address)" "'${rd:0:10}' == '$(cast sig 'NotRegisteredVault(address)')'"
+# a working StockVault of the same build on the same pool, deployed by hand, not by the factory
+out=$(cd "$APP/contracts" && forge create src/StockVault.sol:StockVault --unlocked --from "$A0" --broadcast --json --rpc-url "$R" \
+  --constructor-args "($NVDA,$USDG,$POOL,$NPM,$SWAPROUTER,$FEED,$A0,$A0,$TREASURY,0)" "(500,1000,100,100,30,90000,600,3600)" "Rogue NVDA" rogue 2>&1) || die "forge create rogue vault failed: $(printf '%s' "$out" | tail -3)"
+ROGUE=$(jq -r .deployedTo <<<"$out") || die "no deployedTo in: $out"
+chk "the hand-deployed vault has code and a healthy oracle gate (status Ok)" "$(cast code "$ROGUE" -r "$R" | wc -c) > 100 and $(cast call "$ROGUE" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n 1p | num) == 0"
+chk "the factory does not list it" "'$(call "$FACTORY" 'isVault(address)(bool)' "$ROGUE")' == 'false'"
+rd=$(revdata "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$ROGUE" $USDG_IN 0 "$USER")
+chk "the router refuses it: NotRegisteredVault(rogue)" "'${rd:0:10}' == '$(cast sig 'NotRegisteredVault(address)')' and int('${rd:10:64}',16) == int('$ROGUE',16)"
+u0=$(bal "$USDG" "$USER")
+send_reverts "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)' "$ROGUE" $USDG_IN 0 "$USER"
+chk "the refused deposit left the user's USDG and the router empty" "$(bal "$USDG" "$USER") == $u0 and $(bal "$USDG" "$ROUTER") == 0"
+chk "control: the same call on the registered vault is accepted (eth_call)" "$(cast call --from "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$V" $USDG_IN 0 "$USER" -r "$R" | num) > 0"
 send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 0 >/dev/null
 pass
 
@@ -224,6 +332,7 @@ dec=$(cast calldata-decode 'approve(address,uint256)' "$t0d"); chk "approve spen
 pass
 
 step 04b-mcp-stock-deposit-lands
+gate_ready
 sh0=$(bal "$V" "$USER"); n0=$(bal "$NVDA" "$USER")
 send "$USER" "$t0to" "$t0d" >/dev/null
 rc=$(send "$USER" "$t1to" "$t1d")
@@ -236,6 +345,7 @@ SH_STEP4=$dsh
 pass
 
 step 04c-mcp-usdg-zap-lands
+gate_ready
 MCP_USDG=$(mcp prepare_deposit "$(jq -nc --arg r "$USER" '{id:"nvda",amount:"2000",receiver:$r,asset:"usdg"}')")
 z0to=$(jq -r '.transactions[0].to' <<<"$MCP_USDG"); z1to=$(jq -r '.transactions[1].to' <<<"$MCP_USDG")
 z0d=$(jq -r '.transactions[0].data' <<<"$MCP_USDG"); z1d=$(jq -r '.transactions[1].data' <<<"$MCP_USDG")
@@ -307,8 +417,8 @@ chk "share price after harvest is not below the pre-swap price" "$pps_post >= $p
 chk "harvest did not dilute holders (post-harvest >= pre-harvest less 1e-9 rounding)" "$pps_post * 10**9 >= $pps_swaps * (10**9 - 1)"
 pass
 
-# ---------------------------------------------------------------- 06 keeper at a valid recentre slot
-step 06-keeper-rebalance
+# ---------------------------------------------------------------- 06 a large swap closes deposits and rebalance, the keeper waits, then rebalances
+step 06a-spot-off-twap-closes-deposits-and-rebalance
 lastreb=$(call "$V" 'lastRebalance()(uint256)'); tok0=$(call "$V" 'tokenId()(uint256)')
 minint=$(cast call "$V" 'params()(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)' -r "$R" | sed -n 8p | num)
 maxstale=$(cast call "$V" 'params()(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)' -r "$R" | sed -n 6p | num)
@@ -317,12 +427,43 @@ slot=$(NOW_MS=$((now * 1000)) bun -e "import {nextRecentreMs} from '$APP/keeper/
 chk "next recentre slot is 02:00 UTC" "$slot % 86400 == 7200"
 earliest=$(py "max($slot, $lastreb + $minint)")
 target=$(py "$earliest + 600")
-chk "warp target is inside the keeper's 6 h recentre window after the slot" "$target < $slot + 21600"
-chk "warp target keeps the Chainlink feed inside the vault maxStaleness ($maxstale s)" "$target - $fu < $maxstale"
-chk "warp target keeps the feed inside the keeper's 87,000 s guard" "$target - $fu < 87000"
+chk "warp target plus one TWAP window is inside the keeper's 6 h recentre window after the slot" "$target + 700 < $slot + 21600"
+chk "warp target keeps the Chainlink feed inside the vault maxStaleness ($maxstale s) with room for the TWAP window" "$target + 700 - $fu < $maxstale"
+chk "warp target keeps the feed inside the keeper's 87,000 s guard with the same room" "$target + 700 - $fu < 87000"
 chk "warp moves time forward" "$target > $now"
 warp "$target"
 chk "vault oracle gate is Ok at the slot (no mock needed)" "$(health) == 0"
+chk "no trades for hours: spot sits on the TWAP" "$(off_twap_bps) <= 1"
+send "$USER" "$NVDA" 'approve(address,uint256)' "$V" 10000000000000000000 >/dev/null
+chk "control: a deposit is accepted now (eth_call)" "$(cast call --from "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER" -r "$R" | num) > 0"
+cast call --from "$A0" "$V" 'rebalance()' -r "$R" >/dev/null 2>&1 || die "control: the keeper's rebalance does not simulate cleanly before the swap"
+liq_pre=$(liquidity)
+# one-way buys until spot is more than 10 bp off the TWAP, while the Chainlink gate (100 bp) stays Ok
+fund_usdg "$TRADER" 500000000000
+send "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPROUTER" 500000000000 >/dev/null
+buys=0
+while [ "$(off_twap_bps)" -lt 14 ] && [ $buys -lt 6 ]; do swap "$TRADER" "$USDG" "$NVDA" 30000000000; buys=$((buys + 1)); done
+OFF=$(off_twap_bps)
+echo "  info: $buys buys of 30,000 USDG put spot $OFF bp from the TWAP (band is 10 bp)" >&3
+chk "spot is more than the 10 bp band from the TWAP" "$OFF > 10 and $buys > 0"
+chk "the Chainlink gate is still Ok, so only the band can refuse (health status 0)" "$(health) == 0"
+sh0=$(bal "$V" "$USER"); n0=$(bal "$NVDA" "$USER")
+rd=$(revdata "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER")
+chk "deposit right after the swap reverts SpotOffTwap()" "'${rd:0:10}' == '$(cast sig 'SpotOffTwap()')'"
+send_reverts "$USER" "$V" 'deposit(uint256,address)' 1000000000000000000 "$USER"
+chk "the refused deposit minted nothing and took no NVDA" "$(bal "$V" "$USER") == $sh0 and $(bal "$NVDA" "$USER") == $n0"
+rd=$(revdata "$USER" "$V" 'mint(uint256,address)(uint256)' 1000000000000000000000000 "$USER")
+chk "mint right after the swap reverts SpotOffTwap()" "'${rd:0:10}' == '$(cast sig 'SpotOffTwap()')'"
+send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 1000000000 >/dev/null
+rd=$(revdata "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$V" 1000000000 0 "$USER")
+chk "the router zap reverts SpotOffTwap() too (the vault refuses its deposit)" "'${rd:0:10}' == '$(cast sig 'SpotOffTwap()')'"
+send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 0 >/dev/null
+rd=$(revdata "$A0" "$V" 'rebalance()')
+chk "the keeper's rebalance reverts SpotOffTwap()" "'${rd:0:10}' == '$(cast sig 'SpotOffTwap()')'"
+chk "control: exits are not gated by the band (redeemInKind eth_call succeeds)" "'$(cast call --from "$USER" "$V" 'redeemInKind(uint256,address,address)(uint256,uint256)' 1000000000000000000000 "$USER" "$USER" -r "$R" | sed -n 1p | num)' != ''"
+pass
+
+step 06b-keeper-skips-then-rebalances-once-the-twap-catches-up
 B0=$(cast block-number -r "$R")
 cat >"$TMP/clock.ts" <<EOF
 const off = Number(process.env.FORK_CLOCK_MS) - Date.now();
@@ -331,16 +472,30 @@ Date.now = () => real() + off;
 EOF
 # the keeper reads Date.now() for the schedule while the fork's chain clock sits days behind the wall clock: align them
 : >"$TMP/keeper.log"
-( cd "$APP/keeper" && RPC_URL="$R" VAULT_ADDRESS_NVDA="$V" VAULT_DEPLOY_BLOCK_NVDA="$(jq -r .deploy_block "$FORK_JSON")" POLL_S=2 \
+( cd "$APP/keeper" && RPC_URL="$R" VAULT_ADDRESS_NVDA="$V" VAULT_DEPLOY_BLOCK_NVDA="$(jq -r .vaults.NVDA.deploy_block "$FORK_JSON")" POLL_S=2 \
     VAULT_KEEPER_KEY="$ANVIL0_KEY" FORK_CLOCK_MS=$(( $(ts) * 1000 )) \
     bun --no-env-file --preload "$TMP/clock.ts" src/keeper.ts >"$TMP/keeper.log" 2>&1 & echo $! >"$TMP/keeper.pid" )
+kp=$(cat "$TMP/keeper.pid")
+nfail=0
+for _ in $(seq 90); do
+  nfail=$(grep -c '"event":"simulate_failed"' "$TMP/keeper.log" || true)
+  [ "$nfail" -ge 2 ] && break
+  grep -qE '"event":"(fatal|rebalanced|sent)"' "$TMP/keeper.log" && break
+  sleep 1
+done
+[ "$nfail" -ge 2 ] || die "keeper did not log two simulate_failed ticks while spot was off the TWAP: $(tail -4 "$TMP/keeper.log" | cut -c1-400)"
+kill -0 "$kp" 2>/dev/null || die "keeper process died on the SpotOffTwap revert: $(tail -3 "$TMP/keeper.log" | cut -c1-300)"
+chk "every simulate_failed line names SpotOffTwap" "$(grep '"event":"simulate_failed"' "$TMP/keeper.log" | grep -c 'SpotOffTwap') == $(grep -c '"event":"simulate_failed"' "$TMP/keeper.log")"
+chk "keeper sent nothing while the band was closed" "$(grep -cE '"event":"(sent|rebalanced)"' "$TMP/keeper.log" || true) == 0 and $(call "$V" 'lastRebalance()(uint256)') == $lastreb and $(call "$V" 'tokenId()(uint256)') == $tok0"
+echo "  info: keeper while closed: $(grep '"event":"simulate_failed"' "$TMP/keeper.log" | head -1 | jq -c '{event,action,error}' | cut -c1-260)" >&3
+settle
 done_k=0
 for _ in $(seq 120); do
   if grep -q '"event":"rebalanced"' "$TMP/keeper.log"; then done_k=1; break; fi
-  if grep -qE '"event":"(reverted|fatal|simulate_failed)"' "$TMP/keeper.log"; then break; fi
+  if grep -qE '"event":"(reverted|fatal)"' "$TMP/keeper.log"; then break; fi
   sleep 1
 done
-[ $done_k = 1 ] || die "keeper did not rebalance: $(tail -4 "$TMP/keeper.log" | cut -c1-400)"
+[ $done_k = 1 ] || die "keeper did not rebalance after the TWAP caught up: $(tail -4 "$TMP/keeper.log" | cut -c1-400)"
 killtree "$(cat "$TMP/keeper.pid")"; rm -f "$TMP/keeper.pid"
 echo "  info: keeper $(grep '"event":"simulate_ok"' "$TMP/keeper.log" | head -1 | jq -c '{trigger,note,guards_ok,chainlink_age_s,deviation_bps}')" >&3
 khash=$(grep '"event":"rebalanced"' "$TMP/keeper.log" | head -1 | jq -r .hash)
@@ -352,8 +507,11 @@ chk "exactly one Rebalanced event since the warp" "$(cast logs --from-block $((B
 kblock=$(cast block "$(jq -r .blockNumber <<<"$krc" | xargs printf '%d')" --field timestamp -r "$R")
 chk "lastRebalance advanced to the keeper tx block time" "$(call "$V" 'lastRebalance()(uint256)') == $kblock and $kblock > $lastreb"
 chk "position was re-minted (new tokenId)" "$(call "$V" 'tokenId()(uint256)') != $tok0 and $(call "$V" 'tokenId()(uint256)') != 0"
-rng=$(cast call "$V" 'currentRange()(int24,int24,uint256,uint256)' -r "$R"); lo=$(sed -n 3p <<<"$rng" | num); hi=$(sed -n 4p <<<"$rng" | num)
+chk "the rebalance deployed the users' idle deposits (liquidity grew)" "$(liquidity) > $liq_pre"
 px=$(cast call "$FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | sed -n 2p | num)
+idle=$(py "$(bal "$NVDA" "$V") + $(bal "$USDG" "$V") * 10**20 // $px")
+chk "idle inventory is under 2% of totalAssets after the deploy" "$idle * 50 < $(call "$V" 'totalAssets()(uint256)')"
+rng=$(cast call "$V" 'currentRange()(int24,int24,uint256,uint256)' -r "$R"); lo=$(sed -n 3p <<<"$rng" | num); hi=$(sed -n 4p <<<"$rng" | num)
 chk "new range brackets the Chainlink price" "$lo < $px < $hi"
 chk "new range is centred on the oracle within 1%" "abs(($lo + $hi) // 2 - $px) * 100 <= $px"
 chk "vault oracle gate still Ok" "$(health) == 0"
@@ -395,6 +553,7 @@ pass
 
 # ---------------------------------------------------------------- 08 stale feed blocks deposits
 step 08-stale-feed-deposit-reverts
+gate_ready
 fund_nvda "$USER" 10000000000000000000; fund_usdg "$USER" 5000000000
 send "$USER" "$NVDA" 'approve(address,uint256)' "$V" 1000000000000000000 >/dev/null
 send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 1000000000 >/dev/null
@@ -420,5 +579,6 @@ SNAP=""
 chk "head block is back at the start block" "$(cast block-number -r "$R") == $START_BLOCK"
 chk "vault supply is back to its start value" "$(call "$V" 'totalSupply()(uint256)') == $START_SUPPLY"
 chk "fresh user holds no USDG again" "$(bal "$USDG" "$USER") == 0"
-chk "router deployment is gone" "$(cast code "$ROUTER" -r "$R" | wc -c) <= 3"
+chk "the hand-deployed vault is gone" "$(cast code "$ROGUE" -r "$R" | wc -c) <= 3"
+chk "the factory router is still deployed" "$(cast code "$ROUTER" -r "$R" | wc -c) > 100"
 pass
