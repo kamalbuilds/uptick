@@ -106,7 +106,7 @@ def recentre_slots(ref, t0, t1):
 def v4_pool(name, pid, usdg0, fee, spacing, hooks, t_lo, t_hi):
     """Engine Pool.from_v4 reads its swaps and pool key from files; write the two it expects."""
     rows = pull.v4_rows(pid)
-    gz = os.path.join(ENGINE_DIR, "tmp-v4.json.gz"); sel = os.path.join(ENGINE_DIR, "tmp-v4-sel.json")
+    gz = os.path.join(ENGINE_DIR, f"tmp-v4-{os.getpid()}.json.gz"); sel = os.path.join(ENGINE_DIR, f"tmp-v4-sel-{os.getpid()}.json")  # per process: parallel replays must not share scratch files
     with gzip.open(gz, "wt") as f: json.dump({"swaps": {pid: rows}}, f)
     c0, c1 = (USDG, "0x0") if usdg0 else ("0x0", USDG)
     json.dump({pid: [name, c0, c1, fee, spacing, hooks]}, open(sel, "w"))

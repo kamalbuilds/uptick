@@ -48,14 +48,14 @@ describe("GET /vaults", () => {
     expect(body.every((v) => v.window_days === replay.window.days)).toBe(true);
   });
 
-  test("seventeen vaults: aapl, amd, amzn, googl, intc, nvda, pltr, qqq, spy and uso take deposits, the other seven are closed", async () => {
+  test("seventeen vaults: aapl, amd, amzn, googl, intc, meta, mu, nvda, qqq, spy and uso take deposits, the other six are closed", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const byId = Object.fromEntries(body.map((v) => [v.id, v.open]));
 
     expect(body.length).toBe(17);
     expect(byId).toEqual({
-      nvda: true, aapl: true, googl: true, amzn: true, pltr: true, qqq: true, spy: true, amd: true, intc: true, uso: true,
-      crcl: false, gme: false, meta: false, mstr: false, mu: false, spcx: false, tsla: false,
+      nvda: true, aapl: true, googl: true, amzn: true, meta: true, mu: true, qqq: true, spy: true, amd: true, intc: true, uso: true,
+      crcl: false, gme: false, pltr: false, mstr: false, spcx: false, tsla: false,
     });
   });
 
@@ -76,8 +76,8 @@ describe("GET /vaults", () => {
   test("every vault carries a gate state and a written reason", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const want: Record<string, string> = {
-      aapl: "open", nvda: "reduced", amzn: "reduced", googl: "reduced", spy: "reduced", pltr: "reduced", qqq: "reduced", amd: "reduced", intc: "reduced", uso: "reduced",
-      spcx: "closed", crcl: "closed", gme: "closed", meta: "closed", mstr: "closed", mu: "closed", tsla: "closed",
+      aapl: "open", googl: "open", nvda: "reduced", amzn: "reduced", spy: "reduced", meta: "reduced", mu: "reduced", qqq: "reduced", amd: "reduced", intc: "reduced", uso: "reduced",
+      spcx: "closed", crcl: "closed", gme: "closed", pltr: "closed", mstr: "closed", tsla: "closed",
     };
     expect(body.length).toBeGreaterThan(0);
     for (const v of body) {

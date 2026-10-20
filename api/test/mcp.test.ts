@@ -243,7 +243,7 @@ describe("deposit caps", () => {
   const vaults = (universeData as unknown as { vaults: Array<{ id: string; symbol: string; token: string; depositCapUsd: number; refPriceUsd: number; gate: { state: string } }> }).vaults;
   const by = (id: string) => vaults.find((v) => v.id === id)!;
   const ROUTER = "0x1111111111111111111111111111111111111111";
-  const withVaults = { VAULTS: JSON.stringify({ nvda: "0x6852Adb5Fce1D73c08A9b3Aa7edE9A03437ac2fE", aapl: "0x0000000000000000000000000000000000000a01", pltr: "0x0000000000000000000000000000000000000a02", qqq: "0x0000000000000000000000000000000000000a03" }), NETWORK: "robinhood-chain-fork", ROUTER };
+  const withVaults = { VAULTS: JSON.stringify({ nvda: "0x6852Adb5Fce1D73c08A9b3Aa7edE9A03437ac2fE", aapl: "0x0000000000000000000000000000000000000a01", meta: "0x0000000000000000000000000000000000000a02", qqq: "0x0000000000000000000000000000000000000a03" }), NETWORK: "robinhood-chain-fork", ROUTER };
   const usdg = (id: string, amount: string) => callTool("prepare_deposit", { id, amount, receiver: RECEIVER, asset: "usdg" }, withVaults);
 
   test("list_vaults and get_vault_evidence carry deposit_cap_usd from the universe", async () => {
@@ -287,14 +287,14 @@ describe("deposit caps", () => {
     expect(perTx.isError).toBe(true);
     expect(perTx.content[0].text).toContain("$25,000 per transaction");
     expect((await usdg("qqq", "25000")).isError).toBeUndefined();
-    // pltr: size below 25K, so the vault size is the stricter
-    expect(by("pltr").gate.state).toBe("reduced");
-    const pltrCap = by("pltr").depositCapUsd;
-    expect(pltrCap).toBeLessThan(25_000);
-    const size = await usdg("pltr", String(pltrCap + 1));
+    // meta: size below 25K, so the vault size is the stricter
+    expect(by("meta").gate.state).toBe("reduced");
+    const smallCap = by("meta").depositCapUsd;
+    expect(smallCap).toBeLessThan(25_000);
+    const size = await usdg("meta", String(smallCap + 1));
     expect(size.isError).toBe(true);
     expect(size.content[0].text).toContain("sized to its pool");
-    expect((await usdg("pltr", String(pltrCap))).isError).toBeUndefined();
+    expect((await usdg("meta", String(smallCap))).isError).toBeUndefined();
   });
 });
 

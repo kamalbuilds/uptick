@@ -14,7 +14,7 @@ export function revertName(e: unknown): string {
 }
 
 /**
- * eth_call of rebalance() as `from`. A revert (SpotOffTwap while spot sits off the TWAP, OracleUnhealthy, TooSoon, ...)
+ * eth_call of rebalance() as `from`. A revert (SpotOffTwap while spot sits off the TWAP, TwapOffOracle while the TWAP sits off Chainlink, OracleUnhealthy, TooSoon, ...)
  * comes back as { ok: false, error } so the caller logs it, sends nothing and tries again on its next tick.
  */
 export async function simulateRebalance(c: PublicClient, vault: Address, from: Address) {

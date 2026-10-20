@@ -10,6 +10,7 @@ export const vaultAbi = parseAbi([
   "event Rebalanced(int24 tickLower, int24 tickUpper, uint256 fees0, uint256 fees1)",
   "event FeesCollected(uint256 fees0, uint256 fees1, uint256 feeValueInStock, uint256 treasuryShares)",
   "error SpotOffTwap()",
+  "error TwapOffOracle()",
   "error OracleUnhealthy(uint8 status)",
   "error TooSoon()",
   "error NotKeeper()",

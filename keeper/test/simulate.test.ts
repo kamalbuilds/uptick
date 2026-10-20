@@ -23,6 +23,11 @@ test("SpotOffTwap in the eth_call simulation is returned by name, not thrown", a
   expect(r).toEqual({ ok: false, error: "SpotOffTwap()" });
 });
 
+test("TwapOffOracle in the eth_call simulation is returned by name, not thrown", async () => {
+  const r = await simulateRebalance(node(toFunctionSelector("TwapOffOracle()")), VAULT, KEEPER);
+  expect(r).toEqual({ ok: false, error: "TwapOffOracle()" });
+});
+
 test("OracleUnhealthy keeps its argument", async () => {
   const data = (toFunctionSelector("OracleUnhealthy(uint8)") + "2".padStart(64, "0")) as `0x${string}`;
   const r = await simulateRebalance(node(data), VAULT, KEEPER);
