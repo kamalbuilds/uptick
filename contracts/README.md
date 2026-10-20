@@ -16,9 +16,9 @@ A share is a pro-rata claim on three things the vault holds: idle balances of bo
 
 | Step | What happens |
 |---|---|
-| `deposit` / `mint` | Oracle gate, then the Stock Token is pulled in and shares are minted. With `instantDeploy` the vault also swaps to the ratio the range needs and adds liquidity in the same transaction. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP. Without `instantDeploy` the Stock Token sits idle, counted at face value, until the next rebalance. Shares minted in a block cannot be burned or transferred in that block. |
-| `rebalance()` | Keeper every `minRebalanceInterval`; anyone once 26 hours have passed since the last one. Collects fees and mints the treasury its cut, removes the position, snaps `price * (1 +- rangeBps)` to the tick spacing, swaps to the target ratio with a TWAP-based `minOut`, mints the new position with minimums derived from the same ratio. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP. |
-| `redeem` / `withdraw` | Oracle gate, harvest, then a pro-rata slice of idle balances and liquidity. The USDG leg is swapped back to the Stock Token with a Chainlink-based `minOut`. `withdraw` sends exactly the requested assets; `redeem` sends the actual proceeds, between `previewRedeem` and the shares' NAV. |
+| `deposit` / `mint` | Oracle gate, then the Stock Token is pulled in and shares are minted against the assets net of the entry fee. The fee (default: the pool's fee tier) stays in the vault, so it lifts the share price for everyone holding. `previewDeposit`, `previewMint` and `maxMint` include it to the wei. With `instantDeploy` the vault also swaps to the ratio the range needs and adds liquidity in the same transaction. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) below the TWAP; a spot above the TWAP cannot make shares cheaper, because deposits are priced at the lowest of Chainlink, TWAP and spot, so `UptickRouter.depositUsdg` can buy in the pool and deposit in one transaction at any size the pool and the Chainlink gate allow. Without `instantDeploy` the Stock Token sits idle, counted at face value, until the next rebalance. Shares minted in a block cannot be burned or transferred in that block. |
+| `rebalance()` | Keeper every `minRebalanceInterval`; anyone once 26 hours have passed since the last one. Collects fees and mints the treasury its cut, removes the position, snaps `price * (1 +- rangeBps)` to the tick spacing, swaps to the target ratio with a TWAP-based `minOut`, mints the new position with minimums derived from the same ratio. Refused while spot sits more than `maxSpotTwapBps` (default 10 bp) from the TWAP on either side, and while the TWAP sits more than `maxTwapOracleBps` (default 60 bp) from Chainlink, so a TWAP walked away from the feed is never traded against. |
+| `redeem` / `withdraw` | Oracle gate, harvest, then a pro-rata slice of idle balances and liquidity. The USDG leg is swapped back to the Stock Token with a Chainlink-based `minOut`. Every swap floor is the reference value less the pool fee less `slippageBps`, so a 1% pool and a 0.05% pool each keep the full `slippageBps` for price impact. `withdraw` sends exactly the requested assets; `redeem` sends the actual proceeds, between `previewRedeem` and the shares' NAV. |
 | `redeemInKind` | The same pro-rata slice, paid out as both tokens. No oracle, no swap, no pause. If the Stock Token transfer reverts for the receiver (issuer pause or blocklist) the Stock Token leg is credited to the receiver and claimed later with `claimStockOwed(to)`. |
 
 ## Oracle gate
@@ -31,13 +31,15 @@ Every value-in and value-out path (`deposit`, `mint`, `withdraw`, `redeem`, `reb
 4. TWAP within `maxDeviationBps` of Chainlink (default 100).
 5. Spot within `maxDeviationBps` of Chainlink.
 
+`rebalance` adds a sixth check: TWAP within `maxTwapOracleBps` of Chainlink (default 60 bp, 10 to 500 bp). The default is the width that holds 95% of the 10-minute TWAP gaps measured on the NVDA and PLTR pools over 36 hours, NYSE hours and off-hours.
+
 `health()` returns the status and the three prices without reverting, for keepers and the app.
 
 ## Roles
 
 | Role | Can | Cannot |
 |---|---|---|
-| Owner (multisig, two-step transfer) | pause deposits, set deposit cap and treasury; bounded parameters, keeper, `instantDeploy` and the spot-to-TWAP band through a 24-hour queue | move user funds, block withdrawals or `redeemInKind`, renounce |
+| Owner (multisig, two-step transfer) | pause deposits, set deposit cap and treasury; bounded parameters, keeper, `instantDeploy`, the spot-to-TWAP band, the TWAP-to-Chainlink band and the entry fee through a 24-hour queue (a queued change expires 7 days after its eta) | move user funds, block withdrawals or `redeemInKind`, renounce |
 | Keeper | call `rebalance()` | anything else |
 | Anyone | `rebalance()` after 26 h, `redeemInKind`, all views | |
 
@@ -51,8 +53,11 @@ Every value-in and value-out path (`deposit`, `mint`, `withdraw`, `redeem`, `reb
 | `slippageBps` | 100 | 1 to 500 |
 | `exitBufferBps` | 30 | 0 to 200 |
 | `maxStaleness` | 90,000 s | 1 h to 7 d |
-| `twapWindow` | 600 s | 600 s to 1 d |
+| `twapWindow` | 600 s | 600 s to 1,800 s, and no more than the pool's observation cardinality |
 | `minRebalanceInterval` | 6 h | 1 h to 24 h |
+| `maxSpotTwapBps` (own setter) | 10 | 1 to 50 |
+| `maxTwapOracleBps` (own setter) | 60 | 10 to 500 |
+| `entryFee` (own setter, in pool-fee pips: 500 = 0.05%) | the pool's fee tier (500, 3000 or 10000) | pool fee tier to 20,000 (2%) |
 
 Shares carry 24 decimals: the Stock Token's 18 plus a 6-digit virtual-share offset that makes first-depositor donation attacks cost more than they take.
 
@@ -85,6 +90,7 @@ src/StockVault.sol            the vault
 src/interfaces/IUniswapV3.sol minimal interfaces for pool, position manager, router, Chainlink
 script/Deploy.s.sol           env-driven deployment (simulates without --broadcast)
 test/                         fork tests against the real pool, router, position manager and tokens
+test/security/                review regressions: sandwiches, TWAP drag, entry fee, fee-aware floors on every tier
 ```
 
 ## Dependencies
@@ -97,7 +103,7 @@ Installed with `forge install --no-git <repo>@<tag>`:
 | Uniswap/v4-core (TickMath, SqrtPriceMath only) | v4.0.0 | `e50237c43811bd9b526eff40f26772152a42daba` |
 | foundry-rs/forge-std | v1.17.0 | `f3dae6e6ee381f25eb6a246f7da9b85c91a68219` |
 
-Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. StockVault's runtime code is 23,223 bytes, under the 24,576 byte limit; the pure tick and liquidity maths sit in `VaultMath`, deployed by each vault's constructor.
+Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. StockVault's runtime code is 24,479 bytes, under the 24,576 byte limit; the pure tick and liquidity maths sit in `VaultMath`, deployed by each vault's constructor.
 
 ## Test
 
@@ -110,6 +116,7 @@ forge test --match-contract StockVaultTest   # deposits, rebalance, fees
 forge test --match-contract StockVaultSafetyTest
 forge test --match-contract StockVaultFuzzTest
 forge test --match-contract StockVaultInvariantTest
+forge test --match-path 'test/security/*' -j 1  # review regressions on the thin PLTR, GME and MSTR pools
 ```
 
 What is exercised against the real contracts: deposit and withdraw round trips with real NVDA; rebalance after the pool is pushed through the router; fee accrual checked against the pool's own fee growth; the performance-fee share mint checked against its closed form; a 3% pool push that must block deposits (same block, via the spot check; after the TWAP window, via the TWAP check); a stale feed that must block `rebalance`; permissionless `rebalance` at 26 hours; `redeemInKind` with the vault paused and the feed down; a Stock Token transfer that reverts; the first-depositor donation attack; fuzzed deposits and withdrawals with the invariant that the sum of share values never exceeds total assets; a stateful invariant run over deposits, redeems, in-kind redeems and rebalances; and a second vault on the SPCX pool, where the Stock Token is token0, so both token orderings are covered.
