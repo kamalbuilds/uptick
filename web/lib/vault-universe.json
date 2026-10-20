@@ -1,7 +1,7 @@
 {
   "chainId": 4663,
   "source": "keeper/data/universe.json + keeper/data/replay.json",
-  "universeBlock": 90722925,
+  "universeBlock": 93082560,
   "vaults": [
     {
       "id": "crcl",
@@ -24,6 +24,28 @@
       "feeAprPct": 174.96399879308717,
       "keptAprPct": -114.23707299127304,
       "keptAprUpperPct": -93.29809454422386
+    },
+    {
+      "id": "uso",
+      "symbol": "USO",
+      "name": "United States Oil Fund Stock Token",
+      "token": "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344",
+      "pool": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x75a9c76Ef439e2C7c2E5a34Ab105EcFe3766431c",
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -24.9% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -24.944021590576458,
+        "swaps": 59728,
+        "days": 30
+      },
+      "feeAprPct": 92.70716121786042,
+      "keptAprPct": -21.882707665160193,
+      "keptAprUpperPct": -18.652188477239445
     },
     {
       "id": "spcx",
@@ -90,6 +112,50 @@
       "feeAprPct": 38.917153107140514,
       "keptAprPct": 4.079477473287361,
       "keptAprUpperPct": 8.138906465328887
+    },
+    {
+      "id": "amzn",
+      "symbol": "AMZN",
+      "name": "Amazon Stock Token",
+      "token": "0x12f190a9F9d7D37a250758b26824B97CE941bF54",
+      "pool": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0xD5a1508ceD74c084eBf3cBe853e2C968fB2a651C",
+      "open": true,
+      "gate": {
+        "state": "reduced",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -9.9% a year, between the -20% floor and break-even, across 42,307 swaps. Deposits are capped at $25,000 per transaction.",
+        "floor_apr": -20,
+        "worst_half_apr": -9.906868756267025,
+        "swaps": 42307,
+        "days": 30
+      },
+      "feeAprPct": 34.20400050206948,
+      "keptAprPct": -9.906868756267025,
+      "keptAprUpperPct": -4.392805183579861
+    },
+    {
+      "id": "spy",
+      "symbol": "SPY",
+      "name": "SPDR S&P 500 ETF Trust Stock Token",
+      "token": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
+      "pool": "0xa7Bb1AC63BBaB0C44316E6c8C455213441689167",
+      "feeTierPips": 500,
+      "feeTier": "0.05%",
+      "feed": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
+      "open": true,
+      "gate": {
+        "state": "reduced",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -0.5% a year, between the -20% floor and break-even, across 210,050 swaps. Deposits are capped at $25,000 per transaction.",
+        "floor_apr": -20,
+        "worst_half_apr": -0.5453251559514076,
+        "swaps": 210050,
+        "days": 30
+      },
+      "feeAprPct": 6.8480875144883155,
+      "keptAprPct": -0.5453251559514076,
+      "keptAprUpperPct": 0.5389345303368354
     }
   ]
 }

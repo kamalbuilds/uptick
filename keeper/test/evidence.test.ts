@@ -50,9 +50,9 @@ describe("evidence built from data/replay.json", () => {
     });
   }
 
-  test("the open set is exactly NVDA and GOOGL", () => {
+  test("the deposit-taking set is exactly AMZN, GOOGL, NVDA and SPY", () => {
     const open = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).open).sort();
-    expect(open).toEqual(["GOOGL", "NVDA"]);
+    expect(open).toEqual(["AMZN", "GOOGL", "NVDA", "SPY"]);
   });
 
   test("NVDA clears break-even on its weaker half, so its gate is open with no cap", () => {
@@ -77,7 +77,7 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
   });
 
-  test("every token's gate state matches its weaker half, and the reduced set is exactly GOOGL", () => {
+  test("every token's gate state matches its weaker half, NVDA is the only open vault, AMZN, GOOGL and SPY are reduced", () => {
     for (const s of syms) {
       const ev: any = buildEvidence(replay.tokens[s], replay);
       const worst = ev.gate.worst_half_apr;
@@ -85,9 +85,11 @@ describe("evidence built from data/replay.json", () => {
       expect(ev.gate.reason.startsWith(ev.gate.state === "open" ? "Open" : ev.gate.state === "reduced" ? "Reduced" : "Closed")).toBe(true);
     }
     const reduced = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "reduced").sort();
-    expect(reduced).toEqual(["GOOGL"]);
+    expect(reduced).toEqual(["AMZN", "GOOGL", "SPY"]);
+    const opened = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "open").sort();
+    expect(opened).toEqual(["NVDA"]);
     const closed = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "closed").sort();
-    expect(closed).toEqual(["CRCL", "SPCX"]);
+    expect(closed).toEqual(["CRCL", "SPCX", "USO"]);
   });
 
   test("a half at or above break-even opens the gate outright, with no cap", () => {
