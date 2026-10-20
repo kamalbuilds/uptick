@@ -245,6 +245,21 @@ describe("GET /keeper/vaults/:id (the stats shape the web app reads)", () => {
     }
   });
 
+  test("the list serves all seventeen, best replay fee APR first, each entry equal to its own /keeper/vaults/:id answer", async () => {
+    const res = await get("/keeper/vaults");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    const body = (await res.json()) as { count: number; window: { days: number }; vaults: Stats[] };
+    expect(body.count).toBe(17);
+    expect(body.vaults.length).toBe(17);
+    expect(body.window.days).toBe(replay.window.days);
+    const aprs = body.vaults.map((v) => v.fee_apr_pct.replay_30d);
+    expect([...aprs].sort((a, b) => b - a)).toEqual(aprs);
+    expect(new Set(body.vaults.map((v) => v.id)).size).toBe(17);
+    const one = (await (await get("/keeper/vaults/spy")).json()) as Stats;
+    expect(body.vaults.find((v) => v.id === "spy")).toEqual(one);
+  });
+
   test("ids are case-insensitive, unknown ids are 404 JSON, every answer carries CORS, OPTIONS preflights", async () => {
     expect(((await (await get("/keeper/vaults/NVDA")).json()) as Stats).id).toBe("nvda");
     const missing = await get("/keeper/vaults/nope");

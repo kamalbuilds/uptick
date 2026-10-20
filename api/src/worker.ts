@@ -2,7 +2,7 @@ import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
 import { handleMcp, type Env } from "./mcp";
 import LLMS from "./llms";
-import { keeperVault } from "./keeper";
+import { keeperList, keeperVault } from "./keeper";
 
 interface HalfStats {
   fee_apr_pct: number | null;
@@ -202,6 +202,7 @@ function handleRequest(
   }
 
   // The web app's stats route (keeper/src/stats.ts shape), so the static site needs no keeper process.
+  if (path === "/keeper/vaults") return keeperList(env, UNIVERSE.vaults, REPLAY).then((body) => json(body));
   const stats = path.match(/^\/keeper\/vaults\/([^/]+)$/);
   if (stats) return keeperStats(decodeURIComponent(stats[1]).toLowerCase(), env);
 

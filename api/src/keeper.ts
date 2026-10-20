@@ -60,3 +60,10 @@ export async function keeperVault(env: Env, vault: UniverseVault, replay: Replay
     chart: null,
   };
 }
+
+/** keeper/src/stats.ts GET /vaults: every vault, best 30-day replay fee APR first. One unreadable vault never blanks the list: its chain read fails inside keeperVault and falls back to the replay entry. */
+export async function keeperList(env: Env, vaults: UniverseVault[], replay: Replay & { tokens: Record<string, { capital_usd?: number }> }) {
+  const rows = await Promise.all(vaults.map((v) => keeperVault(env, v, replay, replay.tokens[v.symbol])));
+  rows.sort((a, b) => (b.fee_apr_pct.replay_30d ?? -1) - (a.fee_apr_pct.replay_30d ?? -1));
+  return { count: rows.length, window: replay.window, vaults: rows };
+}
