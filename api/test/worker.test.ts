@@ -200,3 +200,129 @@ describe("GET /llms.txt", () => {
     expect(body).not.toContain("](/");
   });
 });
+
+describe("GET /keeper/vaults/:id (the stats shape the web app reads)", () => {
+  interface Stats {
+    id: string;
+    ticker: string;
+    source: string;
+    pool: string;
+    vault: string | null;
+    tvl_usd: number | null;
+    price_per_share_raw: string | null;
+    fees_lifetime_view_raw: string | null;
+    onchain_error?: string;
+    open: boolean;
+    chart: unknown;
+    fee_apr_pct: { replay_30d: number; "7d": number | null };
+    replay: { window: { days: number } };
+    evidence: { open: boolean; gate: { state: string }; pools: unknown[]; chosen_pool: string; swaps_replayed: number };
+  }
+  const NVDA = "0x6852Adb5Fce1D73c08A9b3Aa7edE9A03437ac2fE";
+  const getWith = (path: string, e: Record<string, unknown>) =>
+    worker.fetch(new Request(`https://uptick-evidence.test${path}`), e, ctx);
+
+  test("serves all seventeen vaults from the replay, with no on-chain figures and no chart", async () => {
+    expect(vaultUniverse.vaults.length).toBe(17);
+    for (const v of vaultUniverse.vaults) {
+      const res = await get(`/keeper/vaults/${v.id}`);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Stats;
+      expect(body.id).toBe(v.id);
+      expect(body.ticker).toBe(v.symbol);
+      expect(body.pool).toBe(v.pool);
+      expect(body.source).toBe("replay");
+      expect(body.vault).toBeNull();
+      expect(body.tvl_usd).toBeNull();
+      expect(body.chart).toBeNull();
+      expect(body.fee_apr_pct.replay_30d).toBe(v.feeAprPct);
+      expect(body.replay.window.days).toBe(replay.window.days);
+      expect(body.open).toBe(v.open);
+      expect(body.evidence.gate.state).toBe(v.gate.state);
+      expect(body.evidence.chosen_pool).toBe(v.pool);
+      expect(body.evidence.pools.length).toBeGreaterThan(0);
+      expect(body.evidence.swaps_replayed).toBe(v.gate.swaps);
+    }
+  });
+
+  test("ids are case-insensitive, unknown ids are 404 JSON, every answer carries CORS, OPTIONS preflights", async () => {
+    expect(((await (await get("/keeper/vaults/NVDA")).json()) as Stats).id).toBe("nvda");
+    const missing = await get("/keeper/vaults/nope");
+    expect(missing.status).toBe(404);
+    expect(((await missing.json()) as { error: string }).error).toBe("unknown_vault");
+    expect(missing.headers.get("access-control-allow-origin")).toBe("*");
+    expect((await get("/keeper/vaults/nvda")).headers.get("access-control-allow-origin")).toBe("*");
+    const pre = await worker.fetch(new Request("https://uptick-evidence.test/keeper/vaults/nvda", { method: "OPTIONS" }), env, ctx);
+    expect(pre.status).toBe(204);
+    expect(pre.headers.get("access-control-allow-origin")).toBe("*");
+  });
+
+  test("a VAULTS address without CHAIN_RPC_URL stays replay-only: nothing is read from a chain it was not configured for", async () => {
+    const body = (await (await getWith("/keeper/vaults/nvda", { VAULTS: JSON.stringify({ nvda: NVDA }) })).json()) as Stats;
+    expect(body.source).toBe("replay");
+    expect(body.vault).toBeNull();
+    expect(body.tvl_usd).toBeNull();
+    expect(body.onchain_error).toBeUndefined();
+  });
+
+  describe("with VAULTS and CHAIN_RPC_URL configured", () => {
+    const realFetch = globalThis.fetch;
+    const calls: { to: string; data: string }[] = [];
+    const word = (n: bigint) => `0x${n.toString(16).padStart(64, "0")}`;
+    const answers: Record<string, bigint> = {};
+    const rpcEnv = { VAULTS: JSON.stringify({ nvda: NVDA }), CHAIN_RPC_URL: "https://rpc.test" };
+
+    function stub(handler: (selector: string, id: number) => Response) {
+      globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+        const req = JSON.parse(String(init?.body)) as { id: number; method: string; params: [{ to: string; data: string }] };
+        calls.push({ to: req.params[0].to, data: req.params[0].data });
+        return handler(req.params[0].data.slice(0, 10).toLowerCase(), req.id);
+      }) as typeof fetch;
+    }
+    const ok = (id: number, result: string) => new Response(JSON.stringify({ jsonrpc: "2.0", id, result }));
+
+    test("TVL, share price and lifetime fees come from the vault contract; realized APR stays null", async () => {
+      const { toFunctionSelector } = await import("viem");
+      answers[toFunctionSelector("totalValueInUSDG()")] = 1_234_500_000n;
+      answers[toFunctionSelector("pricePerShare()")] = 1_050_000_000_000_000_000_000_000n;
+      answers[toFunctionSelector("feesEarnedLifetime()")] = 777n;
+      calls.length = 0;
+      stub((sel, id) => ok(id, word(answers[sel])));
+      try {
+        const body = (await (await getWith("/keeper/vaults/nvda", rpcEnv)).json()) as Stats;
+        expect(body.source).toBe("onchain");
+        expect(body.vault).toBe(NVDA);
+        expect(body.tvl_usd).toBe(1234.5);
+        expect(body.price_per_share_raw).toBe("1050000000000000000000000");
+        expect(body.fees_lifetime_view_raw).toBe("777");
+        expect(body.fee_apr_pct["7d"]).toBeNull();
+        expect(body.fee_apr_pct.replay_30d).toBe(vaultUniverse.vaults.find((v) => v.id === "nvda")!.feeAprPct);
+        expect(calls.length).toBe(3);
+        expect(calls.every((c) => c.to.toLowerCase() === NVDA.toLowerCase())).toBe(true);
+        // an id with no VAULTS entry never touches the RPC
+        calls.length = 0;
+        const other = (await (await getWith("/keeper/vaults/aapl", rpcEnv)).json()) as Stats;
+        expect(other.source).toBe("replay");
+        expect(other.tvl_usd).toBeNull();
+        expect(calls.length).toBe(0);
+      } finally {
+        globalThis.fetch = realFetch;
+      }
+    });
+
+    test("an RPC failure keeps the page alive on replay figures and says why", async () => {
+      stub(() => new Response("upstream down", { status: 502 }));
+      try {
+        const res = await getWith("/keeper/vaults/nvda", rpcEnv);
+        expect(res.status).toBe(200);
+        const body = (await res.json()) as Stats;
+        expect(body.source).toBe("replay");
+        expect(body.tvl_usd).toBeNull();
+        expect(typeof body.onchain_error).toBe("string");
+        expect(body.evidence.gate.state).toBe("open");
+      } finally {
+        globalThis.fetch = realFetch;
+      }
+    });
+  });
+});

@@ -2,6 +2,7 @@ import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
 import { handleMcp, type Env } from "./mcp";
 import LLMS from "./llms";
+import { keeperVault } from "./keeper";
 
 interface HalfStats {
   fee_apr_pct: number | null;
@@ -27,6 +28,7 @@ interface PoolRow {
 
 interface TokenReplay {
   symbol: string;
+  capital_usd?: number;
   pools: PoolRow[];
   swaps_replayed: number;
 }
@@ -57,6 +59,8 @@ interface ReplayWindow {
 
 interface Replay {
   generated_at: string;
+  strategy: string;
+  capital_usd: number;
   tokens: Record<string, TokenReplay>;
   window: ReplayWindow;
 }
@@ -137,6 +141,13 @@ function vaultDetail(id: string): Response {
   });
 }
 
+async function keeperStats(id: string, env: Env): Promise<Response> {
+  const vault = UNIVERSE.vaults.find((candidate) => candidate.id === id);
+  const tok = vault && REPLAY.tokens[vault.symbol];
+  if (!vault || !tok) return json({ error: "unknown_vault" }, 404);
+  return json(await keeperVault(env, vault, REPLAY, tok));
+}
+
 function health() {
   const swapsReplayed = Object.values(REPLAY.tokens).reduce(
     (total, token) => total + token.swaps_replayed,
@@ -189,6 +200,10 @@ function handleRequest(
   if (path === "/vaults") {
     return json(listVaults());
   }
+
+  // The web app's stats route (keeper/src/stats.ts shape), so the static site needs no keeper process.
+  const stats = path.match(/^\/keeper\/vaults\/([^/]+)$/);
+  if (stats) return keeperStats(decodeURIComponent(stats[1]).toLowerCase(), env);
 
   const detail = path.match(/^\/vaults\/([^/]+)$/);
   if (detail) {

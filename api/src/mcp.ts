@@ -6,6 +6,8 @@ export interface Env {
   VAULTS?: string;
   ROUTER?: string;
   NETWORK?: string;
+  /** JSON-RPC endpoint of the chain the VAULTS addresses live on. Unset, /keeper/vaults/:id serves replay figures only. */
+  CHAIN_RPC_URL?: string;
 }
 
 interface HalfStats {
@@ -130,7 +132,7 @@ function gateOf(vault: Vault): Gate {
   };
 }
 
-function parseVaults(raw: string | undefined): Record<string, string> {
+export function parseVaults(raw: string | undefined): Record<string, string> {
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;
