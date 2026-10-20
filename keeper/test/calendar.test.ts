@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { isEarlyClose, isTradingDay, nextRecentreMs, recentreDue, sessionAt, sessionFor } from "../src/calendar.ts";
+import { isEarlyClose, isTradingDay, nextRecentreMs, RECENTRE_JITTER_MIN, recentreDue, recentreOffsetMs, sessionAt, sessionFor } from "../src/calendar.ts";
 
 const utc = (s: string) => Date.parse(s);
 
@@ -55,3 +55,47 @@ describe("NYSE calendar", () => {
     expect(nextRecentreMs(utc("2026-11-26T03:00:00Z"))).toBe(utc("2026-11-28T02:00:00Z"));
   });
 });
+
+describe("recentre jitter", () => {
+  const salt = "test-salt-a";
+  const days = Array.from({ length: 120 }, (_, i) => new Date(Date.UTC(2026, 9, 19 + i)));
+  const sessions = days.map((d) => sessionFor(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), salt)).filter((s) => s !== null);
+  const offsetMin = (s: { recentreMs: number }) => (s.recentreMs % 86_400_000) / 60_000 - 120;
+
+  test("the jittered slot stays inside the 02:00 to 08:00 UTC window on every trading day, and inside its first 300 minutes", () => {
+    expect(sessions.length).toBeGreaterThan(70);
+    for (const s of sessions) {
+      const dayStart = Math.floor(s.recentreMs / 86_400_000) * 86_400_000;
+      expect(s.recentreMs).toBeGreaterThanOrEqual(dayStart + 2 * 3_600_000);
+      expect(s.recentreMs).toBeLessThan(dayStart + 7 * 3_600_000);
+      expect(s.windowEndMs).toBe(dayStart + 8 * 3_600_000);
+      expect(offsetMin(s)).toBeLessThan(RECENTRE_JITTER_MIN);
+    }
+  });
+  test("the minute differs across days and spreads over the window", () => {
+    const minutes = sessions.map(offsetMin);
+    expect(new Set(minutes).size).toBeGreaterThan(minutes.length * 0.8);
+    expect(Math.min(...minutes)).toBeLessThan(60);
+    expect(Math.max(...minutes)).toBeGreaterThan(240);
+  });
+  test("deterministic per day for one salt, different for another salt, plain 02:00 with no salt", () => {
+    const day = Date.UTC(2026, 9, 21);
+    expect(recentreOffsetMs(day, salt)).toBe(recentreOffsetMs(day + 3_600_000, salt)); // same UTC day
+    const other = days.slice(0, 40).filter((d) => recentreOffsetMs(d.getTime(), salt) !== recentreOffsetMs(d.getTime(), "test-salt-b"));
+    expect(other.length).toBeGreaterThan(30);
+    expect(sessionFor(2026, 10, 19)!.recentreMs).toBe(utc("2026-10-20T02:00:00Z"));
+  });
+  test("recentreDue opens at the jittered minute, not at 02:00, and closes at 08:00 whatever the minute", () => {
+    const s = sessionFor(2026, 10, 19, salt)!;
+    const base = utc("2026-10-20T02:00:00Z");
+    expect(s.recentreMs).toBeGreaterThan(base); // this salt and day draw a later minute
+    expect(recentreDue(base, 0, salt)).toBe(false);
+    expect(recentreDue(s.recentreMs - 1, 0, salt)).toBe(false);
+    expect(recentreDue(s.recentreMs, 0, salt)).toBe(true);
+    expect(recentreDue(s.recentreMs, s.recentreMs + 1, salt)).toBe(false); // already sent
+    expect(recentreDue(utc("2026-10-20T07:59:59Z"), 0, salt)).toBe(true);
+    expect(recentreDue(utc("2026-10-20T08:00:00Z"), 0, salt)).toBe(false);
+    expect(nextRecentreMs(base - 1, salt)).toBe(s.recentreMs);
+  });
+});
+

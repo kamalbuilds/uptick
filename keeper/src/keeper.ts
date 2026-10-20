@@ -5,7 +5,8 @@ import { assertPoolOrdering, boundedLogs, client, retry, sleep, snapshot, type S
 import { CL_MAX_AGE_S, MAX_DEV_BPS, MIN_GAP_H, OOR_MINUTES, RPC_URL, robinhood, type Ticker } from "./config.ts";
 import { loadTickers, withFactory } from "./registry.ts";
 import { recentreDue, sessionAt, nextRecentreMs } from "./calendar.ts";
-import { evaluateGuards } from "./guards.ts";
+import { evaluateGuards, TWAP_FEED_MAX_BPS, twapOffFeed } from "./guards.ts";
+import { loadJitterSalt } from "./jitter.ts";
 import { log } from "./log.ts";
 import { simulateRebalance } from "./simulate.ts";
 import { priceFromTick } from "./price.ts";
@@ -13,6 +14,7 @@ import { priceFromTick } from "./price.ts";
 const DRY = process.argv.includes("--dry-run");
 const ASSUME_DUE = DRY && process.argv.includes("--assume-due"); // dry-run only: pretend the recentre slot is open
 const POLL_S = Number(process.env.POLL_S || 60);
+let SALT = ""; // set in main(): the local salt that places the day's recentre minute inside the 02:00-08:00 UTC window
 
 type Trigger = "scheduled" | "out_of_range" | null;
 
@@ -50,7 +52,7 @@ async function lastRebalanceMs(t: Ticker): Promise<number> {
 interface State { lastMs: number; oorSince: number | null }
 
 function decide(t: Ticker, s: Snapshot, range: [number, number] | null, st: State, nowMs: number): { trigger: Trigger; note: string } {
-  if (recentreDue(nowMs, st.lastMs)) return { trigger: "scheduled", note: "recentre slot reached" };
+  if (recentreDue(nowMs, st.lastMs, SALT)) return { trigger: "scheduled", note: "recentre slot reached" };
   if (!sessionAt(nowMs)) return { trigger: null, note: "not_a_trading_day" };
   if (range) {
     const oor = s.tick < range[0] || s.tick >= range[1];
@@ -77,11 +79,19 @@ async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount
     ticker: t.symbol, block: snap.block, pool_usd: snap.poolUsd, chainlink_usd: snap.clUsd, chainlink_age_s: guard.clAgeS,
     deviation_bps: Number(guard.devBps.toFixed(2)), guards_ok: guard.ok, guard_reasons: guard.reasons,
     range_usd: range ? [priceFromTick(range[0], t.stockIsToken0), priceFromTick(range[1], t.stockIsToken0)].sort((a, b) => a - b) : null,
-    trigger, note, next_recentre: new Date(nextRecentreMs(nowMs)).toISOString(),
+    trigger, note, next_recentre: new Date(nextRecentreMs(nowMs, SALT)).toISOString(),
   };
   if (!trigger) return log("tick", { ...base, action: "none" });
   if (!guard.ok) return log("tick", { ...base, action: "blocked_by_guard" });
   if (!t.vault) return log("tick", { ...base, action: "skipped", why: "vault_not_deployed (VAULT_ADDRESS not set)" });
+
+  if (trigger === "scheduled") {
+    // The vault refuses a rebalance with the TWAP more than 30 bp off the feed. A slot sent while it is over 15 bp lands
+    // where an attacker can hold the walk, so wait for a later tick; the out-of-range trigger is not held back.
+    const h = await retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "health" }));
+    const off = twapOffFeed(h[4], h[3]);
+    if (off.defer) return log("tick", { ...base, action: "deferred_twap_off_feed", twap_feed_bps: off.bps, max_bps: Number(TWAP_FEED_MAX_BPS), retry: "next_tick" });
+  }
 
   const from: Address | undefined = account?.address ?? (process.env.VAULT_KEEPER_ADDRESS as Address | undefined);
   if (!from) return log("tick", { ...base, action: "skipped", why: "no signer: set VAULT_KEEPER_KEY (or VAULT_KEEPER_ADDRESS for dry-run simulation)" });
@@ -99,6 +109,7 @@ async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount
 }
 
 async function main() {
+  SALT = loadJitterSalt();
   const tickers = await withFactory(loadTickers());
   const account = DRY ? null : loadAccount();
   if (!DRY && !account) throw new Error("VAULT_KEEPER_KEY is not set. Put it in keeper/.env, or run with --dry-run.");

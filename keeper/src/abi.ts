@@ -2,6 +2,7 @@ import { parseAbi } from "viem";
 
 export const vaultAbi = parseAbi([
   "function rebalance()",
+  "function health() view returns (uint8 status, uint256 price, uint256 updatedAt, uint160 sqrtOracle, uint160 sqrtTwap, uint160 sqrtSpot)",
   "function positionInfo() view returns (bytes)",
   "function totalValueInUSDG() view returns (uint256)",
   "function feesEarnedLifetime() view returns (uint256)",

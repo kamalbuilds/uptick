@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // NYSE calendar. Rule-based (no data file): weekends, the ten full-day holidays with observed-day shifts, early closes.
 const ET = "America/New_York";
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -83,19 +85,36 @@ export function etToUtcMs(y: number, m: number, d: number, hh: number, mm: numbe
   throw new Error("unresolvable ET time");
 }
 
-export interface Session { openMs: number; closeMs: number; recentreMs: number }
-/** UTC hour of the daily recentre slot. */
+export interface Session { openMs: number; closeMs: number; recentreMs: number; windowEndMs: number }
+/** UTC hour of the daily recentre slot, the start of the window. */
 export const RECENTRE_UTC_HOUR = 2;
-/** How long after the slot a missed recentre may still run. */
+/** The window a recentre may run in: 02:00 to 08:00 UTC, however the minute is drawn. */
 const RECENTRE_WINDOW_MS = 6 * 3_600_000;
+/** The day's minute is drawn from the first 300 minutes of the window (02:00 to 06:59 UTC), so a send deferred by the
+ *  TWAP check still has an hour of ticks before the window closes. */
+export const RECENTRE_JITTER_MIN = 300;
+
+/** Minutes after 02:00 UTC at which the recentre of the slot day `slotDayMs` runs: deterministic per day for one salt,
+ *  different across days and across keepers. The salt is local (keeper/.env.local KEEPER_JITTER_SALT), so the slot cannot be
+ *  computed from the calendar alone. */
+export function recentreOffsetMs(slotDayMs: number, salt: string): number {
+  const h = createHash("sha256").update(`${salt}:${Math.floor(slotDayMs / 86_400_000)}`).digest();
+  return (h.readUInt32BE(0) % RECENTRE_JITTER_MIN) * 60_000;
+}
+
 /** Regular session of an ET trading day. The recentre slot is RECENTRE_UTC_HOUR:00 UTC on the evening after the session
  *  (22:00 ET in EDT, 21:00 ET in EST): keeper/strategist/RECENTRE-HOUR.md measured that recentring off the NYSE open keeps
- *  2.5 APR points more on NVDA on held-out data, with only slots the vault can execute (fresh feed). */
-export function sessionFor(y: number, m: number, d: number): Session | null {
+ *  2.5 APR points more on NVDA on held-out data, with only slots the vault can execute (fresh feed). With a `salt` the
+ *  slot moves to the day's jittered minute inside the window; without one (replay and chart models) it is 02:00. */
+export function sessionFor(y: number, m: number, d: number, salt?: string): Session | null {
   if (!isTradingDay(y, m, d)) return null;
   const openMs = etToUtcMs(y, m, d, 9, 30);
   const nextUtcDay = Date.UTC(y, m - 1, d + 1);
-  return { openMs, closeMs: etToUtcMs(y, m, d, isEarlyClose(y, m, d) ? 13 : 16, 0), recentreMs: nextUtcDay + RECENTRE_UTC_HOUR * 3_600_000 };
+  const windowStartMs = nextUtcDay + RECENTRE_UTC_HOUR * 3_600_000;
+  return {
+    openMs, closeMs: etToUtcMs(y, m, d, isEarlyClose(y, m, d) ? 13 : 16, 0),
+    recentreMs: windowStartMs + (salt === undefined ? 0 : recentreOffsetMs(nextUtcDay, salt)), windowEndMs: windowStartMs + RECENTRE_WINDOW_MS,
+  };
 }
 
 export function sessionAt(nowMs: number): Session | null {
@@ -104,22 +123,22 @@ export function sessionAt(nowMs: number): Session | null {
 }
 
 /** Is the scheduled recentre due: the slot of the latest ET trading day has passed, within its window, nothing sent since. */
-export function recentreDue(nowMs: number, lastRebalanceMs: number): boolean {
+export function recentreDue(nowMs: number, lastRebalanceMs: number, salt?: string): boolean {
   const { y, m, d } = etDate(nowMs);
   for (let i = 0; i >= -1; i--) {
     const [yy, mm, dd] = shift(y, m, d, i);
-    const s = sessionFor(yy, mm, dd);
-    if (s && nowMs >= s.recentreMs && nowMs < s.recentreMs + RECENTRE_WINDOW_MS) return lastRebalanceMs < s.recentreMs;
+    const s = sessionFor(yy, mm, dd, salt);
+    if (s && nowMs >= s.recentreMs && nowMs < s.windowEndMs) return lastRebalanceMs < s.recentreMs;
   }
   return false;
 }
 
 /** Next recentre slot strictly after nowMs (for logging) */
-export function nextRecentreMs(nowMs: number): number {
+export function nextRecentreMs(nowMs: number, salt?: string): number {
   const { y, m, d } = etDate(nowMs);
   for (let i = 0; i < 12; i++) {
     const [yy, mm, dd] = shift(y, m, d, i);
-    const s = sessionFor(yy, mm, dd);
+    const s = sessionFor(yy, mm, dd, salt);
     if (s && s.recentreMs > nowMs) return s.recentreMs;
   }
   throw new Error("no trading day in 12 days");
