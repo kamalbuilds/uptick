@@ -20,7 +20,10 @@ import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 /// factory defaults to that entry's range before each createVault and puts 500 back at the end.
 /// Every entry must carry `deployable: true` (scripts/deploy-list.mjs sets it from the evidence gate: open or reduced).
 /// An entry without the flag, or with it false, reverts the script before any vault is created, so a closed vault
-/// cannot be deployed by accident. ALLOW_CLOSED=true lifts the check for the local fork only.
+/// cannot be deployed by accident. ALLOW_CLOSED=true lifts the check for a local anvil fork only: the fork shares chain
+/// id 4663 with the real chain, so the script asks the node for `anvil_nodeInfo` and refuses ALLOW_CLOSED on any other
+/// RPC. An entry without `symbol` or `depositCapTokens` reverts naming its index, and a zero `depositCapTokens` (an
+/// uncapped vault) reverts unless ALLOW_UNCAPPED=true is set.
 /// Not parameters of the constructor, so nothing here changes with them: every vault starts with `entryFee` the larger
 /// of its pool's fee tier and 35 bp, `maxSpotTwapBps` 10 and `maxTwapOracleBps` 30, and moves them only through its
 /// 24-hour queue.
@@ -39,15 +42,29 @@ contract DeployAll is Script {
 
         string memory json = vm.readFile(vm.envString("DEPLOY_LIST"));
         uint256 n;
-        while (vm.keyExistsJson(json, string.concat(".[", vm.toString(n), "].symbol"))) ++n; // "$[*].symbol" is a bare string, not an array, for one entry
+        while (vm.keyExistsJson(json, string.concat(".[", vm.toString(n), "]"))) ++n;
         require(n > 0, "empty deploy list");
         bool allowClosed = vm.envOr("ALLOW_CLOSED", false);
+        bool allowUncapped = vm.envOr("ALLOW_UNCAPPED", false);
+        require(
+            !allowClosed || _isLocalFork(),
+            "ALLOW_CLOSED is refused here: only a local anvil fork may deploy a closed vault"
+        );
         for (uint256 i = 0; i < n; ++i) {
-            string memory dk = string.concat(".[", vm.toString(i), "].deployable");
-            require(vm.keyExistsJson(json, dk), "deploy list entry has no deployable flag");
+            string memory ik = string.concat(".[", vm.toString(i), "]");
             require(
-                allowClosed || vm.parseJsonBool(json, dk),
-                string.concat(vm.parseJsonString(json, string.concat(".[", vm.toString(i), "].symbol")), " is not deployable")
+                vm.keyExistsJson(json, string.concat(ik, ".symbol")),
+                string.concat("deploy list entry ", vm.toString(i), " has no symbol")
+            );
+            string memory sym = vm.parseJsonString(json, string.concat(ik, ".symbol"));
+            string memory dk = string.concat(ik, ".deployable");
+            require(vm.keyExistsJson(json, dk), "deploy list entry has no deployable flag");
+            require(allowClosed || vm.parseJsonBool(json, dk), string.concat(sym, " is not deployable"));
+            string memory ck = string.concat(ik, ".depositCapTokens");
+            require(vm.keyExistsJson(json, ck), string.concat(sym, " has no depositCapTokens"));
+            require(
+                allowUncapped || vm.parseJsonUint(json, ck) != 0,
+                string.concat(sym, " has a zero depositCapTokens (uncapped); set ALLOW_UNCAPPED=true to deploy it")
             );
         }
 
@@ -98,5 +115,15 @@ contract DeployAll is Script {
         console.log("UptickRouter", address(router));
         if (owner != me) factory.transferOwnership(owner);
         vm.stopBroadcast();
+    }
+
+    /// @dev True on a local anvil node, which answers `anvil_nodeInfo`; a real RPC does not, and neither does a run
+    /// with no fork. Virtual so the test can stand in for the node.
+    function _isLocalFork() internal virtual returns (bool) {
+        try vm.rpc("anvil_nodeInfo", "[]") returns (bytes memory) {
+            return true;
+        } catch {
+            return false;
+        }
     }
 }
