@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 import { Button } from "@/components/ui/button";
+import { Kept, StateChip } from "./ledger";
 import { WalletButton } from "./wallet-button";
 import { Skeleton } from "./status";
 import { vaultAbi } from "@/lib/abis";
@@ -30,24 +31,26 @@ function PositionRow({ cfg, owner }: { cfg: VaultConfig; owner: `0x${string}` })
   const assets = conv.data?.[0] !== undefined ? Number(formatUnits(conv.data[0], 18)) : undefined;
 
   return (
-    <li className="grid grid-cols-2 items-center gap-x-6 gap-y-3 py-5 sm:grid-cols-[1.2fr_1fr_1fr_auto]">
+    <li className="grid grid-cols-2 items-center gap-x-6 gap-y-3 border-b border-hairline py-5 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_72px_auto]">
       <div>
-        <p className="display text-3xl">{cfg.symbol}</p>
-        {vault && <a className="figure text-xs text-body underline underline-offset-4" href={addressUrl(vault)} target="_blank" rel="noreferrer">{shortAddress(vault)}</a>}
+        <p className="text-[17px] font-semibold">{cfg.symbol}</p>
+        {vault && <a className="figure text-[13px] text-mute underline underline-offset-4" href={addressUrl(vault)} target="_blank" rel="noreferrer">{shortAddress(vault)}</a>}
       </div>
-      {!vault ? (
-        <p className="col-span-2 text-body sm:col-span-2">Opening. Your position appears here after your first deposit.</p>
-      ) : r.isLoading ? (
+      {r.isLoading ? (
         <Skeleton className="col-span-2 h-10 sm:col-span-2" />
       ) : r.isError ? (
-        <p role="alert" className="col-span-2 text-negative-deep sm:col-span-2">The chain did not answer for this vault. <button className="underline" onClick={() => r.refetch()}>Retry</button></p>
+        <p role="alert" className="col-span-2 text-loss sm:col-span-2">The chain did not answer for this vault. <button className="underline" onClick={() => r.refetch()}>Retry</button></p>
       ) : (
         <>
           <Metric k="Shares" v={shares !== undefined ? num(shares, 6) : "n/a"} />
           <Metric k={`Worth in ${cfg.symbol}`} v={assets !== undefined ? num(assets, 6) : shares === 0 ? "0" : "n/a"} />
         </>
       )}
-      <Button asChild variant="soft" size="sm" className="justify-self-start sm:justify-self-end">
+      <div className="text-right sm:text-left">
+        <Kept value={cfg.gate.worstHalfApr} className="text-[15px] font-medium" />
+        <p className="text-[12px] text-mute">worst half</p>
+      </div>
+      <Button asChild variant="outline" size="sm" className="justify-self-end">
         <Link href={`/vault/${cfg.id}`}>Manage</Link>
       </Button>
     </li>
@@ -57,8 +60,8 @@ function PositionRow({ cfg, owner }: { cfg: VaultConfig; owner: `0x${string}` })
 function Metric({ k, v }: { k: string; v: string }) {
   return (
     <div>
-      <p className="figure text-lg font-medium">{v}</p>
-      <p className="text-xs text-body">{k}</p>
+      <p className="figure text-[17px] font-medium">{v}</p>
+      <p className="text-[13px] text-mute">{k}</p>
     </div>
   );
 }
@@ -67,29 +70,45 @@ export function Portfolio() {
   const { address, isConnected, chainId } = useAccount();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  const live = VAULTS.filter((v) => v.vault);
+  const opening = VAULTS.filter((v) => !v.vault);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-8 pt-10 sm:px-6 lg:pt-16">
-      <h1 className="display text-[clamp(3rem,8vw,6rem)]">Your positions</h1>
+    <div className="mx-auto max-w-[1280px] px-6 pb-8 pt-10 lg:pt-14">
+      <h1 className="text-[32px] font-medium leading-10 tracking-[-0.33px]">Your positions</h1>
       {!mounted ? (
         <Skeleton className="mt-8 h-40 w-full" />
       ) : !isConnected || !address ? (
-        <div className="mt-8 max-w-lg rounded-xl bg-canvas p-6 sm:p-8">
-          <p className="text-xl font-semibold">Connect a wallet to see the vault shares it holds.</p>
-          <p className="mt-2 text-body">Balances are read straight from Robinhood Chain. Nothing is stored on a server.</p>
-          <div className="mt-5"><WalletButton /></div>
+        <div className="mt-8 max-w-lg border-t border-hairline pt-6">
+          <p className="serif text-[26px] leading-8">Connect a wallet to see the vault shares it holds.</p>
+          <p className="mt-3 text-mute">Balances are read straight from Robinhood Chain. Nothing is stored on a server.</p>
+          <div className="mt-6"><WalletButton size="lg" /></div>
         </div>
       ) : chainId !== robinhoodChain.id ? (
-        <div className="mt-8 max-w-lg rounded-xl bg-canvas p-6 sm:p-8">
-          <p className="text-xl font-semibold">Your wallet is on another network.</p>
-          <div className="mt-5"><WalletButton /></div>
+        <div className="mt-8 max-w-lg border-t border-hairline pt-6">
+          <p className="serif text-[26px] leading-8">Your wallet is on another network.</p>
+          <div className="mt-6"><WalletButton size="lg" /></div>
         </div>
       ) : (
         <>
-          <p className="figure mt-3 text-sm text-body">{shortAddress(address)}</p>
-          <ul className="mt-8 divide-y divide-sage-line border-y border-sage-line">
-            {VAULTS.map((v) => <PositionRow key={v.id} cfg={v} owner={address} />)}
-          </ul>
+          <p className="figure mt-2 text-mute">{shortAddress(address)}</p>
+          {live.length > 0 && <ul className="mt-8 border-t border-hairline">{live.map((v) => <PositionRow key={v.id} cfg={v} owner={address} />)}</ul>}
+          {opening.length > 0 && (
+            <section className="mt-12" aria-labelledby="opening">
+              <h2 id="opening" className="border-b border-hairline pb-3 text-2xl font-semibold leading-8 tracking-[-0.2px]">Opening</h2>
+              <p className="mt-4 max-w-[690px] text-mute">A position appears here after your first deposit into one of these vaults.</p>
+              <ul className="mt-2">
+                {opening.map((v) => (
+                  <li key={v.id}>
+                    <Link href={`/vault/${v.id}`} className="row flex min-h-12 items-center justify-between gap-4 border-b border-hairline py-2">
+                      <span className="font-semibold">{v.symbol}</span>
+                      <span className="flex items-center gap-4"><Kept value={v.gate.worstHalfApr} /><StateChip state={v.gate.state} /></span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </>
       )}
     </div>
