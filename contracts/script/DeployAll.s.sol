@@ -18,8 +18,12 @@ import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 /// Each deploy-list entry may carry `rangeBps` (50 to 2000, from keeper/data/params.json via scripts/deploy-list.mjs);
 /// an entry without it gets 500. The factory applies one Params set to every vault it creates, so the script sets the
 /// factory defaults to that entry's range before each createVault and puts 500 back at the end.
-/// Not parameters of the constructor, so nothing here changes with them: every vault starts with `entryFee` equal to
-/// its pool's fee tier, `maxSpotTwapBps` 10 and `maxTwapOracleBps` 60, and moves them only through its 24-hour queue.
+/// Every entry must carry `deployable: true` (scripts/deploy-list.mjs sets it from the evidence gate: open or reduced).
+/// An entry without the flag, or with it false, reverts the script before any vault is created, so a closed vault
+/// cannot be deployed by accident. ALLOW_CLOSED=true lifts the check for the local fork only.
+/// Not parameters of the constructor, so nothing here changes with them: every vault starts with `entryFee` the larger
+/// of its pool's fee tier and 35 bp, `maxSpotTwapBps` 10 and `maxTwapOracleBps` 30, and moves them only through its
+/// 24-hour queue.
 contract DeployAll is Script {
     address constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
     address constant NPM = 0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3;
@@ -34,8 +38,18 @@ contract DeployAll is Script {
         address owner = vm.envAddress("OWNER");
 
         string memory json = vm.readFile(vm.envString("DEPLOY_LIST"));
-        uint256 n = abi.decode(vm.parseJson(json, "$[*].symbol"), (string[])).length;
+        uint256 n;
+        while (vm.keyExistsJson(json, string.concat(".[", vm.toString(n), "].symbol"))) ++n; // "$[*].symbol" is a bare string, not an array, for one entry
         require(n > 0, "empty deploy list");
+        bool allowClosed = vm.envOr("ALLOW_CLOSED", false);
+        for (uint256 i = 0; i < n; ++i) {
+            string memory dk = string.concat(".[", vm.toString(i), "].deployable");
+            require(vm.keyExistsJson(json, dk), "deploy list entry has no deployable flag");
+            require(
+                allowClosed || vm.parseJsonBool(json, dk),
+                string.concat(vm.parseJsonString(json, string.concat(".[", vm.toString(i), "].symbol")), " is not deployable")
+            );
+        }
 
         bytes memory code = type(StockVault).creationCode;
         VaultFactory.Defaults memory d = VaultFactory.Defaults({

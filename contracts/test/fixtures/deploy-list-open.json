@@ -1,0 +1,13 @@
+[
+  {
+    "symbol": "NVDA",
+    "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+    "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+    "feeTier": 500,
+    "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+    "rangeBps": 150,
+    "capUsd": 100000,
+    "depositCapTokens": "463000000000000000000",
+    "deployable": true
+  }
+]

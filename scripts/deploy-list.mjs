@@ -5,8 +5,11 @@
 // Stock Token wei (floor), 0 (uncapped) when the universe carries no cap_usd.
 // rangeBps is the token's band half-width in bps from keeper/data/params.json (500 where it has no entry): the
 // value StockVault._checkParams takes, which DeployAll applies to that vault before createVault.
-// --open-only keeps tokens whose evidence gate (web/lib/vault-universe.json) is open or reduced: mainnet deploys only
-// vaults that take deposits; a closed token stays evidence-only until its gate flips.
+// deployable is true when the token's evidence gate (web/lib/vault-universe.json) is open or reduced. DeployAll refuses
+// an entry that is not deployable (a closed vault cannot be deployed by accident), unless ALLOW_CLOSED=1 is set, which
+// only the local fork script does.
+// --open-only keeps only the deployable tokens: mainnet deploys only vaults that take deposits; a closed token stays
+// evidence-only until its gate flips.
 // Usage: node scripts/deploy-list.mjs [--open-only] [out.json]   (stdout when no path)
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -22,7 +25,8 @@ const gates = Object.fromEntries(
   JSON.parse(readFileSync(new URL("../web/lib/vault-universe.json", import.meta.url), "utf8")).vaults.map((v) => [v.symbol, v.gate?.state]),
 );
 
-const list = universe.tokens.filter((t) => t.eligible && (!openOnly || ["open", "reduced"].includes(gates[t.symbol]))).map((t) => {
+const isDeployable = (symbol) => ["open", "reduced"].includes(gates[symbol]);
+const list = universe.tokens.filter((t) => t.eligible && (!openOnly || isDeployable(t.symbol))).map((t) => {
   const chosen = replay.tokens?.[t.symbol]?.chosen;
   const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
   const answer = BigInt(Math.round(t.feed.usd * 10 ** t.feed.decimals));
@@ -33,7 +37,7 @@ const list = universe.tokens.filter((t) => t.eligible && (!openOnly || ["open", 
   const depositCapTokens = (capUsd * 10n ** BigInt(t.decimals) * 10n ** BigInt(t.feed.decimals)) / answer;
   return {
     symbol: t.symbol, token: t.token, pool: pool.address, feeTier: pool.fee_tier, feed: t.feed.address,
-    rangeBps, capUsd: Number(capUsd), depositCapTokens: depositCapTokens.toString(),
+    rangeBps, capUsd: Number(capUsd), depositCapTokens: depositCapTokens.toString(), deployable: isDeployable(t.symbol),
   };
 });
 if (!list.length) throw new Error("universe.json has no eligible token");

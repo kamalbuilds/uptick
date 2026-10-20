@@ -1,0 +1,24 @@
+[
+  {
+    "symbol": "NVDA",
+    "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+    "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+    "feeTier": 500,
+    "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+    "rangeBps": 150,
+    "capUsd": 100000,
+    "depositCapTokens": "463000000000000000000",
+    "deployable": true
+  },
+  {
+    "symbol": "GME",
+    "token": "0x1b0E319c6A659F002271B69dB8A7df2F911c153E",
+    "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
+    "feeTier": 10000,
+    "feed": "0x27C71df6A64fB476468EdF256CF72c038baB5B67",
+    "rangeBps": 250,
+    "capUsd": 49212,
+    "depositCapTokens": "1000000000000000000000",
+    "deployable": false
+  }
+]

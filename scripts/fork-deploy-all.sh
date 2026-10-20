@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Deploys every eligible vault (keeper/data/universe.json, NVDA included) plus the VaultFactory and an UptickRouter bound
 # to the factory registry on the local Robinhood Chain fork (scripts/fork-up.sh running on :8545) with
-# contracts/script/DeployAll.s.sol, the same script mainnet uses (mainnet passes deploy-list --open-only; the fork keeps all).
+# contracts/script/DeployAll.s.sol, the same script mainnet uses (mainnet passes deploy-list --open-only; the fork keeps all and
+# sets ALLOW_CLOSED=true, which lifts the script's refusal of entries whose `deployable` flag is false).
 # fork-up.sh writes fork.json with the fork block first; tokens that already have a vault in fork.json are skipped.
 # Per new vault: warp past minRebalanceInterval, read health(), and only when it is Ok seed it (SEED_USD, default 5000,
 # funded with anvil_setStorageAt) and rebalance() once as the keeper. A vault whose gate is not Ok, or whose
@@ -52,7 +53,7 @@ jq --arg have "$HAVE" '[.[] | select((.token | ascii_downcase) as $t | ($have | 
 N=$(jq length "$TMP/pending.json"); echo "step: $N token(s) to deploy, $(jq length "$TMP/all.json") eligible"
 if [ "$N" -gt 0 ]; then
   mkdir -p "$APP/contracts/cache"; cp "$TMP/pending.json" "$APP/contracts/cache/deploy-list.json"   # forge may only read inside contracts/
-  OUT=$(cd "$APP/contracts" && DEPLOY_LIST=cache/deploy-list.json ANVIL_KEY=$K OWNER=$A0 KEEPER=$A0 TREASURY=$TREASURY MIN_REBALANCE_INTERVAL=$MIN_INTERVAL \
+  OUT=$(cd "$APP/contracts" && DEPLOY_LIST=cache/deploy-list.json ALLOW_CLOSED=true ANVIL_KEY=$K OWNER=$A0 KEEPER=$A0 TREASURY=$TREASURY MIN_REBALANCE_INTERVAL=$MIN_INTERVAL \
     forge script script/DeployAll.s.sol --rpc-url $R --broadcast 2>&1) || { echo "$OUT" | scrub | tail -15 >&2; exit 1; }
   FACTORY=$(echo "$OUT" | awk '$1=="VaultFactory"{print $2}'); ROUTER=$(echo "$OUT" | awk '$1=="UptickRouter"{print $2}')
   [ -n "$FACTORY" ] && [ -n "$ROUTER" ] || { echo "$OUT" | scrub | tail -20 >&2; exit 1; }
