@@ -17,13 +17,25 @@ export type VaultConfig = {
   feed: Address;
   /** Deployed vault address; undefined while the vault is opening. */
   vault: Address | undefined;
-  /** Deposits open when the lower kept APR of the replay's two halves clears the keeper's floor. */
+  /** Deposits are taken (open or reduced) when the lower kept APR of the replay's two halves clears the keeper's floor. */
   open: boolean;
+  /** The deposit gate as the replay wrote it: state, the sentence, and the weaker half of the replay in percent a year. */
+  gate: VaultGate;
+  /** What the pool paid and what leaked, percent a year over the replay window. */
+  keep: VaultKeep;
   /** 30-day fee APR of the chosen pool, percent. */
   feeAprPct: number;
-  /** Kept APR (fees less losses to informed traders and rebalancing cost) over the held-out 15 days, percent. */
-  keptAprPct: number;
 };
+
+export type GateState = "open" | "reduced" | "closed";
+/** `worstHalfApr` is what a holder keeps a year in the weaker 15-day half: the one "you keep" figure on every page. */
+export type VaultGate = { state: GateState; reason: string; floorApr: number; worstHalfApr: number; swaps: number; days: number };
+export type VaultKeep = { feeApr: number; markoutApr: number; costApr: number; keptApr: number; keptFirstHalf: number; keptSecondHalf: number };
+
+/** The replay window every gate figure was measured over. */
+export const REPLAY_WINDOW = universe.window as { start: string; end: string; days: number };
+/** "2026-10-17" from an ISO timestamp. */
+export const isoDay = (iso: string): string => iso.slice(0, 10);
 
 const asAddress = (v: string | undefined): Address | undefined =>
   v && /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as Address) : undefined;
@@ -61,11 +73,21 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   feed: v.feed as Address,
   vault: asAddress(fromEnv[v.symbol]),
   open: v.open,
+  gate: { state: v.gate.state as GateState, reason: v.gate.reason, floorApr: v.gate.floor_apr, worstHalfApr: v.gate.worst_half_apr, swaps: v.gate.swaps, days: v.gate.days },
+  keep: { feeApr: v.keep.fee_apr_pct, markoutApr: v.keep.markout_apr_pct, costApr: v.keep.cost_apr_pct, keptApr: v.keep.kept_apr_pct, keptFirstHalf: v.keep.kept_first_half, keptSecondHalf: v.keep.kept_second_half },
   feeAprPct: v.feeAprPct,
-  keptAprPct: v.keptAprPct,
 }));
 
-/** Swaps replayed across every vault in the list, from each vault's own gate. */
+/** Vaults best-kept first: the order every list uses. */
+export const BY_KEEP: VaultConfig[] = [...VAULTS].sort((a, b) => b.gate.worstHalfApr - a.gate.worstHalfApr);
+
+export const GATE_COUNTS = {
+  open: VAULTS.filter((v) => v.gate.state === "open").length,
+  reduced: VAULTS.filter((v) => v.gate.state === "reduced").length,
+  closed: VAULTS.filter((v) => v.gate.state === "closed").length,
+};
+
+/** Swaps replayed across every vault in the list, from each vault's own gate, all over REPLAY_WINDOW. */
 export const REPLAYED_SWAPS = universe.vaults.reduce((n, v) => n + (v.gate?.swaps ?? 0), 0);
 
 export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";

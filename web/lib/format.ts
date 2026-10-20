@@ -9,6 +9,9 @@ export function usd(n: number, opts: { compact?: boolean } = {}): string {
   }).format(n);
 }
 
+/** Whole dollars, never compacted: a size or a cap, "$100,000". */
+export const usdWhole = (n: number): string => (Number.isFinite(n) ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n) : "n/a");
+
 /** Input is a percent: 40.557 renders as 40.6%. */
 export function pct(percent: number, digits = 1): string {
   if (!Number.isFinite(percent)) return "n/a";
