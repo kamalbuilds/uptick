@@ -27,7 +27,7 @@ export function VaultHeaderTwin({ cfg, a }: { cfg: Vault; a: { rest: number; tic
 }
 
 /**
- * The verdict of vault-detail.tsx, word by word, with its door sentence (doorSentence for a vault that is not deployed yet:
+ * The verdict of vault-detail.tsx, word by word, with its door sentence (doorSentence for a vault whose address is still to be set:
  * an open door reads "Its vault is opening."). Every word keeps its slot, so the lines never re-flow while it builds.
  */
 export const VERDICT_WORDS = 13;
