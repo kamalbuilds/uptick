@@ -1,0 +1,66 @@
+{
+ "title": "Saffron",
+ "h1": null,
+ "h2": null,
+ "h3": null,
+ "body": {
+  "text": "EXPLORE\nPORTFOLIO\nCREATE VAULT\nAUDITS\nCONNECT\nNew vaults add",
+  "font": "\"Host Grotesk\", system-ui, sans-serif",
+  "size": "16px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "normal",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgb(0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(255, 255, 255)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": null,
+ "a": {
+  "text": "PORTFOLIO",
+  "font": "\"Host Grotesk\", system-ui, sans-serif",
+  "size": "13px",
+  "weight": "500",
+  "tracking": "0.78px",
+  "leading": "normal",
+  "color": "rgb(126, 122, 119)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px 20px",
+  "border": "0px none rgb(126, 122, 119)",
+  "transform": "uppercase",
+  "features": "normal"
+ },
+ "button": {
+  "text": "EXPLORE",
+  "font": "\"Host Grotesk\", system-ui, sans-serif",
+  "size": "13px",
+  "weight": "500",
+  "tracking": "0.78px",
+  "leading": "normal",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px 20px",
+  "border": "0px none rgb(255, 255, 255)",
+  "transform": "uppercase",
+  "features": "normal"
+ },
+ "input": null,
+ "loadedFonts": [
+  "Host Grotesk",
+  "Roboto Mono"
+ ],
+ "htmlBg": "rgb(0, 0, 0)",
+ "textLen": 307,
+ "height": 900,
+ "url": "https://beta.saffron.finance/network/robinhood/token/0xec262a75e413fAfD0dF80480274532C79D42da09",
+ "viewport": [
+  1440,
+  900
+ ],
+ "lumaStddev": 26.7
+}

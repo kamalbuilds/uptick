@@ -1,0 +1,93 @@
+{
+ "title": "Solana Concentrated Liquidity Layer | Kamino Finance",
+ "h1": null,
+ "h2": null,
+ "h3": null,
+ "body": {
+  "text": "Swap\nEarn\nBorrow\nNew\nMultiply\nLiquidity\nPortfolio\nMore\n\nForm",
+  "font": "\"IBM Plex Sans\", sans-serif",
+  "size": "14px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "18px",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgb(9, 19, 38)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(255, 255, 255)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": {
+  "text": "Formally Verified",
+  "font": "\"IBM Plex Sans\", sans-serif",
+  "size": "14px",
+  "weight": "500",
+  "tracking": "normal",
+  "leading": "18px",
+  "color": "rgb(48, 214, 154)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(48, 214, 154)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "a": {
+  "text": "Swap",
+  "font": "\"IBM Plex Sans\", sans-serif",
+  "size": "14px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "18px",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "11px 16px",
+  "border": "0px none rgb(255, 255, 255)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "button": {
+  "text": "Connect Wallet",
+  "font": "\"IBM Plex Sans\", sans-serif",
+  "size": "14px",
+  "weight": "500",
+  "tracking": "normal",
+  "leading": "20px",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgb(33, 44, 66)",
+  "radius": "6px",
+  "padding": "9px 15px",
+  "border": "0.625px solid rgba(0, 0, 0, 0)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "input": {
+  "text": "",
+  "font": "\"IBM Plex Sans\", sans-serif",
+  "size": "14px",
+  "weight": "500",
+  "tracking": "normal",
+  "leading": "20px",
+  "color": "rgb(255, 255, 255)",
+  "bg": "rgb(22, 33, 54)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(255, 255, 255)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "loadedFonts": [
+  "IBM Plex Sans"
+ ],
+ "htmlBg": "rgba(0, 0, 0, 0)",
+ "textLen": 1830,
+ "height": 1452,
+ "url": "https://app.kamino.finance/liquidity",
+ "viewport": [
+  1440,
+  900
+ ],
+ "lumaStddev": 23.1
+}

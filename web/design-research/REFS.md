@@ -76,6 +76,54 @@ Consumer-calm asset page on white. h1 CoinbaseDisplay 28px / 600 / 36px leading 
 Steal: dotted-underline labels that open a plain-language definition (glossing every domain term the first time), a rail that separates "about" from "act", three labelled bands for stats instead of one grid.
 Do not take: the yellow "Keep exploring" card, AI "Happening now" block, white canvas (Uptick holders arrive from Robinhood's black).
 
+## Round 2: competitors on Robinhood Chain (2026-10-20)
+
+Captured with refshot in the deepsurge profile, background tabs. No wallet address was shown on any page. Screens are in refs/.
+
+## 11. Zona Lend (app.zona.finance/lend), the user's reference
+
+Screens: refs/zona-lend-1440.png, refs/zona-lend-390.png (+ .tokens.json).
+Proxima Nova Zona 16px on `rgb(8,8,8)` with a faint green star-field. Header 64px, logo + Lend / Portfolio / Trade / More left, wallet icon and a lime-green "Connect Wallet" pill right. Summary row sits on the canvas with no boxes: three label-over-value pairs ("Total Market $38.63K", "Available liquidity $33.12K", "Total Borrowed $5.51K"), label 14px `rgb(175,175,175)`, value about 28px / 700 white, at x 80 to 532. The asset table is x 80 to 957 (877px) with a 1px `rgb(51,51,51)` border, header row 50px (y 203 to 253), then rows on a 63px pitch (y 253, 316, 379, 442 ...). Row: 36px token disc, ticker 16px, an "Isolated" outlined tag 12px (radius about 4px), total supply as amount over USD (14px / 12px muted), supply rate as a dotted-underlined value with a star glyph ("Collateral only"), and a 36px outlined chevron button at x 891 to 933. The action panel is x 990 to 1359 (369px), radius 12px, border `rgb(51,51,51)`, padding 25px: four tabs Supply / Withdraw / Borrow / Repay (active tab filled `rgb(118,245,149)`, others outlined, 38px tall), an amount well `rgb(22,24,26)` with a 24px / 700 number, USD under it and a token selector right, "Wallet Balance" line, a row of four 74x30 chips 25% / 50% / 75% / Max (disabled until a wallet connects), "Supply APY", a "Health Factor" outlined row with a heart glyph, a full-width 44px green primary, and under the panel a separate 369x70 card "Trade stock tokens, Powered by Uniswap". The bottom edge carries a 44px ticker strip (y 856 to 900) on `rgb(21,21,23)` with logo, ticker, price pairs scrolling left. At 390px the same table becomes stacked cards (metrics row first, then one card per asset with Supply and Borrow buttons 40px tall) and the panel disappears.
+Steal: bare metrics row, the table plus docked panel split (877 / 369), chips under the amount, the ticker strip, a chevron button that navigates while the row itself selects, dotted-underline values that carry a definition.
+Do not take: the neon-green fill, the star-field, hosted company marks (Zona serves its own aapl.svg, nvda.svg), borrow and health factor (Uptick has no debt), the second "trade" card.
+
+## 12. HedgeHood Stock Yield list (hedgehood.app/stockyield)
+
+Screens: refs/hh-stockyield-1440.png, refs/hh-loan-1440.png, refs/hedgehood-home-1440.png.
+Geist 16px on `rgb(15,15,16)`; a 247px left sidebar (Markets / Earn / Apps groups, 14px). h1 "Stock Yield" 34px / 400 / -1.19px / 37.4px, one 14px muted sentence under it. Top right a three-metric header separated by 1px rules: "Mainnet size $99.63K", "Strategies 9", "Top mainnet premium APY 45.8%" with the sub-note "last week's pricing . 10/14", each label carrying an info glyph. Under it filter pills with counts ("All lines 9", "v1 1", "v2 option vaults 8"), a List/Details toggle, and a search field radius 10px with a "/" key hint. The table is one big rounded container; rows 67px pitch: a 32px white rounded-square company logo, a two-line name (16px / 600 over 13px muted ticker and strategy), a line chip, premium APY in green with a "target" or "last week's pricing" note, size ($ over $ per share), a cap-filled ring with %, an epoch status, and an access word.
+Steal: header metrics that name their own period and origin under the number, pill filters with counts, the "/" search shortcut, a two-line name cell.
+Do not take: a figure that is a gross promise ("premium APY") as the lead, eight rows of the same logo, the left sidebar (Uptick has four top-level routes).
+
+## 13. HedgeHood vault page (hedgehood.app/stockyield/nvda-printer)
+
+Screens: refs/hh-nvda-printer-1440.png.
+Breadcrumb "Stock Yield / NVDA Printer" at 13px, a pair chip "NVDA / USDG" top right made of two overlapped 20px token discs. A rounded header card (x 271 to 1417): small tracked caps label "WEEKLY COVERED CALL" (10px / 2px tracking), h1 27px / 500, "Curator Hedgehood", "Vault contract 0xe35B...C0a9 Copy" as a dotted-underlined short address with a copy button, premium APY in green with the caption "2026 backtest" beneath it, one plain sentence ("Hold NVDA, sell a call every week, settle every Friday. Upside is capped at the strike."), three text links (How it works, Rules & contracts, Who can touch my NVDA). Below, a centered 764px deposit card: a sentence-form header "I put [..] into the NVDA Printer, and take the income [..]", a three-step progress, a USDG / NVDA token switch, a 72px amount well with a 34px / 600 number, a chip row 10% 25% 50% 75% Max, a full-width 42px Continue. A collapsed "Details" row ends the page.
+Steal: the APY caption that states its basis ("2026 backtest") right under the number, the pair chip, the contract address with copy, three plain-language help links, the token switch inside the deposit card.
+Do not take: the sentence-with-blanks form, the stepper, the tracked caps label.
+
+## 14. Saffron explore (beta.saffron.finance/network/robinhood)
+
+Screens: refs/saffron-rh-1440.png, refs/saffron-token-1440.png, refs/saffron-home-1440.png.
+Host Grotesk with Roboto Mono for every figure on pure black, a 1209px column (x 115 to 1324). "FEATURED TOKENS" 13px / 0.78px tracked caps over three 396x71 cards (token disc 34px, symbol, "$8K available", APR range right in amber mono). The table is a 1px bordered box with a purple-black texture header 53px; rows on a 59px pitch: 38px round token logo, name 16px over ticker 12px mono muted, APR range in amber, a capacity bar 120px x 3px orange with a percent, TVL in mono. Sort carets on every column, "Showing 1-7 of 7" centered under the table. The token page lists vaults as pair logos (two overlapped discs) with an ENDED status chip, APR, upfront premium, capacity, term, a grid/list toggle, a search icon and a filter icon.
+Steal: the capacity bar as a 3px line with a percent beside it (a quiet to-scale bar like Uptick's keep bar), the pair logo for a vault, "Showing x of y" as the footer count.
+Do not take: featured cards that rank by APR range (up to 777%), amber mono for every figure, the generic lime Robinhood feather on every stock token (Saffron shows the same icon for NVDA and PLTR).
+
+## 15. AutoRange dashboard (autorange.xyz/dashboard)
+
+Screens: refs/autorange-dash-1440.png, refs/autorange-create-1440.png, refs/autorange-home-1440.png.
+Inter on `rgb(12,12,12)`, a 1116px column (x 162 to 1278). h1 "Dashboard" 36px / 600 / -0.9px, one 14px muted sentence ("read straight from the chain, no intermediary backend"), a network tab strip (ALL, ETHEREUM, ROBINHOOD CHAIN, BASE ...) in 11px tracked caps, a green "LIVE" dot with caps label right. Then a grid of tinted cards each with its own coloured border (pink Capital Invested $661.9k, blue Volume Moved, green Active Vaults 384, amber Rebalances 11,148), tracked caps label, 40px number, a muted breakdown by chain, a small icon tile top right. The create flow is a chip set (network, vault type, pair) then one empty card "Connect your wallet to create a vault".
+Steal: the sentence that says where the numbers come from ("read straight from the chain"), a per-chain breakdown line under a number, a live dot beside a timestamp.
+Do not take: the coloured stat-card grid (the stat grid DESIGN.md bans), tracked caps eyebrows, pink.
+
+## 16. Kamino Liquidity vaults, populated list (app.kamino.finance/liquidity)
+
+Screens: refs/kamino-liq-2-1440.png (promo modal closed first; earlier kamino-liq.png sat behind it).
+IBM Plex Sans 14px on `rgb(9,19,38)`, a 1010px column (x 215 to 1225). h1 "Liquidity" 28px with one muted line, two header chips "Total Deposits $76,232,743" and "Fees Generated $42,893,730" right. Three featured cards 329x105 (pair icons, name 20px, APY 32px with a dotted underline). Filter chips (All Vaults, LP Farms, Stables, JitoSOL ...) 32px tall radius 16px plus a search field. Table rows on a 58px pitch: pair of overlapped 32px token discs and a name, then right-aligned 7D Fees APY (a lightning glyph marks boosted), 7D Volume, TVL (dotted underline), a DEX glyph, a 6px-radius Deposit button `rgb(33,44,66)` 76x30.
+Steal: fees generated as a header fact, pair discs on every row, right-aligned numeric columns with period-labelled headers ("7D Fees APY").
+Do not take: three featured cards on top, the navy glass canvas, APY with no loss figure.
+
+Not captured: Morpho Steakhouse USDG (refs/morpho-vault-1440.png, refs/morpho-earn-1440.png). Both sit behind "Before you continue", a Terms of Use and sanctions attestation that only the user can accept. The blurred background shows a two-column vault page (about 960px left, 370px right ticket at x 1000 to 1350), nothing readable.
+
 Morpho (app.morpho.org robinhood-chain steakhouse-usdg vault) was captured (refs/morpho-vault-1440.png) but sits behind a Terms-of-Use consent modal that only a signed-in user acceptance clears, so the product screen is not readable and it is not counted above. Phantom and Wealthfront captures were discarded: they landed mid-scroll on marketing.
 
 ## Negative
