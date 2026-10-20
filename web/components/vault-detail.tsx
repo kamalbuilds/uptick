@@ -14,8 +14,7 @@ import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
-import { REDUCED_CAP_STOCK_USD } from "@/lib/evidence";
-import { shortAddress, signed, usd, usdWhole } from "@/lib/format";
+import { perDepositLimitUsd, shortAddress, signed, usd, usdWhole } from "@/lib/format";
 import { REPLAY_WINDOW, USDG, isoDay, type VaultConfig } from "@/lib/vaults";
 
 function AddressRow({ label, address }: { label: string; address: string }) {
@@ -53,7 +52,10 @@ function Fact({ k, v }: { k: string; v: string }) {
 function doorSentence(cfg: VaultConfig): string {
   const live = Boolean(cfg.vault);
   if (cfg.gate.state === "closed") return "Deposits are closed.";
-  if (cfg.gate.state === "reduced") return live ? `Deposits are capped at ${usdWhole(REDUCED_CAP_STOCK_USD)} each.` : `Its vault is opening, with deposits capped at ${usdWhole(REDUCED_CAP_STOCK_USD)} each.`;
+  if (cfg.gate.state === "reduced") {
+    const limit = usdWhole(perDepositLimitUsd(cfg.depositCapUsd));
+    return live ? `Deposits are reduced at ${limit} each.` : `Its vault is opening, with deposits reduced at ${limit} each.`;
+  }
   return live ? "Deposits are open." : "Its vault is opening.";
 }
 

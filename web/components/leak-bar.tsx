@@ -4,7 +4,7 @@ import { pct, signed } from "@/lib/format";
 import { REPLAY_WINDOW, isoDay, type VaultConfig } from "@/lib/vaults";
 
 const TONE = {
-  kept: { bar: "bg-kept text-canvas", swatch: "bg-kept", name: "Kept, 30-day", text: "What stays with depositors after both losses, over the whole window." },
+  kept: { bar: "bg-kept text-canvas", swatch: "bg-kept", name: "Kept over the full 30 days", text: "What stays with depositors after both losses, over the whole window." },
   cost: { bar: "bg-loss-dim text-loss", swatch: "bg-loss-dim ring-1 ring-loss", name: "Recentring cost", text: "The reposition at 02:00 UTC after each NYSE session." },
   markout: { bar: "bg-loss text-canvas", swatch: "bg-loss", name: "Lost to informed traders", text: "Trades from people who knew the price was about to move." },
 } as const;
@@ -28,8 +28,21 @@ export function LeakFigure({ cfg }: { cfg: VaultConfig }) {
           aria-label={`Of ${pct(feeApr)} a year in fees, ${pct(markoutApr)} went to informed traders, ${pct(costApr)} to recentring, and ${signed(keptApr)} was kept over the 30 days.`}
         >
           {bar.segments.map((s) => (
-            <div key={s.key} className={`flex items-center overflow-hidden whitespace-nowrap px-3 text-[15px] font-semibold ${TONE[s.key].bar}`} style={{ width: `${s.widthPct}%` }}>
-              {s.widthPct >= 9 ? (s.key === "markout" ? signed(-s.value) : s.key === "cost" ? pct(s.value) : signed(s.value)) : null}
+            <div
+              key={s.key}
+              aria-label={s.key === "cost" ? `Recentring cost ${pct(s.value)}` : undefined}
+              className={`flex items-center overflow-hidden whitespace-nowrap px-3 text-[15px] font-semibold ${TONE[s.key].bar}`}
+              style={{ width: `${s.widthPct}%` }}
+            >
+              {s.widthPct >= 9
+                ? s.key === "markout"
+                  ? signed(-s.value)
+                  : s.key === "cost"
+                    ? s.widthPct >= 18
+                      ? <>Recentring {pct(s.value)}</>
+                      : pct(s.value)
+                    : signed(s.value)
+                : null}
             </div>
           ))}
         </div>
@@ -43,7 +56,7 @@ export function LeakFigure({ cfg }: { cfg: VaultConfig }) {
       <div className={`grid gap-x-10 gap-y-3 text-[13px] leading-5 sm:grid-cols-3 ${bar.overdrawn ? "mt-10" : "mt-4"}`}>
         {(["kept", "cost", "markout"] as const).map((k) => (
           <div key={k}>
-            <span className={`mr-2 inline-block size-2.5 rounded-[2px] ${k === "kept" && keptApr < 0 ? "ring-1 ring-mute" : TONE[k].swatch}`} aria-hidden />
+            <span className={`mr-2 inline-block size-2.5 rounded-[2px] ${k === "kept" ? (keptApr >= 0 ? "bg-kept" : "bg-loss") : TONE[k].swatch}`} aria-hidden />
             <span className="font-medium">{TONE[k].name}</span>
             <span className="figure ml-2 text-mute">{k === "kept" ? signed(value[k]) : pct(value[k])}</span>
             <div className="pl-[18px] text-mute">{TONE[k].text}</div>

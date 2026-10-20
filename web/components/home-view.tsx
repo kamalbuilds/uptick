@@ -52,7 +52,7 @@ export function HomeView() {
   const open = byState("open"), reduced = byState("reduced"), closed = byState("closed");
   const groups = [
     { state: "open" as const, title: "Open", note: "No limit on a single deposit.", rows: open },
-    { state: "reduced" as const, title: "Reduced", note: `A single deposit may add up to ${usdWhole(REDUCED_CAP_STOCK_USD)} of stock token.`, rows: reduced },
+    { state: "reduced" as const, title: "Reduced", note: `Up to ${usdWhole(REDUCED_CAP_STOCK_USD)} per deposit, or the vault's size if smaller.`, rows: reduced },
   ];
 
   return (
@@ -61,7 +61,7 @@ export function HomeView() {
         <h1 className="serif verdict text-[30px] font-normal leading-[34px] sm:text-[40px] sm:leading-[44px]">Which of your stock tokens can earn, and how much you would keep.</h1>
         <p className="mt-5 text-mute">
           Every vault sits behind one of three doors, set by {swapsLabel(REPLAYED_SWAPS)} swaps replayed over the {REPLAY_WINDOW.days} days to {isoDay(REPLAY_WINDOW.end)}.{" "}
-          {GATE_COUNTS.open} are open, {GATE_COUNTS.reduced} are capped, {GATE_COUNTS.closed} are closed.
+          {GATE_COUNTS.open} are open, {GATE_COUNTS.reduced} are reduced, {GATE_COUNTS.closed} are closed.
         </p>
         <Mine holdings={holdings} />
       </div>

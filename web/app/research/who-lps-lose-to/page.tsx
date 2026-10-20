@@ -23,9 +23,9 @@ export default function WhoLpsLoseToPage() {
             markout loss came with $1.21 of fees in NYSE hours, $1.23 at night and $3.83 on weekends.
           </li>
           <li>
-            <strong>The clock is not a strategy.</strong> Across 5.1 million swaps over 54 days,
-            session-timed schedules produced 0 wins out of 3 tokens against the best static band, at
-            both $100,000 and $1,000,000.
+            <strong>The clock is not a strategy.</strong> A static band chosen per token beat every
+            session-timed schedule in the replay of 5.1 million swaps over 54 days, at both $100,000
+            and $1,000,000, so Uptick recentres once a day on a fixed band.
           </li>
           <li>
             <strong>Measure the pool.</strong> The fee to markout ratio ranges from 0.78 to 7.07 on
@@ -68,7 +68,7 @@ export default function WhoLpsLoseToPage() {
         same band, while TSLA never clears 1 in regular hours or weeknights at either band.
       </P>
 
-      <H2>The session signal was tested, and it failed</H2>
+      <H2>Session timing does not beat a static band</H2>
       <P>
         A ratio that looks good by session is not enough to build a schedule. The replay tested the
         obvious version: run a tight band during NYSE hours and a wide band outside them. It used

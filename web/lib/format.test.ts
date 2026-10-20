@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom } from "./format.ts";
+import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom, perDepositLimitUsd } from "./format.ts";
 import { parseVaultStats } from "./keeper.ts";
 
 const fx = (f: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url), "utf8"));
@@ -86,6 +86,15 @@ test("deposit room: the vault's maxDeposit wins once deployed, else the dollar s
   assert.equal(depositRoom(null, e18(40), 70_000, 200)!.over, false);
   // no price and no vault: unknown, never a block
   assert.equal(depositRoom(e18(1), undefined, 70_000, undefined), null);
+});
+
+test("per-deposit limit never exceeds the vault's own size", () => {
+  // a smaller reduced vault (PLTR at 24,207) keeps its own size as the limit
+  assert.equal(perDepositLimitUsd(24_207), 24_207);
+  // a full vault takes the global 25,000 cap
+  assert.equal(perDepositLimitUsd(100_000), 25_000);
+  // a vault at exactly the cap is unchanged
+  assert.equal(perDepositLimitUsd(25_000), 25_000);
 });
 
 test("every vault in the list carries a positive size cap no larger than the full vault, and a price to read it by", () => {

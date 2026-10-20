@@ -1,3 +1,10 @@
+import { REDUCED_CAP_STOCK_USD } from "./evidence.ts";
+
+/** A reduced vault's per-deposit cap: the global stock cap, or the vault's own size when it is smaller. */
+export function perDepositLimitUsd(depositCapUsd: number): number {
+  return Math.min(REDUCED_CAP_STOCK_USD, depositCapUsd);
+}
+
 export function usd(n: number, opts: { compact?: boolean } = {}): string {
   if (!Number.isFinite(n)) return "n/a";
   const compact = opts.compact ?? Math.abs(n) >= 100_000;

@@ -11,8 +11,8 @@ import { toneClass } from "./ledger";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, routerAbi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
-import { REDUCED_CAP_STOCK_USD, useEvidence } from "@/lib/evidence";
-import { depositRoom, num, signed, usd, usdWhole } from "@/lib/format";
+import { useEvidence } from "@/lib/evidence";
+import { depositRoom, num, perDepositLimitUsd, signed, usd, usdWhole } from "@/lib/format";
 import { useVaultStats } from "@/lib/hooks";
 import { usdSigned, yearlyUsd } from "@/lib/leak";
 import { revertCopy } from "@/lib/revert";
@@ -110,10 +110,11 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   const isMaxWithdraw = tab === "withdraw" && parsed !== null && maxWithdraw !== undefined && parsed === maxWithdraw;
   const needsApproval = tab === "deposit" && parsedAmount !== null && allowance !== undefined && allowance < parsedAmount;
   const overBalance = parsedAmount !== null && maxIn !== undefined && parsedAmount > maxIn;
-  // A reduced vault caps a single deposit at REDUCED_CAP_STOCK_USD of stock token, converted at the live Chainlink price.
-  const capTokens = gate.state === "reduced" && priceUsd !== undefined && priceUsd > 0 ? REDUCED_CAP_STOCK_USD / priceUsd : null;
+  // A reduced vault limits a single deposit to the stock cap or its own size, converted at the live Chainlink price.
+  const reducedLimit = gate.state === "reduced" ? perDepositLimitUsd(cfg.depositCapUsd) : null;
+  const capTokens = reducedLimit !== null && priceUsd !== undefined && priceUsd > 0 ? reducedLimit / priceUsd : null;
   // Stock mode compares stock tokens to the cap; USDG mode compares dollars to the same cap.
-  const capInput = usdgMode ? (gate.state === "reduced" ? REDUCED_CAP_STOCK_USD : null) : capTokens;
+  const capInput = usdgMode ? reducedLimit : capTokens;
   const overCap = tab === "deposit" && capInput !== null && amountNum > capInput;
 
   // Router quote: leave a 1% cushion for the swap, then ask the vault what those shares are worth.
@@ -226,14 +227,14 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
       : (needsApproval ? `Approve ${cfg.symbol}` : `Deposit ${cfg.symbol}`)
     : `Withdraw ${cfg.symbol}`;
 
-  const limit = gate.state === "reduced" ? `${usdWhole(REDUCED_CAP_STOCK_USD)} a deposit` : gate.state === "open" ? "None while open" : "Closed";
+  const limit = gate.state === "reduced" ? `${usdWhole(perDepositLimitUsd(cfg.depositCapUsd))} a deposit` : gate.state === "open" ? "None while open" : "Closed";
   const sizeCap = usdWhole(cfg.depositCapUsd);
   const closed = gate.state === "closed" || !cfg.open;
   const opening = !closed && !vault;
   const help = overBalance
     ? { tone: "text-loss", text: `Above your ${tab === "deposit" ? "balance" : "withdrawable amount"}.` }
     : overCap && capInput !== null
-      ? { tone: "text-caution", text: usdgMode ? `A reduced vault caps a single deposit at ${usdWhole(REDUCED_CAP_STOCK_USD)}.` : `A reduced vault caps a single deposit at ${usdWhole(REDUCED_CAP_STOCK_USD)}, about ${num(capTokens ?? 0, 2)} ${cfg.symbol} today.` }
+      ? { tone: "text-caution", text: usdgMode ? `A reduced vault limits a single deposit to ${usdWhole(perDepositLimitUsd(cfg.depositCapUsd))}.` : `A reduced vault limits a single deposit to ${usdWhole(perDepositLimitUsd(cfg.depositCapUsd))}, about ${num(capTokens ?? 0, 2)} ${cfg.symbol} today.` }
       : overRoom && capRoom
         ? { tone: "text-caution", text: capRoom.tokens > 0 ? `This vault takes up to ${num(capRoom.tokens, 4)} ${cfg.symbol} more, at its ${sizeCap} size cap.` : `This vault is at its ${sizeCap} size cap and takes no more deposits.` }
         : null;
