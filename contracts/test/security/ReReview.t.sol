@@ -258,16 +258,17 @@ contract ReReviewPltrTest is Test {
         uint256 before_ = _holders(p0);
         uint256 w0 = _wallet(mev, p0);
         _drag(90);
+        // The instantDeploy swap sells into a pool 90 bp under the feed: its Chainlink floor refuses the deposit.
         vm.prank(mev);
-        uint256 sh = vault.deposit(50e18, mev);
+        vm.expectRevert();
+        vault.deposit(50e18, mev);
         _swapToSqrt(mev, sqrt0);
         vm.roll(vm.getBlockNumber() + 1);
-        vm.prank(mev);
-        vault.redeemInKind(sh, mev, mev);
         int256 mevPnl = int256(_wallet(mev, p0)) - int256(w0);
         int256 holders = int256(_holders(p0)) - int256(before_);
         emit log_named_int("mev pnl, PLTR wei at p0", mevPnl);
         emit log_named_int("alice pnl, PLTR wei at p0", holders);
+        assertLe(mevPnl, 0, "the drag paid");
         assertGe(holders, -int256(1e16), "alice lost to drag + instant deposit");
     }
 

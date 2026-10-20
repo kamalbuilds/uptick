@@ -118,11 +118,19 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     /// @notice Widest TWAP-to-Chainlink gap a rebalance may be bounded to, and the narrowest.
     uint16 private constant MAX_TWAP_ORACLE_BPS = 500;
     uint16 private constant MIN_TWAP_ORACLE_BPS = 10;
-    /// @notice Longest TWAP window. The pool must also hold at least this many observations, so that no one can
-    /// push the window out of its ring buffer (one observation per second at most) and close the oracle gate.
+    /// @notice Longest TWAP window. The pool must also hold more observations than the window has seconds: a pool
+    /// serves at most `cardinality - 1` seconds of history under one write per second, so a window equal to the
+    /// cardinality could be pushed out of the ring and close the oracle gate.
     uint32 private constant MAX_TWAP_WINDOW = 1800;
     /// @notice Highest entry fee, in pool-fee pips (20,000 = 2%).
     uint24 private constant MAX_ENTRY_FEE = 20_000;
+    /// @notice Entry fee a vault starts with when its pool's own fee tier is lower: 35 bp. A deposit made at a price
+    /// the feed has not printed yet, taken out in kind the next block, gains D*V/(V+D) * (m*u - fee) for an off-chain
+    /// move m with u the USDG share of the vault (about one half), so it is unprofitable while fee >= m*u. Across
+    /// the 1,769 round-to-round changes of the NVDA, AAPL, GOOGL, SPY and QQQ feeds (54 to 120 days each, public RPC,
+    /// `getRoundData`) 97.2% are at most 70 bp (median 52 bp: the feeds print when the price has moved about half a
+    /// percent), so 35 bp covers 97.2% of them.
+    uint24 public constant DEFAULT_ENTRY_FEE = 3500;
     uint256 private constant Q96 = 1 << 96;
     uint256 private constant Q128 = 1 << 128;
     uint128 private constant UNIT_LIQUIDITY = 1e24;
@@ -154,12 +162,14 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     uint16 public maxSpotTwapBps = 10;
     /// @notice Largest gap between the pool TWAP and Chainlink a rebalance accepts. Tighter than the
     /// maxDeviationBps gate every guarded path shares: it is what stops a TWAP walked away from the feed (inside
-    /// the band at every step) from being traded against. 60 bp: the 10-minute TWAP of the NVDA and PLTR pools sat
-    /// within 60 bp of the feed in 95.4% and 95.7% of samples over 36 hours, weekend included, and in 99.8% to
-    /// 100% of weekday samples (NYSE hours and overnight).
-    uint16 public maxTwapOracleBps = 60;
+    /// the band at every step) from being traded against. What a walk inside the bound can still take is the
+    /// bound times the one swap the rebalance makes, so the bound is the narrowest the feeds' own lag allows: the
+    /// 10-minute TWAPs of twelve vaulted pools sat within 30 bp of the feed in 76% to 91% of NYSE-hours samples
+    /// (2 minutes apart, 96 h to 20 Oct 2026) and within 60 bp in 96% to 100%; the feeds print only after a move of
+    /// about half a percent, so a tighter bound would refuse most of the day. 30 bp, retried by the keeper.
+    uint16 public maxTwapOracleBps = 30;
     /// @notice Fee on deposit and mint, in pool-fee pips, retained in the vault for the holders who stay. Never
-    /// below the pool's own fee tier; the default is the tier.
+    /// below the pool's own fee tier; the default is the larger of the tier and DEFAULT_ENTRY_FEE.
     uint24 public entryFee;
 
     /// @notice Queued owner change => earliest execution time. Zero when none is queued.
@@ -185,10 +195,6 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
 
     // ------------------------------------------------------------------ events
 
-    event Deposited(address indexed caller, address indexed receiver, uint256 assets, uint256 shares, bool deployed);
-    event Withdrawn(
-        address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares
-    );
     event RedeemedInKind(
         address indexed caller,
         address indexed receiver,
@@ -271,7 +277,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
 
         _checkParams(p, pool_);
         params = p;
-        entryFee = pool_.fee();
+        entryFee = uint24(Math.max(pool_.fee(), DEFAULT_ENTRY_FEE));
         keeper = c.keeper;
         treasury = c.treasury;
         depositCap = c.depositCap;
@@ -398,7 +404,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         _within(p.maxStaleness, 1 hours, 7 days);
         _within(p.twapWindow, 600, MAX_TWAP_WINDOW);
         (,,, uint16 cardinality,,,) = pool_.slot0();
-        if (p.twapWindow > cardinality) revert BadParams();
+        if (p.twapWindow >= cardinality) revert BadParams();
         _within(p.minRebalanceInterval, 1 hours, 24 hours);
     }
 
@@ -489,14 +495,17 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         return previewRedeem(balanceOf(owner_));
     }
 
-    /// @dev A floor on what redeem delivers: fair value less the exit buffer. redeem pays the actual proceeds.
+    /// @dev A floor on what redeem delivers: fair value less the exit buffer less the pool fee. The exit swap pays the
+    /// pool fee on the USDG leg, up to the whole value, so the floor allows for it in full: on a 1% pool the fee alone
+    /// is more than the buffer. redeem pays the actual proceeds.
     function previewRedeem(uint256 shares) public view override returns (uint256) {
-        return _convertToAssets(shares, Math.Rounding.Floor) * (1e4 - params.exitBufferBps) / 1e4;
+        return _convertToAssets(shares, Math.Rounding.Floor) * (1e4 - params.exitBufferBps) / 1e4 * (1e6 - poolFee) / 1e6;
     }
 
-    /// @dev Shares burned to receive exactly `assets`: fair shares for assets grossed up by the exit buffer.
+    /// @dev Shares burned to receive exactly `assets`: fair shares for assets grossed up by the exit buffer and the
+    /// pool fee.
     function previewWithdraw(uint256 assets) public view override returns (uint256) {
-        uint256 gross = Math.ceilDiv(assets * 1e4, 1e4 - params.exitBufferBps);
+        uint256 gross = Math.ceilDiv(Math.ceilDiv(assets * 1e4, 1e4 - params.exitBufferBps) * 1e6, 1e6 - poolFee);
         return _convertToShares(gross, Math.Rounding.Ceil);
     }
 
@@ -511,7 +520,7 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     {
         Snapshot memory s = _requireDepositable();
         shares = super.deposit(assets, receiver);
-        _afterDeposit(s, receiver, assets, shares);
+        if (instantDeploy) _deploy(s);
     }
 
     function mint(uint256 shares, address receiver)
@@ -523,20 +532,15 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     {
         Snapshot memory s = _requireDepositable();
         assets = super.mint(shares, receiver);
-        _afterDeposit(s, receiver, assets, shares);
-    }
-
-    function _afterDeposit(Snapshot memory s, address receiver, uint256 assets, uint256 shares) private {
-        bool deployed = instantDeploy;
-        if (deployed) _deploy(s);
-        emit Deposited(msg.sender, receiver, assets, shares, deployed);
+        if (instantDeploy) _deploy(s);
     }
 
     // -------------------------------------------------------------- withdrawals
 
     /// @notice Sends exactly `assets` of the Stock Token and burns the shares the exit actually cost: at most
     /// previewWithdraw(assets), less whatever part of the exit buffer the swap did not spend. Reverts when the exit
-    /// swap costs more than the exit buffer; use redeem or redeemInKind then.
+    /// swap costs more than the exit buffer; use redeem or redeemInKind then. The shares minted back are minted in this
+    /// block, so they are locked in it (_update): a whole-balance redeem in the same block reverts SharesLocked.
     function withdraw(uint256 assets, address receiver, address owner_)
         public
         override
@@ -689,7 +693,6 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         if (caller != owner_) _spendAllowance(owner_, caller, burned);
         stock.safeTransfer(receiver, delivered);
         emit Withdraw(caller, receiver, owner_, delivered, burned);
-        emit Withdrawn(caller, receiver, owner_, delivered, burned);
     }
 
     /// @dev Takes shares/supply of idle balances and of the position's liquidity into this contract and returns
@@ -802,15 +805,18 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         (uint256 idleStock, uint256 idleUsdg) = _orient(a0, a1);
         if (idleUsdg + _stockToUsdg(idleStock, s.price) < usdgScale) return false;
 
-        // The floor is the TWAP value of the input less slippageBps, not the Chainlink value: the TWAP is the market
-        // 10 minutes deep, callers have held spot within maxSpotTwapBps of it, and Chainlink can lag by hours.
+        // The floor is the higher of the TWAP value and the Chainlink value of the input, less the pool fee and
+        // slippageBps: a swap fills only when the pool pays at least that much against both references. The TWAP
+        // is the market 10 minutes deep and Chainlink can lag it by hours, so each alone can be the stale one;
+        // a pool dragged below the feed (or the feed run ahead of the pool) fails the other and reverts.
+        // Selling Stock Token the higher price is the demanding one, buying it the lower.
         uint256 twapPrice = _sqrtToUsd(s.sqrtTwap);
         (bool zeroForOne, uint256 amountIn) = vaultMath.swapNeeded(s.sqrtSpot, tl, tu, a0, a1, poolFee);
         if (zeroForOne == stockIsToken0) {
-            uint256 usdgValue = _stockToUsdg(amountIn, twapPrice);
+            uint256 usdgValue = _stockToUsdg(amountIn, Math.max(twapPrice, s.price));
             if (!_isDust(usdgValue)) _swap(stock, usdg, amountIn, _minOut(usdgValue));
         } else if (!_isDust(amountIn)) {
-            _swap(usdg, stock, amountIn, _minOut(_usdgToStock(amountIn, twapPrice)));
+            _swap(usdg, stock, amountIn, _minOut(_usdgToStock(amountIn, Math.min(twapPrice, s.price))));
         }
         return true;
     }
@@ -834,8 +840,8 @@ contract StockVault is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     }
 
     /// @dev Lowest acceptable swap output: the reference value of the input less the pool fee (every swap pays it,
-    /// whatever the depth) less slippageBps for price impact and drift. Deploy swaps pass the TWAP value, exit swaps
-    /// the Chainlink value.
+    /// whatever the depth) less slippageBps for price impact and drift. Deploy swaps pass the more demanding of the
+    /// TWAP and Chainlink values, exit swaps the Chainlink value.
     function _minOut(uint256 oracleValueOut) internal view returns (uint256) {
         return oracleValueOut * (1e6 - poolFee) / 1e6 * (1e4 - params.slippageBps) / 1e4;
     }

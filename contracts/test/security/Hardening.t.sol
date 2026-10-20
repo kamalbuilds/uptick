@@ -312,21 +312,33 @@ contract HardeningTest is Base {
 
     // ------------------------------------------------------ H1 swap floor and mint minimums
 
-    /// @dev The deploy swap floors at the TWAP value, not at the Chainlink value: with a 10 bp slippage allowance
-    /// and the feed 50 bp above the pool (inside the 100 bp gate) an instantDeploy deposit still deploys, because
-    /// the fill is judged against the market's own average. A Chainlink floor would sit 40 bp above any fill.
-    function test_deploySwapFloorFollowsTheTwapNotTheFeed() public {
+    /// @dev The deploy swap floors at the more demanding of the TWAP value and the Chainlink value of its input. With a
+    /// 10 bp slippage allowance: the feed 50 bp BELOW the pool (inside the 100 bp gate) leaves the TWAP the demanding
+    /// reference when the vault sells, so an instantDeploy deposit deploys; the feed 50 bp ABOVE the pool puts the
+    /// Chainlink value 40 bp over any fill, so the same deposit finds no taker and reverts.
+    function test_deploySwapFloorIsTheMoreDemandingOfTwapAndFeed() public {
         StockVault.Params memory p = _defaultParams();
         p.slippageBps = 10;
         _ownerDo(abi.encodeCall(StockVault.setParams, (p)));
         _instant();
-        _setFeed(_poolPrice() * 10_050 / 10_000);
+        uint256 snap = vm.snapshotState();
+
+        _setFeed(_poolPrice() * 9_950 / 10_000);
         (StockVault.Status st,,,,,) = vault.health();
         assertEq(uint8(st), uint8(StockVault.Status.Ok), "inside the Chainlink gate");
-
         _deposit(alice, 100e18);
-        assertGt(vault.tokenId(), 0, "the deposit deployed");
+        assertGt(vault.tokenId(), 0, "feed below the pool: the deposit deployed");
         assertGt(vault.positionInfo().liquidity, 0);
+
+        vm.revertToState(snap);
+        _setFeed(_poolPrice() * 10_050 / 10_000);
+        (st,,,,,) = vault.health();
+        assertEq(uint8(st), uint8(StockVault.Status.Ok), "inside the Chainlink gate");
+        _fund(alice, 100e18);
+        vm.prank(alice);
+        vm.expectRevert();
+        vault.deposit(100e18, alice);
+        assertEq(vault.tokenId(), 0, "feed above the pool: nothing deployed");
     }
 
     /// @dev mintMins against the real position manager: minting the idle pair at the spot the vault sees takes at

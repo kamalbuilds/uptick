@@ -83,9 +83,9 @@ contract Round2Test is Base {
     // ------------------------------------------------------------------ N3: rebalance needs TWAP near Chainlink
 
     /// Spot and TWAP sit together, 70 bp under the feed: inside the 100 bp gate and the 10 bp band, so every path
-    /// opens but the rebalance, which needs the TWAP within maxTwapOracleBps (60) of Chainlink.
+    /// opens but the rebalance, which needs the TWAP within maxTwapOracleBps (30) of Chainlink.
     function test_N3_rebalanceRefusedWhenTwapFarFromFeed() public {
-        assertEq(vault.maxTwapOracleBps(), 60, "default");
+        assertEq(vault.maxTwapOracleBps(), 30, "default");
         _deployedVault();
         vm.warp(block.timestamp + 6 hours);
         _setFeed(_poolPrice() * 10_070 / 10_000);
@@ -104,8 +104,12 @@ contract Round2Test is Base {
         _fund(bob, 1e18);
         vm.prank(bob);
         vault.deposit(1e18, bob);
-        // 50 bp is inside the bound
-        _setFeed(_poolPrice() * 10_050 / 10_000);
+        // 40 bp is outside the bound, 25 bp inside
+        _setFeed(_poolPrice() * 10_040 / 10_000);
+        vm.prank(stranger);
+        vm.expectRevert(StockVault.TwapOffOracle.selector);
+        vault.rebalance();
+        _setFeed(_poolPrice() * 10_025 / 10_000);
         vm.prank(stranger);
         vault.rebalance();
     }
@@ -128,9 +132,11 @@ contract Round2Test is Base {
 
     // ------------------------------------------------------------------ N4: entry fee
 
-    function test_N4_defaultIsThePoolTier() public view {
-        assertEq(vault.entryFee(), vault.poolFee());
-        assertEq(vault.entryFee(), 500);
+    /// The default is the larger of the pool's fee tier and the 35 bp floor measured from the feeds' own steps.
+    function test_N4_defaultIsTheLargerOfTierAndFloor() public view {
+        assertEq(vault.poolFee(), 500);
+        assertEq(vault.DEFAULT_ENTRY_FEE(), 3500);
+        assertEq(vault.entryFee(), 3500);
     }
 
     /// previewDeposit and previewMint are what deposit and mint then do, to the wei, at default and raised fee.
@@ -161,7 +167,7 @@ contract Round2Test is Base {
         uint256 sharesBob = _deposit(bob, 100e18);
         assertApproxEqAbs(vault.totalAssets(), taBefore + 100e18, 1e12, "the vault holds all 100");
         uint256 bobValue = vault.convertToAssets(sharesBob);
-        uint256 fee = 100e18 * 500 / 1e6; // the NVDA pool's 0.05% tier, written out so a zero fee cannot satisfy the test
+        uint256 fee = 100e18 * 3500 / 1e6; // the 35 bp default, written out so a zero fee cannot satisfy the test
         // bob pays the fee and owns taBefore-weighted nothing of it back except his own pro-rata part of the pot
         uint256 loss = fee * taBefore / (taBefore + 100e18);
         assertApproxEqAbs(100e18 - bobValue, loss, 2e15, "bob's claim is net of the fee");
@@ -177,7 +183,7 @@ contract Round2Test is Base {
         vm.prank(bob);
         (uint256 s, uint256 u) = vault.redeemInKind(sh, bob, bob);
         uint256 out = s + u * 1e12 * 1e8 / _feedPrice();
-        assertLe(out, 100e18 - 3e16, "round trip costs the depositor the fee (0.04 of 100)");
+        assertLe(out, 100e18 - 2e17, "round trip costs the depositor the fee (0.28 of 100: 35 bp x 400/500)");
     }
 
     function test_N4_boundsAndQueue() public {
@@ -229,15 +235,17 @@ contract Round2Test is Base {
         (,,,,,, uint32 w,) = vault.params();
         assertEq(w, 1800);
 
-        // a pool whose ring buffer holds fewer observations than the window can have the window pushed out of it
+        // a pool serves at most cardinality - 1 seconds of history, so the window must be shorter than the ring buffer
         (uint160 sq, int24 tk, uint16 idx,, uint16 nxt, uint8 fp, bool un) = IUniswapV3Pool(POOL).slot0();
         vm.mockCall(POOL, abi.encodeWithSelector(IUniswapV3Pool.slot0.selector), abi.encode(sq, tk, idx, uint16(1500), nxt, fp, un));
-        p.twapWindow = 1501;
-        _executeReverts(abi.encodeCall(StockVault.setParams, (p)), StockVault.BadParams.selector);
         p.twapWindow = 1500;
+        _executeReverts(abi.encodeCall(StockVault.setParams, (p)), StockVault.BadParams.selector);
+        p.twapWindow = 1499;
         _ownerDo(abi.encodeCall(StockVault.setParams, (p)));
-        vm.mockCall(POOL, abi.encodeWithSelector(IUniswapV3Pool.slot0.selector), abi.encode(sq, tk, idx, uint16(599), nxt, fp, un));
+        vm.mockCall(POOL, abi.encodeWithSelector(IUniswapV3Pool.slot0.selector), abi.encode(sq, tk, idx, uint16(600), nxt, fp, un));
         vm.expectRevert(StockVault.BadParams.selector);
         _deploy(_defaultParams());
+        vm.mockCall(POOL, abi.encodeWithSelector(IUniswapV3Pool.slot0.selector), abi.encode(sq, tk, idx, uint16(601), nxt, fp, un));
+        assertEq(address(_deploy(_defaultParams())).code.length > 0, true);
     }
 }

@@ -20,6 +20,13 @@ contract ReReviewFloorTest is Test {
     address constant ROUTER = 0xCaf681a66D020601342297493863E78C959E5cb2;
     address constant NPM = 0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3;
 
+    /// The GME cap the floor tests size their swaps at. keeper/data/universe.json lists $49,212, sized from the pool's
+    /// depth when the universe was built; the live 1% pool has thinned since (2026-10-20: half of $49,212 costs 217 bp
+    /// against the 199 bp the floor allows, so a full-cap deposit cannot be deployed in one rebalance and the
+    /// rebalance reverts rather than fill). GME's evidence gate is closed and DeployAll refuses it. At this cap the
+    /// same swap costs less than the floor allows; `setDepositCap` is the runtime lever for a pool that thins.
+    uint256 constant GME_CAP_USD = 25_000;
+
     struct P {
         string sym;
         address stock;
@@ -41,7 +48,7 @@ contract ReReviewFloorTest is Test {
             P("QQQ", 0xD5f3879160bc7c32ebb4dC785F8a4F505888de68, 0xD60A5d14dB690B7Afad71F76B108071D7175597d, 66787),
             P("GOOGL", 0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3, 0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7, 100000),
             P("PLTR", 0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A, 0x851680416A4f4E1c463d45171d61ACDdBc8554c0, 24207),
-            P("GME", 0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xE9713f453aDB9245B19559790c96F470a18F2fDF, 49212),
+            P("GME", 0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xE9713f453aDB9245B19559790c96F470a18F2fDF, GME_CAP_USD),
             P("MSTR", 0xec262a75e413fAfD0dF80480274532C79D42da09, 0x17578C0e0D15da44f31677263114F71aE76653EA, 22206)
         ];
         address who = makeAddr("swapper");
@@ -104,7 +111,7 @@ contract ReReviewFloorTest is Test {
         V[4] memory vs = [
             V("AMZN", 0x12f190a9F9d7D37a250758b26824B97CE941bF54, 0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef, 0xD5a1508ceD74c084eBf3cBe853e2C968fB2a651C, 68501),
             V("PLTR", 0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A, 0x851680416A4f4E1c463d45171d61ACDdBc8554c0, 0x820ABedFF239034956B7A9d2F0a331f9F075eB4c, 24207),
-            V("GME", 0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xE9713f453aDB9245B19559790c96F470a18F2fDF, 0x27C71df6A64fB476468EdF256CF72c038baB5B67, 49212),
+            V("GME", 0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xE9713f453aDB9245B19559790c96F470a18F2fDF, 0x27C71df6A64fB476468EdF256CF72c038baB5B67, GME_CAP_USD),
             V("MSTR", 0xec262a75e413fAfD0dF80480274532C79D42da09, 0x17578C0e0D15da44f31677263114F71aE76653EA, 0x396118bdFB181e6240E74D243F266B061c0edc3D, 22206)
         ];
         uint256 opened;
