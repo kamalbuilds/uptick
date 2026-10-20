@@ -12,9 +12,10 @@
 // evidence-only until its gate flips.
 // LIVENESS_SHARE lowers the on-chain deposit cap of a token whose deploy swap cannot clear the Chainlink floor at the full
 // 20% cap: the cap becomes the largest vault holding at most that share of the pool's in-range depth (the same
-// V / (depth + V) <= share rule as keeper/src/universe.ts vaultCapUsd). META: a half-cap sell costs 106 bp at $24,118 and the
-// floor allows 129 bp, so it stops filling once the feed sits 23 bp above the pool; at 15% ($17,025) it costs 83 bp and
-// fills at every gap the 30 bp rebalance bound lets through, with 16 bp left for the 10 bp spot band
+// V / (depth + V) <= share rule as keeper/src/universe.ts vaultCapUsd). META: a half-cap sell costs 102 to 106 bp at $24,118
+// against the 129 bp the floor allows, so it stops filling once the feed sits 0 to 25 bp above the pool; at 15% ($17,025)
+// it costs 80 to 83 bp and fills at every gap the 30 bp rebalance bound lets through, 16 to 19 bp short of the floor
+// (6 to 9 after the 10 bp spot band)
 // (contracts/test/security/Review4.t.sol test_R4_metaSellFloorThreshold, contracts/SECURITY.md R4-L2). The replay and the
 // published vault size stay at the universe's cap_usd.
 // Usage: node scripts/deploy-list.mjs [--open-only] [out.json]   (stdout when no path)

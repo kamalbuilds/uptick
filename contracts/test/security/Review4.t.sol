@@ -389,11 +389,13 @@ contract Review4FloorTest is ReReviewFloorTest {
     uint256 constant META_REPLAY_CAP_USD = 24_118;
 
     /// R4-L2, accepted residual. Selling Stock Token the deploy-swap floor prices the input at max(TWAP, feed). Half the
-    /// cap through the 0.3% pool costs c bp (fee included) and the floor allows 129 bp, so a sell fills while
-    /// c + feed-above-pool gap <= 129 bp. The keeper-side rebalance bound refuses a gap above 30 bp, so a cap that fills
-    /// at 30 bp always fills. At the 20% cap (c about 106 bp) META stops filling at a gap near 23 bp; at the 15% cap
-    /// (c about 83 bp) it fills at every gap the bound lets through, with 16 bp left for the 10 bp spot band.
-    /// Mutation: drop the Chainlink term from the floor and the 20% cap fills at 25 bp, so the last assertion fails.
+    /// cap through the 0.3% pool costs c bp (fee included) and the floor allows 129 bp, so a sell stops filling once c plus
+    /// the feed's gap above the pool plus the sell's own drift uses that up. The keeper-side rebalance bound refuses a gap
+    /// above 30 bp, so a cap that fills at 30 bp always fills. At the $24,118 replay cap (c about 102 to 106 bp across reads
+    /// of the live pool) META stops filling at a gap between 0 and 25 bp, depending on the block the fork reads; at the
+    /// $17,025 deploy cap (c about 80 to 83 bp) it fills at every gap the bound lets through, 16 to 19 bp short of the
+    /// floor and 6 to 9 bp after the 10 bp spot band. The replay cap's threshold moves with the live pool, so it is
+    /// logged, not asserted; the deploy cap's fills are the asserted bound.
     function test_R4_metaSellFloorThreshold() public {
         L memory meta = _list()[5];
         assertEq(meta.v.capUsd, META_CAP_USD, "the deploy-list cap");
@@ -409,13 +411,17 @@ contract Review4FloorTest is ReReviewFloorTest {
         assertEq(filled, gaps.length, "the deploy-list cap fills at every gap up to the 30 bp bound");
 
         meta.v.capUsd = META_REPLAY_CAP_USD;
-        uint256 snap2 = vm.snapshotState();
-        bool opened25;
-        try this.caseEdge(meta, true, 25) returns (bool opened) {
-            opened25 = opened;
-        } catch {}
-        vm.revertToState(snap2);
-        assertFalse(opened25, "the 20% cap does not fill with the feed 25 bp above the pool (the residual the lower cap avoids)");
+        uint256 firstRefused = type(uint256).max;
+        for (uint256 i; i < gaps.length && firstRefused == type(uint256).max; ++i) {
+            uint256 snap = vm.snapshotState();
+            try this.caseEdge(meta, true, gaps[i]) returns (bool opened) {
+                if (!opened) firstRefused = gaps[i];
+            } catch {
+                firstRefused = gaps[i];
+            }
+            vm.revertToState(snap);
+        }
+        console2.log("replay cap $24,118: first refused feed-above-pool gap bp (max = none up to 30)", firstRefused);
     }
 
     function test_R4_fullCapRebalanceAtTheBoundEdge() public {

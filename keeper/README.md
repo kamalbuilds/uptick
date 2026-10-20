@@ -43,7 +43,7 @@ A Stock Token gets a vault when all of these hold (thresholds in `src/universe.t
 
 Where the numbers come from: the volume floor admits a token to a vault and the replay gate decides whether deposits open. The vault is sized to its pool: a USD 100,000 position is the ceiling, and a thinner pool carries the largest position that holds at most 20% of its in-range liquidity (`cap_usd`, floored to whole dollars). Below USD 10,000 the daily rebalance, gas and swap impact cost more than the fees such a vault earns, so the pool is left out. `replay/replay.py` simulates each vault at its own `cap_usd`.
 
-`scripts/deploy-list.mjs` deploys every token at its `cap_usd`, except META, which deploys at 15% of its pool's in-range depth (USD 17,025 of USD 96K): a half-cap sell on its 0.3% pool costs 83 bp at that size against the 129 bp the deploy swap's Chainlink floor allows, so the rebalance fills with the feed any distance up to the vault's 30 bp bound off the pool.
+`scripts/deploy-list.mjs` deploys every token at its `cap_usd`, except META, which deploys at 15% of its pool's in-range depth (USD 17,025 of USD 96K): a half-cap sell on its 0.3% pool costs 80 to 83 bp at that size against the 129 bp the deploy swap's Chainlink floor allows, so the rebalance fills with the feed any distance up to the vault's 30 bp bound off the pool.
 
 | Token | Volume per day (7 d) | Pool depth (+-5%) | Vault size cap | Result |
 |---|---|---|---|---|
