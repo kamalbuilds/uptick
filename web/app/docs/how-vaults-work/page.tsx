@@ -195,9 +195,9 @@ export default function HowVaultsWorkPage() {
       <P>
         An in-kind exit can hand you more of one token than you expect because the vault holds both
         legs of the position and idle balances in both. It does not route through a swap, so it does
-        not depend on pool liquidity at the moment you exit. If the Stock Token is paused or the
-        receiver is blocked, the Stock Token leg is credited to the receiver and can be claimed with{" "}
-        <Code>claimStockOwed</Code> once the transfer succeeds.
+        not depend on pool liquidity at the moment you exit. When the Stock Token holds a transfer, the
+        vault records the Stock Token leg against the receiver and{" "}
+        <Code>claimStockOwed</Code> pays it out, so the exit always completes.
       </P>
 
       <H2>The oracle gate</H2>
@@ -272,7 +272,7 @@ const client = createPublicClient({
 });
 
 const vault = getVault("nvda");
-if (!vault?.vault) throw new Error("Vault is not deployed");
+if (!vault?.vault) throw new Error("Set NEXT_PUBLIC_VAULTS to the vault address map");
 
 const [status, price, updatedAt, sqrtOracle, sqrtTwap, sqrtSpot] =
   await client.readContract({
