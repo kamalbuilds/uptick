@@ -10,6 +10,13 @@
 // only the local fork script does.
 // --open-only keeps only the deployable tokens: mainnet deploys only vaults that take deposits; a closed token stays
 // evidence-only until its gate flips.
+// LIVENESS_SHARE lowers the on-chain deposit cap of a token whose deploy swap cannot clear the Chainlink floor at the full
+// 20% cap: the cap becomes the largest vault holding at most that share of the pool's in-range depth (the same
+// V / (depth + V) <= share rule as keeper/src/universe.ts vaultCapUsd). META: a half-cap sell costs 106 bp at $24,118 and the
+// floor allows 129 bp, so it stops filling once the feed sits 23 bp above the pool; at 15% ($17,025) it costs 83 bp and
+// fills at every gap the 30 bp rebalance bound lets through, with 16 bp left for the 10 bp spot band
+// (contracts/test/security/Review4.t.sol test_R4_metaSellFloorThreshold, contracts/SECURITY.md R4-L2). The replay and the
+// published vault size stay at the universe's cap_usd.
 // Usage: node scripts/deploy-list.mjs [--open-only] [out.json]   (stdout when no path)
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -25,13 +32,21 @@ const gates = Object.fromEntries(
   JSON.parse(readFileSync(new URL("../web/lib/vault-universe.json", import.meta.url), "utf8")).vaults.map((v) => [v.symbol, v.gate?.state]),
 );
 
+const LIVENESS_SHARE = { META: 0.15 };
+
 const isDeployable = (symbol) => ["open", "reduced"].includes(gates[symbol]);
 const list = universe.tokens.filter((t) => t.eligible && (!openOnly || isDeployable(t.symbol))).map((t) => {
   const chosen = replay.tokens?.[t.symbol]?.chosen;
   const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
   const answer = BigInt(Math.round(t.feed.usd * 10 ** t.feed.decimals));
   if (answer <= 0n) throw new Error(`${t.symbol}: no Chainlink price in universe.json`);
-  const capUsd = BigInt(Math.round(t.cap_usd ?? 0));
+  let capUsd = BigInt(Math.round(t.cap_usd ?? 0));
+  const share = LIVENESS_SHARE[t.symbol];
+  if (share !== undefined) {
+    if (!(t.pool?.depth_usd_5pct > 0)) throw new Error(`${t.symbol}: LIVENESS_SHARE needs pool.depth_usd_5pct in universe.json`);
+    const live = BigInt(Math.floor((t.pool.depth_usd_5pct * share) / (1 - share)));
+    if (live < capUsd) capUsd = live;
+  }
   const rangeBps = params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS;
   if (!Number.isInteger(rangeBps) || rangeBps < 50 || rangeBps > 2000) throw new Error(`${t.symbol}: rangeBps ${rangeBps} outside [50, 2000]`);
   const depositCapTokens = (capUsd * 10n ** BigInt(t.decimals) * 10n ** BigInt(t.feed.decimals)) / answer;
