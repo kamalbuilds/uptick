@@ -333,7 +333,7 @@ EOF
 : >"$TMP/keeper.log"
 ( cd "$APP/keeper" && RPC_URL="$R" VAULT_ADDRESS_NVDA="$V" VAULT_DEPLOY_BLOCK_NVDA="$(jq -r .deploy_block "$FORK_JSON")" POLL_S=2 \
     VAULT_KEEPER_KEY="$ANVIL0_KEY" FORK_CLOCK_MS=$(( $(ts) * 1000 )) \
-    bun --preload "$TMP/clock.ts" src/keeper.ts >"$TMP/keeper.log" 2>&1 & echo $! >"$TMP/keeper.pid" )
+    bun --no-env-file --preload "$TMP/clock.ts" src/keeper.ts >"$TMP/keeper.log" 2>&1 & echo $! >"$TMP/keeper.pid" )
 done_k=0
 for _ in $(seq 120); do
   if grep -q '"event":"rebalanced"' "$TMP/keeper.log"; then done_k=1; break; fi
