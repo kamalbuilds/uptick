@@ -170,7 +170,7 @@ export default function RecentreSchedulePage() {
         caption="A weekend or holiday tick outside the band never triggers a rebalance. The stored range holds until the next session slot."
       />
       <P>
-        The out-of-range path exists because a 5% band can be left behind by an overnight gap. It
+        The out-of-range path exists because a band can be left behind by an overnight gap. It
         stays inside NYSE hours so the keeper is trading while the stock is liquid, and its two hour
         gap stops a band edge from producing a burst of rebalances.
       </P>

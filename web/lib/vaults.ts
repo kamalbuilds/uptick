@@ -11,6 +11,8 @@ export type VaultConfig = {
   feeTier: string;
   /** Vault size in USD, sized to the pool depth so the vault stays within 20% of in-range liquidity; the vault is created with this deposit cap. */
   depositCapUsd: number;
+  /** Half-width of the vault's band around Chainlink in bps, chosen per token (keeper/data/params.json). */
+  bandBps: number;
   /** Chainlink price (USD per stock) read when the universe was built. */
   refPriceUsd: number;
   /** Chainlink proxy that prices the vault. */
@@ -69,6 +71,7 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   pool: v.pool as Address,
   feeTier: v.feeTier,
   depositCapUsd: v.depositCapUsd,
+  bandBps: v.bandBps,
   refPriceUsd: v.refPriceUsd,
   feed: v.feed as Address,
   vault: asAddress(fromEnv[v.symbol]),

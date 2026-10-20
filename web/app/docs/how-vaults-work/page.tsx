@@ -13,11 +13,12 @@ import {
   Sources,
   TLDR,
 } from "@/components/prose";
+import { VAULTS } from "@/lib/vaults";
 
 export const metadata: Metadata = {
   title: "How vaults work | Uptick",
   description:
-    "Shares, deposits, the plus or minus 5% band, the 02:00 UTC recentre, exit paths and the oracle gate behind every Uptick vault.",
+    "Shares, deposits, the per-token band, the 02:00 UTC recentre, exit paths and the oracle gate behind every Uptick vault.",
 };
 
 export default function HowVaultsWorkPage() {
@@ -30,7 +31,7 @@ export default function HowVaultsWorkPage() {
       <TLDR>
         <ul>
           <li>A share is a claim on idle balances, both legs of the position, and uncollected fees.</li>
-          <li>The vault holds a plus or minus 5% band and recentres at 02:00 UTC after each NYSE session.</li>
+          <li>The vault holds a band chosen per token and recentres at 02:00 UTC after each NYSE session.</li>
           <li>Deposits and withdrawals pass the oracle gate. redeemInKind does not.</li>
         </ul>
       </TLDR>
@@ -117,11 +118,17 @@ export default function HowVaultsWorkPage() {
 
       <H2>The band and the recentre</H2>
       <P>
-        The position sits inside a plus or minus 5% band around the Chainlink price, expressed as{" "}
-        <Code>rangeBps</Code> 500 and snapped to the pool&apos;s tick spacing. The band is the
+        The position sits inside a band around the Chainlink price, expressed as{" "}
+        <Code>rangeBps</Code> and chosen per token (table below), snapped to the pool&apos;s tick spacing. The band is the
         product: it earns fees while the stock trades inside it, and it defines when the position
         has to move.
       </P>
+      <DataTable
+        columns={["Vault", "rangeBps", "Band"]}
+        rows={VAULTS.map((v) => [v.symbol, `${v.bandBps} bps`, `plus or minus ${v.bandBps / 100}%`])}
+        numeric={[1]}
+        caption="Each vault's band as the deploy list carries it, from keeper/data/params.json."
+      />
       <P>
         A recentre collects fees, withdraws both legs, and redeploys around the new Chainlink price.
         The keeper runs a 60 second loop and treats three cases differently.
@@ -244,7 +251,7 @@ export default function HowVaultsWorkPage() {
           ["maxStaleness", "90,000 seconds", "How old a Chainlink answer may be. Allowed range 1 hour to 7 days."],
           ["maxDeviationBps", "100 bps", "How far the TWAP and the spot price may sit from Chainlink. Allowed range 10 to 500 bps."],
           ["twapWindow", "600 seconds", "The TWAP observation window. Minimum 600 seconds."],
-          ["rangeBps", "500 bps", "The half-width of the band around Chainlink."],
+          ["rangeBps", "Per token, 150 to 2,000 bps", "The half-width of the band around Chainlink."],
           ["perfFeeBps", "1,000 bps", "The treasury cut on uncollected fees."],
           ["Share decimals", "24", "The ERC-4626 inflation guard."],
           ["minRebalanceInterval", "6 hours", "The shortest gap between keeper rebalances."],

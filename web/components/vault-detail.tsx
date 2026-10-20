@@ -91,7 +91,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
 
           <section aria-labelledby="band">
             <SectionTitle id="band">The band follows the price</SectionTitle>
-            <p className="mt-4 max-w-[690px] text-mute">The vault holds {cfg.symbol} inside a band around the Chainlink price and re-centres it at 02:00 UTC after each NYSE session. Fees accrue while the pool price is inside.</p>
+            <p className="mt-4 max-w-[690px] text-mute">The vault holds {cfg.symbol} inside a plus or minus {cfg.bandBps / 100}% band around the Chainlink price and re-centres it at 02:00 UTC after each NYSE session. Fees accrue while the pool price is inside.</p>
             {q.isError ? (
               <div className="mt-4 max-w-xl"><FetchError what={cfg.symbol} onRetry={() => q.refetch()} /></div>
             ) : !q.data ? (

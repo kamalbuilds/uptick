@@ -34,7 +34,7 @@ export default function DocsPage() {
       <TLDR>
         <ul>
           <li>Deposit a Stock Token, receive shares. Swap fees lift the share price.</li>
-          <li>The vault holds a plus or minus 5% band around Chainlink and recentres at 02:00 UTC after each NYSE session.</li>
+          <li>The vault holds a band around Chainlink, chosen per token, and recentres at 02:00 UTC after each NYSE session.</li>
           <li>A vault opens deposits only when both halves of a 30-day replay keep at least break-even.</li>
         </ul>
       </TLDR>
@@ -61,7 +61,7 @@ export default function DocsPage() {
           ],
           [
             "StockVault",
-            "Holds one Uniswap v3 position in a plus or minus 5% band around Chainlink. Fees accrue to the share price.",
+            "Holds one Uniswap v3 position in a band around Chainlink chosen per token. Fees accrue to the share price.",
           ],
           [
             "Keeper and evidence API",

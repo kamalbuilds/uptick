@@ -35,8 +35,8 @@ export default function VaultSizingPage() {
       <TLDR>
         <ul>
           <li>
-            A vault may hold at most 20% of the in-range liquidity of its pool, measured across its
-            own plus or minus 5% band.
+            A vault may hold at most 20% of the in-range liquidity of its pool, measured within plus or
+            minus 5% of the price.
           </li>
           <li>
             That gives a cap of <Code>min($100,000, depth / 4)</Code>. A pool whose depth cannot
@@ -67,7 +67,7 @@ export default function VaultSizingPage() {
       </P>
       <P>
         Let <Code>depth</Code> be the dollar value of active liquidity in the deepest USDG pool,
-        spread across the vault's plus or minus 5% band. After a deposit of <Code>V</Code>, the
+        within plus or minus 5% of the price. After a deposit of <Code>V</Code>, the
         vault's share is <Code>V / (depth + V)</Code>. Holding that at or below 20% gives the cap.
       </P>
       <CodeBlock

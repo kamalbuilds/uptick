@@ -217,7 +217,7 @@ export default function OracleAndPricingPage() {
           ["maxDeviationBps", "100 bps", "10 to 500 bps"],
           ["maxStaleness", "90,000 seconds", "1 hour to 7 days"],
           ["twapWindow", "600 seconds", "600 seconds to 1 day"],
-          ["rangeBps", "500 bps", "50 to 2,000 bps"],
+          ["rangeBps", "Per token, 150 to 2,000 bps", "50 to 2,000 bps"],
           ["exitBufferBps", "30 bps", "0 to 200 bps"],
           ["perfFeeBps", "1,000 bps", "0 to 2,000 bps"],
         ]}

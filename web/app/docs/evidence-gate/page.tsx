@@ -144,8 +144,8 @@ worst < -20           closed    deposits refused`}
 
       <H3>What is held constant</H3>
       <P>
-        The replay runs one strategy at $100,000 of capital: a plus or minus 5% band around
-        Chainlink, recentred at 02:00 UTC on the day after each NYSE session, with slots skipped
+        The replay runs one strategy per vault at that vault's own size: a band around
+        Chainlink chosen per token, recentred at 02:00 UTC on the day after each NYSE session, with slots skipped
         when the feed is older than 90,000 seconds. The window is 2026-09-17 to 2026-10-17, and 22
         after-session slots were requested and kept.
       </P>
