@@ -1,4 +1,4 @@
-import type { Address } from "viem";
+import { isAddress, type Address } from "viem";
 import universe from "./vault-universe.json";
 
 export type VaultConfig = {
@@ -69,6 +69,12 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
 export const REPLAYED_SWAPS = universe.vaults.reduce((n, v) => n + (v.gate?.swaps ?? 0), 0);
 
 export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
+
+/** UptickRouter, the USDG on-ramp. Unset or malformed keeps the USDG option hidden rather than pointing at a wrong contract. */
+export const ROUTER: `0x${string}` | undefined =
+  process.env.NEXT_PUBLIC_ROUTER && isAddress(process.env.NEXT_PUBLIC_ROUTER)
+    ? (process.env.NEXT_PUBLIC_ROUTER as `0x${string}`)
+    : undefined;
 
 export const getVault = (id: string) => VAULTS.find((v) => v.id === id);
 

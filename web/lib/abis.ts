@@ -8,6 +8,10 @@ export const erc20Abi = parseAbi([
   "function symbol() view returns (string)",
 ]);
 
+export const routerAbi = parseAbi([
+  "function depositUsdg(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256 shares)",
+]);
+
 export const vaultAbi = parseAbi([
   "function asset() view returns (address)",
   "function decimals() view returns (uint8)",
