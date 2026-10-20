@@ -130,8 +130,8 @@ chk "router is bound to that factory" "'$(call "$ROUTER" 'registry()(address)' |
 chk "router slippageBps is 100" "$(call "$ROUTER" 'slippageBps()(uint256)') == 100"
 WANT_CAP=$(node "$APP/scripts/deploy-list.mjs" 2>/dev/null | jq -r '.[] | select(.symbol=="NVDA") | .depositCapTokens')
 chk "NVDA depositCap is the deploy-list cap" "$(call "$V" 'depositCap()(uint256)') == $WANT_CAP and $WANT_CAP > 0"
-chk "entry fee defaults to the pool fee tier (500 pips = 5 bp)" "$(call "$V" 'entryFee()(uint24)') == 500 and $(call "$V" 'poolFee()(uint24)') == 500"
-chk "rebalance TWAP-to-Chainlink bound defaults to 60 bp" "$(call "$V" 'maxTwapOracleBps()(uint16)') == 60"
+chk "entry fee defaults to max(pool fee tier, 35 bp): 3500 pips on the 5 bp NVDA pool" "$(call "$V" 'entryFee()(uint24)') == 3500 and $(call "$V" 'poolFee()(uint24)') == 500"
+chk "rebalance TWAP-to-Chainlink bound defaults to 30 bp" "$(call "$V" 'maxTwapOracleBps()(uint16)') == 30"
 chk "vault is keyed to anvil account 0" "'$(cast call "$V" 'keeper()(address)' -r "$R" | tr A-Z a-z)' == '$(echo $A0 | tr A-Z a-z)'"
 ANVIL0_KEY=$(cast wallet private-key "test test test test test test test test test test test junk") # public Foundry test mnemonic, account 0
 SNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
@@ -163,10 +163,10 @@ send "$USER" "$NVDA" 'approve(address,uint256)' "$V" $AMT >/dev/null
 rc=$(send "$USER" "$V" 'deposit(uint256,address)(uint256)' $AMT "$USER")
 sh1=$(bal "$V" "$USER"); ta1=$(call "$V" 'totalAssets()(uint256)'); liq1=$(liquidity)
 dsh=$(py "$sh1 - $sh0")
-ev=$(evdata "$rc" "$V" 'Deposited(address,address,uint256,uint256,bool)'); [ -n "$ev" ] || die "no Deposited event"
-chk "Deposited.assets is the deposit" "$(word "${ev#*|}" 0) == $AMT"
-chk "Deposited.shares equals the share balance delta" "$(word "${ev#*|}" 1) == $dsh"
-chk "Deposited.deployed is false (factory vaults start with instantDeploy off: the deposit waits idle for the keeper)" "$(word "${ev#*|}" 2) == 0 and '$(call "$V" 'instantDeploy()(bool)')' == 'false'"
+ev=$(evdata "$rc" "$V" 'Deposit(address,address,uint256,uint256)'); [ -n "$ev" ] || die "no Deposit event"
+chk "Deposit.assets is the deposit" "$(word "${ev#*|}" 0) == $AMT"
+chk "Deposit.shares equals the share balance delta" "$(word "${ev#*|}" 1) == $dsh"
+chk "instantDeploy is off (factory vaults start with it off: the deposit waits idle for the keeper)" "'$(call "$V" 'instantDeploy()(bool)')' == 'false'"
 chk "shares minted equal previewDeposit to the wei (entry fee included)" "$dsh == $prev"
 chk "20 NVDA mints about 20 whole shares at 24 decimals" "abs($dsh - 20 * 10**24) * 100 <= 20 * 10**24"
 chk "user NVDA fell by the deposit" "$(bal "$NVDA" "$USER") == 100000000000000000000 - $AMT"
@@ -270,10 +270,10 @@ MINSH=$(py "$quote * 99 // 100")
 sh0=$(bal "$V" "$USER"); u0=$(bal "$USDG" "$USER"); ta0=$(call "$V" 'totalAssets()(uint256)')
 rc=$(send "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$V" $USDG_IN "$MINSH" "$USER")
 sh1=$(bal "$V" "$USER"); dsh=$(py "$sh1 - $sh0")
-ev=$(evdata "$rc" "$V" 'Deposited(address,address,uint256,uint256,bool)'); [ -n "$ev" ] || die "no Deposited event from the vault"
-chk "Deposited.receiver is the user" "int('$(echo "${ev%%|*}" | cut -d, -f2)',16) == int('$USER',16)"
-chk "Deposited.caller is the router" "int('$(echo "${ev%%|*}" | cut -d, -f1)',16) == int('$ROUTER',16)"
-chk "Deposited.shares equals the user share delta" "$(word "${ev#*|}" 1) == $dsh"
+ev=$(evdata "$rc" "$V" 'Deposit(address,address,uint256,uint256)'); [ -n "$ev" ] || die "no Deposit event from the vault"
+chk "Deposit.receiver is the user" "int('$(echo "${ev%%|*}" | cut -d, -f2)',16) == int('$USER',16)"
+chk "Deposit.caller is the router" "int('$(echo "${ev%%|*}" | cut -d, -f1)',16) == int('$ROUTER',16)"
+chk "Deposit.shares equals the user share delta" "$(word "${ev#*|}" 1) == $dsh"
 chk "shares minted respect minShares" "$dsh >= $MINSH"
 chk "shares minted match the quote within 0.5%" "abs($dsh - $quote) * 200 <= $quote"
 chk "user USDG fell by exactly the input" "$(bal "$USDG" "$USER") == $u0 - $USDG_IN"
@@ -354,11 +354,13 @@ step 04b-mcp-stock-deposit-lands
 gate_ready
 sh0=$(bal "$V" "$USER"); n0=$(bal "$NVDA" "$USER")
 send "$USER" "$t0to" "$t0d" >/dev/null
+prev=$(call "$V" 'previewDeposit(uint256)(uint256)' 5000000000000000000)
 rc=$(send "$USER" "$t1to" "$t1d")
 dsh=$(py "$(bal "$V" "$USER") - $sh0")
-ev=$(evdata "$rc" "$V" 'Deposited(address,address,uint256,uint256,bool)'); [ -n "$ev" ] || die "no Deposited event"
+ev=$(evdata "$rc" "$V" 'Deposit(address,address,uint256,uint256)'); [ -n "$ev" ] || die "no Deposit event"
 chk "shares minted by the prepared deposit" "$dsh > 0 and $(word "${ev#*|}" 1) == $dsh"
-chk "5 NVDA mints about 5 whole shares" "abs($dsh - 5 * 10**24) * 100 <= 5 * 10**24"
+chk "shares minted equal previewDeposit to the wei (entry fee included)" "$dsh == $prev"
+chk "5 NVDA mints about 5 whole shares (+-2%: the 35 bp entry fee, and the fees earlier steps left in a vault seeded with \$5K)" "abs($dsh - 5 * 10**24) * 100 <= 2 * 5 * 10**24"
 chk "user NVDA fell by 5" "$(bal "$NVDA" "$USER") == $n0 - 5 * 10**18"
 SH_STEP4=$dsh
 pass
@@ -469,8 +471,8 @@ sells=0
 while [ "$(off_feed_bps 6)" -lt 65 ] && [ $sells -lt 40 ]; do swap "$TRADER" "$NVDA" "$USDG" 100000000000000000000; sells=$((sells + 1)); done
 settle
 FD=$(off_feed_bps 5)
-echo "  info: $sells sells of 100 NVDA, then a TWAP window: TWAP is $FD bp from Chainlink (rebalance bound 60, gate 100)" >&3
-chk "TWAP is between 60 and 100 bp from Chainlink" "$FD > 60 and $FD < 100"
+echo "  info: $sells sells of 100 NVDA, then a TWAP window: TWAP is $FD bp from Chainlink (rebalance bound 30, gate 100)" >&3
+chk "TWAP is between 30 and 100 bp from Chainlink" "$FD > 30 and $FD < 100"
 chk "the Chainlink gate is Ok, so only the rebalance bound can refuse (health status 0)" "$(health) == 0"
 chk "spot sits on the TWAP, so the spot-to-TWAP band is not what refuses" "$(off_twap_bps) <= 1"
 rd=$(revdata "$A0" "$V" 'rebalance()')
@@ -567,7 +569,9 @@ chk "position was re-minted (new tokenId)" "$(call "$V" 'tokenId()(uint256)') !=
 chk "the rebalance deployed the users' idle deposits (liquidity grew)" "$(liquidity) > $liq_pre"
 px=$(cast call "$FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | sed -n 2p | num)
 idle=$(py "$(bal "$NVDA" "$V") + $(bal "$USDG" "$V") * 10**20 // $px")
-chk "idle inventory is under 2% of totalAssets after the deploy" "$idle * 50 < $(call "$V" 'totalAssets()(uint256)')"
+# what a deploy leaves idle is the balancing swap's price impact times the 150 bp range's sensitivity to it: 3.47% of totalAssets for
+# 83 NVDA at this fork block, identical on the pre-round-3 bytecode (git 037c849); a rebalance that deployed nothing leaves about half
+chk "idle inventory is under 5% of totalAssets after the deploy" "$idle * 20 < $(call "$V" 'totalAssets()(uint256)')"
 rng=$(cast call "$V" 'currentRange()(int24,int24,uint256,uint256)' -r "$R"); lo=$(sed -n 3p <<<"$rng" | num); hi=$(sed -n 4p <<<"$rng" | num)
 chk "new range brackets the Chainlink price" "$lo < $px < $hi"
 chk "new range is centred on the oracle within 1%" "abs(($lo + $hi) // 2 - $px) * 100 <= $px"
@@ -585,11 +589,11 @@ chk "redeem calldata shares match" "$(sed -n 1p <<<"$dec" | num) == $part"
 chk "redeem calldata receiver and owner are the user" "'$(sed -n 2p <<<"$dec")'.lower() == '$USER'.lower() and '$(sed -n 3p <<<"$dec")'.lower() == '$USER'.lower()"
 prev=$(call "$V" 'previewRedeem(uint256)(uint256)' "$part"); n0=$(bal "$NVDA" "$USER"); u0=$(bal "$USDG" "$USER")
 rc=$(send "$USER" "$wto" "$wd")
-ev=$(evdata "$rc" "$V" 'Withdrawn(address,address,address,uint256,uint256)'); [ -n "$ev" ] || die "no Withdrawn event"
+ev=$(evdata "$rc" "$V" 'Withdraw(address,address,address,uint256,uint256)'); [ -n "$ev" ] || die "no Withdraw event"
 dn=$(py "$(bal "$NVDA" "$USER") - $n0")
 chk "NVDA returned at least previewRedeem" "$dn >= $prev and $dn > 0"
-chk "Withdrawn.assets equals the NVDA balance delta" "$(word "${ev#*|}" 0) == $dn"
-chk "Withdrawn.shares equals the shares asked" "$(word "${ev#*|}" 1) == $part"
+chk "Withdraw.assets equals the NVDA balance delta" "$(word "${ev#*|}" 0) == $dn"
+chk "Withdraw.shares equals the shares asked" "$(word "${ev#*|}" 1) == $part"
 chk "shares fell by exactly the redeemed amount" "$(bal "$V" "$USER") == $sh_user - $part"
 chk "redeem paid in NVDA only (USDG unchanged)" "$(bal "$USDG" "$USER") == $u0"
 pass
