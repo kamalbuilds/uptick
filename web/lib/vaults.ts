@@ -9,6 +9,10 @@ export type VaultConfig = {
   pool: Address;
   /** Pool fee tier as shown, e.g. "0.05%". */
   feeTier: string;
+  /** Vault size in USD, sized to the pool depth so the vault stays within 20% of in-range liquidity; the vault is created with this deposit cap. */
+  depositCapUsd: number;
+  /** Chainlink price (USD per stock) read when the universe was built. */
+  refPriceUsd: number;
   /** Chainlink proxy that prices the vault. */
   feed: Address;
   /** Deployed vault address; undefined while the vault is opening. */
@@ -52,12 +56,17 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   token: v.token as Address,
   pool: v.pool as Address,
   feeTier: v.feeTier,
+  depositCapUsd: v.depositCapUsd,
+  refPriceUsd: v.refPriceUsd,
   feed: v.feed as Address,
   vault: asAddress(fromEnv[v.symbol]),
   open: v.open,
   feeAprPct: v.feeAprPct,
   keptAprPct: v.keptAprPct,
 }));
+
+/** Swaps replayed across every vault in the list, from each vault's own gate. */
+export const REPLAYED_SWAPS = universe.vaults.reduce((n, v) => n + (v.gate?.swaps ?? 0), 0);
 
 export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
 

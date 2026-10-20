@@ -3,6 +3,8 @@ import { Archivo, Figtree, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { pitchLine } from "@/lib/format";
+import { REPLAYED_SWAPS, VAULTS } from "@/lib/vaults";
 import "./globals.css";
 
 const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo", display: "swap" });
@@ -11,7 +13,7 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", dis
 
 export const metadata: Metadata = {
   title: "Uptick: put your stock tokens to work",
-  description: "Deposit NVDA or GOOGL and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.",
+  description: pitchLine(VAULTS.length, REPLAYED_SWAPS),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

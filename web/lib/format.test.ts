@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { pct, shortAddress, usd, ago } from "./format.ts";
+import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom } from "./format.ts";
 import { parseVaultStats } from "./keeper.ts";
 
 const fx = (f: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url), "utf8"));
@@ -55,4 +55,45 @@ test("a new onchain vault with no fees leads with the replay APR; one with fees 
   const earning = parseVaultStats({ ...base, fee_apr_pct: { "7d": 38.2, lifetime: 38.2, replay_30d: 40.6 } });
   assert.equal(earning.feeAprPct, 38.2);
   assert.equal(earning.source, "onchain");
+});
+
+test("copy states the vault count and replayed swaps it is given, and names no fixed pair of tokens", () => {
+  assert.equal(swapsLabel(5_123_456), "5.1 million");
+  assert.equal(swapsLabel(842_504), "842,504");
+  const line = pitchLine(17, 7_950_000);
+  assert.match(line, /any of 17 Stock Tokens/);
+  assert.match(line, /8\.0 million past trades/);
+  assert.doesNotMatch(line, /NVDA|GOOGL/);
+  for (const f of ["../app/layout.tsx", "../app/page.tsx", "../components/vault-detail.tsx"]) {
+    const src = readFileSync(new URL(f, import.meta.url), "utf8");
+    assert.doesNotMatch(src, /NVDA or GOOGL|5\.1 million/, `${f} carries stale copy`);
+  }
+});
+
+test("deposit room: the vault's maxDeposit wins once deployed, else the dollar size over the price", () => {
+  const e18 = (n: number) => BigInt(Math.round(n * 1e6)) * 10n ** 12n;
+  // deployed, 40 tokens of room left: 41 is over, 40 is not
+  assert.deepEqual(depositRoom(e18(41), e18(40), 70_000, 200), { tokens: 40, source: "vault", over: true });
+  assert.equal(depositRoom(e18(40), e18(40), 70_000, 200)!.over, false);
+  // full vault: maxDeposit 0 blocks any amount
+  assert.equal(depositRoom(e18(0.001), 0n, 70_000, 200)!.over, true);
+  // not deployed: $70,000 at $200 is 350 tokens
+  assert.deepEqual(depositRoom(e18(351), undefined, 70_000, 200), { tokens: 350, source: "size", over: true });
+  assert.equal(depositRoom(e18(350), undefined, 70_000, 200)!.over, false);
+  // uncapped vault (maxDeposit = uint256 max) falls back to the dollar size
+  assert.equal(depositRoom(e18(351), 2n ** 256n - 1n, 70_000, 200)!.source, "size");
+  // no amount typed: room is reported, nothing is over
+  assert.equal(depositRoom(null, e18(40), 70_000, 200)!.over, false);
+  // no price and no vault: unknown, never a block
+  assert.equal(depositRoom(e18(1), undefined, 70_000, undefined), null);
+});
+
+test("every vault in the list carries a positive size cap no larger than the full vault, and a price to read it by", () => {
+  const { vaults } = JSON.parse(readFileSync(new URL("./vault-universe.json", import.meta.url), "utf8"));
+  assert.ok(vaults.length >= 7);
+  for (const v of vaults) {
+    assert.ok(v.depositCapUsd >= 10_000 && v.depositCapUsd <= 100_000, `${v.symbol} cap ${v.depositCapUsd}`);
+    assert.ok(v.refPriceUsd > 0, `${v.symbol} price`);
+  }
+  assert.ok(vaults.some((v: { depositCapUsd: number }) => v.depositCapUsd < 100_000), "thin-pool vaults carry less than the full size");
 });

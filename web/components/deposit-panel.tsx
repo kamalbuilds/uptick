@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatUnits, parseUnits, type Hash } from "viem";
+import { formatUnits, parseUnits, zeroAddress, type Hash } from "viem";
 import { useAccount, usePublicClient, useReadContract, useReadContracts, useWriteContract } from "wagmi";
 import { CheckCircle, CircleNotch, WarningCircle, ArrowSquareOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { WalletButton } from "./wallet-button";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
 import { REDUCED_CAP_STOCK_USD, useEvidence } from "@/lib/evidence";
-import { num, pct, usd } from "@/lib/format";
+import { depositRoom, num, pct, usd } from "@/lib/format";
 import { useVaultStats } from "@/lib/hooks";
 import { errMessage, waitForReceipt } from "@/lib/tx";
 import { SHARE_DECIMALS, type VaultConfig } from "@/lib/vaults";
@@ -69,6 +69,12 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
     query: { enabled: Boolean(vault && parsed) },
   });
 
+  // How much more the vault takes: its own maxDeposit (depositCap less assets) once deployed, else its dollar size over the stock price.
+  const room = useReadContract({
+    address: vault, abi: vaultAbi, functionName: "maxDeposit", args: [address ?? zeroAddress], chainId: robinhoodChain.id,
+    query: { enabled: Boolean(vault), refetchInterval: 15_000 },
+  });
+
   const amountNum = parsed ? Number(formatUnits(parsed, DECIMALS)) : 0;
   const maxIn = tab === "deposit" ? balance : maxWithdraw;
   const isMaxWithdraw = tab === "withdraw" && parsed !== null && maxWithdraw !== undefined && parsed === maxWithdraw;
@@ -77,6 +83,8 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
   // A reduced vault caps a single deposit at REDUCED_CAP_STOCK_USD of stock token, converted at the live Chainlink price.
   const capTokens = gate?.state === "reduced" && priceUsd !== undefined && priceUsd > 0 ? REDUCED_CAP_STOCK_USD / priceUsd : null;
   const overCap = tab === "deposit" && capTokens !== null && amountNum > capTokens;
+  const capRoom = tab === "deposit" ? depositRoom(parsed, room.data, cfg.depositCapUsd, priceUsd ?? cfg.refPriceUsd) : null;
+  const overRoom = capRoom?.over ?? false;
   const busy = tx.phase === "signing" || tx.phase === "pending";
 
   const summary = useMemo(() => {
@@ -157,7 +165,7 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
           disabled={!vault || busy}
           onChange={(e) => { setAmount(e.target.value.trim()); if (tx.phase !== "idle" && !busy) setTx({ phase: "idle" }); }}
           className="figure h-14 min-w-0 flex-1 bg-transparent px-4 text-2xl outline-none placeholder:text-mute disabled:opacity-60"
-          aria-invalid={overBalance || overCap}
+          aria-invalid={overBalance || overCap || overRoom}
           aria-describedby="amount-help"
         />
         <span className="pr-4 text-lg font-semibold">{cfg.symbol}</span>
@@ -167,6 +175,12 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
           <span className="text-negative-deep">Above your {tab === "deposit" ? "balance" : "withdrawable amount"}.</span>
         ) : overCap && capTokens !== null ? (
           <span className="text-warning-deep">A reduced vault caps a single deposit at {usd(REDUCED_CAP_STOCK_USD)}, about {num(capTokens, 2)} {cfg.symbol} today.</span>
+        ) : overRoom && capRoom ? (
+          <span className="text-warning-deep">
+            {capRoom.tokens > 0
+              ? `This vault takes up to ${num(capRoom.tokens, 4)} ${cfg.symbol} more, at its $${num(cfg.depositCapUsd, 0)} size cap.`
+              : `This vault is at its $${num(cfg.depositCapUsd, 0)} size cap and takes no more deposits.`}
+          </span>
         ) : (
           ""
         )}
@@ -199,7 +213,7 @@ export function DepositPanel({ cfg }: { cfg: VaultConfig }) {
         ) : chainId !== robinhoodChain.id ? (
           <div className="[&>div>button]:w-full [&>button]:w-full"><WalletButton /></div>
         ) : (
-          <Button size="lg" className="w-full" disabled={!parsed || overBalance || overCap || busy || reads.isLoading} onClick={submit}>
+          <Button size="lg" className="w-full" disabled={!parsed || overBalance || overCap || overRoom || busy || reads.isLoading} onClick={submit}>
             {busy ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {tx.phase === "signing" ? "Confirm in your wallet" : "Waiting for the chain"}</> : actionLabel}
           </Button>
         )}

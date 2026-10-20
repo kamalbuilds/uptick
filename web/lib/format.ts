@@ -38,3 +38,26 @@ export function ago(ms: number, now = Date.now()): string {
   if (s < 86400) return `${Math.round(s / 3600)}h ago`;
   return `${Math.round(s / 86400)}d ago`;
 }
+
+/** "5.1 million" from a swap count; "842,504" below a million. */
+export function swapsLabel(swaps: number): string {
+  return swaps >= 1_000_000 ? `${(swaps / 1_000_000).toFixed(1)} million` : swaps.toLocaleString("en-US");
+}
+
+/** Landing and metadata line, built from the vault list so it never names a fixed pair of tokens. */
+export function pitchLine(vaultCount: number, replayedSwaps: number): string {
+  return `Deposit any of ${vaultCount} Stock Tokens and earn a share of every trade’s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where ${swapsLabel(replayedSwaps)} past trades say it holds up.`;
+}
+
+export type Room = { tokens: number; source: "vault" | "size"; over: boolean };
+
+/** How much more a vault accepts. The vault's own `maxDeposit` (remaining capacity under its depositCap, 0 when paused) when it is
+ *  deployed and readable; type(uint256).max means uncapped, and then the dollar size still applies. Otherwise the vault's size in
+ *  dollars over the stock price, which is the whole cap with nothing yet deposited. Null when neither is known. */
+export function depositRoom(amount: bigint | null, max: bigint | undefined, capUsd: number, priceUsd: number | undefined, decimals = 18): Room | null {
+  const UNCAPPED = 2n ** 256n - 1n;
+  if (max !== undefined && max !== UNCAPPED) return { tokens: Number(max) / 10 ** decimals, source: "vault", over: amount !== null && amount > max };
+  if (priceUsd === undefined || !(priceUsd > 0) || !(capUsd > 0)) return null;
+  const tokens = capUsd / priceUsd;
+  return { tokens, source: "size", over: amount !== null && Number(amount) / 10 ** decimals > tokens };
+}

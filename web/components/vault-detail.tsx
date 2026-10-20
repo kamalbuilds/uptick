@@ -10,9 +10,9 @@ import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
-import { pct, shortAddress, usd } from "@/lib/format";
+import { num, pct, pitchLine, shortAddress, usd } from "@/lib/format";
 import { sourceLabel } from "@/lib/keeper";
-import { VAULTS, USDG, type VaultConfig } from "@/lib/vaults";
+import { REPLAYED_SWAPS, VAULTS, USDG, type VaultConfig } from "@/lib/vaults";
 
 function AddressRow({ label, address }: { label: string; address: string }) {
   const [copied, setCopied] = useState(false);
@@ -79,7 +79,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
 
           <section aria-labelledby="fee">
             <h2 id="fee" className="text-3xl leading-none">Why this pool</h2>
-            <p className="mt-2 max-w-xl text-body">Deposit NVDA or GOOGL and earn a share of every trade&rsquo;s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.</p>
+            <p className="mt-2 max-w-xl text-body">{pitchLine(VAULTS.length, REPLAYED_SWAPS)}</p>
             <div className="mt-4 rounded-xl bg-sage p-1"><WhyThisPool id={cfg.id} symbol={cfg.symbol} /></div>
           </section>
 
@@ -109,6 +109,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
             <h2 id="tvl" className="text-3xl leading-none">Vault</h2>
             <dl className="mt-4 divide-y divide-sage-line border-y border-sage-line">
               <Fact k="Total value locked" v={!q.data ? "..." : q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)} />
+              <Fact k="Vault size cap" v={`$${num(cfg.depositCapUsd, 0)}`} />
               <Fact k="Fee tier" v={cfg.feeTier} />
             </dl>
           </section>

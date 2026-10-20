@@ -19,6 +19,7 @@ export const vaultAbi = parseAbi([
   "function previewDeposit(uint256 assets) view returns (uint256)",
   "function previewWithdraw(uint256 assets) view returns (uint256)",
   "function maxWithdraw(address owner) view returns (uint256)",
+  "function maxDeposit(address receiver) view returns (uint256)",
   "function deposit(uint256 assets, address receiver) returns (uint256)",
   "function withdraw(uint256 assets, address receiver, address owner) returns (uint256)",
   "function redeem(uint256 shares, address receiver, address owner) returns (uint256)",

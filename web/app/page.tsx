@@ -3,9 +3,11 @@ import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { FeaturedVaultCard } from "@/components/vault-card";
 import { VaultList } from "@/components/vault-list";
-import { getVault } from "@/lib/vaults";
+import { pitchLine } from "@/lib/format";
+import { REPLAYED_SWAPS, VAULTS, getVault } from "@/lib/vaults";
 
 const nvda = getVault("nvda")!;
+const pitch = pitchLine(VAULTS.length, REPLAYED_SWAPS);
 
 const steps = [
   { title: "Deposit your Stock Token", body: "You send a Stock Token and receive vault shares. The vault keeps your deposit in one pool, inside a price band around the Chainlink price." },
@@ -22,7 +24,7 @@ export default function Home() {
             Put your stock tokens<br />to work.
           </h1>
           <p className="rise mt-6 max-w-md text-xl text-body" style={{ ["--i" as string]: 2 }}>
-            Deposit NVDA or GOOGL and earn a share of every trade&rsquo;s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.
+            {pitch}
           </p>
           <div className="rise mt-8" style={{ ["--i" as string]: 3 }}>
             <Button asChild size="lg">
@@ -38,7 +40,7 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="how">
         <div className="rounded-xl bg-ink p-6 text-sage sm:p-10">
           <h2 id="how" className="text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-primary">How Uptick picks a pool</h2>
-          <p className="mt-3 max-w-2xl text-sage">Deposit NVDA or GOOGL and earn a share of every trade&rsquo;s fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.</p>
+          <p className="mt-3 max-w-2xl text-sage">{pitch}</p>
           <ol className="relative mt-10 grid gap-8 border-t border-sage/25 pt-8 md:grid-cols-3 md:gap-10">
             {steps.map((s, i) => (
               <li key={s.title} className="relative">
