@@ -29,4 +29,9 @@ export const vaultAbi = parseAbi([
   "function deposit(uint256 assets, address receiver) returns (uint256)",
   "function withdraw(uint256 assets, address receiver, address owner) returns (uint256)",
   "function redeem(uint256 shares, address receiver, address owner) returns (uint256)",
+  "function redeemInKind(uint256 shares, address receiver, address owner) returns (uint256 stockOut, uint256 usdgOut)",
+  "function totalStockOwed() view returns (uint256)",
+  "function stock() view returns (address)",
+  "function usdg() view returns (address)",
+  "function positionInfo() view returns ((uint256 tokenId, int24 tickLower, int24 tickUpper, uint128 liquidity, uint256 stockAmount, uint256 usdgAmount, uint256 uncollectedStock, uint256 uncollectedUsdg, bool inRange) info)",
 ]);

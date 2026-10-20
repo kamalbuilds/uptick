@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { REVERTS, revertCopy } from "./revert.ts";
+import { REVERTS, knownRevert, revertCopy } from "./revert.ts";
 
 const wrap = (data: string) => Object.assign(new Error("contract call reverted"), { cause: Object.assign(new Error("inner"), { cause: { data } }) });
 
@@ -25,6 +25,13 @@ test("an unknown selector and a plain error fall through to null so the raw mess
 
 test("selectors are the hash of the contract's error signatures (contracts/src/StockVault.sol, UptickRouter.sol)", async () => {
   const { toFunctionSelector } = await import("viem");
-  const sigs = { Unhealthy: "Unhealthy(uint8)", InsufficientShares: "InsufficientShares(uint256,uint256)", SpotOffTwap: "SpotOffTwap()", SharesLocked: "SharesLocked()" } as const;
+  const sigs = { Unhealthy: "Unhealthy(uint8)", InsufficientShares: "InsufficientShares(uint256,uint256)", SpotOffTwap: "SpotOffTwap()", SharesLocked: "SharesLocked()", ExitBelowMinimum: "ExitBelowMinimum(uint256,uint256)" } as const;
   for (const r of REVERTS) assert.equal(toFunctionSelector(sigs[r.name]), r.selector, r.name);
+});
+
+test("ExitBelowMinimum is recognised by name so the panel can offer the in-kind exit", () => {
+  assert.equal(knownRevert(wrap("0x3b751a36"))?.name, "ExitBelowMinimum");
+  assert.equal(revertCopy(wrap("0x3b751a36")), "The pool cannot fill this exit right now. Exit in kind always works.");
+  assert.equal(knownRevert(wrap("0x7a1cb75d"))?.name, "SharesLocked");
+  assert.equal(knownRevert(new Error("User rejected the request.")), null);
 });

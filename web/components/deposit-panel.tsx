@@ -17,7 +17,8 @@ import { depositRoom, num, shareOfBalance, perDepositLimitUsd, signed, usd, usdW
 import { useVaultStats } from "@/lib/hooks";
 import { usePrices } from "@/lib/prices";
 import { usdSigned, yearlyUsd } from "@/lib/leak";
-import { revertCopy } from "@/lib/revert";
+import { knownRevert } from "@/lib/revert";
+import { inKindSlice } from "@/lib/in-kind";
 import { errMessage, waitForReceipt } from "@/lib/tx";
 import { cn } from "@/lib/utils";
 import { ROUTER, SHARE_DECIMALS, USDG, type VaultConfig } from "@/lib/vaults";
@@ -27,7 +28,7 @@ type Tx =
   | { phase: "signing"; label: string }
   | { phase: "pending"; label: string; hash: Hash }
   | { phase: "confirmed"; label: string; hash: Hash }
-  | { phase: "failed"; label: string; error: string; hash?: Hash };
+  | { phase: "failed"; label: string; error: string; hash?: Hash; belowMin?: boolean };
 
 const DECIMALS = 18; // Stock Tokens are 18-decimal ERC-20s (verified on-chain for NVDA and SPCX).
 const USDG_DECIMALS = 6;
@@ -43,7 +44,7 @@ function parse(v: string, decimals = DECIMALS): bigint | null {
 }
 
 /** A revert a depositor can act on gets its own sentence; anything else shows the wallet's message. */
-const txError = (err: unknown): string => revertCopy(err) ?? errMessage(err);
+const txError = (err: unknown): string => knownRevert(err)?.copy ?? errMessage(err);
 
 /** The docked deposit ticket: one bar pinned to the bottom of the vault page. It carries the amount, what that amount earns at the
  *  worst-half rate, the vault size and the per-deposit limit, and opens a "before you sign" panel above itself once there is an amount. */
@@ -56,14 +57,17 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   const [payWith, setPayWith] = useState<"stock" | "usdg">("stock");
   const [amount, setAmount] = useState("");
   const [tx, setTx] = useState<Tx>({ phase: "idle" });
+  const [exitKind, setExitKind] = useState(false);
 
   const vault = cfg.vault;
   const onChain = Boolean(vault && address && chainId === robinhoodChain.id);
   const usdgMode = tab === "deposit" && payWith === "usdg" && Boolean(ROUTER);
-  const payDecimals = usdgMode ? USDG_DECIMALS : DECIMALS;
+  const inKind = tab === "withdraw" && exitKind;
+  const payDecimals = usdgMode ? USDG_DECIMALS : inKind ? SHARE_DECIMALS : DECIMALS;
   const parsed = parse(amount);
   const parsedUsdg = parse(amount, USDG_DECIMALS);
-  const parsedAmount = usdgMode ? parsedUsdg : parsed;
+  const parsedShares = parse(amount, SHARE_DECIMALS);
+  const parsedAmount = usdgMode ? parsedUsdg : inKind ? parsedShares : parsed;
   const gate = useEvidence(cfg.id).data?.gate ?? cfg.gate;
   // The stats API quotes the chart price; the live Chainlink read stands in while it has none, so the cap and the USDG quote never wait on it.
   const livePrice = usePrices().data?.byId.get(cfg.id)?.usd;
@@ -100,8 +104,42 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
     functionName: tab === "deposit" ? "previewDeposit" : "previewWithdraw",
     args: parsed ? [parsed] : undefined,
     chainId: robinhoodChain.id,
-    query: { enabled: Boolean(vault && parsed && !usdgMode) },
+    query: { enabled: Boolean(vault && parsed && !usdgMode && !inKind) },
   });
+
+  // The in-kind quote reads only balances, supply and the position: no oracle, so it answers while the feed is stale.
+  const holdings = useReadContracts({
+    allowFailure: false,
+    query: { enabled: Boolean(inKind && vault), refetchInterval: 15_000 },
+    contracts: vault ? [
+      { address: vault, abi: vaultAbi, functionName: "totalSupply", chainId: robinhoodChain.id },
+      { address: vault, abi: vaultAbi, functionName: "stock", chainId: robinhoodChain.id },
+      { address: vault, abi: vaultAbi, functionName: "usdg", chainId: robinhoodChain.id },
+      { address: vault, abi: vaultAbi, functionName: "totalStockOwed", chainId: robinhoodChain.id },
+      { address: vault, abi: vaultAbi, functionName: "positionInfo", chainId: robinhoodChain.id },
+    ] : [],
+  });
+  const [supply, stockToken, usdgToken, stockOwed, position] = holdings.data ?? [];
+  const balances = useReadContracts({
+    allowFailure: false,
+    query: { enabled: Boolean(inKind && vault && stockToken && usdgToken), refetchInterval: 15_000 },
+    contracts: vault && stockToken && usdgToken ? [
+      { address: stockToken, abi: erc20Abi, functionName: "balanceOf", args: [vault], chainId: robinhoodChain.id },
+      { address: usdgToken, abi: erc20Abi, functionName: "balanceOf", args: [vault], chainId: robinhoodChain.id },
+    ] : [],
+  });
+  const [vaultStock, vaultUsdg] = balances.data ?? [undefined, undefined];
+  const slice = inKind && parsedShares !== null && supply !== undefined && stockOwed !== undefined && position && vaultStock !== undefined && vaultUsdg !== undefined
+    ? inKindSlice(parsedShares, {
+        supply,
+        idleStock: vaultStock > stockOwed ? vaultStock - stockOwed : 0n,
+        idleUsdg: vaultUsdg,
+        positionStock: position.stockAmount,
+        positionUsdg: position.usdgAmount,
+        feesStock: position.uncollectedStock,
+        feesUsdg: position.uncollectedUsdg,
+      })
+    : null;
 
   // How much more the vault takes: its own maxDeposit (depositCap less assets) once deployed, else its dollar size over the stock price.
   const room = useReadContract({
@@ -110,7 +148,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   });
 
   const amountNum = parsedAmount ? Number(formatUnits(parsedAmount, payDecimals)) : 0;
-  const maxIn = tab === "deposit" ? balance : maxWithdraw;
+  const maxIn = tab === "deposit" ? balance : inKind ? shares : maxWithdraw;
   const isMaxWithdraw = tab === "withdraw" && parsed !== null && maxWithdraw !== undefined && parsed === maxWithdraw;
   const needsApproval = tab === "deposit" && parsedAmount !== null && allowance !== undefined && allowance < parsedAmount;
   const overBalance = parsedAmount !== null && maxIn !== undefined && parsedAmount > maxIn;
@@ -171,11 +209,17 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
         `Your position is worth what ${cfg.symbol} is worth: its dollar value rises and falls with the ${cfg.symbol} price.`,
       ].filter(Boolean) as string[];
     }
+    if (inKind) {
+      return [
+        `You burn ${num(amountNum, 6)} vault shares and receive your slice of both tokens the vault holds, ${cfg.symbol} and USDG, sent straight to your wallet.`,
+        `The split follows the pool at the moment your transaction lands, so the amounts can shift a little from the quote.`,
+      ];
+    }
     return [
       `You burn about ${sharesPart} and receive ${num(amountNum)} ${cfg.symbol} at the vault's share price.`,
       `Your share of the position leaves the pool. Fees already earned are part of what you receive.`,
     ];
-  }, [tab, usdgMode, needsApproval, amountNum, preview.data, minShares, quotedStock, cfg.symbol]);
+  }, [tab, inKind, usdgMode, needsApproval, amountNum, preview.data, minShares, quotedStock, cfg.symbol]);
 
   async function send(label: string, run: () => Promise<Hash>) {
     if (!client) return;
@@ -193,7 +237,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
       void queryClient.invalidateQueries({ queryKey: ["readContracts"] });
       if (label !== "Approval") setAmount("");
     } catch (err) {
-      setTx({ phase: "failed", label, error: txError(err), hash });
+      setTx({ phase: "failed", label, error: txError(err), hash, belowMin: knownRevert(err)?.name === "ExitBelowMinimum" });
     }
   }
 
@@ -213,10 +257,35 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
       }
       return send("Deposit", () => writeContractAsync({ address: vault, abi: vaultAbi, functionName: "deposit", args: [parsedAmount, address], chainId: robinhoodChain.id }));
     }
+    // Exit in kind goes straight to the vault, not the router. It needs no approval and no peripheral contract, so the exit stays
+    // open if the router is paused or unset, and it reads no oracle. The router's redeemInKindMin adds minimums, but the vault pays a
+    // pro-rata slice by construction, so a minimum only guards a pool move between quote and mining, which the quote line discloses.
+    if (inKind) {
+      return send("Exit in kind", () => writeContractAsync({ address: vault, abi: vaultAbi, functionName: "redeemInKind", args: [parsedAmount, address, address], chainId: robinhoodChain.id }));
+    }
     if (isMaxWithdraw && shares !== undefined) {
       return send("Withdrawal", () => writeContractAsync({ address: vault, abi: vaultAbi, functionName: "redeem", args: [shares, address, address], chainId: robinhoodChain.id }));
     }
     return send("Withdrawal", () => writeContractAsync({ address: vault, abi: vaultAbi, functionName: "withdraw", args: [parsedAmount, address, address], chainId: robinhoodChain.id }));
+  }
+
+  /** One-click from an ExitBelowMinimum revert: carry the amount over as shares (convertToShares reads no oracle), else leave it blank. */
+  async function switchToInKind() {
+    let next = "";
+    if (client && vault && shares !== undefined) {
+      if (isMaxWithdraw) next = formatUnits(shares, SHARE_DECIMALS);
+      else if (parsed) {
+        try {
+          const s = await client.readContract({ address: vault, abi: vaultAbi, functionName: "convertToShares", args: [parsed] });
+          next = formatUnits(s < shares ? s : shares, SHARE_DECIMALS);
+        } catch {
+          next = "";
+        }
+      }
+    }
+    setExitKind(true);
+    setAmount(next);
+    setTx({ phase: "idle" });
   }
 
   function switchPay(mode: "stock" | "usdg") {
@@ -229,7 +298,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
     ? usdgMode
       ? (needsApproval ? "Approve USDG" : "Deposit USDG")
       : (needsApproval ? `Approve ${cfg.symbol}` : `Deposit ${cfg.symbol}`)
-    : `Withdraw ${cfg.symbol}`;
+    : inKind ? "Exit in kind" : `Withdraw ${cfg.symbol}`;
 
   const limit = gate.state === "reduced" ? `${usdWhole(perDepositLimitUsd(cfg.depositCapUsd))} a deposit` : gate.state === "open" ? "None while open" : "Closed";
   const sizeCap = usdWhole(cfg.depositCapUsd);
@@ -257,7 +326,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   }
 
   const tabsEl = (
-    <Tabs value={tab} onValueChange={(v) => { setTab(v as "deposit" | "withdraw"); setTx({ phase: "idle" }); setAmount(""); }}>
+    <Tabs value={tab} onValueChange={(v) => { setTab(v as "deposit" | "withdraw"); setExitKind(false); setTx({ phase: "idle" }); setAmount(""); }}>
       <TabsList aria-label="Deposit or withdraw" className={side ? "grid grid-cols-2 gap-0 border-b border-hairline" : undefined}>
         <TabsTrigger value="deposit">Deposit</TabsTrigger>
         <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
@@ -283,10 +352,27 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
     </div>
   ) : null;
 
+  const exitEl = tab === "withdraw" ? (
+    <div role="group" aria-label="Withdraw as" className={cn("flex gap-0.5 rounded-full bg-raised p-0.5", side && "w-full")}>
+      {([[false, `Withdraw ${cfg.symbol}`], [true, "Exit in kind"]] as const).map(([mode, label]) => (
+        <button
+          key={label}
+          type="button"
+          aria-pressed={exitKind === mode}
+          disabled={busy}
+          onClick={() => { setExitKind(mode); setAmount(""); setTx({ phase: "idle" }); }}
+          className={cn("press h-8 rounded-full px-3 text-[13px] font-semibold", side && "flex-1", exitKind === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   const amountEl = (
     <div className={cn("min-w-0", !side && "lg:w-[270px] lg:shrink-0")}>
       <label htmlFor="amount" className="flex items-baseline justify-between text-[13px] leading-5 text-mute">
-        <span>{tab === "deposit" ? "To deposit" : "To withdraw"}</span>
+        <span>{tab === "deposit" ? "To deposit" : inKind ? "Shares to exit" : "To withdraw"}</span>
         {maxIn !== undefined && (
           <span className="figure">{tab === "deposit" ? "Balance" : "Available"} {num(Number(formatUnits(maxIn, payDecimals)), 6)}</span>
         )}
@@ -304,9 +390,9 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
           aria-invalid={overBalance || overCap || overRoom}
           aria-describedby={help ? "amount-help" : undefined}
         />
-        <span className="pr-3 text-[15px] font-semibold">{unit}</span>
+        <span className="pr-3 text-[15px] font-semibold">{inKind ? "shares" : unit}</span>
       </div>
-      {side && amountNum > 0 && <p className="figure mt-1 text-[13px] leading-5 text-mute">{`≈ ${usd(amountUsd, { compact: false })}`}</p>}
+      {side && amountNum > 0 && !inKind && <p className="figure mt-1 text-[13px] leading-5 text-mute">{`≈ ${usd(amountUsd, { compact: false })}`}</p>}
       {help && <p id="amount-help" className={cn("figure mt-1 text-[12px] leading-4", help.tone)}>{help.text}</p>}
       <div role="group" aria-label="Fill a share of the amount" className="mt-2 flex gap-2">
         {[25, 50, 75, 100].map((p) => (
@@ -349,6 +435,16 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
             <p className="text-mute">Enter an amount to see it in dollars.</p>
           </>
         )
+      ) : inKind ? (
+        <>
+          <p className="text-[15px] font-medium" aria-live="polite">
+            {slice
+              ? <>You receive about <span className="figure">{num(Number(formatUnits(slice.stock, DECIMALS)), 6)} {cfg.symbol}</span> and <span className="figure">{num(Number(formatUnits(slice.usdg, USDG_DECIMALS)), 4)} USDG</span></>
+              : parsedShares && (holdings.isError || balances.isError) ? "The chain did not answer for the quote. Exit in kind still works."
+              : "Enter shares to see what you receive."}
+          </p>
+          <p className="text-mute">Exit in kind works even when the price feed is stale or the pool is moving; you receive both tokens instead of only the Stock Token.</p>
+        </>
       ) : (
         <>
           <p className="text-[15px] font-medium">Exit in kind is always open</p>
@@ -384,7 +480,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
           <p className="mt-1 text-mute">Stock Tokens are not offered to US persons. Check that you are eligible in your country before depositing.</p>
         </>
       ) : null}
-      <TxStatus tx={tx} />
+      <TxStatus tx={tx} onExitInKind={tab === "withdraw" && !inKind ? switchToInKind : undefined} />
     </div>
   ) : null;
 
@@ -406,6 +502,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
           <div className="space-y-4">
             {tabsEl}
             {payEl}
+            {exitEl}
             {amountEl}
             {estimateEl}
             {ctaEl}
@@ -432,6 +529,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
             <div className="col-span-2 flex items-center justify-between gap-4 lg:col-auto lg:shrink-0 lg:justify-start lg:gap-5">
               {tabsEl}
               {payEl}
+              {exitEl}
             </div>
             {amountEl}
             <div className="lg:order-5 lg:shrink-0">{ctaEl}</div>
@@ -445,7 +543,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   );
 }
 
-function TxStatus({ tx }: { tx: Tx }) {
+function TxStatus({ tx, onExitInKind }: { tx: Tx; onExitInKind?: () => void }) {
   if (tx.phase === "idle" || tx.phase === "signing") return null;
   const link = tx.hash ? (
     <a className="figure inline-flex items-center gap-1 underline underline-offset-4" href={txUrl(tx.hash)} target="_blank" rel="noreferrer">
@@ -464,6 +562,9 @@ function TxStatus({ tx }: { tx: Tx }) {
           {tx.phase === "failed" && `${tx.label} did not go through`}
         </p>
         {tx.phase === "failed" && <p className="mt-0.5 break-words">{tx.error}</p>}
+        {tx.phase === "failed" && tx.belowMin && onExitInKind && (
+          <Button type="button" size="sm" variant="outline" className="mt-2" onClick={onExitInKind}>Exit in kind instead</Button>
+        )}
         {link && <p className="mt-1">{link}</p>}
       </div>
     </div>
