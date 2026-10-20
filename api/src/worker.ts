@@ -40,6 +40,8 @@ interface Vault {
   feeTierPips: number;
   feeTier: string;
   feed: string;
+  /** Vault size in USD: the deposit cap the vault is created with, sized to its pool depth. */
+  depositCapUsd: number;
   open: boolean;
   feeAprPct: number;
   keptAprPct: number;
@@ -86,6 +88,7 @@ function listVaults() {
     id: vault.id,
     ticker: vault.symbol,
     open: vault.open,
+    deposit_cap_usd: vault.depositCapUsd,
     fee_apr_pct: vault.feeAprPct,
     kept_apr_pct: vault.keptAprPct,
     pool: vault.pool,
@@ -120,6 +123,7 @@ function vaultDetail(id: string): Response {
     ticker: vault.symbol,
     name: vault.name,
     open: vault.open,
+    deposit_cap_usd: vault.depositCapUsd,
     token: vault.token,
     pool: vault.pool,
     fee_tier_pips: vault.feeTierPips,

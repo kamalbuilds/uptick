@@ -48,6 +48,10 @@ interface Vault {
   feeTierPips: number;
   feeTier: string;
   feed: string;
+  /** Vault size in USD, sized to the pool depth; the vault is created with this deposit cap. */
+  depositCapUsd: number;
+  /** Chainlink price (USD per stock) read when the universe was built; converts a stock amount to dollars for the cap check. */
+  refPriceUsd: number;
   open: boolean;
   gate?: Partial<Gate>;
   feeAprPct: number;
@@ -161,6 +165,7 @@ function listVaults(): McpToolResult {
       ticker: vault.symbol,
       gate_state: gate.state,
       open: vault.open,
+      deposit_cap_usd: vault.depositCapUsd,
       fee_apr_pct: vault.feeAprPct,
       kept_apr_pct: vault.keptAprPct,
       reason: gate.reason,
@@ -195,6 +200,7 @@ function getVaultEvidence(id: string): McpToolResult {
     ticker: vault.symbol,
     name: vault.name,
     open: vault.open,
+    deposit_cap_usd: vault.depositCapUsd,
     token: vault.token,
     pool: vault.pool,
     fee_tier_pips: vault.feeTierPips,
@@ -234,6 +240,15 @@ export function reducedNotice(gate: Gate): Record<string, unknown> | null {
   };
 }
 
+/** The most one deposit may add, in dollars: the vault's size cap, and for a reduced vault also its per-transaction cap. The stricter applies. */
+export function depositLimitUsd(vault: Vault, gate: Gate): { usd: number; why: string } {
+  const perTx = reducedNotice(gate)?.per_transaction_cap_usd;
+  if (typeof perTx === "number" && perTx < vault.depositCapUsd) {
+    return { usd: perTx, why: `the reduced gate caps a deposit at $${perTx.toLocaleString("en-US")} per transaction` };
+  }
+  return { usd: vault.depositCapUsd, why: `the ${vault.id} vault is sized to its pool at $${vault.depositCapUsd.toLocaleString("en-US")}` };
+}
+
 function parseAmount(raw: unknown, decimals: number, label: string): bigint | string {
   if (typeof raw !== "string" || raw.trim() === "") {
     return `${label} must be a decimal string`;
@@ -267,6 +282,14 @@ function tx(to: string, data: string, description: string): Tx {
   return { chainId: CHAIN_ID, to, data, value: "0", description };
 }
 
+/** Refusal text when `usd` of deposit exceeds the vault's limit, else null. Stock amounts are valued at the universe's Chainlink read. */
+function overLimit(vault: Vault, gate: Gate, usd: number, unit: string): string | null {
+  const limit = depositLimitUsd(vault, gate);
+  if (usd <= limit.usd) return null;
+  const priced = unit === "USDG" ? "" : ` at $${vault.refPriceUsd} per ${unit}`;
+  return `deposit of about $${Math.round(usd).toLocaleString("en-US")}${priced} is above the $${limit.usd.toLocaleString("en-US")} limit: ${limit.why}. Deposit less, or pick another vault.`;
+}
+
 function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult {
   const id = typeof args.id === "string" ? args.id : "";
   const vault = findVault(id);
@@ -295,6 +318,8 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
     if (!env.ROUTER) return errorResult("USDG zap router not deployed yet");
     const amount = parseAmount(args.amount, USDG_DECIMALS, "amount");
     if (typeof amount === "string") return errorResult(amount);
+    const over = overLimit(vault, gate, Number(args.amount), "USDG");
+    if (over) return errorResult(over);
 
     const approveData = encodeFunctionData({
       abi: ERC20_ABI,
@@ -314,6 +339,8 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
   } else {
     const amount = parseAmount(args.amount, STOCK_DECIMALS, "amount");
     if (typeof amount === "string") return errorResult(amount);
+    const over = overLimit(vault, gate, Number(args.amount) * vault.refPriceUsd, vault.symbol);
+    if (over) return errorResult(over);
 
     const approveData = encodeFunctionData({
       abi: ERC20_ABI,
@@ -414,7 +441,7 @@ const TOOLS: McpTool[] = [
   {
     name: "prepare_deposit",
     description:
-      "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router). The user signs and sends.",
+      "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Refuses an amount above the vault's deposit_cap_usd (its size, set from the pool's depth) or, for a reduced vault, above its per-transaction cap, whichever is lower; the vault contract also enforces the cap on-chain against its total. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router). The user signs and sends.",
     inputSchema: {
       type: "object",
       properties: {

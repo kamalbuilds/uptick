@@ -20,6 +20,7 @@ interface VaultSummary {
   id: string;
   ticker: string;
   open: boolean;
+  deposit_cap_usd: number;
   fee_apr_pct: number;
   kept_apr_pct: number;
   pool: string;
@@ -47,17 +48,37 @@ describe("GET /vaults", () => {
     expect(body.every((v) => v.window_days === replay.window.days)).toBe(true);
   });
 
-  test("seven vaults: nvda, googl, amzn and spy take deposits, crcl, spcx and uso are closed", async () => {
+  test("seventeen vaults: nvda, aapl, googl, amzn, pltr, qqq and spy take deposits, the other ten are closed", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const byId = Object.fromEntries(body.map((v) => [v.id, v.open]));
 
-    expect(body.length).toBe(7);
-    expect(byId).toEqual({ nvda: true, googl: true, amzn: true, spy: true, crcl: false, spcx: false, uso: false });
+    expect(body.length).toBe(17);
+    expect(byId).toEqual({
+      nvda: true, aapl: true, googl: true, amzn: true, pltr: true, qqq: true, spy: true,
+      amd: false, crcl: false, gme: false, intc: false, meta: false, mstr: false, mu: false, spcx: false, tsla: false, uso: false,
+    });
+  });
+
+  test("every vault lists deposit_cap_usd, the vault size from its pool depth, and it matches the keeper universe", async () => {
+    const body = (await (await get("/vaults")).json()) as VaultSummary[];
+    expect(body.map((v) => v.deposit_cap_usd)).toEqual(vaultUniverse.vaults.map((v) => v.depositCapUsd));
+    for (const v of body) {
+      expect(v.deposit_cap_usd).toBeGreaterThanOrEqual(10_000);
+      expect(v.deposit_cap_usd).toBeLessThanOrEqual(100_000);
+    }
+    const cap = Object.fromEntries(body.map((v) => [v.id, v.deposit_cap_usd]));
+    expect(cap.nvda).toBe(100_000);
+    expect(cap.aapl).toBeLessThan(100_000); // a thin pool carries a smaller vault
+    const detail = (await (await get("/vaults/aapl")).json()) as { deposit_cap_usd: number };
+    expect(detail.deposit_cap_usd).toBe(cap.aapl);
   });
 
   test("every vault carries a gate state and a written reason", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
-    const want: Record<string, string> = { nvda: "open", amzn: "reduced", googl: "reduced", spy: "reduced", uso: "closed", spcx: "closed", crcl: "closed" };
+    const want: Record<string, string> = {
+      nvda: "open", aapl: "open", amzn: "reduced", googl: "reduced", spy: "reduced", pltr: "reduced", qqq: "reduced",
+      uso: "closed", spcx: "closed", crcl: "closed", amd: "closed", gme: "closed", intc: "closed", meta: "closed", mstr: "closed", mu: "closed", tsla: "closed",
+    };
     expect(body.length).toBeGreaterThan(0);
     for (const v of body) {
       const d = (await (await get(`/vaults/${v.id}`)).json()) as { gate: { state: string; reason: string } };

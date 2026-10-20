@@ -1,8 +1,56 @@
 {
   "chainId": 4663,
   "source": "keeper/data/universe.json + keeper/data/replay.json",
-  "universeBlock": 93082560,
+  "universeBlock": 93099228,
   "vaults": [
+    {
+      "id": "mstr",
+      "symbol": "MSTR",
+      "name": "Strategy Inc. Stock Token",
+      "token": "0xec262a75e413fAfD0dF80480274532C79D42da09",
+      "pool": "0x17578C0e0D15da44f31677263114F71aE76653EA",
+      "feeTierPips": 10000,
+      "feeTier": "1%",
+      "feed": "0x396118bdFB181e6240E74D243F266B061c0edc3D",
+      "depositCapUsd": 22206,
+      "refPriceUsd": 135.45459963,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -28.5% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -28.53260158684701,
+        "swaps": 110980,
+        "days": 30
+      },
+      "feeAprPct": 229.1253738312145,
+      "keptAprPct": -28.53260158684701,
+      "keptAprUpperPct": -9.187927957468494
+    },
+    {
+      "id": "gme",
+      "symbol": "GME",
+      "name": "GameStop Stock Token",
+      "token": "0x1b0E319c6A659F002271B69dB8A7df2F911c153E",
+      "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
+      "feeTierPips": 10000,
+      "feeTier": "1%",
+      "feed": "0x27C71df6A64fB476468EdF256CF72c038baB5B67",
+      "depositCapUsd": 49212,
+      "refPriceUsd": 26.29364153,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -45.5% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -45.51829335488611,
+        "swaps": 229083,
+        "days": 30
+      },
+      "feeAprPct": 219.78612931163735,
+      "keptAprPct": -45.51829335488611,
+      "keptAprUpperPct": -4.7764034567455935
+    },
     {
       "id": "crcl",
       "symbol": "CRCL",
@@ -12,6 +60,8 @@
       "feeTierPips": 3000,
       "feeTier": "0.3%",
       "feed": "0x6652eDf64bA3731C4F2D3ce821A0Fb1f1f6b482a",
+      "depositCapUsd": 100000,
+      "refPriceUsd": 81.47861944,
       "open": false,
       "gate": {
         "state": "closed",
@@ -26,6 +76,126 @@
       "keptAprUpperPct": -93.29809454422386
     },
     {
+      "id": "intc",
+      "symbol": "INTC",
+      "name": "Intel Stock Token",
+      "token": "0xc72b96e0E48ecd4DC75E1e45396e26300BC39681",
+      "pool": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x3f390C5C24628Ac7C489515402235FeAD71D1913",
+      "depositCapUsd": 19116,
+      "refPriceUsd": 91.42937091,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -91.2% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -91.22496979875883,
+        "swaps": 42046,
+        "days": 30
+      },
+      "feeAprPct": 143.95868210635274,
+      "keptAprPct": -53.67025076376909,
+      "keptAprUpperPct": -18.114134903727372
+    },
+    {
+      "id": "mu",
+      "symbol": "MU",
+      "name": "Micron Technology Stock Token",
+      "token": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
+      "pool": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x425EEFdCf05ed6526C3cE61Af99429A228a6d596",
+      "depositCapUsd": 86710,
+      "refPriceUsd": 892.33501133,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -66.4% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -66.42749995995419,
+        "swaps": 48551,
+        "days": 30
+      },
+      "feeAprPct": 125.23827681022925,
+      "keptAprPct": -66.42749995995419,
+      "keptAprUpperPct": -39.269841906566064
+    },
+    {
+      "id": "amd",
+      "symbol": "AMD",
+      "name": "AMD Stock Token",
+      "token": "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC",
+      "pool": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x943A29E7ae51A4798823ca9eEd2ed533B2A22C72",
+      "depositCapUsd": 18436,
+      "refPriceUsd": 533.93534066,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -65.2% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -65.19202797678946,
+        "swaps": 29915,
+        "days": 30
+      },
+      "feeAprPct": 106.74815422403874,
+      "keptAprPct": -49.40420699099236,
+      "keptAprUpperPct": -31.14724493931774
+    },
+    {
+      "id": "pltr",
+      "symbol": "PLTR",
+      "name": "Palantir Technologies Stock Token",
+      "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
+      "pool": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x820ABedFF239034956B7A9d2F0a331f9F075eB4c",
+      "depositCapUsd": 24207,
+      "refPriceUsd": 193.905,
+      "open": true,
+      "gate": {
+        "state": "reduced",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -16.9% a year, between the -20% floor and break-even, across 53,897 swaps. Deposits are capped at $25,000 per transaction.",
+        "floor_apr": -20,
+        "worst_half_apr": -16.872722395852456,
+        "swaps": 53897,
+        "days": 30
+      },
+      "feeAprPct": 101.7343018984499,
+      "keptAprPct": -16.872722395852456,
+      "keptAprUpperPct": 3.9631324311833036
+    },
+    {
+      "id": "meta",
+      "symbol": "META",
+      "name": "Meta Platforms Stock Token",
+      "token": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+      "pool": "0x107a7Cb40d8665360ba10E59471Af06150A50922",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
+      "depositCapUsd": 24118,
+      "refPriceUsd": 706.86299023,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -40.8% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -40.81311288779147,
+        "swaps": 495950,
+        "days": 30
+      },
+      "feeAprPct": 93.90133726952524,
+      "keptAprPct": -40.81311288779147,
+      "keptAprUpperPct": -34.47150354097451
+    },
+    {
       "id": "uso",
       "symbol": "USO",
       "name": "United States Oil Fund Stock Token",
@@ -34,6 +204,8 @@
       "feeTierPips": 3000,
       "feeTier": "0.3%",
       "feed": "0x75a9c76Ef439e2C7c2E5a34Ab105EcFe3766431c",
+      "depositCapUsd": 100000,
+      "refPriceUsd": 161.30320354,
       "open": false,
       "gate": {
         "state": "closed",
@@ -56,6 +228,8 @@
       "feeTierPips": 500,
       "feeTier": "0.05%",
       "feed": "0xB265810950ba6c5C0Ff821c9963014a56fD8Bffb",
+      "depositCapUsd": 100000,
+      "refPriceUsd": 147.58573292,
       "open": false,
       "gate": {
         "state": "closed",
@@ -70,6 +244,30 @@
       "keptAprUpperPct": -71.46662781858318
     },
     {
+      "id": "tsla",
+      "symbol": "TSLA",
+      "name": "Tesla Stock Token",
+      "token": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
+      "feeTierPips": 3000,
+      "feeTier": "0.3%",
+      "feed": "0x4A1166a659A55625345e9515b32adECea5547C38",
+      "depositCapUsd": 83206,
+      "refPriceUsd": 365.9258702,
+      "open": false,
+      "gate": {
+        "state": "closed",
+        "reason": "Closed: the weaker half kept -49.2% a year, below the -20% floor.",
+        "floor_apr": -20,
+        "worst_half_apr": -49.206583941016724,
+        "swaps": 112043,
+        "days": 30
+      },
+      "feeAprPct": 56.65985757516471,
+      "keptAprPct": -49.206583941016724,
+      "keptAprUpperPct": -34.62479113586518
+    },
+    {
       "id": "nvda",
       "symbol": "NVDA",
       "name": "NVIDIA Stock Token",
@@ -78,6 +276,8 @@
       "feeTierPips": 500,
       "feeTier": "0.05%",
       "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+      "depositCapUsd": 100000,
+      "refPriceUsd": 217.07190821,
       "open": true,
       "gate": {
         "state": "open",
@@ -100,6 +300,8 @@
       "feeTierPips": 500,
       "feeTier": "0.05%",
       "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
+      "depositCapUsd": 100000,
+      "refPriceUsd": 343.8464424,
       "open": true,
       "gate": {
         "state": "reduced",
@@ -122,18 +324,68 @@
       "feeTierPips": 3000,
       "feeTier": "0.3%",
       "feed": "0xD5a1508ceD74c084eBf3cBe853e2C968fB2a651C",
+      "depositCapUsd": 68501,
+      "refPriceUsd": 264.66150427,
       "open": true,
       "gate": {
         "state": "reduced",
-        "reason": "Reduced: the weaker half of the 30-day replay kept -9.9% a year, between the -20% floor and break-even, across 42,307 swaps. Deposits are capped at $25,000 per transaction.",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -6.8% a year, between the -20% floor and break-even, across 42,307 swaps. Deposits are capped at $25,000 per transaction.",
         "floor_apr": -20,
-        "worst_half_apr": -9.906868756267025,
+        "worst_half_apr": -6.810000786773776,
         "swaps": 42307,
         "days": 30
       },
-      "feeAprPct": 34.20400050206948,
-      "keptAprPct": -9.906868756267025,
-      "keptAprUpperPct": -4.392805183579861
+      "feeAprPct": 35.49575436365684,
+      "keptAprPct": -6.810000786773776,
+      "keptAprUpperPct": -2.826545623461987
+    },
+    {
+      "id": "aapl",
+      "symbol": "AAPL",
+      "name": "Apple Stock Token",
+      "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
+      "feeTierPips": 500,
+      "feeTier": "0.05%",
+      "feed": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
+      "depositCapUsd": 73983,
+      "refPriceUsd": 342.58737216,
+      "open": true,
+      "gate": {
+        "state": "open",
+        "reason": "Open: the weaker half of the 30-day replay kept 2.5% a year, at or above break-even, across 117,316 swaps.",
+        "floor_apr": -20,
+        "worst_half_apr": 2.478795574165938,
+        "swaps": 117316,
+        "days": 30
+      },
+      "feeAprPct": 26.83442662244827,
+      "keptAprPct": 3.516293463573005,
+      "keptAprUpperPct": 9.091526263533318
+    },
+    {
+      "id": "qqq",
+      "symbol": "QQQ",
+      "name": "Invesco QQQ Stock Token",
+      "token": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+      "pool": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
+      "feeTierPips": 500,
+      "feeTier": "0.05%",
+      "feed": "0x80901d846d5D7B030F26B480776EE3b29374C2ae",
+      "depositCapUsd": 66787,
+      "refPriceUsd": 715.96830414,
+      "open": true,
+      "gate": {
+        "state": "reduced",
+        "reason": "Reduced: the weaker half of the 30-day replay kept -4.1% a year, between the -20% floor and break-even, across 64,843 swaps. Deposits are capped at $25,000 per transaction.",
+        "floor_apr": -20,
+        "worst_half_apr": -4.136358064670749,
+        "swaps": 64843,
+        "days": 30
+      },
+      "feeAprPct": 12.5359612244133,
+      "keptAprPct": -4.136358064670749,
+      "keptAprUpperPct": -3.0095911758944722
     },
     {
       "id": "spy",
@@ -144,6 +396,8 @@
       "feeTierPips": 500,
       "feeTier": "0.05%",
       "feed": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
+      "depositCapUsd": 100000,
+      "refPriceUsd": 768.86115412,
       "open": true,
       "gate": {
         "state": "reduced",

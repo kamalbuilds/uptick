@@ -239,6 +239,64 @@ describe("prepare_deposit", () => {
   });
 });
 
+describe("deposit caps", () => {
+  const vaults = (universeData as unknown as { vaults: Array<{ id: string; symbol: string; token: string; depositCapUsd: number; refPriceUsd: number; gate: { state: string } }> }).vaults;
+  const by = (id: string) => vaults.find((v) => v.id === id)!;
+  const ROUTER = "0x1111111111111111111111111111111111111111";
+  const withVaults = { VAULTS: JSON.stringify({ nvda: "0x6852Adb5Fce1D73c08A9b3Aa7edE9A03437ac2fE", aapl: "0x0000000000000000000000000000000000000a01", pltr: "0x0000000000000000000000000000000000000a02", qqq: "0x0000000000000000000000000000000000000a03" }), NETWORK: "robinhood-chain-fork", ROUTER };
+  const usdg = (id: string, amount: string) => callTool("prepare_deposit", { id, amount, receiver: RECEIVER, asset: "usdg" }, withVaults);
+
+  test("list_vaults and get_vault_evidence carry deposit_cap_usd from the universe", async () => {
+    const list = await callTool("list_vaults", {});
+    const rows = list.structuredContent.vaults as Array<{ id: string; deposit_cap_usd: number }>;
+    expect(rows.length).toBe(vaults.length);
+    for (const r of rows) expect(r.deposit_cap_usd).toBe(by(r.id).depositCapUsd);
+    const ev = await callTool("get_vault_evidence", { id: "aapl" });
+    expect(ev.structuredContent.deposit_cap_usd).toBe(by("aapl").depositCapUsd);
+  });
+
+  test("an open vault sized below the full 100K refuses a deposit one dollar above its cap and takes one at the cap", async () => {
+    const cap = by("aapl").depositCapUsd;
+    expect(cap).toBeLessThan(100_000);
+    expect(by("aapl").gate.state).toBe("open");
+    const over = await usdg("aapl", String(cap + 1));
+    expect(over.isError).toBe(true);
+    expect(over.content[0].text).toContain(`$${cap.toLocaleString("en-US")}`);
+    expect(over.content[0].text).toContain("sized to its pool");
+    const at = await usdg("aapl", String(cap));
+    expect(at.isError).toBeUndefined();
+    expect((at.structuredContent.transactions as unknown[]).length).toBe(2);
+  });
+
+  test("a stock deposit is valued at the universe's Chainlink read before the cap applies", async () => {
+    const v = by("nvda");
+    const tokensAtCap = v.depositCapUsd / v.refPriceUsd;
+    const over = await callTool("prepare_deposit", { id: "nvda", amount: (tokensAtCap * 1.01).toFixed(6), receiver: RECEIVER, asset: "stock" }, withVaults);
+    expect(over.isError).toBe(true);
+    expect(over.content[0].text).toContain("$100,000");
+    const under = await callTool("prepare_deposit", { id: "nvda", amount: (tokensAtCap * 0.99).toFixed(6), receiver: RECEIVER, asset: "stock" }, withVaults);
+    expect(under.isError).toBeUndefined();
+  });
+
+  test("a reduced vault takes the stricter of its size and the 25K per-transaction cap", async () => {
+    // qqq: size above 25K, so the per-transaction cap is the stricter
+    expect(by("qqq").gate.state).toBe("reduced");
+    expect(by("qqq").depositCapUsd).toBeGreaterThan(25_000);
+    const perTx = await usdg("qqq", "25001");
+    expect(perTx.isError).toBe(true);
+    expect(perTx.content[0].text).toContain("$25,000 per transaction");
+    expect((await usdg("qqq", "25000")).isError).toBeUndefined();
+    // pltr: size below 25K, so the vault size is the stricter
+    expect(by("pltr").gate.state).toBe("reduced");
+    const pltrCap = by("pltr").depositCapUsd;
+    expect(pltrCap).toBeLessThan(25_000);
+    const size = await usdg("pltr", String(pltrCap + 1));
+    expect(size.isError).toBe(true);
+    expect(size.content[0].text).toContain("sized to its pool");
+    expect((await usdg("pltr", String(pltrCap))).isError).toBeUndefined();
+  });
+});
+
 describe("prepare_withdraw", () => {
   test("builds an ERC4626 redeem with the right selector", async () => {
     const body = await callTool("prepare_withdraw", {
