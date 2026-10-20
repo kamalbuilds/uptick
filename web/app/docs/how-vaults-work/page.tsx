@@ -154,7 +154,7 @@ export default function HowVaultsWorkPage() {
         comparison is in{" "}
         <Link
           href="/research"
-          className="font-semibold text-ink underline decoration-sage-line underline-offset-4 hover:decoration-primary"
+          className="font-semibold text-fg underline decoration-line underline-offset-4 hover:decoration-fg"
         >
           the research notes
         </Link>
