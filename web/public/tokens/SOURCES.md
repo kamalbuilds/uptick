@@ -1,32 +1,24 @@
 # Token icons
 
-Each file is the token's own published icon, fetched on 2026-10-20 from the URL below. No file was redrawn or recoloured.
+Company marks identify which stock each Stock Token tracks, the way robinhood.com shows them in its related-stock lists (`logo_url` on robinhood.com/us/en/stocks/<SYMBOL>/ points at Wikimedia Commons). Each file is the source image unchanged, placed centred on a light circular tile so dark and wide marks stay legible on the dark UI. Fetched 2026-10-20.
 
-## Stock Tokens (17)
+| Token | Source | URL |
+|---|---|---|
+| AAPL | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/250px-Apple_logo_black.svg.png |
+| AMD | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/AMD_Logo.svg/250px-AMD_Logo.svg.png |
+| AMZN | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/250px-Amazon_logo.svg.png |
+| GME | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/GameStop_Logo_%282000%E2%80%932012%29.svg/250px-GameStop_Logo_%282000%E2%80%932012%29.svg.png |
+| GOOGL | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Alphabet_Inc_Logo_2015.svg/250px-Alphabet_Inc_Logo_2015.svg.png |
+| INTC | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Intel_logo_%282006-2020%29.svg/250px-Intel_logo_%282006-2020%29.svg.png |
+| PLTR | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/Palantir_Technologies_logo.svg/250px-Palantir_Technologies_logo.svg.png |
+| TSLA | Wikimedia Commons, the same file robinhood.com's `logo_url` references for this ticker | https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Tesla_Motors.svg/250px-Tesla_Motors.svg.png |
+| NVDA | Wikimedia Commons `File:Nvidia_logo.svg` (robinhood.com references an en.wikipedia NVIDIA file that no longer serves a thumbnail) | https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Nvidia_logo.svg/250px-Nvidia_logo.svg.png |
+| META | Meta's own site icon | https://www.meta.com/apple-touch-icon.png |
+| MU | Micron's own site icon | https://www.micron.com/content/dam/micron/global/favicon/apple-icon-57x57.png |
 
-Source: Robinhood's public asset API, `GET https://api.robinhood.com/rhj/assets` (documented at https://docs.robinhood.com/chain/stock-token-apis/). Each asset's `logoUrl` is the "Public CDN logo, derived from the representative deployment's address (lowercased)": `https://cdn.robinhood.com/ncw_assets/logos/<address>.png`. Blockscout (`GET https://robinhoodchain.blockscout.com/api/v2/tokens/<address>`) returns the same URL as `icon_url`. The address is the Stock Token on Robinhood Chain 4663 from `web/lib/vault-universe.json`.
+CRCL, MSTR, QQQ, SPY, USO and SPCX have no file: robinhood.com shows no mark for them (MSTR's only Commons mark predates the rename to Strategy), so the app draws a ticker monogram.
 
-Robinhood publishes one icon for every Stock Token, so the 17 files are byte-identical (md5 7458db13b24a41c319027376a852b0f0). The vault list tells the rows apart by ticker. If Robinhood ships a per-company icon, replacing a file here changes that row with no code change.
-
-| Symbol | URL |
-|---|---|
-| AAPL | https://cdn.robinhood.com/ncw_assets/logos/0xaf3d76f1834a1d425780943c99ea8a608f8a93f9.png |
-| AMD | https://cdn.robinhood.com/ncw_assets/logos/0x86923f96303d656e4aa86d9d42d1e57ad2023fdc.png |
-| AMZN | https://cdn.robinhood.com/ncw_assets/logos/0x12f190a9f9d7d37a250758b26824b97ce941bf54.png |
-| CRCL | https://cdn.robinhood.com/ncw_assets/logos/0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5.png |
-| GME | https://cdn.robinhood.com/ncw_assets/logos/0x1b0e319c6a659f002271b69db8a7df2f911c153e.png |
-| GOOGL | https://cdn.robinhood.com/ncw_assets/logos/0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3.png |
-| INTC | https://cdn.robinhood.com/ncw_assets/logos/0xc72b96e0e48ecd4dc75e1e45396e26300bc39681.png |
-| META | https://cdn.robinhood.com/ncw_assets/logos/0xc0d6457c16cc70d6790dd43521c899c87ce02f35.png |
-| MSTR | https://cdn.robinhood.com/ncw_assets/logos/0xec262a75e413fafd0df80480274532c79d42da09.png |
-| MU | https://cdn.robinhood.com/ncw_assets/logos/0xff080c8ce2e5feadaca0da81314ae59d232d4afd.png |
-| NVDA | https://cdn.robinhood.com/ncw_assets/logos/0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec.png |
-| PLTR | https://cdn.robinhood.com/ncw_assets/logos/0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a.png |
-| QQQ | https://cdn.robinhood.com/ncw_assets/logos/0xd5f3879160bc7c32ebb4dc785f8a4f505888de68.png |
-| SPCX | https://cdn.robinhood.com/ncw_assets/logos/0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea.png |
-| SPY | https://cdn.robinhood.com/ncw_assets/logos/0x117cc2133c37b721f49de2a7a74833232b3b4c0c.png |
-| TSLA | https://cdn.robinhood.com/ncw_assets/logos/0x322f0929c4625ed5bad873c95208d54e1c003b2d.png |
-| USO | https://cdn.robinhood.com/ncw_assets/logos/0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344.png |
+Robinhood's own token metadata (`GET https://api.robinhood.com/rhj/assets`, `logoUrl`) returns one shared Robinhood feather for all 17 Stock Tokens, so it does not identify the stock.
 
 ## USDG
 
