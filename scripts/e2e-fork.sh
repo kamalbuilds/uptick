@@ -15,6 +15,7 @@ FORK_JSON="$HOME/.cache/uptick-fork/fork.json"
 TMP=$(mktemp -d)
 STEP=00-preflight
 SNAP=""
+JSALT=e2e-fork-jitter-salt   # the keeper's local jitter salt for this run; the slot the script waits for is computed from the same one
 
 NVDA=0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC
 USDG=0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168
@@ -28,6 +29,12 @@ TREASURY=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 TRADER=0x90F79bf6EB2c4f870365E785982E1f101E93b906 # anvil account 3: swap volume
 NVDA_NS=0x52c63247e1f47db19d5ce0460030c497f067ca4cebf71ba98eeadabe20bace00 # OZ ERC-7201 ERC20 storage base: balance slot = keccak(holder . NVDA_NS)
 USDG_BAL_SLOT=1                                                              # USDG proxy: balance slot = keccak(holder . 1)
+
+# one dry-run pass of the keeper over the fork with the recentre slot assumed due; prints the NVDA tick line
+keeper_dry_nvda() {
+  ( cd "$APP/keeper" && RPC_URL="$R" VAULT_ADDRESS_NVDA="$V" VAULT_DEPLOY_BLOCK_NVDA="$(jq -r .vaults.NVDA.deploy_block "$FORK_JSON")" VAULT_KEEPER_ADDRESS="$A0" KEEPER_JITTER_SALT="$JSALT" \
+      bun --no-env-file src/keeper.ts --dry-run --assume-due 2>/dev/null ) | jq -c 'select(.event == "tick" and .ticker == "NVDA")' | head -1
+}
 
 scrub() { sed -E 's#https?://[^ "]+#<url>#g'; }
 report() { echo "$1" >&3; }
@@ -113,8 +120,9 @@ off_feed_bps() {
 gate_ready() { [ "$(off_twap_bps)" -le 5 ] || settle; }
 settle() { local before; before=$(off_twap_bps); warp $(( $(ts) + 700 )); chk "TWAP caught up with spot (was ${before} bp apart, now at most 1)" "$(off_twap_bps) <= 1"; }
 feedupdated() { cast call "$FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | sed -n 4p | num; }
-swap() { # FROM tokenIn tokenOut amountIn -> receipt (fee 500 pool, recipient = FROM)
-  send "$1" "$SWAPROUTER" 'exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))(uint256)' "($2,$3,500,$1,$4,0,0)" >/dev/null
+swap() { # FROM tokenIn tokenOut amountIn -> receipt (fee 500 pool, recipient = FROM). Fixed gas limit: eth_estimateGas on a swap
+  # intermittently lands below what the mined tx needs (out of gas inside the pool's USDG balanceOf, measured on this fork)
+  send "$1" "$SWAPROUTER" --gas-limit 1500000 'exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))(uint256)' "($2,$3,500,$1,$4,0,0)" >/dev/null
 }
 
 # ---------------------------------------------------------------- 00 preflight
@@ -444,13 +452,14 @@ lastreb=$(call "$V" 'lastRebalance()(uint256)'); tok0=$(call "$V" 'tokenId()(uin
 minint=$(cast call "$V" 'params()(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)' -r "$R" | sed -n 8p | num)
 maxstale=$(cast call "$V" 'params()(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)' -r "$R" | sed -n 6p | num)
 fu=$(feedupdated); now=$(ts)
-slot=$(NOW_MS=$((now * 1000)) bun -e "import {nextRecentreMs} from '$APP/keeper/src/calendar.ts'; console.log(nextRecentreMs(Number(process.env.NOW_MS))/1000)")
-chk "next recentre slot is 02:00 UTC" "$slot % 86400 == 7200"
+slot=$(NOW_MS=$((now * 1000)) JITTER_SALT="$JSALT" bun -e "import {nextRecentreMs} from '$APP/keeper/src/calendar.ts'; console.log(nextRecentreMs(Number(process.env.NOW_MS), process.env.JITTER_SALT)/1000)")
+wend=$(py "$slot - $slot % 86400 + 28800")
+chk "next recentre slot is the keeper's jittered minute, inside 02:00 to 07:00 UTC" "$slot % 86400 >= 7200 and $slot % 86400 < 25200"
 earliest=$(py "max($slot, $lastreb + $minint)")
 target=$(py "$earliest + 600")
-chk "warp target plus one TWAP window is inside the keeper's 6 h recentre window after the slot" "$target + 700 < $slot + 21600"
-chk "warp target keeps the Chainlink feed inside the vault maxStaleness ($maxstale s) with room for the TWAP window" "$target + 700 - $fu < $maxstale"
-chk "warp target keeps the feed inside the keeper's 87,000 s guard with the same room" "$target + 700 - $fu < 87000"
+chk "warp target plus two TWAP windows is inside the keeper's recentre window, which closes at 08:00 UTC" "$target + 1400 < $wend"
+chk "warp target keeps the Chainlink feed inside the vault maxStaleness ($maxstale s) with room for two TWAP windows" "$target + 1400 - $fu < $maxstale"
+chk "warp target keeps the feed inside the keeper's 87,000 s guard with the same room" "$target + 1400 - $fu < 87000"
 chk "warp moves time forward" "$target > $now"
 warp "$target"
 chk "vault oracle gate is Ok at the slot (no mock needed)" "$(health) == 0"
@@ -463,6 +472,21 @@ fund_usdg "$TRADER" 2000000000000   # 2,000,000 USDG
 fund_nvda "$TRADER" 5000000000000000000000   # 5,000 NVDA
 send "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPROUTER" 2000000000000 >/dev/null
 send "$TRADER" "$NVDA" 'approve(address,uint256)' "$SWAPROUTER" 5000000000000000000000 >/dev/null
+
+# The pool and Chainlink are the real market's and can sit 20 bp apart. The keeper holds a scheduled send while the TWAP is over
+# 15 bp off the feed (tested below on its own), so walk the pool onto the feed first. NVDA is token1: a spot sqrt above the oracle's
+# prices NVDA below the feed, so buy; otherwise sell. Clips are sized from the gap (about 1,500 USDG or 8 NVDA per bp).
+hv() { cast call "$V" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n "${1}p" | num; }
+g_start=$(off_feed_bps 5); aligns=0
+while [ "$(off_feed_bps 6)" -gt 4 ] && [ $aligns -lt 8 ]; do
+  gap=$(off_feed_bps 6)
+  if [ "$(py "1 if $(hv 6) > $(hv 4) else 0")" = 1 ]; then swap "$TRADER" "$USDG" "$NVDA" $(py "$gap * 1500000000")
+  else swap "$TRADER" "$NVDA" "$USDG" $(py "$gap * 8000000000000000000"); fi
+  aligns=$((aligns + 1))
+done
+settle
+echo "  info: TWAP was $g_start bp off the feed at the slot; $aligns aligning trades, now $(off_feed_bps 5) bp" >&3
+chk "the pool sits within 10 bp of Chainlink, so the keeper's 15 bp deferral is not what the next steps exercise" "$(off_feed_bps 5) <= 10"
 
 # (1) the TWAP walks 65 to 95 bp away from Chainlink, inside the 100 bp gate: every path stays open except rebalance
 # (TwapOffOracle). Sells of 100 NVDA until the pool is that far from the feed, then one TWAP window with no trades.
@@ -478,8 +502,15 @@ chk "spot sits on the TWAP, so the spot-to-TWAP band is not what refuses" "$(off
 rd=$(revdata "$A0" "$V" 'rebalance()')
 chk "the keeper's rebalance reverts TwapOffOracle()" "'${rd:0:10}' == '$(cast sig 'TwapOffOracle()')'"
 chk "a deposit is still accepted (eth_call)" "$(cast call --from "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER" -r "$R" | num) > 0"
+kd=$(keeper_dry_nvda)
+echo "  info: keeper dry run, TWAP $FD bp off the feed: $(jq -c '{action,twap_feed_bps,max_bps}' <<<"$kd" | cut -c1-200)" >&3
+chk "the keeper defers its scheduled send while the TWAP is over 15 bp off the feed (dry run, slot assumed due)" "'$(jq -r .action <<<"$kd")' == 'deferred_twap_off_feed'"
 cast rpc evm_revert "$FSNAP" -r "$R" >/dev/null || die "evm_revert of the feed-gap snapshot failed"
 chk "back at the start of the step: spot on the TWAP" "$(off_twap_bps) <= 1"
+G1=$(off_feed_bps 5)
+kc=$(keeper_dry_nvda)
+echo "  info: keeper dry run, TWAP $G1 bp off the feed (start of the step): $(jq -c '{action,twap_feed_bps}' <<<"$kc" | cut -c1-200)" >&3
+chk "control: with the TWAP within 15 bp of the feed the same dry run would send" "$G1 <= 10 and '$(jq -r .action <<<"$kc")' == 'dry_run_would_send'"
 
 # (2) a push UP leaves the deposit, the mint and the router zap open (shares are priced at the lowest of feed, TWAP and
 # spot, so a high spot cannot make them cheaper); the rebalance still refuses on either side.
@@ -500,6 +531,12 @@ cast rpc evm_revert "$USNAP" -r "$R" >/dev/null || die "evm_revert of the upward
 chk "back at the start of the step: spot on the TWAP" "$(off_twap_bps) <= 1"
 
 # (3) a push DOWN closes deposit, mint, the zap and the rebalance, while the Chainlink gate (100 bp) stays Ok
+# Start it from a pool priced about 9 bp above the feed, so that once the TWAP catches up with the pushed spot (about 17 bp lower)
+# it sits inside the keeper's 15 bp deferral and step 06b can watch the keeper send.
+swap "$TRADER" "$USDG" "$NVDA" 15000000000   # 15,000 USDG
+settle
+G2=$(off_feed_bps 5)
+chk "the TWAP sits within 15 bp of the feed before the push down ($G2 bp)" "$G2 <= 14"
 sells=0
 while [ "$(off_twap_bps)" -lt 14 ] && [ $sells -lt 6 ]; do swap "$TRADER" "$NVDA" "$USDG" 140000000000000000000; sells=$((sells + 1)); done
 OFF=$(off_twap_bps)
@@ -532,7 +569,7 @@ EOF
 # the keeper reads Date.now() for the schedule while the fork's chain clock sits days behind the wall clock: align them
 : >"$TMP/keeper.log"
 ( cd "$APP/keeper" && RPC_URL="$R" VAULT_ADDRESS_NVDA="$V" VAULT_DEPLOY_BLOCK_NVDA="$(jq -r .vaults.NVDA.deploy_block "$FORK_JSON")" POLL_S=2 \
-    VAULT_KEEPER_KEY="$ANVIL0_KEY" FORK_CLOCK_MS=$(( $(ts) * 1000 )) \
+    VAULT_KEEPER_KEY="$ANVIL0_KEY" KEEPER_JITTER_SALT="$JSALT" FORK_CLOCK_MS=$(( $(ts) * 1000 )) \
     bun --no-env-file --preload "$TMP/clock.ts" src/keeper.ts >"$TMP/keeper.log" 2>&1 & echo $! >"$TMP/keeper.pid" )
 kp=$(cat "$TMP/keeper.pid")
 nfail=0
