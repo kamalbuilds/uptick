@@ -14,8 +14,8 @@ bun src/keeper.ts                         # live loop, needs VAULT_KEEPER_KEY in
 Per vault, every 60 s:
 
 1. Reads pool `slot0`, the Chainlink proxy `latestRoundData`, and the vault `currentRange()`.
-2. Decides a trigger. `scheduled`: 02:00 UTC on the evening after each NYSE session (22:00 ET in EDT, 21:00 ET in EST), within a 6 hour window, nothing sent since the slot. `out_of_range` applies during NYSE trading days only. `out_of_range`: pool tick outside the vault range for 30 minutes and at least 2 hours since the last rebalance (the spike engine parameters). Weekends and NYSE holidays never trigger.
-3. Guards: Chainlink age at most 87,000 s (24 h heartbeat plus grace) and pool vs Chainlink deviation at most 200 bps. A failed guard logs `blocked_by_guard` and retries next minute until the close.
+2. Decides a trigger. `scheduled`: once on the evening after each NYSE session, at a minute drawn per UTC day from a local salt (`KEEPER_JITTER_SALT`, generated into the gitignored `keeper/.env.local` on first run) inside the first five hours of the 02:00 to 08:00 UTC window (the replay's 02:00 slot is 22:00 ET in EDT, 21:00 ET in EST), nothing sent since the slot, so no outsider can place a trade ahead of the recentre from the calendar alone. `out_of_range` applies during NYSE trading days only. `out_of_range`: pool tick outside the vault range for 30 minutes and at least 2 hours since the last rebalance (the spike engine parameters). Weekends and NYSE holidays never trigger.
+3. Guards: Chainlink age at most 87,000 s (24 h heartbeat plus grace) and pool vs Chainlink deviation at most 200 bps. A failed guard logs `blocked_by_guard` and retries next minute until the close. A scheduled send also waits (`deferred_twap_off_feed`, retried each tick) while the vault's 10-minute TWAP sits more than 15 bp from the Chainlink feed, read through `vault.health()` with the vault's own deviation test; the vault itself refuses at 30 bp.
 4. `eth_call` simulation of `rebalance()`. Only a successful simulation is signed and sent. The receipt wait retries through RPC errors and falls back to a direct receipt lookup. Result is read from the receipt status.
 
 Output is JSON lines (`start`, `tick`, `simulate_ok`, `simulate_failed`, `sent`, `rebalanced`, `reverted`, `error`).
@@ -42,6 +42,8 @@ A Stock Token gets a vault when all of these hold (thresholds in `src/universe.t
 | Pool vs feed | within 300 bps at the read block |
 
 Where the numbers come from: the volume floor admits a token to a vault and the replay gate decides whether deposits open. The vault is sized to its pool: a USD 100,000 position is the ceiling, and a thinner pool carries the largest position that holds at most 20% of its in-range liquidity (`cap_usd`, floored to whole dollars). Below USD 10,000 the daily rebalance, gas and swap impact cost more than the fees such a vault earns, so the pool is left out. `replay/replay.py` simulates each vault at its own `cap_usd`.
+
+`scripts/deploy-list.mjs` deploys every token at its `cap_usd`, except META, which deploys at 15% of its pool's in-range depth (USD 17,025 of USD 96K): a half-cap sell on its 0.3% pool costs 83 bp at that size against the 129 bp the deploy swap's Chainlink floor allows, so the rebalance fills with the feed any distance up to the vault's 30 bp bound off the pool.
 
 | Token | Volume per day (7 d) | Pool depth (+-5%) | Vault size cap | Result |
 |---|---|---|---|---|

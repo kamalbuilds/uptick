@@ -20,7 +20,7 @@ Three layers sit behind it on Robinhood Chain (4663): an evidence engine that re
 |---|---|
 | Evidence engine | Replays every swap on every USDG pool and fee tier of each eligible Stock Token (5.1M swaps over 54 days so far; `spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). Measures fee per dollar of 1 hour markout by session and selects the pool and tier with the best out-of-sample result. |
 | StockVault | ERC-4626 vault, one per Stock Token. Deposits into the selected pool and tier, values everything in the Stock Token, mints shares. |
-| Keeper | Refreshes the evidence and calls `rebalance()` at 02:00 UTC after each NYSE session. Simulates with `eth_call` first and signs only a passing simulation. Eligibility rule in `keeper/src/universe.ts`. |
+| Keeper | Refreshes the evidence and calls `rebalance()` once after each NYSE session, at a per-day minute inside the 02:00 to 07:00 UTC window, and holds a send while the TWAP is more than 15 bp from Chainlink. Simulates with `eth_call` first and signs only a passing simulation. Eligibility rule in `keeper/src/universe.ts`. |
 | CappedTakeHook + CapRegistry | The fee cap standard. A hook declares its maximum take, the pool enforces it inside every swap, and CapRegistry records the declared maximum write-once so anyone can read it. |
 | UptickHook | Reference implementation of the cap standard (session fee and oracle gap under a declared cap). |
 | Stats API | Serves TVL, fees (lifetime, 24 h, 7 d), fee APR, tier comparison, current range and share price history per vault. |
@@ -64,7 +64,7 @@ The session labels the evidence and sets the recentre slot in the keeper (`keepe
 - The rule is expressed in New York local time and converted to UTC per date, so the open lands at 13:30 UTC in EDT and 14:30 UTC in EST. DST starts the second Sunday of March and ends the first Sunday of November.
 - Weeknight: after the close and before the next open on a trading day.
 - Weekend and holiday: Saturday, Sunday and NYSE holidays, taken from a holiday table.
-- Recentre slot: 02:00 UTC on the evening after each NYSE session (22:00 ET in EDT, 21:00 ET in EST), with a 6 hour window. Weekends and holidays never trigger.
+- Recentre slot: a per-day minute, drawn from a local salt, between 02:00 and 07:00 UTC on the evening after each NYSE session (the replay models the 02:00 UTC start, 22:00 ET in EDT, 21:00 ET in EST), inside a window that closes at 08:00 UTC. Weekends and holidays never trigger.
 
 ## Trust assumptions
 
