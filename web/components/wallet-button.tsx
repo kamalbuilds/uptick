@@ -45,21 +45,21 @@ export function WalletPicker({ open, onClose }: { open: boolean; onClose: () => 
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className="m-auto w-[min(92vw,26rem)] rounded-xl bg-canvas p-0 text-ink shadow-[0_24px_80px_rgba(14,15,12,0.28)] backdrop:bg-ink/50"
+      className="m-auto w-[min(92vw,26rem)] rounded-lg border border-line bg-panel p-0 text-fg"
     >
       <div className="p-6">
-        <h2 className="text-3xl leading-none">Connect a wallet</h2>
-        <p className="mt-2 text-sm text-body">Uptick reads your balance and asks you to sign each transaction. It never holds your keys.</p>
-        <ul className="mt-5 divide-y divide-sage-line border-y border-sage-line">
+        <h2 className="text-2xl font-semibold leading-8 tracking-[-0.2px]">Connect a wallet</h2>
+        <p className="mt-2 text-[13px] leading-5 text-mute">Uptick reads your balance and asks you to sign each transaction. It never holds your keys.</p>
+        <ul className="mt-5 divide-y divide-hairline border-y border-hairline">
           {CURATED.map((w) => {
             const found = connectors.find((c) => c.id === w.rdns);
             return (
               <li key={w.rdns} className="flex items-center gap-3 py-3">
                 {found?.icon ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={found.icon} alt="" width={32} height={32} className="size-8 rounded-md" />
+                  <img src={found.icon} alt="" width={32} height={32} className="size-8 rounded-lg" />
                 ) : (
-                  <span className="grid size-8 place-items-center rounded-md bg-sage text-sm font-bold" aria-hidden>{w.name[0]}</span>
+                  <span className="grid size-8 place-items-center rounded-lg bg-raised text-sm font-semibold" aria-hidden>{w.name[0]}</span>
                 )}
                 <span className="flex-1 font-semibold">{w.name}</span>
                 {found ? (
@@ -67,7 +67,7 @@ export function WalletPicker({ open, onClose }: { open: boolean; onClose: () => 
                     {isPending ? "Waiting" : "Connect"}
                   </Button>
                 ) : (
-                  <a className="text-sm font-semibold underline underline-offset-4 hover:text-ink-deep" href={w.install} target="_blank" rel="noreferrer">
+                  <a className="text-[13px] font-semibold text-mute underline underline-offset-4 hover:text-fg" href={w.install} target="_blank" rel="noreferrer">
                     Install
                   </a>
                 )}
@@ -75,14 +75,15 @@ export function WalletPicker({ open, onClose }: { open: boolean; onClose: () => 
             );
           })}
         </ul>
-        {error && <p role="alert" className="mt-3 text-sm text-negative-deep">{error}</p>}
+        {error && <p role="alert" className="mt-3 text-[13px] text-loss">{error}</p>}
         <Button variant="soft" className="mt-5 w-full" onClick={onClose}>Close</Button>
       </div>
     </dialog>
   );
 }
 
-export function WalletButton({ size = "md" }: { size?: "sm" | "md" }) {
+/** `label` is the disconnected call to action; the short form hides "wallet" on a narrow screen only when no label is given. */
+export function WalletButton({ size = "md", label, className }: { size?: "sm" | "md" | "lg"; label?: string; className?: string }) {
   const { address, isConnected, chainId } = useAccount();
   const { disconnect } = useDisconnect();
   const { switchChain, isPending: switching } = useSwitchChain();
@@ -96,8 +97,8 @@ export function WalletButton({ size = "md" }: { size?: "sm" | "md" }) {
   if (!mounted || !isConnected || !address) {
     return (
       <>
-        <Button size={size} onClick={() => setPicker(true)}>
-          <Plugs size={18} weight="bold" aria-hidden className="hidden sm:block" /> Connect<span className="hidden sm:inline"> wallet</span>
+        <Button size={size} className={className} onClick={() => setPicker(true)}>
+          {label ?? <><Plugs size={18} weight="bold" aria-hidden className="hidden sm:block" /><span>Connect<span className="hidden sm:inline">{" "}wallet</span></span></>}
         </Button>
         <WalletPicker open={picker} onClose={() => setPicker(false)} />
       </>
@@ -106,7 +107,7 @@ export function WalletButton({ size = "md" }: { size?: "sm" | "md" }) {
 
   if (chainId !== robinhoodChain.id) {
     return (
-      <Button size={size} variant="dark" disabled={switching} onClick={() => switchChain({ chainId: robinhoodChain.id })}>
+      <Button size={size} variant="outline" className={className} disabled={switching} onClick={() => switchChain({ chainId: robinhoodChain.id })}>
         {switching ? "Switching" : "Switch to Robinhood Chain"}
       </Button>
     );
@@ -114,22 +115,22 @@ export function WalletButton({ size = "md" }: { size?: "sm" | "md" }) {
 
   return (
     <div className="relative">
-      <Button size={size} variant="outline" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
-        <span className="size-2 rounded-full bg-positive" aria-hidden />
-        <span className="figure text-sm">{shortAddress(address)}</span>
+      <Button size={size} variant="outline" className={className} aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
+        <span className="size-2 rounded-full bg-kept" aria-hidden />
+        <span className="figure text-[13px]">{shortAddress(address)}</span>
       </Button>
       {menu && (
-        <div className="absolute right-0 z-30 mt-2 w-56 rounded-lg border border-sage-line bg-canvas p-1.5 shadow-[0_12px_40px_rgba(14,15,12,0.16)]" onMouseLeave={() => setMenu(false)}>
+        <div className="absolute right-0 z-30 mt-2 w-56 rounded-lg border border-line bg-panel p-1.5" onMouseLeave={() => setMenu(false)}>
           <button
-            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-sage"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-raised"
             onClick={async () => { await navigator.clipboard.writeText(address); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
           >
             <CopySimple size={16} aria-hidden /> {copied ? "Copied" : "Copy address"}
           </button>
-          <a className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sage" href={addressUrl(address)} target="_blank" rel="noreferrer">
+          <a className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-raised" href={addressUrl(address)} target="_blank" rel="noreferrer">
             <ArrowSquareOut size={16} aria-hidden /> View on explorer
           </a>
-          <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-sage" onClick={() => { disconnect(); setMenu(false); }}>
+          <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-raised" onClick={() => { disconnect(); setMenu(false); }}>
             <SignOut size={16} aria-hidden /> Disconnect
           </button>
         </div>

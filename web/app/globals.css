@@ -1,60 +1,73 @@
 @import "tailwindcss";
 
-/* Tokens from DESIGN.md (wise). Fonts: Archivo (display, stands in for Wise Sans), Figtree (body), Geist Mono (figures, addresses). */
+/* Hallmark · macrostructure: Ruled Column + Docked Ticket · tone: austere · anchor hue: kept-green 150 (money kept only)
+ * Tokens from DESIGN.md (Uptick-ink-and-hairline). Hanken Grotesk for everything, Literata once per screen for the verdict sentence. */
 @theme {
-  --color-primary: #9fe870;
-  --color-primary-active: #cdffad;
-  --color-primary-neutral: #c5edab;
-  --color-primary-pale: #e2f6d5;
-  --color-ink: #0e0f0c;
-  --color-ink-deep: #163300;
-  --color-body: #454745;
-  --color-mute: #6b6d6a;
-  --color-canvas: #ffffff;
-  --color-sage: #e8ebe6;
-  --color-sage-line: #d3d8cf;
-  --color-positive: #2ead4b;
-  --color-positive-deep: #054d28;
-  --color-warning: #ffd11a;
-  --color-warning-deep: #b86700;
-  --color-negative: #d03238;
-  --color-negative-deep: #a72027;
+  --color-canvas: #0a0b0c;
+  --color-panel: #16181a;
+  --color-raised: #1f2124;
+  --color-hairline: #2a2e31;
+  --color-line: #42494d;
+  --color-fg: #f4f5f5;
+  --color-mute: #919fa6;
+  --color-kept: #1fd16b;
+  --color-kept-dim: #0f3d24;
+  --color-loss: #ec5e2a;
+  --color-loss-dim: #3a1d12;
+  --color-caution: #f2b84b;
+  --color-caution-dim: #352a12;
+  --color-closed: #6b747a;
 
-  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
-  --font-sans: var(--font-figtree), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-hanken), ui-sans-serif, sans-serif;
+  --font-serif: var(--font-literata), Georgia, serif;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-sm: 4px;
+  --radius-lg: 8px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
-  html { background: var(--color-sage); color: var(--color-ink); }
-  body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; -webkit-font-smoothing: antialiased; text-wrap: pretty; }
-  h1, h2, h3 { font-family: var(--font-display); font-weight: 900; font-stretch: 86%; letter-spacing: -0.02em; text-wrap: balance; }
-  :focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; border-radius: 6px; }
-  ::selection { background: var(--color-primary); color: var(--color-ink); }
+  html { background: var(--color-canvas); color: var(--color-fg); color-scheme: dark; overflow-x: clip; }
+  body {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 24px;
+    letter-spacing: -0.1px;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+    overflow-x: clip;
+  }
+  h1, h2, h3 { font-weight: 600; text-wrap: balance; }
+  :focus-visible { outline: 2px solid var(--color-fg); outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: var(--color-kept-dim); color: var(--color-fg); }
+  a { color: inherit; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 
 @layer utilities {
-  .figure { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-  .display { font-family: var(--font-display); font-weight: 900; font-stretch: 86%; letter-spacing: -0.035em; line-height: 0.9; }
-  .rise { animation: rise 640ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  .figure { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  /* The verdict sentence: the one serif line on a screen. Roman, never italic. */
+  .serif { font-family: var(--font-serif); font-weight: 400; font-optical-sizing: auto; letter-spacing: -0.025em; font-style: normal; text-wrap: balance; }
+  .verdict { animation: fade-in 200ms var(--ease-out) both; }
+  .term { text-decoration: underline dotted var(--color-mute); text-underline-offset: 4px; }
+  .press { transition: transform 150ms var(--ease-out), background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out); }
+  .press:active { transform: scale(0.97); }
+  .row { transition: background-color 150ms var(--ease-out); }
+  .row:hover { background: var(--color-panel); }
   .draw { stroke-dasharray: var(--len, 2400); stroke-dashoffset: var(--len, 2400); animation: draw 1400ms var(--ease-out) 200ms forwards; }
-  .shimmer { background: linear-gradient(90deg, var(--color-sage) 0%, #f3f5f0 50%, var(--color-sage) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+  .shimmer { background: linear-gradient(90deg, var(--color-panel) 0%, var(--color-raised) 50%, var(--color-panel) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 }
 
-@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes shimmer { to { background-position: -200% 0; } }
-@keyframes pulse-dot { 50% { opacity: 0.35; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .shimmer { animation: none; }
+  .verdict, .shimmer { animation: none; }
   .draw { animation: none; stroke-dashoffset: 0; }
   * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }

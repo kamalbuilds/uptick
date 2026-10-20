@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, Figtree, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, Literata } from "next/font/google";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -7,9 +7,8 @@ import { pitchLine } from "@/lib/format";
 import { REPLAYED_SWAPS, VAULTS } from "@/lib/vaults";
 import "./globals.css";
 
-const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo", display: "swap" });
-const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
-const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+const hanken = Hanken_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-hanken", display: "swap" });
+const literata = Literata({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-literata", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Uptick: put your stock tokens to work",
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${figtree.variable} ${mono.variable}`}>
+    <html lang="en" className={`${hanken.variable} ${literata.variable}`}>
       <body className="min-h-dvh">
         <Providers>
           <SiteHeader />
