@@ -71,6 +71,8 @@ contract DeployAllTest is Test {
 
     function test_allowClosedRefusedOnARealChain() public {
         assertEq(block.chainid, 4663);
+        // through a local anvil fork the node answers anvil_nodeInfo, so the script rightly allows the flag
+        try vm.rpc("anvil_nodeInfo", "[]") returns (bytes memory) { vm.skip(true); } catch {}
         _env("test/fixtures/deploy-list-closed.json", true);
         vm.expectRevert(bytes("ALLOW_CLOSED is refused here: only a local anvil fork may deploy a closed vault"));
         script.run();
