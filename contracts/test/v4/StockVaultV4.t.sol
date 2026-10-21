@@ -340,7 +340,7 @@ abstract contract V4Suite is V4Fixture {
     function test_feesAreValuedExactlyAndHarvestKeepsThePriceContinuous() public {
         _instant();
         uint256 shares = _deposit(alice, UNIT() * 2);
-        _volume(60_000e6, 2);
+        _volume(VOL(), 2);
         _advance(300);
         StockVaultV4.PositionInfo memory info = vault.positionInfo();
         assertGt(info.uncollectedStock + info.uncollectedUsdg, 0, "the trades paid the position");
@@ -366,7 +366,7 @@ abstract contract V4Suite is V4Fixture {
         _instant();
         _deposit(alice, UNIT() * 2);
         StockVaultV4.PositionInfo memory first = vault.positionInfo();
-        _volume(60_000e6, 2);
+        _volume(VOL(), 2);
         _advance(1 hours + 1);
         vm.recordLogs();
         vm.prank(keeper);
@@ -403,7 +403,7 @@ abstract contract V4Suite is V4Fixture {
     function test_depositIntoAnOpenPositionHarvestsFirst() public {
         _instant();
         _deposit(alice, UNIT() * 2);
-        _volume(60_000e6, 2);
+        _volume(VOL(), 2);
         _advance(300);
         _settle();
         StockVaultV4.PositionInfo memory info = vault.positionInfo();
@@ -425,7 +425,7 @@ abstract contract V4Suite is V4Fixture {
         _instant();
         _deposit(alice, UNIT() * 2);
         uint256 nav0 = vault.totalAssets();
-        _volume(60_000e6, 2); // no pokes: the average and the feed stand still, only the fees change
+        _volume(VOL(), 2); // no pokes: the average and the feed stand still, only the fees change
         StockVaultV4.PositionInfo memory info = vault.positionInfo();
         (, uint256 price,,, uint160 sqrtTwap,) = vault.health();
         uint256 navPrice = Math.min(price, _usdOf(sqrtTwap));
@@ -439,7 +439,7 @@ abstract contract V4Suite is V4Fixture {
         _instant();
         uint256 a = _deposit(alice, UNIT() * 2);
         uint256 b = _deposit(bob, UNIT() * 2);
-        _volume(120_000e6, 3);
+        _volume(VOL() * 2, 3);
         _advance(600);
         _settle();
         StockVaultV4.PositionInfo memory info = vault.positionInfo();
@@ -790,9 +790,6 @@ contract StockVaultV4PltrTest is V4Suite {
         return 200;
     }
 
-    function UNIT() internal pure override returns (uint256) {
-        return 100e18;
-    }
 }
 
 contract StockVaultV4TslaTest is V4Suite {
@@ -812,9 +809,6 @@ contract StockVaultV4TslaTest is V4Suite {
         return 60;
     }
 
-    function UNIT() internal pure override returns (uint256) {
-        return 50e18;
-    }
 
     function RECENTRE_RANGE_BPS() internal pure override returns (uint16) {
         return 50;

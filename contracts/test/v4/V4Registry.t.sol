@@ -289,9 +289,6 @@ contract V4RegistryPltrTest is V4RegistrySuite {
         return 200;
     }
 
-    function UNIT() internal pure override returns (uint256) {
-        return 100e18;
-    }
 }
 
 contract V4RegistryTslaTest is V4RegistrySuite {
@@ -311,7 +308,4 @@ contract V4RegistryTslaTest is V4RegistrySuite {
         return 60;
     }
 
-    function UNIT() internal pure override returns (uint256) {
-        return 50e18;
-    }
 }

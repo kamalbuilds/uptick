@@ -36,7 +36,7 @@ A Stock Token gets a vault when all of these hold (thresholds in `src/universe.t
 |---|---|
 | Chainlink Stock Token feed | present in the Chainlink directory for 4663, `description()`, `decimals()` and `latestRoundData()` readable, answer positive |
 | Feed age | at most 4 days (heartbeat plus a long weekend) |
-| USDG pool | the deepest v3 pool by active liquidity across its +-5% band |
+| USDG pool | the deepest v3 pool by active liquidity across its +-5% band (a v4 pool takes over for a token whose v3 pool is closed, below) |
 | Pool volume | at least USD 100,000 per day, 7-day average |
 | Vault size | the vault is sized to its pool: `cap_usd` = min(USD 100,000, the largest `V` with `V / (depth + V)` at most 20%), at least USD 10,000 (below that, gas and rebalance cost dominate). `StockVault` enforces it through `depositCap` |
 | Pool vs feed | within 300 bps at the read block |
@@ -71,13 +71,13 @@ Where the numbers come from: the volume floor admits a token to a vault and the 
 
 Of 196 tokens: 35 have a feed, 95 have a USDG v3 pool, 17 are eligible (block 93099228).
 
-v4 pools are replayed for the eligible tokens (below) but do not enter eligibility: StockVault holds a Uniswap v3 position.
+v4 pools are replayed for the eligible tokens (below). A token's venue is v3 while its chosen v3 pool keeps the deposit gate open or reduced; when that pool is closed and the best static-fee v4 pool (no hook, or an allow-listed hook without removal callbacks or return-delta flags) clears the same floor, the token deploys as a `StockVaultV4` on that pool, sized to the v4 pool's own depth. `replay.json` carries `chosen_v4` and `venue`; `node scripts/deploy-list.mjs --v4-report` prints both verdicts for every token. The keeper pokes each v4 vault's observation ring every 45 s alongside its rebalances.
 
 ## Pool choice (replay)
 
 `replay/pull.py` pulls 30 days of swaps (bounded 400,000-block pages, public RPC) for every v3 USDG pool of an eligible token and every v4 USDG pool without a fee-taking hook (hook address bits for swap and liquidity return deltas), plus the Chainlink rounds. `replay/replay.py` runs the spike engine (`spikes/stock-vaults/scripts/engine.py`, unchanged) on each pool with the vault's strategy: each token at its own size, a band around Chainlink chosen per token (`data/params.json`, written by `strategist/strategist.py --batch --interval-h 24`), recentred daily at the NYSE open plus 5 minutes.
 
-The window is 2026-09-17 to 2026-10-17. The first 15 days select, the last 15 days check. The vault's target is the v3 pool that did best on the first half among pools carrying at least USD 1M of volume; `confirmed_in_test` records whether it also led the second half, whose fee APR is reported as the out-of-sample figure.
+The window is 2026-09-17 to 2026-10-17. The first 15 days select, the last 15 days check. The vault's target is the pool of its venue that did best on the first half among pools carrying at least USD 1M of volume (`chosen` for v3, `chosen_v4` for v4; a v4 pool's fee income is the pool key's LP fee, not the swap fee the PoolManager's protocol fee raises); `confirmed_in_test` records whether it also led the second half, whose fee APR is reported as the out-of-sample figure.
 
 | Token | Chosen pool | Fee APR, 30 days | Fee APR, second half | Swaps replayed (all pools) |
 |---|---|---|---|---|

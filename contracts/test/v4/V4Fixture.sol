@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import {ForkPin} from "../ForkPin.sol";
 import {Test, Vm} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -13,6 +14,7 @@ import {Currency} from "v4-core/types/Currency.sol";
 import {BalanceDelta} from "v4-core/types/BalanceDelta.sol";
 import {StateLibrary} from "v4-core/libraries/StateLibrary.sol";
 import {TickMath} from "v4-core/libraries/TickMath.sol";
+import {SqrtPriceMath} from "v4-core/libraries/SqrtPriceMath.sol";
 
 import {IAggregatorV3} from "../../src/interfaces/IUniswapV3.sol";
 import {StockVaultV4} from "../../src/v4/StockVaultV4.sol";
@@ -76,8 +78,18 @@ abstract contract V4Fixture is Test {
     function FEED() internal pure virtual returns (address);
     function FEE() internal pure virtual returns (uint24);
     function SPACING() internal pure virtual returns (int24);
-    /// @dev stock units a test deposits (18 decimals), sized well inside the pool's depth.
-    function UNIT() internal pure virtual returns (uint256);
+    /// @dev Stock units a test deposits (18 decimals): 0.6% of the pool's +-5% depth, read at setUp, so the suite keeps
+    /// its shape as the live pools deepen and thin. VOL() is the USDG a trade leg moves to earn the position fees.
+    function UNIT() internal view returns (uint256) {
+        return unit;
+    }
+
+    function VOL() internal view returns (uint256) {
+        return vol;
+    }
+
+    uint256 internal unit;
+    uint256 internal vol;
 
     StockVaultV4 internal vault;
     V4Trader internal trader;
@@ -93,10 +105,7 @@ abstract contract V4Fixture is Test {
     address internal bob = makeAddr("bob");
 
     function setUp() public virtual {
-        uint256 blk = vm.envOr("FORK_BLOCK", uint256(0));
-        string memory url = vm.envOr("FORK_URL", string("robinhood"));
-        if (blk == 0) vm.createSelectFork(url);
-        else vm.createSelectFork(url, blk);
+        ForkPin.select(vm);
         (feedRound,,,,) = IAggregatorV3(FEED()).latestRoundData();
 
         stockIsToken0 = STOCK() < USDG;
@@ -109,12 +118,33 @@ abstract contract V4Fixture is Test {
         );
         pid = key.toId();
         _setFeed(_poolPrice());
+        _size();
 
         vault = _deploy(_defaultParams());
         trader = new V4Trader(PM);
         deal(USDG, address(trader), 200_000_000e6);
         deal(STOCK(), address(trader), 50_000_000e18);
         _seed();
+    }
+
+    /// @dev USDG value of the liquidity within 5% of spot, both sides (twice the USDG leg a 5% fall in the stock holds),
+    /// the same measure as `depth_usd_5pct` in keeper/data/universe.json.
+    function _depthUsdg() internal view returns (uint256) {
+        (uint160 sp,) = _spot();
+        uint128 liq = PM.getLiquidity(pid);
+        uint256 leg = stockIsToken0
+            ? SqrtPriceMath.getAmount1Delta(uint160(uint256(sp) * 97_468 / 100_000), sp, liq, false)
+            : SqrtPriceMath.getAmount0Delta(sp, uint160(uint256(sp) * 102_600 / 100_000), liq, false);
+        return 2 * leg;
+    }
+
+    function _size() internal {
+        uint256 depth = _depthUsdg();
+        uint256 unitUsdg = depth * 6 / 1000;
+        if (unitUsdg < 1500e6) unitUsdg = 1500e6;
+        unit = unitUsdg * 1e20 / _poolPrice();
+        vol = depth * 12 / 100;
+        if (vol < 20_000e6) vol = 20_000e6;
     }
 
     function _defaultParams() internal pure returns (StockVaultV4.Params memory) {

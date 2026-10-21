@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import {ForkPin} from "./ForkPin.sol";
 import {Test, Vm} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -37,10 +38,7 @@ contract VaultFactoryTest is Test {
     address stranger = makeAddr("stranger");
 
     function setUp() public {
-        uint256 blk = vm.envOr("FORK_BLOCK", uint256(0));
-        string memory url = vm.envOr("FORK_URL", string("robinhood"));
-        if (blk == 0) vm.createSelectFork(url);
-        else vm.createSelectFork(url, blk);
+        ForkPin.select(vm);
         vm.warp(block.timestamp + 11 minutes); // TWAP equals spot, so the live pools' last 10 minutes cannot trip the band
         code = vm.getCode("StockVault.sol:StockVault");
         factory = new VaultFactory(factoryOwner, keccak256(code), bytes32(0), address(0), _defaults(keeper));

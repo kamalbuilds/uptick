@@ -83,13 +83,30 @@ Shares carry 24 decimals: the Stock Token's 18 plus a 6-digit virtual-share offs
 
 The constructor checks that the pool's tokens are the Stock Token and USDG and that the position manager's factory resolves the same pool for that pair and fee.
 
+## StockVaultV4: the Uniswap v4 venue
+
+`StockVaultV4` is the same vault over a Uniswap v4 pool: the shares, the entry fee, the 24-hour owner queue, the same-block share lock, the corporate-action gate, the Chainlink-floored swaps and `redeemInKind` (always open) are the StockVault ones, with the position held by the vault itself in the Uniswap v4 PoolManager. It opens the pools where a token's depth sits in v4: a hookless pool, or one whose hook is on the factory's allow-list and carries no remove-liquidity callback and no return-delta flag. A dynamic-fee pool, or any fee above 2%, is refused at construction.
+
+| Piece | What it does |
+|---|---|
+| `src/v4/StockVaultV4.sol` | The vault. One `unlockCallback` runs a swap or a liquidity change and settles both currencies before it returns; no position NFT, no Permit2, no approvals to anyone. v4 pays a position's accrued fees to the caller on every liquidity change, so the vault harvests first (performance fee minted) whenever it can read the oracle. The swap floors use the pool's live swap fee, protocol fee included. |
+| `src/v4/TickOracleV4.sol` | The vault's TWAP. v4 pools keep no observations, so each vault keeps a ring of them, written by `poke()` (anyone, the keeper every 45 s). An observation is the pool's own tick, taken at least 20 s after the last, within `maxDeviationBps` ticks of the Chainlink tick and within 50 ticks of the previous observation, so one sandwiched observation moves a 10-minute average by at most 5 ticks. The average is served only from a gap-free record. |
+| `src/v4/VaultMathV4.sol` | Position and fee reads straight from PoolManager storage, and the liquidity fit that never asks for more than the idle balances. |
+| `src/v4/StockVaultV4Lens.sol` | `totalValueInUSDG` and `currentRange` for the app, one deployment for every v4 vault. |
+| `VaultFactory.createVaultV4` | Deploys the pinned StockVaultV4 build for (Stock Token, v4 pool, feed), checks the hook allow-list and registers it in the same `isVault` registry the router reads. |
+| `UptickRouter.depositUsdgV4` | The USDG zap for a registered v4 vault: registry check, health gate and a Chainlink swap floor, the swap made in the vault's own pool. `redeemInKindMin` serves both vault types. |
+
+Deploy lists carry `"venue": "v4"` with the pool's `poolId`, `feeTier`, `tickSpacing` and `hooks` for a token whose chosen pool is a v4 pool (`scripts/deploy-list.mjs`); `script/DeployAll.s.sol` creates it through `createVaultV4` and checks the pool id against the key.
+
 ## Layout
 
 ```
-src/StockVault.sol            the vault
+src/StockVault.sol            the v3 vault
+src/v4/                       StockVaultV4, TickOracleV4, VaultMathV4, StockVaultV4Lens
 src/interfaces/IUniswapV3.sol minimal interfaces for pool, position manager, router, Chainlink
 script/Deploy.s.sol           env-driven deployment (simulates without --broadcast)
 test/                         fork tests against the real pool, router, position manager and tokens
+test/v4/                      fork tests against real v4 pools (PLTR and TSLA), oracle ring and liquidity-fit properties, factory and router
 test/security/                review regressions: sandwiches, TWAP drag, entry fee, fee-aware floors on every tier
 ```
 
@@ -100,23 +117,29 @@ Installed with `forge install --no-git <repo>@<tag>`:
 | Library | Tag | Commit |
 |---|---|---|
 | OpenZeppelin/openzeppelin-contracts | v5.7.0 | `cab19933c33c2ad1d4c7a84864a3601dddfd16f3` |
-| Uniswap/v4-core (TickMath, SqrtPriceMath only) | v4.0.0 | `e50237c43811bd9b526eff40f26772152a42daba` |
+| Uniswap/v4-core | v4.0.0 | `e50237c43811bd9b526eff40f26772152a42daba` |
 | foundry-rs/forge-std | v1.17.0 | `f3dae6e6ee381f25eb6a246f7da9b85c91a68219` |
 
 Solidity 0.8.26, EVM cancun, `via_ir`, `optimizer_runs = 1`. StockVault's runtime code is 24,479 bytes, under the 24,576 byte limit; the pure tick and liquidity maths sit in `VaultMath`, deployed by each vault's constructor.
 
 ## Test
 
-The tests fork Robinhood Chain at head over the public RPC and trade against the real NVDA / USDG pool. The public RPC keeps no historical state, so a fixed old block cannot be replayed; set `FORK_BLOCK` to a recent block to pin one, or `FORK_URL` to a node that serves history (an archive RPC or a local Anvil fork).
+The tests fork Robinhood Chain and trade against the real pools, routers, PoolManager and tokens. `test/ForkPin.sol` decides the state every suite sees: with `FORK_URL` set to a node that serves history (an archive RPC, or a local Anvil forking one) every suite forks the same block, `FORK_BLOCK` or the pinned 93,694,185 (2026-10-20 19:30 UTC, inside NYSE hours); without it the suite forks the public RPC at head, which keeps no history.
+
+```
+anvil --fork-url <archive rpc> --fork-block-number 93694185 --port 8546 --retries 20 --fork-retry-backoff 500 --no-rate-limit
+FORK_URL=http://127.0.0.1:8546 forge test --threads 2
+```
 
 ```
 forge build
-forge test                                   # full suite
+forge test --threads 2                       # full suite
 forge test --match-contract StockVaultTest   # deposits, rebalance, fees
 forge test --match-contract StockVaultSafetyTest
 forge test --match-contract StockVaultFuzzTest
 forge test --match-contract StockVaultInvariantTest
-forge test --match-path 'test/security/*' -j 1  # review regressions on the thin PLTR, GME and MSTR pools
+forge test --match-path 'test/security/*' --threads 1  # review regressions on the thin PLTR, GME and MSTR pools
+forge test --match-path 'test/v4/*'          # the v4 venue
 ```
 
 What is exercised against the real contracts: deposit and withdraw round trips with real NVDA; rebalance after the pool is pushed through the router; fee accrual checked against the pool's own fee growth; the performance-fee share mint checked against its closed form; a 3% pool push that must block deposits (same block, via the spot check; after the TWAP window, via the TWAP check); a stale feed that must block `rebalance`; permissionless `rebalance` at 26 hours; `redeemInKind` with the vault paused and the feed down; a Stock Token transfer that reverts; the first-depositor donation attack; fuzzed deposits and withdrawals with the invariant that the sum of share values never exceeds total assets; a stateful invariant run over deposits, redeems, in-kind redeems and rebalances; and a second vault on the SPCX pool, where the Stock Token is token0, so both token orderings are covered.

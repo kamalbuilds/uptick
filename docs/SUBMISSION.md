@@ -44,7 +44,7 @@ Across AutoRange, Arrakis V2, Gamma and Veda, no codebase carries a settings tim
 
 ## 10. Fees across venues
 
-Uniswap v3 and v4 moved $488.40M of Stock Token value across the 17 tokens in 7 days and paid $623.9K in LP fees. $184.8K of that fee pot is reachable in v3 pools, which vaults hold today, and $198.5K sits in v4. The engine measures hookless v4 pools too: PLTR's v4 1% pool kept +28.2% in its weaker half, against -20.3% for the v3 0.3% pool that keeps PLTR closed. Source: `docs/research/founder-house/vaults/VENUES.md`, `keeper/data/replay.json`.
+Uniswap v3 and v4 moved $488.40M of Stock Token value across the 17 tokens in 7 days and paid $623.9K in LP fees. $184.8K of that fee pot is reachable in v3 pools, held by StockVault, and $198.5K sits in v4, held by StockVaultV4. The engine measures hookless v4 pools net of the PoolManager's protocol fee: PLTR's v4 1% pool kept +12.8% in its weaker half, against -20.3% for the v3 0.3% pool, so PLTR deploys as a v4 vault. Source: `docs/research/founder-house/vaults/VENUES.md`, `keeper/data/replay.json`.
 
 ## 11. Shipped
 
