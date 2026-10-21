@@ -137,8 +137,12 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     uint24 private constant MAX_ENTRY_FEE = 20_000;
     uint24 public constant DEFAULT_ENTRY_FEE = 3500;
     /// @dev Hook address permission bits a vault pool may not carry: BEFORE/AFTER_REMOVE_LIQUIDITY (a hook that can
-    /// revert a removal could block `redeemInKind`) and the four *_RETURNS_DELTA flags (a hook that can take value).
-    uint160 private constant FORBIDDEN_HOOK_BITS = (1 << 9) | (1 << 8) | (1 << 3) | (1 << 2) | (1 << 1) | 1;
+    /// revert a removal could block `redeemInKind`), the four *_RETURNS_DELTA flags (a hook that can take value
+    /// outright), and BEFORE/AFTER_SWAP and BEFORE/AFTER_ADD_LIQUIDITY (a hook that runs inside the vault's own swap or
+    /// add can call the PoolManager from its callback and sandwich the vault up to its swap floor). Only initialize
+    /// and donate hooks pass.
+    uint160 private constant FORBIDDEN_HOOK_BITS =
+        (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 7) | (1 << 6) | (1 << 3) | (1 << 2) | (1 << 1) | 1;
     uint256 private constant Q96 = 1 << 96;
 
     // -------------------------------------------------------------- immutables

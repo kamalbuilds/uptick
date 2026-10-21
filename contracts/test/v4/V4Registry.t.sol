@@ -134,7 +134,7 @@ abstract contract V4RegistrySuite is V4Fixture {
         vm.expectRevert(StockVaultV4.DynamicFeePool.selector);
         factory.createVaultV4(code4, STOCK(), 0x800000, 60, address(0), FEED(), 0);
         // a hook must be on the allow-list ...
-        address hook = address(uint160((uint256(0xAB) << 152) | (1 << 7)));
+        address hook = address(uint160((uint256(0xAB) << 152) | (1 << 13)));
         vm.expectRevert(abi.encodeWithSelector(VaultFactory.HookNotAllowed.selector, hook));
         factory.createVaultV4(code4, STOCK(), FEE(), SPACING(), hook, FEED(), 0);
         // ... and an allow-listed hook is still refused by the vault when its permissions can take value
@@ -142,7 +142,11 @@ abstract contract V4RegistrySuite is V4Fixture {
         factory.setHookAllowed(taker, true);
         vm.expectRevert(StockVaultV4.ForbiddenHook.selector);
         factory.createVaultV4(code4, STOCK(), FEE(), SPACING(), taker, FEED(), 0);
-        // an allow-listed hook with swap callbacks only passes both checks and then finds no such pool
+        // an allow-listed hook with an initialize callback only passes both checks and then finds no such pool
+        address swapper = address(uint160((uint256(0xAC) << 152) | (1 << 7)));
+        factory.setHookAllowed(swapper, true);
+        vm.expectRevert(StockVaultV4.ForbiddenHook.selector); // a swap hook can sandwich the vault inside its own swap
+        factory.createVaultV4(code4, STOCK(), FEE(), SPACING(), swapper, FEED(), 0);
         factory.setHookAllowed(hook, true);
         vm.expectRevert(StockVaultV4.PoolNotInitialised.selector);
         factory.createVaultV4(code4, STOCK(), FEE(), SPACING(), hook, FEED(), 0);

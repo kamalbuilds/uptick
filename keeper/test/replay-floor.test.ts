@@ -22,7 +22,7 @@ test("replay.py and deploy-list.mjs gate on the same KEEP_FLOOR_APR as keeper/sr
 });
 
 test("replay.py mirrors the v4 hook flag mask and the dynamic fee flag of keeper/src/v4.ts", () => {
-  expect(V4_HOOK_FLAGS).toBe(0x30f);
+  expect(V4_HOOK_FLAGS).toBe(0xfcf);
   expect(pyConst("V4_HOOK_FLAGS")).toBe(V4_HOOK_FLAGS);
   expect(pyConst("DYNAMIC_FEE")).toBe(DYNAMIC_FEE);
 });

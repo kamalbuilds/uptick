@@ -11,8 +11,8 @@ export const stateViewAbi = parseAbi([
 /** A pool whose fee carries this flag lets its hook set the fee per swap. */
 export const DYNAMIC_FEE = 0x800000;
 
-/** Hook permission flags (address low bits) StockVaultV4 refuses: before/after removeLiquidity and the four returns-delta flags. */
-export const V4_HOOK_FLAGS = (1 << 9) | (1 << 8) | (1 << 3) | (1 << 2) | (1 << 1) | 1;
+/** Hook permission flags (address low bits) StockVaultV4 refuses: before/after removeLiquidity, before/after swap, before/after addLiquidity and the four returns-delta flags (only initialize and donate hooks pass). */
+export const V4_HOOK_FLAGS = (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 7) | (1 << 6) | (1 << 3) | (1 << 2) | (1 << 1) | 1;
 
 const ZERO = /^0x0{40}$/i;
 

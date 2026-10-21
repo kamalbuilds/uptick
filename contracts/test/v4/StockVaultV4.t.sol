@@ -79,7 +79,7 @@ abstract contract V4Suite is V4Fixture {
     }
 
     function test_rejectsHooksThatCanTakeValueOrBlockAnExit() public {
-        uint256[6] memory bits = [uint256(0), 1, 2, 3, 8, 9];
+        uint256[10] memory bits = [uint256(0), 1, 2, 3, 6, 7, 8, 9, 10, 11];
         for (uint256 i; i < bits.length; ++i) {
             StockVaultV4.Config memory c = _config();
             c.hooks = address(uint160((uint256(0xAB) << 152) | (1 << bits[i])));
@@ -88,10 +88,10 @@ abstract contract V4Suite is V4Fixture {
         }
     }
 
-    function test_aHookWithOnlySwapAndInitCallbacksPassesTheHookCheck() public {
-        // permission bits 13 (beforeInitialize) and 7 (beforeSwap): allowed by the vault; no such pool exists
+    function test_aHookWithOnlyInitCallbacksPassesTheHookCheck() public {
+        // permission bits 13 and 12 (before/after initialize): allowed by the vault; no such pool exists
         StockVaultV4.Config memory c = _config();
-        c.hooks = address(uint160((uint256(0xAB) << 152) | (1 << 13) | (1 << 7)));
+        c.hooks = address(uint160((uint256(0xAB) << 152) | (1 << 13) | (1 << 12)));
         vm.expectRevert(StockVaultV4.PoolNotInitialised.selector);
         new StockVaultV4(c, _defaultParams(), "x", "x");
     }

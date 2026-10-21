@@ -303,6 +303,8 @@ contract ReviewV4PltrTest is V4Fixture {
     /// floor (swap fee + slippageBps off Chainlink) is the only bound. Measured on a hooked PLTR/USDG 1% pool the hook
     /// creates and supplies with the live pool's in-range liquidity.
     function test_V4R_L1_aSwapHookSandwichesTheVaultInsideItsOwnSwap() public {
+        // The hook is real and supplied with the live pool's liquidity: the pool works for any other LP. The vault refuses
+        // it at construction, so it can never be sandwiched from inside the vault's own swap or add.
         (uint160 sp,) = _spot();
         address hookAddr = address(uint160((uint256(0xE1) << 152) | (1 << 7) | (1 << 6)));
         deployCodeTo("test/security/v4/ReviewV4.t.sol:EvilSwapHook", abi.encode(address(PM)), hookAddr);
@@ -318,31 +320,15 @@ contract ReviewV4PltrTest is V4Fixture {
 
         StockVaultV4.Config memory cfg = _config();
         cfg.hooks = hookAddr;
-        vault = new StockVaultV4(cfg, _defaultParams(), "Stock Vault V4", "svV4");
-        _seed();
-        _deposit(alice, UNIT() * 4);
-        _advance(1 hours + 1);
-
-        uint256 snap = vm.snapshotState();
-        vm.prank(keeper);
-        vault.rebalance();
-        uint256 navControl = vault.totalAssets();
-
-        vm.revertToState(snap);
-        hook.arm(address(vault), 80);
-        uint256 hs = IERC20(STOCK()).balanceOf(hookAddr);
-        uint256 hu = IERC20(USDG).balanceOf(hookAddr);
-        vm.prank(keeper);
-        vault.rebalance();
-        uint256 navAttack = vault.totalAssets();
-        emit log_named_decimal_uint("vault NAV after rebalance, control (PLTR)", navControl, 18);
-        emit log_named_decimal_uint("vault NAV after rebalance, hooked (PLTR)", navAttack, 18);
-        emit log_named_decimal_int("hook stock delta", int256(IERC20(STOCK()).balanceOf(hookAddr)) - int256(hs), 18);
-        emit log_named_decimal_int("hook usdg delta", int256(IERC20(USDG).balanceOf(hookAddr)) - int256(hu), 6);
-        uint256 loss = navControl > navAttack ? navControl - navAttack : 0;
-        emit log_named_decimal_uint("holders' loss (PLTR)", loss, 18);
-        emit log_named_decimal_uint("holders' loss, bp of NAV", loss * 1e6 / navControl, 2);
-        assertLe(loss * 1e4, navControl * 5, "V4R-L1: an accepted hook cannot take value from the vault's swap");
+        vm.expectRevert(StockVaultV4.ForbiddenHook.selector);
+        new StockVaultV4(cfg, _defaultParams(), "Stock Vault V4", "svV4");
+        // the add-liquidity callbacks can move the price between the vault's fit and its add: refused the same way
+        cfg.hooks = address(uint160((uint256(0xE2) << 152) | (1 << 11)));
+        vm.expectRevert(StockVaultV4.ForbiddenHook.selector);
+        new StockVaultV4(cfg, _defaultParams(), "Stock Vault V4", "svV4");
+        cfg.hooks = address(uint160((uint256(0xE3) << 152) | (1 << 10)));
+        vm.expectRevert(StockVaultV4.ForbiddenHook.selector);
+        new StockVaultV4(cfg, _defaultParams(), "Stock Vault V4", "svV4");
     }
 
     /// @notice Declared residual "the balancing swap ignores its own impact (under 10% idle)", measured at the PLTR deploy

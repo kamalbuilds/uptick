@@ -85,7 +85,7 @@ The constructor checks that the pool's tokens are the Stock Token and USDG and t
 
 ## StockVaultV4: the Uniswap v4 venue
 
-`StockVaultV4` is the same vault over a Uniswap v4 pool: the shares, the entry fee, the 24-hour owner queue, the same-block share lock, the corporate-action gate, the Chainlink-floored swaps and `redeemInKind` (always open) are the StockVault ones, with the position held by the vault itself in the Uniswap v4 PoolManager. It opens the pools where a token's depth sits in v4: a hookless pool, or one whose hook is on the factory's allow-list and carries no remove-liquidity callback and no return-delta flag. A dynamic-fee pool, or any fee above 2%, is refused at construction.
+`StockVaultV4` is the same vault over a Uniswap v4 pool: the shares, the entry fee, the 24-hour owner queue, the same-block share lock, the corporate-action gate, the Chainlink-floored swaps and `redeemInKind` (always open) are the StockVault ones, with the position held by the vault itself in the Uniswap v4 PoolManager. It opens the pools where a token's depth sits in v4: a hookless pool, or one whose hook is on the factory's allow-list and carries only initialize or donate callbacks (no remove-liquidity, swap, add-liquidity or return-delta permission). A dynamic-fee pool, or any fee above 2%, is refused at construction.
 
 | Piece | What it does |
 |---|---|

@@ -9,22 +9,24 @@ import replay as rp
 HOOK = "0x" + "ab" * 18 + "0000"          # permission bits all clear
 BEFORE_REMOVE = "0x" + "ab" * 18 + "0200"  # 1 << 9
 RETURNS_DELTA = "0x" + "ab" * 18 + "0008"   # BEFORE_SWAP_RETURNS_DELTA 1 << 3
-BEFORE_SWAP = "0x" + "ab" * 18 + "0080"     # 1 << 7: moves no vault funds, allowed
+BEFORE_SWAP = "0x" + "ab" * 18 + "0080"     # 1 << 7: can sandwich the vault's own swap
+BEFORE_INIT = "0x" + "ab" * 18 + "2000"     # 1 << 13: moves no vault funds, allowed
 
 
 def test_v4_key_ok():
-    allow = {HOOK, BEFORE_REMOVE, RETURNS_DELTA, BEFORE_SWAP}
+    allow = {HOOK, BEFORE_REMOVE, RETURNS_DELTA, BEFORE_SWAP, BEFORE_INIT}
     assert rp.v4_key_ok(3000, None, set())
     assert not rp.v4_key_ok(rp.DYNAMIC_FEE, None, set()), "dynamic fee"
     assert not rp.v4_key_ok(3000, HOOK, set()), "hook not on the allow-list"
     assert rp.v4_key_ok(3000, HOOK, allow)
-    assert rp.v4_key_ok(3000, BEFORE_SWAP, allow)
+    assert rp.v4_key_ok(3000, BEFORE_INIT, allow)
+    assert not rp.v4_key_ok(3000, BEFORE_SWAP, allow), "allow-listed but runs inside the vault's own swap"
     assert not rp.v4_key_ok(3000, BEFORE_REMOVE, allow), "allow-listed but can block a withdrawal"
     assert not rp.v4_key_ok(3000, RETURNS_DELTA, allow), "allow-listed but takes a delta"
     assert not rp.v4_key_ok(rp.DYNAMIC_FEE | 3000, HOOK, allow)
-    for bit in (9, 8, 3, 2, 1, 0):
+    for bit in (11, 10, 9, 8, 7, 6, 3, 2, 1, 0):
         assert rp.V4_HOOK_FLAGS & (1 << bit)
-    assert bin(rp.V4_HOOK_FLAGS).count("1") == 6
+    assert bin(rp.V4_HOOK_FLAGS).count("1") == 10
 
 
 def test_venue_for():
