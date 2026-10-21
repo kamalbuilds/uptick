@@ -11,7 +11,10 @@ import {
   Sources,
   TLDR,
 } from "@/components/prose";
-import { CLOSED_VAULTS, DOCS, docHref, OPEN_VAULTS, REDUCED_VAULTS } from "@/lib/content";
+import { DOCS, docHref } from "@/lib/content";
+import { REPLAYED_SWAPS, VAULTS, type GateState } from "@/lib/vaults";
+
+const symbolsIn = (state: GateState) => VAULTS.filter((v) => v.gate.state === state).map((v) => v.symbol).join(", ");
 
 export const metadata: Metadata = {
   title: "Docs | Uptick",
@@ -115,16 +118,16 @@ export default function DocsPage() {
       <DataTable
         columns={["State", "Vaults today"]}
         rows={[
-          ["Open", OPEN_VAULTS.join(", ")],
-          ["Reduced", REDUCED_VAULTS.join(", ")],
-          ["Closed", CLOSED_VAULTS.join(", ")],
+          ["Open", symbolsIn("open")],
+          ["Reduced", symbolsIn("reduced")],
+          ["Closed", symbolsIn("closed")],
         ]}
         caption="Current gate states for the 17-vault universe."
       />
 
       <H2>Where the numbers come from</H2>
       <P>
-        The universe starts from 3,357,382 replayed swaps over 30 days. Each vault gets the largest
+        The universe starts from {REPLAYED_SWAPS.toLocaleString("en-US")} replayed swaps over 30 days. Each vault gets the largest
         position that stays at or below 20% of in-range liquidity, under a $100,000 ceiling. A pool
         whose depth would carry less than $10,000 is left out; a pool between that floor and the
         ceiling gets the largest size it can carry. The fee APR and kept APR you see on a vault page

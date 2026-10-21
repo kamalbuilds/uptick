@@ -134,6 +134,3 @@ export function postDate(iso: string): string {
   });
 }
 
-export const OPEN_VAULTS = ["AAPL", "NVDA"];
-export const REDUCED_VAULTS = ["SPY", "QQQ", "GOOGL", "AMZN", "PLTR"];
-export const CLOSED_VAULTS = ["USO", "MSTR", "META", "GME", "TSLA", "AMD", "MU", "SPCX", "INTC", "CRCL"];
