@@ -213,7 +213,7 @@ export function VaultList() {
               {taking.length > 0 && (
                 <section aria-labelledby="taking">
                   <SectionTitle id="taking" aside={<>Open takes any amount. Reduced takes up to {usdWhole(REDUCED_CAP_STOCK_USD)} a deposit.</>}>
-                    Taking deposits <span className="ml-1 text-[17px] font-normal text-mute">{taking.length}</span>
+                    Cleared to open <span className="ml-1 text-[17px] font-normal text-mute">{taking.length}</span>
                   </SectionTitle>
                   <ColumnHeads />
                   <ul>{rows(taking)}</ul>

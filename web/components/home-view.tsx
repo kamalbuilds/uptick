@@ -57,7 +57,7 @@ export function HomeView() {
         <h1 className="serif verdict text-[30px] font-normal leading-[34px] sm:text-[40px] sm:leading-[44px]">Which of your stock tokens can earn, and how much you would keep.</h1>
         <p className="mt-5 text-mute">
           Every vault sits behind one of three doors, set by {swapsLabel(REPLAYED_SWAPS)} swaps replayed over the {REPLAY_WINDOW.days} days to {isoDay(REPLAY_WINDOW.end)}.{" "}
-          Open and reduced vaults take deposits; closed ones do not.
+          Open and reduced vaults clear the bar; closed ones stay shut.
         </p>
         <Mine holdings={holdings} />
       </div>
@@ -67,7 +67,7 @@ export function HomeView() {
         <div className="space-y-10">
           <section aria-labelledby="taking">
             <SectionTitle id="taking" aside={<>Open takes any amount. Reduced takes up to {usdWhole(REDUCED_CAP_STOCK_USD)} a deposit, or the vault&rsquo;s size if smaller.</>}>
-              Taking deposits <span className="ml-1 text-[17px] font-normal text-mute">{taking.length}</span>
+              Cleared to open <span className="ml-1 text-[17px] font-normal text-mute">{taking.length}</span>
             </SectionTitle>
             <RowHeader />
             {taking.map((v) => <VaultRow key={v.id} cfg={v} held={held?.get(v.id)} />)}
