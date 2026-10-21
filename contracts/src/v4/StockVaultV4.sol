@@ -952,7 +952,9 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         // pending fees are already idle (in gross); only the treasury's cut of them is deducted
         (uint256 pStock, uint256 pUsdg) = _orient(pendingFee0, pendingFee1);
         uint256 feeValue = v.feeStock + pStock + _usdgToStock(v.feeUsdg + pUsdg, px);
-        v.net = v.gross - feeValue * params.perfFeeBps / 1e4;
+        uint256 cutValue = feeValue * params.perfFeeBps / 1e4;
+        // saturating: a vault emptied with a pending cut holds the per-leg floored reserve, a few wei under the cut
+        v.net = v.gross > cutValue ? v.gross - cutValue : 0;
     }
 
     function _navPrice(Snapshot memory s) private view returns (uint256) {

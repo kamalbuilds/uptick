@@ -234,7 +234,7 @@ The mint minimum of StockVault is not carried over: the v3 position manager quot
 
 ## v4 bytecode size
 
-StockVault is unchanged: runtime 24,504 bytes (72 under EIP-170), creation code 36,068, `forge build --sizes` before and after. StockVaultV4's runtime is 24,267 bytes (309 under the limit) and its creation code 43,901 (5,251 under the 49,152 initcode limit); it deploys `VaultMath` (6,547), `VaultMathV4` (4,001) and `TickOracleV4` (4,667) in its constructor. `StockVaultV4Lens` is 3,041, `VaultFactory` 8,597 (creation 9,850) and `UptickRouter` 7,616. The app views `totalValueInUSDG` and `currentRange` live in the lens and the position reads in `VaultMathV4.info` because the vault's runtime had no room for them; `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
+StockVault is unchanged: runtime 24,504 bytes (72 under EIP-170), creation code 36,068, `forge build --sizes` before and after. StockVaultV4's runtime is 24,277 bytes (299 under the limit) and its creation code 43,911 (5,241 under the 49,152 initcode limit); it deploys `VaultMath` (6,547), `VaultMathV4` (4,001) and `TickOracleV4` (4,667) in its constructor. `StockVaultV4Lens` is 3,041, `VaultFactory` 8,597 (creation 9,850) and `UptickRouter` 7,616. The app views `totalValueInUSDG` and `currentRange` live in the lens and the position reads in `VaultMathV4.info` because the vault's runtime had no room for them; `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
 
 ## v4 test and mutation evidence
 
@@ -277,6 +277,7 @@ Fork tests run against the real PoolManager and real pools of PLTR (USDG is curr
 | Pending fees' cut not held back from later exits | `test_V4R_M1_laterClosedGateExitsCannotTakeThePendingCut` (the stayers' price per share falls 0.18%) |
 | Harvest ignores pending fees | `test_V4R_M1_closedGateInKindExitForfeitsTheTreasuryCut`, `test_V4R_M1_laterClosedGateExitsCannotTakeThePendingCut` (treasury 0) |
 | Swap and add-liquidity hook bits (7, 6, 11, 10) not forbidden (review V4R-L1) | `test_V4R_L1_aSwapHookSandwichesTheVaultInsideItsOwnSwap`, `test_rejectsHooksThatCanTakeValueOrBlockAnExit`, `test_createV4RefusesADynamicFeePoolAndForbiddenHooks` |
+| NAV deduction of the pending cut not saturating (review V4R-RR-L1) | `test_RR_emptiedVaultWithPendingCutDoesNotBrickNav` (`totalAssets` panics 0x11 on an emptied vault) |
 
 The mutations ran in four batches of guards with disjoint witness tests (one forge build per batch), the same tests on the restored source afterwards: 139 of 139 green (PLTR and TSLA vault suites 49 each, registry and router suites 14 each, oracle 10, liquidity fit 3). The review fixes (V4R-M1, V4R-L1) were mutated on the pinned fork and are the last five rows; the review's fork tests (5) run beside them. Two rows were run again alone because a batch hid them: the empty-position harvest (its call site was another mutation's target) and the uninitialised-pool check (the fee and hook checks it sits behind were also mutated).
 
