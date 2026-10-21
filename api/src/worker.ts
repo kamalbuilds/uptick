@@ -3,6 +3,7 @@ import replay from "../data/replay.json";
 import { handleMcp, type Env } from "./mcp";
 import LLMS from "./llms";
 import { keeperList, keeperVault } from "./keeper";
+import { postTalk, talkCount } from "./talk";
 
 interface HalfStats {
   fee_apr_pct: number | null;
@@ -190,6 +191,11 @@ function handleRequest(
     return json({ error: "method_not_allowed", method: request.method }, 405);
   }
 
+  if (path === "/talk") {
+    if (request.method === "POST") return postTalk(request, env);
+    return json({ error: "method_not_allowed", method: request.method }, 405);
+  }
+
   if (request.method !== "GET") {
     return json({ error: "method_not_allowed", method: request.method }, 405);
   }
@@ -197,6 +203,7 @@ function handleRequest(
   if (path === "/llms.txt" && request.method === "GET") {
     return new Response(LLMS, { headers: { ...CORS_HEADERS, "content-type": "text/plain; charset=utf-8" } });
   }
+  if (path === "/talk/count") return talkCount(env);
   if (path === "/health") {
     return health();
   }

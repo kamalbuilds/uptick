@@ -5,3 +5,7 @@ compatibility_date = "2026-10-01"
 [vars]
 VAULTS = '{}'
 NETWORK = "robinhood-chain"
+
+[[kv_namespaces]]
+binding = "TALK"
+id = "49cc51a2f53b4ec080a24c415612a4d7"

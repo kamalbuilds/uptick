@@ -11,6 +11,7 @@ export function SiteFooter() {
             <Link href="/portfolio" className="inline-block py-2 hover:underline hover:underline-offset-4">Portfolio</Link>
             <Link href="/docs" className="inline-block py-2 hover:underline hover:underline-offset-4">Docs</Link>
             <Link href="/research" className="inline-block py-2 hover:underline hover:underline-offset-4">Research</Link>
+            <Link href="/talk" className="inline-block py-2 hover:underline hover:underline-offset-4">Talk to us</Link>
           </nav>
           <p className="max-w-xl">
             Stock Tokens trade on Robinhood Chain for holders outside the US, under each country's own rules. Fee figures are estimates from pool swaps and are not a recommendation.

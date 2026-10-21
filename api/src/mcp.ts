@@ -1,8 +1,9 @@
 import { encodeFunctionData, isAddress, parseAbi, parseUnits } from "viem";
 import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
+import type { TalkEnv } from "./talk";
 
-export interface Env {
+export interface Env extends TalkEnv {
   VAULTS?: string;
   ROUTER?: string;
   NETWORK?: string;
