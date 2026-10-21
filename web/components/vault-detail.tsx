@@ -94,22 +94,20 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
           <GateFigure cfg={cfg} />
           <ExitPreview vault={cfg.vault} symbol={cfg.symbol} user={address} />
 
-          <section aria-labelledby="band">
+          {!(q.data && !q.data.chart) && <section aria-labelledby="band">
             <SectionTitle id="band">The band follows the price</SectionTitle>
             <p className="mt-4 max-w-[690px] text-mute">The vault holds {cfg.symbol} inside a plus or minus {cfg.bandBps / 100}% band around the Chainlink price and re-centres it at 02:00 UTC after each NYSE session. Fees accrue while the pool price is inside.</p>
             {q.isError ? (
               <div className="mt-4 max-w-xl"><FetchError what={cfg.symbol} onRetry={() => q.refetch()} /></div>
             ) : !q.data ? (
               <Skeleton className="mt-4 h-80 w-full" />
-            ) : q.data.chart ? (
-              <div className="mt-4">
-                <BandChart symbol={cfg.symbol} chart={q.data.chart} />
-                <BandReadout chart={q.data.chart} />
-              </div>
             ) : (
-              <p className="mt-4 text-mute">The price chart is waiting on the pool and Chainlink reads.</p>
+              <div className="mt-4">
+                <BandChart symbol={cfg.symbol} chart={q.data.chart!} />
+                <BandReadout chart={q.data.chart!} />
+              </div>
             )}
-          </section>
+          </section>}
 
           <section aria-labelledby="fee">
             <SectionTitle id="fee">Why this pool</SectionTitle>
