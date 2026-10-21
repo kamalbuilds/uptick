@@ -184,6 +184,11 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
 
     uint128 private lifetimeFeesStock;
     uint128 private lifetimeFeesUsdg;
+    /// @dev Fees the PoolManager paid into the vault on a liquidity change that was not preceded by a harvest (a
+    /// `redeemInKind` while the oracle gate is not Ok). They sit in the idle balances, the treasury's cut of them is
+    /// deducted from NAV and held back from every exit, and the next `_harvest` mints it. token0/token1 amounts.
+    uint128 private pendingFee0;
+    uint128 private pendingFee1;
 
     mapping(address => uint256) public stockOwed;
     uint256 public totalStockOwed;
@@ -564,9 +569,10 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     }
 
     /// @notice Pro-rata exit in both legs. No oracle gate, no swap, not pausable. v4 pays the whole position's
-    /// accrued fees to the vault when liquidity is removed; when the oracle gate is not Ok the vault cannot price a
-    /// performance-fee mint, so those fees stay with the holders who remain and the redeemer's slice of them with
-    /// them (the same outcome as StockVault skipping its harvest).
+    /// accrued fees to the vault when liquidity is removed. When the oracle gate is not Ok the vault cannot price a
+    /// performance-fee mint, so the redeemer's slice excludes those fees (they stay with the holders who remain) and
+    /// they are recorded as pending: the treasury's cut of them is deducted from NAV, held back from every later exit
+    /// and minted at the next harvest. StockVault reaches the same result by leaving the fees owed in the position.
     function redeemInKind(uint256 shares, address receiver, address owner_)
         external
         nonReentrant
@@ -728,8 +734,12 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
     /// @dev Takes shares/supply of idle balances and of the position's liquidity into this contract and returns the
     /// amounts. The fees the PoolManager pays on the liquidity change land in the vault and are not part of them.
     function _release(uint256 shares, uint256 supply) internal returns (uint256 outStock, uint256 outUsdg) {
-        outStock = _idleStock().mulDiv(shares, supply);
-        outUsdg = usdg.balanceOf(address(this)).mulDiv(shares, supply);
+        // the treasury's cut of the pending fees is not the holders' to take
+        (uint256 rs, uint256 ru) = _orient(
+            uint256(pendingFee0) * params.perfFeeBps / 1e4, uint256(pendingFee1) * params.perfFeeBps / 1e4
+        );
+        outStock = (_idleStock() - rs).mulDiv(shares, supply);
+        outUsdg = (usdg.balanceOf(address(this)) - ru).mulDiv(shares, supply);
         if (!positionOpen) return (outStock, outUsdg);
         (uint128 liq,,) = _pos();
         uint128 part = shares == supply ? liq : uint128(uint256(liq).mulDiv(shares, supply));
@@ -738,18 +748,25 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         (uint256 s0, uint256 s1) = _orient(uint256(uint128(d0 - f0)), uint256(uint128(d1 - f1)));
         outStock += s0;
         outUsdg += s1;
+        pendingFee0 += uint128(f0);
+        pendingFee1 += uint128(f1);
     }
 
     /// @dev Collects the trading fees (a zero-liquidity change) and mints the treasury its cut as shares, priced
     /// against assets net of the cut so the share price is unchanged by the mint.
     function _harvest(Snapshot memory s) internal returns (uint256 f0, uint256 f1) {
-        if (!positionOpen) return (0, 0);
         (uint128 liq,,) = _pos();
-        if (liq == 0) return (0, 0);
-        (int128 d0, int128 d1,,) = _modify(0);
-        f0 = uint256(uint128(d0));
-        f1 = uint256(uint128(d1));
+        if (liq > 0) {
+            (int128 d0, int128 d1,,) = _modify(0);
+            f0 = uint256(uint128(d0));
+            f1 = uint256(uint128(d1));
+        }
+        // fees an earlier closed-gate exit swept into the vault are harvested with these
+        f0 += pendingFee0;
+        f1 += pendingFee1;
         if (f0 == 0 && f1 == 0) return (0, 0);
+        pendingFee0 = 0;
+        pendingFee1 = 0;
         (uint256 fStock, uint256 fUsdg) = _orient(f0, f1);
         lifetimeFeesStock += uint128(fStock);
         lifetimeFeesUsdg += uint128(fUsdg);
@@ -928,7 +945,9 @@ contract StockVaultV4 is ERC4626, Ownable2Step, Pausable, ReentrancyGuard {
         }
         uint256 usdgTotal = v.idleUsdg + v.posUsdg + v.feeUsdg;
         v.gross = v.idleStock + v.posStock + v.feeStock + _usdgToStock(usdgTotal, px);
-        uint256 feeValue = v.feeStock + _usdgToStock(v.feeUsdg, px);
+        // pending fees are already idle (in gross); only the treasury's cut of them is deducted
+        (uint256 pStock, uint256 pUsdg) = _orient(pendingFee0, pendingFee1);
+        uint256 feeValue = v.feeStock + pStock + _usdgToStock(v.feeUsdg + pUsdg, px);
         v.net = v.gross - feeValue * params.perfFeeBps / 1e4;
     }
 

@@ -219,7 +219,7 @@ Liveness is the price: priced paths (deposit, mint, withdraw, redeem, rebalance)
 | `unlockCallback` caller | the vault's PoolManager callback | Closed: `NotPoolManager` unless the caller is the PoolManager, which calls back only the contract that called `unlock` |
 | Observation ring not a continuous record over `twapWindow`, or its newest observation older than 120 s | deposit, mint, withdraw, redeem, rebalance | Closed: `OracleUnhealthy(TwapUnavailable)` |
 | Accrued fees paid out by the PoolManager on every liquidity change | deposit with `instantDeploy` into an open position, `rebalance`, `redeem`, `withdraw` | The vault harvests first (`_harvest`: collect with a zero-liquidity change, treasury cut minted against assets net of the cut), so the share price is continuous and the cut is not lost |
-| Liquidity removal while the oracle gate is not Ok | `redeemInKind` | Open: the PoolManager pays the whole position's fees into the vault; the redeemer's slice is principal and idle balances only, the fees stay with the holders who remain and no performance-fee mint is priced (the same outcome as StockVault skipping its harvest) |
+| Liquidity removal while the oracle gate is not Ok | `redeemInKind` | Open: the PoolManager pays the whole position's fees into the vault. The redeemer's slice is principal and idle balances only; the fees are recorded as pending (`pendingFee0/1`), the treasury's performance cut of them is deducted from NAV and held back from every later exit, and the next harvest mints it, so the treasury is paid and the share price does not move (review V4R-M1; StockVault gets the same result by leaving the fees owed in the position) |
 | Swap floors | deploy and exit swaps, `depositUsdgV4` | As StockVault, with the swap fee (LP fee plus protocol fee) in place of the pool fee. The vault sends no price limit, so a partial fill fails the floor |
 | Router vault argument | `depositUsdgV4`, `redeemInKindMin` | Closed: `NotRegisteredVault` unless `VaultFactory.isVault` (one registry for both vault types) |
 | Router unlock callback | `UptickRouter.unlockCallback` | Closed: `NotPoolManager` outside a `depositUsdgV4` swap; the router holds no balances and returns an unspent input to the caller |
@@ -230,7 +230,7 @@ The mint minimum of StockVault is not carried over: the v3 position manager quot
 
 - `totalAssets()` is as StockVault with the position read from PoolManager storage: liquidity and the fees the PoolManager would pay on the next change (`VaultMathV4.position`, the pool's own fee-growth formula with wrapping subtraction). A test compares the figure to the amount the PoolManager then pays out.
 - The liquidity add leaves a remainder idle: the balancing swap ignores its own price impact, so after it the range ratio at the new price needs slightly more of the other leg (under 10% of a deposit at 0.6% of pool depth, measured). It counts in NAV and is deployed at the next rebalance.
-- The balance delta the PoolManager returns for a removal includes the fees accrued on the whole position; the vault subtracts the `feesAccrued` it also returns, so an exit releases principal only.
+- The balance delta the PoolManager returns for a removal includes the fees accrued on the whole position; the vault subtracts the `feesAccrued` it also returns, so an exit releases principal only. Fees swept by a removal that no harvest preceded are tracked in `pendingFee0/1` until the next harvest; if every holder and the treasury have left by then, the pending cut stays in the vault.
 
 ## v4 bytecode size
 

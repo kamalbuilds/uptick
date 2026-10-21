@@ -226,6 +226,32 @@ contract ReviewV4PltrTest is V4Fixture {
         emit log_named_uint("feesEarnedLifetime stock", lifeStock);
         emit log_named_uint("feesEarnedLifetime usdg", lifeUsdg);
         assertGe(attackTreasury * 100, cut * 90, "V4R-M1: the treasury's performance cut survives a closed-gate in-kind exit");
+        assertApproxEqRel(pps1, pps0, 2e14, "V4R-M1: the holders do not absorb the cut when a closed-gate exit sweeps the fees");
+        (lifeStock, lifeUsdg,) = vault.feesEarnedLifetime();
+        assertGt(lifeStock + lifeUsdg, 0, "the swept fees are counted in feesEarnedLifetime at the harvest");
+    }
+
+    /// @notice V4R-M1, later exits. While fees are pending, other closed-gate exits (a whole holder leaving) must not
+    /// carry the treasury's cut out with their idle slice.
+    function test_V4R_M1_laterClosedGateExitsCannotTakeThePendingCut() public {
+        uint256 dust = _accrue();
+        (, uint256 cut) = _feeCut();
+        assertGt(cut, 0);
+        _staleFeed();
+        vm.prank(bob);
+        vault.redeemInKind(dust, bob, bob); // sweeps the fees: pending
+        uint256 bobShares = vault.balanceOf(bob);
+        uint256 ppsMid = vault.convertToAssets(1e24);
+        vm.prank(bob);
+        vault.redeemInKind(bobShares, bob, bob); // the gate is still closed: half the supply leaves with its idle slice
+        assertApproxEqRel(vault.convertToAssets(1e24), ppsMid, 1e12, "the holders who stay do not pay the exiter's share of the treasury's cut");
+        vm.clearMockedCalls();
+        _setFeed(_poolPrice());
+        assertEq(uint8(_status()), uint8(StockVaultV4.Status.Ok));
+        vm.prank(alice);
+        vault.redeemInKind(dust, alice, alice); // a healthy harvest mints the cut
+        uint256 treasuryValue = vault.convertToAssets(vault.balanceOf(treasury));
+        assertGe(treasuryValue * 100, cut * 90, "the cut survives later closed-gate exits");
     }
 
     /// @notice Measures the ring walk the R3-H1 residual now rests on: an attacker who owns every observation (pokes every
