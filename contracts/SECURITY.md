@@ -179,3 +179,101 @@ Each row deletes or breaks one guard in the source, runs the tests that cover it
 The stateful invariant run (random deposits, redeems, in-kind redeems and rebalances; 300 runs of 16 calls, 4,800 calls per invariant) holds seven invariants: sum of share values never exceeds NAV, no USD created, no lingering approvals, deposits never refused except by the oracle gate, rebalances never refused except by the oracle gate, redeems refused only by the gates, and no exit lowers NAV per share for the holders left. It surfaced the dust-swap case: a swap of a few raw units returns nothing because the pool rounds its fee up. The dust guard and `test_tinyRedeemDoesNotRevert` pin it.
 
 Static analysis: `slither .` reports reentrancy and strict-equality findings on paths that sit behind `nonReentrant` and call only the immutable router and position manager; the return values it flags as unused are read back by balance delta instead.
+
+# StockVaultV4 security reference
+
+Scope: `src/v4/StockVaultV4.sol`, `src/v4/TickOracleV4.sol`, `src/v4/VaultMathV4.sol` and `src/v4/StockVaultV4Lens.sol`, plus `VaultFactory.createVaultV4`, `UptickRouter.depositUsdgV4` and `script/DeployAll.s.sol`'s v4 branch. StockVaultV4 reuses `VaultMath` and every StockVault guard in the sections above (oracle gate, spot-to-TWAP band, TWAP-to-Chainlink bound, entry fee, 24-hour owner queue, same-block share lock, corporate-action gate, Chainlink-floored swaps, the exit buffer, `redeemInKind` always open); this section covers what differs. Same convention: closed means the call reverts and no state changes.
+
+## v4 trust assumptions
+
+| Component | What the vault relies on |
+|---|---|
+| Uniswap v4 PoolManager `0x8366a39CC670B4001A1121B8F6A443A643e40951` | The canonical deployment, an immutable address checked for code at construction. The vault holds its position there directly: one `unlock` per swap or liquidity change, both currencies settled before it returns, no position NFT, no Permit2, no approval to any address. The PositionManager (`0x58daec3116aae6D93017bAAea7749052E8a04fA7`) is not used: it would add an NFT custodian, Permit2 and a second unlock path, and the fee and liquidity reads the vault needs are PoolManager storage reads either way. |
+| Pool key | A static LP fee of at most 2% (the dynamic-fee flag 0x800000 reverts `DynamicFeePool`, a higher fee `BadConfig`), an initialised pool (`PoolNotInitialised`), and a hook that is the zero address or has none of the address permission bits for before/after remove-liquidity or the four return-delta flags (`ForbiddenHook`). A hook without remove callbacks cannot revert a removal, so `redeemInKind` stays open; a hook without return-delta flags cannot take value from a swap or a liquidity change. `VaultFactory` additionally refuses a hook the owner has not allow-listed (`HookNotAllowed`). |
+| PoolManager protocol fee | The fee controller sets a protocol fee per pool and can change it at any time; the live PLTR 1% pool carries 1,000 pips (swap fee 10,990) and the TSLA 0.3% pool 500 pips (3,499). Every floor, preview and the entry-fee floor reads the live swap fee (`swapFee()`, the larger direction), not the key fee. |
+| Observation ring | `TickOracleV4`, one per vault, written through `StockVaultV4.poke()`. See the next section. |
+| Keeper | Calls `rebalance()` and, every 45 s, `poke()` (which anyone can call). A stalled keeper closes the priced paths after 2 minutes, never `redeemInKind`. |
+
+## The TWAP source
+
+A v4 pool keeps no observations and the pools that hold the depth are hookless, so a hook cannot supply one: no hook on 4663 serves observations (the SessionFeeHook, Fables, Doppler, Pons and launch hooks of `VENUES.md` are fee or launch hooks, dynamic-fee or return-delta), and an oracle hook only helps pools created with it. The vault keeps its own ring, `TickOracleV4`, written by `poke()`:
+
+| Bound | Value | What it stops |
+|---|---|---|
+| Source of the tick | read from the PoolManager inside `record`, never passed by the caller | a caller choosing the tick |
+| `MIN_GAP` | 20 s between observations | flooding the 128-slot ring; the ring always spans more than the longest window (1,800 s) plus `MAX_GAP` |
+| Oracle band | the tick is clamped to the Chainlink tick plus or minus `maxDeviationBps` ticks (one tick is one bp) | recording a tick the gate itself calls deviant |
+| `MAX_STEP` | 50 ticks from the previous observation | one observation dragging the average far however far spot is pushed |
+| `MAX_GAP` | 120 s: `twap` needs the newest observation at most this old and no gap longer than this anywhere in the window; a longer gap restarts the record | extrapolating a stale tick across an outage; a single observation's weight is at most `MAX_GAP` of the window |
+
+An observation is credited forward until the next one, as in a v3 oracle, so a tick written at time t weighs nothing at t. One sandwiched observation therefore moves a 10-minute average by at most `MAX_STEP` x the time to the next honest observation / the window: 50 x 45 / 600 = 3.75 ticks at the keeper's cadence, 10 ticks at `MAX_GAP`. What an attacker takes is still bounded by the guards that apply whatever the TWAP source is: the TWAP within `maxDeviationBps` of Chainlink on every priced path, the 30 bp `maxTwapOracleBps` bound and the 10 bp spot band on `rebalance`, and the swap floors, so the holders' loss from a walk inside the bound stays under (30 + 10) bp x the swap (the accepted residual R3-H1). The difference from a v3 pool is the price of the walk: a v3 TWAP must be held for ten minutes against arbitrageurs, a v4 observation is written in the block of a sandwich and the attacker needs about eight consecutive sandwiched observations (each paying the pool fee both ways) to move the average by 30 bp. `test_aSandwichedPokeMovesTheAverageByAtMostFiveTicks` measures one on a real pool.
+
+Liveness is the price: priced paths (deposit, mint, withdraw, redeem, rebalance) need a gap-free record over `twapWindow` (10 minutes by default), so after a keeper outage of more than 2 minutes they close (`OracleUnhealthy(TwapUnavailable)`) until 10 minutes of observations exist again. `poke()` is permissionless, the keeper pokes every 45 s on its own loop, and `redeemInKind` reads no oracle.
+
+## v4 guards and what they do when they trip
+
+| Guard | Applies to | On trip |
+|---|---|---|
+| Dynamic-fee flag, fee above 2%, forbidden hook bits, uninitialised pool, PoolManager without code | construction (so `VaultFactory.createVaultV4`) | Closed: `DynamicFeePool`, `BadConfig`, `ForbiddenHook`, `PoolNotInitialised`, `BadConfig` |
+| Hook not allow-listed; creation code not the pinned hash; feed of another ticker; v4 hash unset | `VaultFactory.createVaultV4` | Closed: `HookNotAllowed`, `WrongCreationCode`, `BadFeed`, `V4Disabled` |
+| `unlockCallback` caller | the vault's PoolManager callback | Closed: `NotPoolManager` unless the caller is the PoolManager, which calls back only the contract that called `unlock` |
+| Observation ring not a continuous record over `twapWindow`, or its newest observation older than 120 s | deposit, mint, withdraw, redeem, rebalance | Closed: `OracleUnhealthy(TwapUnavailable)` |
+| Accrued fees paid out by the PoolManager on every liquidity change | deposit with `instantDeploy` into an open position, `rebalance`, `redeem`, `withdraw` | The vault harvests first (`_harvest`: collect with a zero-liquidity change, treasury cut minted against assets net of the cut), so the share price is continuous and the cut is not lost |
+| Liquidity removal while the oracle gate is not Ok | `redeemInKind` | Open: the PoolManager pays the whole position's fees into the vault; the redeemer's slice is principal and idle balances only, the fees stay with the holders who remain and no performance-fee mint is priced (the same outcome as StockVault skipping its harvest) |
+| Swap floors | deploy and exit swaps, `depositUsdgV4` | As StockVault, with the swap fee (LP fee plus protocol fee) in place of the pool fee. The vault sends no price limit, so a partial fill fails the floor |
+| Router vault argument | `depositUsdgV4`, `redeemInKindMin` | Closed: `NotRegisteredVault` unless `VaultFactory.isVault` (one registry for both vault types) |
+| Router unlock callback | `UptickRouter.unlockCallback` | Closed: `NotPoolManager` outside a `depositUsdgV4` swap; the router holds no balances and returns an unspent input to the caller |
+
+The mint minimum of StockVault is not carried over: the v3 position manager quotes liquidity at its own price, so a minimum guards the gap between quote and mint, while StockVaultV4 fits the liquidity itself (`VaultMathV4.fit`, stepped down until the amounts the PoolManager rounds up fit the idle balances) from the spot price the add sees, in the same call. The add takes at most the idle balances or the settle transfer reverts, and a minimum computed from the same price could not fail.
+
+## v4 accounting differences
+
+- `totalAssets()` is as StockVault with the position read from PoolManager storage: liquidity and the fees the PoolManager would pay on the next change (`VaultMathV4.position`, the pool's own fee-growth formula with wrapping subtraction). A test compares the figure to the amount the PoolManager then pays out.
+- The liquidity add leaves a remainder idle: the balancing swap ignores its own price impact, so after it the range ratio at the new price needs slightly more of the other leg (under 10% of a deposit at 0.6% of pool depth, measured). It counts in NAV and is deployed at the next rebalance.
+- The balance delta the PoolManager returns for a removal includes the fees accrued on the whole position; the vault subtracts the `feesAccrued` it also returns, so an exit releases principal only.
+
+## v4 bytecode size
+
+StockVault is unchanged: runtime 24,504 bytes (72 under EIP-170), creation code 36,068, `forge build --sizes` before and after. StockVaultV4's runtime is 23,976 bytes (600 under the limit) and its creation code 43,603 (5,549 under the 49,152 initcode limit); it deploys `VaultMath` (6,547), `VaultMathV4` (4,001) and `TickOracleV4` (4,667) in its constructor. `StockVaultV4Lens` is 3,041, `VaultFactory` 8,597 (creation 9,850) and `UptickRouter` 7,616. The app views `totalValueInUSDG` and `currentRange` live in the lens and the position reads in `VaultMathV4.info` because the vault's runtime had no room for them; `test_runtimeCodeFitsEip170` fails the build if it grows past the limit.
+
+## v4 test and mutation evidence
+
+Fork tests run against the real PoolManager and real pools of PLTR (USDG is currency0, the Stock Token currency1, 1% fee, spacing 200) and TSLA (Stock Token currency0, 0.3% fee, spacing 60), both with a live protocol fee; the oracle ring and the liquidity fit are tested on their own (a brute-force TWAP model over 512 random observation sequences including ring wraps, 4,000 fuzzed liquidity fits). Each row breaks one guard in the source, runs the tests that cover it, expects red, restores the source and expects green.
+
+| Mutation | Tests that went red |
+|---|---|
+| Dynamic-fee check removed (constructor) | `test_rejectsDynamicFeePool` (the flag falls through to `PoolNotInitialised`) |
+| 2% fee cap removed | `test_rejectsAFeeAboveTwoPercent` |
+| Forbidden hook permission bits cleared | `test_rejectsHooksThatCanTakeValueOrBlockAnExit` |
+| Uninitialised-pool check removed | `test_rejectsAPoolThatDoesNotExist`, `test_aHookWithOnlySwapAndInitCallbacksPassesTheHookCheck` |
+| `unlockCallback` sender check removed | `test_unlockCallbackIsPoolManagerOnly` |
+| Oracle step bound (`MAX_STEP`) removed | `test_observationStepIsBoundedPerObservation`, `test_oneSandwichedObservationMovesTheAverageByAtMostStepTimesGapShare`, `test_aSandwichedPokeMovesTheAverageByAtMostFiveTicks` (the observation follows a 60 tick push in one step, 60 != 50), `test_anObservationFollowsTheFeedAwayFromThePoolByAtMostOneStep` |
+| Oracle band around the Chainlink tick removed | `test_observationIsBoundedAroundTheOraclePrice` (222,000 != 217,100) |
+| Oracle `MIN_GAP` removed | `test_minGapRefusesAndWritesNothing`, `test_pokeIsRateLimitedAndOnlyWritesWhenTheFeedIsUsable` |
+| Oracle continuity check removed from `twap` | `test_gapInsideTheWindowIsNotAveragedOver` |
+| Oracle freshness (`MAX_GAP`) check removed from `twap` | `test_gapLongerThanMaxGapRestartsTheRecord`, `test_aStalledKeeperClosesPricedPathsButNotRedeemInKind` |
+| `TwapUnavailable` status removed | `test_noObservationsMeansNoTwapAndEveryPricedPathIsClosed`, `test_aStalledKeeperClosesPricedPathsButNotRedeemInKind` |
+| TWAP-to-Chainlink bound removed from the gate | `test_aFeedJumpWithoutAPoolMoveClosesOnTheAverageFirst`, `test_depositRevertsWhenTheFeedAndThePoolDisagree` |
+| Spot-to-Chainlink bound removed from the gate | `test_aPoolPushedAwayFromTheFeedClosesOnSpot` |
+| Deposit spot-below-TWAP band removed | `test_depositIsRefusedWhenSpotIsPushedBelowTheAverageBeyondTheBand` |
+| Rebalance spot-to-TWAP band removed | `test_rebalanceRefusedWhenSpotIsOffTheAverageOnEitherSide` |
+| Rebalance TWAP-to-Chainlink bound removed | `test_rebalanceRefusedWhenTheAverageIsFarFromTheFeed` |
+| Same-block share lock removed | `test_sharesCannotLeaveInTheBlockTheyAreMinted` |
+| Corporate-action gate removed | `test_corporateActionClosesPricedPathsButNotRedeemInKind`, `test_windowAroundAMultiplierChange` |
+| Sell-side deploy swap floor without the Chainlink price | `test_theDeploySwapFloorIncludesTheChainlinkPriceSelling` |
+| Buy-side deploy swap floor without the Chainlink price | `test_theDeploySwapFloorIncludesTheChainlinkPriceBuying` |
+| Swap fee ignores the PoolManager's protocol fee | `test_bindsTheRealPoolAndItsLiveFees` (10,000 != 10,990 on PLTR), `test_previewsPriceTheSwapFeeTheExitPays` |
+| Entry fee set to zero | `test_entryFeeStaysWithTheHoldersAndIsAtLeastTheSwapFee` |
+| No harvest before adding to an open position | `test_depositIntoAnOpenPositionHarvestsFirst` |
+| Exit releases the fees together with the principal | `test_anInKindExitWithTheGateClosedLeavesTheFeesWithTheHoldersWhoStay` |
+| Uncollected fees left out of the valuation | `test_uncollectedFeesAreInNav` (NAV 0.36% short), `test_feesAreValuedExactlyAndHarvestKeepsThePriceContinuous` |
+| Harvest of an empty position not skipped | `test_fullInKindExitThenRedepositIntoTheEmptyRange` (`CannotUpdateEmptyPosition` from the PoolManager) |
+| Router `depositUsdgV4` registry check removed | `test_routerRefusesAVaultTheFactoryDidNotDeploy` |
+| Router `depositUsdgV4` Chainlink floor removed | `test_routerSwapFloorFollowsChainlinkNotThePool` |
+| Factory v4 creation-code pin removed | `test_createV4RefusesWrongCodeDuplicateAndStrangers` |
+| Factory hook allow-list removed | `test_createV4RefusesADynamicFeePoolAndForbiddenHooks` |
+
+The mutations ran in four batches of guards with disjoint witness tests (one forge build per batch), the same tests on the restored source afterwards: 139 of 139 green (PLTR and TSLA vault suites 49 each, registry and router suites 14 each, oracle 10, liquidity fit 3). Two rows were run again alone because a batch hid them: the empty-position harvest (its call site was another mutation's target) and the uninitialised-pool check (the fee and hook checks it sits behind were also mutated).
+
+One mutation survives: the step-down in `VaultMathV4.fit` (replace the `n0 <= a0 && n1 <= a1` test with an unconditional return). Across 300,000 fuzzed fits and every fork test the unrounded liquidity never needs more of a leg than is idle, because its own floors absorb the two roundings the PoolManager adds; the loop is defence in depth against a one-wei rounding case that no input has produced, and it is not claimed as a tested guard.
+
