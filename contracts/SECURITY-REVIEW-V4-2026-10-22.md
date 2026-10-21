@@ -153,7 +153,7 @@ re-run); the existing v4 suites were not re-run here.
 
 ## Re-review of the fixes (b6afbd1, 4a2bf6b)
 
-Scope: `git diff de05c6e..4a2bf6b -- contracts/src` (StockVaultV4 only: `pendingFee0/1`, `_release`, `_harvest`,
+Scope: the `contracts/src` diff of `de05c6e..4a2bf6b` (StockVaultV4 only: `pendingFee0/1`, `_release`, `_harvest`,
 `_valuationAt`, `FORBIDDEN_HOOK_BITS`) plus the changed tests and the keeper/replay hook-mask mirrors. Source untouched.
 New file `test/security/v4/ReReviewV4.t.sol` (3 tests). Fork: the pinned local node (`FORK_URL=http://127.0.0.1:8546`,
 `FORK_BLOCK=93694185`). Runtime 24,267 B (309 B headroom).
