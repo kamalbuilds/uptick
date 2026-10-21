@@ -10,7 +10,7 @@ import sys
 PATH = sys.argv[1] if len(sys.argv) > 1 else "OUTREACH-BATCH-2026-10-21.md"
 MAX = 400
 # 17 tokens ranked, 11 pass, 9 reduced, 2,705,097 swaps, 0.35% entry fee; asks use 5 questions, 3 minutes, 15 minutes.
-FACT_NUMBERS = {"17", "11", "9", "2,705,097", "0.35%", "5", "3", "15"}
+FACT_NUMBERS = {"17", "11", "9", "2,705,097", "0.35%", "5", "3", "15", "8"}  # 8 = 11 launch vaults minus the 3 named (AAPL, NVDA, GOOGL)
 BANNED = [
     "revolution", "game-chang", "seamless", "excited to", "hope this finds", "synerg", "leverage", "unlock", "cutting-edge",
     "this week", "mainnet is live", "now live", "launched on mainnet", "guaranteed", "risk-free", "10x", "moon",
