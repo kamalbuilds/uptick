@@ -56,7 +56,7 @@ async function chartFor(t: Ticker) {
 function replayVault(t: Ticker) {
   const tok = replay.tokens[t.symbol];
   return {
-    id: t.id, ticker: t.symbol, name: t.name, source: "replay" as const, pool: t.pool, fee_tier: t.feeTier,
+    id: t.id, ticker: t.symbol, name: t.name, source: "replay" as const, pool: t.pool ?? t.poolId, fee_tier: t.feeTier,
     vault: null, tvl_usd: null,
     fee_apr_pct: { replay_30d: replayFeeApr(tok) },
     replay: { strategy: replay.strategy, capital_usd: tok?.capital_usd ?? replay.capital_usd, window: replay.window },
@@ -116,7 +116,7 @@ export async function handle(req: Request): Promise<Response> {
     }
     if (parts[0] === "pools" && parts[2] === "replay" && parts.length === 3) {
       const k = parts[1].toLowerCase();
-      const t = tickers.find((x) => x.id === k || x.pool.toLowerCase() === k);
+      const t = tickers.find((x) => x.id === k || (x.pool ?? x.poolId).toLowerCase() === k);
       if (!t) return json({ error: "unknown_pool" }, 404);
       return json({ id: t.id, source: "replay", ticker: t.symbol, strategy: replay.strategy, generated_at: replay.generated_at,
         window: replay.window, capital_usd: replay.capital_usd, cost_model: replay.cost_model, ...replay.tokens[t.symbol] });

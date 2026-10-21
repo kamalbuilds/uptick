@@ -43,7 +43,7 @@ contract VaultFactoryTest is Test {
         else vm.createSelectFork(url, blk);
         vm.warp(block.timestamp + 11 minutes); // TWAP equals spot, so the live pools' last 10 minutes cannot trip the band
         code = vm.getCode("StockVault.sol:StockVault");
-        factory = new VaultFactory(factoryOwner, keccak256(code), _defaults(keeper));
+        factory = new VaultFactory(factoryOwner, keccak256(code), bytes32(0), address(0), _defaults(keeper));
     }
 
     function _params() internal pure returns (StockVault.Params memory) {
@@ -301,7 +301,7 @@ contract VaultFactoryTest is Test {
         vm.expectRevert(VaultFactory.ZeroAddress.selector);
         factory.setDefaults(d);
         vm.expectRevert(VaultFactory.ZeroAddress.selector);
-        new VaultFactory(factoryOwner, keccak256(code), d);
+        new VaultFactory(factoryOwner, keccak256(code), bytes32(0), address(0), d);
     }
 
     function test_defaultsOutsideStockVaultBoundsRevertAtCreation() public {

@@ -23,6 +23,8 @@ contract UptickRouterTest is Base {
         factory = new VaultFactory(
             address(this),
             keccak256(code),
+            bytes32(0),
+            address(0),
             VaultFactory.Defaults({
                 usdg: USDG,
                 positionManager: NPM,

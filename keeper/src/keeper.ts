@@ -1,6 +1,6 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, http, type Address, type Hash } from "viem";
-import { vaultAbi } from "./abi.ts";
+import { vaultAbi, vaultV4Abi } from "./abi.ts";
 import { assertPoolOrdering, boundedLogs, client, retry, sleep, snapshot, type Snapshot } from "./chain.ts";
 import { CL_MAX_AGE_S, MAX_DEV_BPS, MIN_GAP_H, OOR_MINUTES, RPC_URL, robinhood, type Ticker } from "./config.ts";
 import { loadTickers, withFactory } from "./registry.ts";
@@ -8,7 +8,7 @@ import { recentreDue, sessionAt, nextRecentreMs } from "./calendar.ts";
 import { evaluateGuards, TWAP_FEED_MAX_BPS, twapOffFeed } from "./guards.ts";
 import { loadJitterSalt } from "./jitter.ts";
 import { log } from "./log.ts";
-import { simulateRebalance } from "./simulate.ts";
+import { pokeDue, simulatePoke, simulateRebalance } from "./simulate.ts";
 import { priceFromTick } from "./price.ts";
 
 const DRY = process.argv.includes("--dry-run");
@@ -17,6 +17,16 @@ const POLL_S = Number(process.env.POLL_S || 60);
 let SALT = ""; // set in main(): the local salt that places the day's recentre minute inside the 02:00-08:00 UTC window
 
 type Trigger = "scheduled" | "out_of_range" | null;
+
+const TWAP_MAX_GAP_S = 120; // contracts/src/v4 TickOracleV4 MAX_GAP: the TWAP closes when the newest observation is older
+const POKE_S = Number(process.env.POKE_S || 45); // TickOracleV4 MIN_GAP is 20 s, so 45 s is always writable and leaves two missed rounds before MAX_GAP
+
+/** One signed transaction at a time: the poke loop and the tick loop share the keeper account, and two sends racing for a nonce lose one. */
+let sendChain: Promise<unknown> = Promise.resolve();
+const serial = <T>(fn: () => Promise<T>): Promise<T> => { const p = sendChain.then(fn, fn); sendChain = p.catch(() => undefined); return p; };
+
+/** health(), Rebalanced and the position reads exist on both vault types; v4 reads them from its own ABI. */
+const abiOf = (t: Ticker) => (t.venue === "v4" ? vaultV4Abi : vaultAbi);
 
 function loadAccount() {
   const k = process.env.VAULT_KEEPER_KEY?.trim();
@@ -42,7 +52,7 @@ export async function waitReceipt(hash: Hash, attempts = 8) {
 async function lastRebalanceMs(t: Ticker): Promise<number> {
   const head = await client.getBlockNumber();
   const from = head - 2_000_000n < t.deployBlock! ? t.deployBlock! : head - 2_000_000n; // ~55 h at 10 blocks/s
-  const ev = vaultAbi.find((x) => x.type === "event" && x.name === "Rebalanced")!;
+  const ev = abiOf(t).find((x) => x.type === "event" && x.name === "Rebalanced")!;
   const logs = await boundedLogs({ address: t.vault!, event: ev as any, from, to: head });
   if (!logs.length) return 0;
   const b = await retry(() => client.getBlock({ blockNumber: logs[logs.length - 1].blockNumber! }));
@@ -65,15 +75,46 @@ function decide(t: Ticker, s: Snapshot, range: [number, number] | null, st: Stat
   return { trigger: null, note: "no_range" };
 }
 
+/** The vault's tick range, or null when it holds no position. v3 vaults report it from currentRange(); v4 vaults from positionOpen() and tickLower()/tickUpper(). */
+async function vaultRange(t: Ticker): Promise<[number, number] | null> {
+  if (t.venue === "v4") {
+    const [open, lo, hi] = await retry(() => Promise.all([
+      client.readContract({ address: t.vault!, abi: vaultV4Abi, functionName: "positionOpen" }),
+      client.readContract({ address: t.vault!, abi: vaultV4Abi, functionName: "tickLower" }),
+      client.readContract({ address: t.vault!, abi: vaultV4Abi, functionName: "tickUpper" }),
+    ]));
+    return open ? [Number(lo), Number(hi)] : null;
+  }
+  const r = await retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "currentRange" }));
+  return [Number(r[0]), Number(r[1])];
+}
+
+/** Feeds the v4 vault's TWAP ring: simulate poke() and send it only when it would write. Never throws, so a failed poke cannot block the rest of the tick. */
+async function pokeVault(t: Ticker, account: ReturnType<typeof loadAccount>, wallet: ReturnType<typeof createWalletClient> | null) {
+  try {
+    const from: Address | undefined = account?.address ?? (process.env.VAULT_KEEPER_ADDRESS as Address | undefined);
+    const sim = await simulatePoke(client, t.vault!, from);
+    const due = pokeDue(sim.result, sim.error);
+    if (due.skip === "failed") return log("poke_failed", { ticker: t.symbol, error: sim.error });
+    if (!due.send) return;
+    if (DRY || !wallet || !account) return log("would_poke", { ticker: t.symbol });
+    await serial(async () => {
+      const hash = await wallet.writeContract({ ...(sim.request as any), account, chain: robinhood });
+      const rc = await waitReceipt(hash);
+      if (rc.status !== "success") return log("poke_reverted", { ticker: t.symbol, hash, block: rc.blockNumber });
+      log("poked", { ticker: t.symbol, hash, block: rc.blockNumber, gas_used: rc.gasUsed });
+    });
+  } catch (e) {
+    log("poke_failed", { ticker: t.symbol, error: String((e as Error).message).split("\n")[0].slice(0, 300) });
+  }
+}
+
 async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount>, wallet: ReturnType<typeof createWalletClient> | null) {
+  if (DRY && t.venue === "v4" && t.vault) await pokeVault(t, account, wallet); // live runs poke from their own loop (main)
   const nowMs = Date.now();
   const snap = await snapshot(t);
   const guard = evaluateGuards({ poolUsd: snap.poolUsd, clUsd: snap.clUsd, clUpdatedAt: snap.clUpdatedAt, now: snap.ts, maxDevBps: MAX_DEV_BPS, clMaxAgeS: CL_MAX_AGE_S });
-  let range: [number, number] | null = null;
-  if (t.vault) {
-    const r = await retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "currentRange" }));
-    range = [Number(r[0]), Number(r[1])];
-  }
+  const range = t.vault ? await vaultRange(t) : null;
   const { trigger, note } = ASSUME_DUE ? { trigger: "scheduled" as Trigger, note: "assumed due (--assume-due)" } : decide(t, snap, range, st, nowMs);
   const base = {
     ticker: t.symbol, block: snap.block, pool_usd: snap.poolUsd, chainlink_usd: snap.clUsd, chainlink_age_s: guard.clAgeS,
@@ -88,7 +129,7 @@ async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount
   if (trigger === "scheduled") {
     // The vault refuses a rebalance with the TWAP more than 30 bp off the feed. A slot sent while it is over 15 bp lands
     // where an attacker can hold the walk, so wait for a later tick; the out-of-range trigger is not held back.
-    const h = await retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "health" }));
+    const h = await retry(() => client.readContract({ address: t.vault!, abi: abiOf(t), functionName: "health" }));
     const off = twapOffFeed(h[4], h[3]);
     if (off.defer) return log("tick", { ...base, action: "deferred_twap_off_feed", twap_feed_bps: off.bps, max_bps: Number(TWAP_FEED_MAX_BPS), retry: "next_tick" });
   }
@@ -100,9 +141,11 @@ async function tick(t: Ticker, st: State, account: ReturnType<typeof loadAccount
   const { request } = sim;
   log("simulate_ok", { ...base });
   if (DRY || !wallet || !account) return log("tick", { ...base, action: "dry_run_would_send" });
-  const hash = await wallet.writeContract({ ...(request as any), account, chain: robinhood });
-  log("sent", { ticker: t.symbol, hash });
-  const rc = await waitReceipt(hash);
+  const { hash, rc } = await serial(async () => {
+    const hash = await wallet.writeContract({ ...(request as any), account, chain: robinhood });
+    log("sent", { ticker: t.symbol, hash });
+    return { hash, rc: await waitReceipt(hash) };
+  });
   if (rc.status !== "success") return log("reverted", { ticker: t.symbol, hash, block: rc.blockNumber });
   st.lastMs = nowMs; st.oorSince = null;
   log("rebalanced", { ticker: t.symbol, hash, block: rc.blockNumber, gas_used: rc.gasUsed });
@@ -119,9 +162,18 @@ async function main() {
   log("start", { mode: DRY ? "dry-run" : "live", chain: 4663, rpc: RPC_URL, signer: account?.address ?? null, tickers: active.map((t) => t.symbol), max_dev_bps: MAX_DEV_BPS, cl_max_age_s: CL_MAX_AGE_S });
   const state = new Map<string, State>();
   for (const t of active) {
+    if (t.venue === "v4") log("start_v4", { ticker: t.symbol, venue: "v4", pool_id: t.poolId, vault: t.vault ?? null, poke_every_s: POKE_S, twap_max_gap_s: TWAP_MAX_GAP_S, poke_cadence_ok: POKE_S * 2 < TWAP_MAX_GAP_S });
     await assertPoolOrdering(t);
     state.set(t.id, { lastMs: t.vault ? await lastRebalanceMs(t) : 0, oorSince: null });
   }
+  // The poke loop runs on its own clock: a sweep of every ticker can take longer than TWAP_MAX_GAP_S, and a gap that long closes the vault's priced paths.
+  const v4 = active.filter((t) => t.venue === "v4" && t.vault);
+  if (v4.length && !DRY) void (async () => {
+    while (true) {
+      for (const t of v4) await pokeVault(t, account, wallet);
+      await sleep(POKE_S * 1000);
+    }
+  })();
   do {
     for (const t of active) {
       try { await tick(t, state.get(t.id)!, account, wallet); }

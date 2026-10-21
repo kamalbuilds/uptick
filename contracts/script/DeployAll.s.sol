@@ -3,6 +3,7 @@ pragma solidity 0.8.26;
 
 import {Script, console} from "forge-std/Script.sol";
 import {StockVault} from "../src/StockVault.sol";
+import {StockVaultV4} from "../src/v4/StockVaultV4.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 
@@ -24,6 +25,11 @@ import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 /// id 4663 with the real chain, so the script asks the node for `anvil_nodeInfo` and refuses ALLOW_CLOSED on any other
 /// RPC. An entry without `symbol` or `depositCapTokens` reverts naming its index, and a zero `depositCapTokens` (an
 /// uncapped vault) reverts unless ALLOW_UNCAPPED=true is set.
+/// An entry with `"venue": "v4"` (scripts/deploy-list.mjs writes it for a token whose chosen pool is a Uniswap v4 pool)
+/// is created through `VaultFactory.createVaultV4` from `token`, `feeTier` (the pool key's fee), `tickSpacing`, `hooks`
+/// and `feed`; its `poolId`, when present, must equal the id the pool key hashes to, so a deploy list and a deployed pool
+/// cannot disagree. A non-zero `hooks` must already be on the factory's allow-list (`setHookAllowed`): the script never
+/// allows a hook itself. An entry without `venue` is a v3 entry.
 /// Not parameters of the constructor, so nothing here changes with them: every vault starts with `entryFee` the larger
 /// of its pool's fee tier and 35 bp, `maxSpotTwapBps` 10 and `maxTwapOracleBps` 30, and moves them only through its
 /// 24-hour queue.
@@ -31,6 +37,7 @@ contract DeployAll is Script {
     address constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
     address constant NPM = 0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3;
     address constant ROUTER = 0xCaf681a66D020601342297493863E78C959E5cb2;
+    address constant POOL_MANAGER = 0x8366a39CC670B4001A1121B8F6A443A643e40951;
     uint16 constant DEFAULT_RANGE_BPS = 500;
 
     function run() external returns (VaultFactory factory, UptickRouter router) {
@@ -69,6 +76,7 @@ contract DeployAll is Script {
         }
 
         bytes memory code = type(StockVault).creationCode;
+        bytes memory code4 = type(StockVaultV4).creationCode;
         VaultFactory.Defaults memory d = VaultFactory.Defaults({
             usdg: USDG,
             positionManager: NPM,
@@ -88,7 +96,7 @@ contract DeployAll is Script {
             })
         });
         vm.startBroadcast(pk);
-        factory = new VaultFactory(me, keccak256(code), d);
+        factory = new VaultFactory(me, keccak256(code), keccak256(code4), POOL_MANAGER, d);
         console.log("VaultFactory", address(factory));
         for (uint256 i = 0; i < n; ++i) {
             string memory k = string.concat(".[", vm.toString(i), "]");
@@ -98,14 +106,14 @@ contract DeployAll is Script {
                 d.params.rangeBps = range;
                 factory.setDefaults(d);
             }
-            address vault = factory.createVault(
+            address vault = _isV4(json, k) ? _createV4(factory, code4, json, k) : factory.createVault(
                 code,
                 vm.parseJsonAddress(json, string.concat(k, ".token")),
                 vm.parseJsonAddress(json, string.concat(k, ".pool")),
                 vm.parseJsonAddress(json, string.concat(k, ".feed")),
                 vm.parseJsonUint(json, string.concat(k, ".depositCapTokens"))
             );
-            console.log("StockVault", vm.parseJsonString(json, string.concat(k, ".symbol")), vault);
+            console.log(_isV4(json, k) ? "StockVaultV4" : "StockVault", vm.parseJsonString(json, string.concat(k, ".symbol")), vault);
         }
         if (d.params.rangeBps != DEFAULT_RANGE_BPS) {
             d.params.rangeBps = DEFAULT_RANGE_BPS;
@@ -115,6 +123,37 @@ contract DeployAll is Script {
         console.log("UptickRouter", address(router));
         if (owner != me) factory.transferOwnership(owner);
         vm.stopBroadcast();
+    }
+
+    function _isV4(string memory json, string memory k) private view returns (bool) {
+        string memory vk = string.concat(k, ".venue");
+        return vm.keyExistsJson(json, vk) && keccak256(bytes(vm.parseJsonString(json, vk))) == keccak256("v4");
+    }
+
+    function _createV4(VaultFactory factory, bytes memory code4, string memory json, string memory k)
+        private
+        returns (address vault)
+    {
+        address token = vm.parseJsonAddress(json, string.concat(k, ".token"));
+        uint24 fee = uint24(vm.parseJsonUint(json, string.concat(k, ".feeTier")));
+        int24 spacing = int24(int256(vm.parseJsonUint(json, string.concat(k, ".tickSpacing"))));
+        address hooks = vm.parseJsonAddress(json, string.concat(k, ".hooks"));
+        string memory pk = string.concat(k, ".poolId");
+        if (vm.keyExistsJson(json, pk)) {
+            bool s0 = token < USDG;
+            bytes32 id = keccak256(abi.encode(s0 ? token : USDG, s0 ? USDG : token, fee, spacing, hooks));
+            require(vm.parseJsonBytes32(json, pk) == id, "deploy list poolId does not match the pool key");
+        }
+        require(hooks == address(0) || factory.allowedHook(hooks), "hook is not on the factory allow-list");
+        vault = factory.createVaultV4(
+            code4,
+            token,
+            fee,
+            spacing,
+            hooks,
+            vm.parseJsonAddress(json, string.concat(k, ".feed")),
+            vm.parseJsonUint(json, string.concat(k, ".depositCapTokens"))
+        );
     }
 
     /// @dev True on a local anvil node, which answers `anvil_nodeInfo`; a real RPC does not, and neither does a run

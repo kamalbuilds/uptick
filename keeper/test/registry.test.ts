@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { TickerV3 } from "../src/config.ts";
 import { buildEvidence } from "../src/evidence.ts";
 import { applyCreated, applyEnv, eligibleTickers, readParams, readReplay, readUniverse } from "../src/registry.ts";
 
@@ -11,7 +12,11 @@ describe("eligible tickers", () => {
     const eligible = universe.tokens.filter((t: any) => t.eligible).map((t: any) => t.symbol).sort();
     expect(eligible.length).toBeGreaterThanOrEqual(3);
     expect(tickers.map((t) => t.symbol).sort()).toEqual(eligible);
-    for (const t of tickers) expect(t.pool.toLowerCase()).toBe(replay.tokens[t.symbol].chosen.id.toLowerCase());
+    for (const t of tickers) {
+      const rt = replay.tokens[t.symbol];
+      if (t.venue === "v4") expect(t.poolId.toLowerCase()).toBe(rt.chosen_v4.id.toLowerCase());
+      else expect(t.pool.toLowerCase()).toBe(rt.chosen.id.toLowerCase());
+    }
     expect(by("NVDA").stockIsToken0).toBe(false); // NVDA 0xd060 sorts above USDG 0x5fc5
     expect(by("SPCX").stockIsToken0).toBe(true);
   });
@@ -56,7 +61,7 @@ describe("per-token band", () => {
 });
 
 describe("vault addresses", () => {
-  const nvda = by("NVDA"), v = "0x74156A1F9736307b7AD34e3691f3A5B54A0B3Eb8";
+  const nvda = by("NVDA") as TickerV3, v = "0x74156A1F9736307b7AD34e3691f3A5B54A0B3Eb8";
   test("an explicit address needs its deploy block, and must be an address", () => {
     expect(() => applyEnv(tickers, { VAULT_ADDRESS_NVDA: v })).toThrow("VAULT_DEPLOY_BLOCK_NVDA");
     expect(() => applyEnv(tickers, { VAULT_ADDRESS_NVDA: "0x12", VAULT_DEPLOY_BLOCK_NVDA: "1" })).toThrow("not an address");

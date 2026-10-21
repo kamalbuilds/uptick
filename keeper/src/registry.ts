@@ -1,8 +1,8 @@
 /** The vault registry: which Stock Tokens have a vault, on which pool, and where each deployed vault lives.
  *  Tickers come from data/universe.json (eligible tokens) and data/replay.json (the pool the replay chose).
- *  Deployed vaults come from `VAULT_ADDRESS_<SYM>` or from the VaultFactory's VaultCreated logs (`VAULT_FACTORY`). */
+ *  Deployed vaults come from `VAULT_ADDRESS_<SYM>` or from the VaultFactory's VaultCreated / VaultCreatedV4 logs (`VAULT_FACTORY`). */
 import { readFileSync } from "node:fs";
-import { parseAbi, type Address } from "viem";
+import { parseAbi, type Address, type Hex } from "viem";
 import { boundedLogs, client, retry } from "./chain.ts";
 import type { Ticker } from "./config.ts";
 import { DEFAULT_BAND_BPS } from "./evidence.ts";
@@ -11,6 +11,9 @@ export const factoryAbi = parseAbi([
   "event VaultCreated(address indexed stock, address indexed pool, address indexed vault, address feed, uint24 feeTier, uint256 index)",
   "function vaultCount() view returns (uint256)",
   "function vaultOf(address stock, address pool) view returns (address)",
+  "event VaultCreatedV4(address indexed stock, bytes32 indexed poolId, address indexed vault, address feed, uint24 feeTier, uint256 index)",
+  "function vaultCountV4() view returns (uint256)",
+  "function vaultOfV4(address stock, bytes32 poolId) view returns (address)",
 ]);
 
 const load = (name: string) => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url), "utf8"));
@@ -20,17 +23,22 @@ export const readParams = (): Record<string, { range_bps: number }> => load("par
 
 export const DEFAULT_RANGE_BPS = DEFAULT_BAND_BPS;
 
-/** One ticker per eligible token. The pool is the replay's chosen v3 pool, else the universe's deepest; the band is its params.json range_bps. */
+/** One ticker per eligible token. A token whose replay venue is "v4" (and that has a chosen_v4 pool) is a v4 ticker on that pool id; every other token is a v3 ticker on the replay's chosen v3 pool, else the universe's deepest. The band is its params.json range_bps. */
 export function eligibleTickers(universe: any, replay: any, params: Record<string, { range_bps: number }> = readParams()): Ticker[] {
   const out: Ticker[] = [];
   for (const t of universe.tokens) {
     if (!t.eligible) continue;
-    const chosen = replay.tokens?.[t.symbol]?.chosen;
-    const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
-    out.push({
-      id: t.symbol.toLowerCase(), symbol: t.symbol, name: t.name, stock: t.token, pool: pool.address, feeTier: pool.fee_tier,
-      feed: t.feed.address, capUsd: t.cap_usd, rangeBps: params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
-    });
+    const rt = replay.tokens?.[t.symbol];
+    const base = {
+      id: t.symbol.toLowerCase(), symbol: t.symbol, name: t.name, stock: t.token as Address,
+      feed: t.feed.address as Address, capUsd: t.cap_usd, rangeBps: params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
+    };
+    if (rt?.venue === "v4" && rt.chosen_v4) {
+      out.push({ ...base, venue: "v4", poolId: rt.chosen_v4.id as Hex, feeTier: rt.chosen_v4.fee_tier });
+      continue;
+    }
+    const pool = rt?.chosen ? { address: rt.chosen.id, fee_tier: rt.chosen.fee_tier } : t.pool;
+    out.push({ ...base, venue: "v3", pool: pool.address, feeTier: pool.fee_tier });
   }
   return out;
 }
@@ -46,22 +54,35 @@ export function applyEnv(tickers: Ticker[], env: Record<string, string | undefin
   });
 }
 
-export interface Created { stock: string; pool: string; vault: Address; block: bigint }
+/** One factory creation: a v3 vault carries the pool address, a v4 vault the pool id. */
+export type Created =
+  | { stock: string; pool: string; poolId?: undefined; vault: Address; block: bigint }
+  | { stock: string; poolId: string; pool?: undefined; vault: Address; block: bigint };
 
-/** Fills `vault` and `deployBlock` for tickers whose (stock, pool) the factory created and that have no explicit address. */
+/** Fills `vault` and `deployBlock` for tickers whose (stock, pool) or (stock, poolId) the factory created and that have no explicit address. */
 export function applyCreated(tickers: Ticker[], created: Created[]): Ticker[] {
+  const same = (a: string | undefined, b: string | undefined) => a !== undefined && b !== undefined && a.toLowerCase() === b.toLowerCase();
   return tickers.map((t) => {
     if (t.vault) return t;
-    const c = created.find((x) => x.stock.toLowerCase() === t.stock.toLowerCase() && x.pool.toLowerCase() === t.pool.toLowerCase());
+    const c = created.find((x) => same(x.stock, t.stock) && (t.venue === "v4" ? same(x.poolId, t.poolId) : same(x.pool, t.pool)));
     return c ? { ...t, vault: c.vault, deployBlock: c.block } : t;
   });
 }
 
+/** VaultCreated (v3) and VaultCreatedV4 logs as Created rows. */
+export function toCreated(v3: any[], v4: any[]): Created[] {
+  return [
+    ...v3.map((l): Created => ({ stock: l.args.stock, pool: l.args.pool, vault: l.args.vault, block: l.blockNumber! })),
+    ...v4.map((l): Created => ({ stock: l.args.stock, poolId: l.args.poolId, vault: l.args.vault, block: l.blockNumber! })),
+  ];
+}
+
 export async function factoryCreated(factory: Address, fromBlock: bigint): Promise<Created[]> {
   const head = await retry(() => client.getBlockNumber());
-  const ev = factoryAbi.find((x) => x.type === "event" && x.name === "VaultCreated")!;
-  const logs = await boundedLogs({ address: factory, event: ev as any, from: fromBlock, to: head });
-  return logs.map((l: any) => ({ stock: l.args.stock, pool: l.args.pool, vault: l.args.vault, block: l.blockNumber! }));
+  const event = (name: string) => factoryAbi.find((x) => x.type === "event" && x.name === name)! as any;
+  const v3 = await boundedLogs({ address: factory, event: event("VaultCreated"), from: fromBlock, to: head });
+  const v4 = await boundedLogs({ address: factory, event: event("VaultCreatedV4"), from: fromBlock, to: head });
+  return toCreated(v3, v4);
 }
 
 /** Sync part (data files + env); the factory lookup is `withFactory`. */

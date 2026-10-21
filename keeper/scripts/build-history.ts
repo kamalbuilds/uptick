@@ -19,6 +19,7 @@ const startSec = endSec - DAYS * 86400;
 
 const out: Record<string, unknown> = {};
 for (const t of eligibleTickers(readUniverse(), replay)) {
+  if (t.venue === "v4") continue; // this builder reads v3 swap files, a v4 pool has none
   const cl = (JSON.parse(readFileSync(ENGINE + `cl-${t.symbol}.json`, "utf8")) as [number, number, number][]).map(([, a, ts]) => [ts, a / 1e8] as [number, number]).sort((a, b) => a[0] - b[0]);
   const dir = ENGINE + `v3/${t.pool.toLowerCase()}`;
   const last = new Map<number, number>(); // hour start -> last swap price in that hour

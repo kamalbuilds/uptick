@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-21T17:10:52.192453+00:00",
+ "generated_at": "2026-10-21T17:27:31.580826+00:00",
  "engine": "spikes/stock-vaults/scripts/engine.py",
  "capital_usd": 100000.0,
  "default_band_bps": 500,
@@ -93,33 +93,34 @@
      "id": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 18442,
      "volume_usd": 5685812.261197042,
-     "pool_fees_usd": 19894.65710192845,
+     "pool_fees_usd": 17048.89951081779,
+     "cap_usd": 73983,
      "full": {
-      "fee_apr_pct": 26.817743300218456,
+      "fee_apr_pct": 22.98169846757562,
       "markout_apr_pct": 13.02528587705247,
       "cost_apr_pct": 6.349330304377639,
-      "edge_apr_pct": 7.443127118788342,
+      "edge_apr_pct": 3.6070822861455083,
       "rebalances": 22,
-      "edge_apr_pct_upper": 10.04478649699931
+      "edge_apr_pct_upper": 5.836596927852819
      },
      "calibration": {
-      "fee_apr_pct": 33.02676704898443,
+      "fee_apr_pct": 28.302575395016166,
       "markout_apr_pct": 13.877346680185337,
       "cost_apr_pct": 6.856950731099647,
-      "edge_apr_pct": 12.292469637699446,
+      "edge_apr_pct": 7.568277983731185,
       "rebalances": 11,
-      "edge_apr_pct_upper": 15.380465667348577
+      "edge_apr_pct_upper": 10.214563050599178
      },
      "test": {
-      "fee_apr_pct": 20.8375173864618,
+      "fee_apr_pct": 17.856891835661234,
       "markout_apr_pct": 12.32241308794463,
       "cost_apr_pct": 5.229183627540227,
-      "edge_apr_pct": 3.2859206709769433,
+      "edge_apr_pct": 0.3052951201763777,
       "rebalances": 11,
-      "edge_apr_pct_upper": 5.450909972710039
+      "edge_apr_pct_upper": 2.1606015402938312
      }
     }
    ],
@@ -151,6 +152,18 @@
     }
    },
    "swaps_replayed": 95275,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+    "fee_tier": 3000,
+    "hooks": null,
+    "tick_spacing": 60,
+    "cap_usd": 73983,
+    "confirmed_in_test": true,
+    "worst_half": 0.3052951201763777,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -201,33 +214,34 @@
      "id": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
      "fee_tier": 10000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 13038,
      "volume_usd": 3231508.895449511,
-     "pool_fees_usd": 35514.28276099012,
+     "pool_fees_usd": 32282.773865540614,
+     "cap_usd": 12578,
      "full": {
-      "fee_apr_pct": 103.99845995207076,
-      "markout_apr_pct": 26.005331814360687,
-      "cost_apr_pct": 21.776394803984715,
-      "edge_apr_pct": 56.21673333372536,
+      "fee_apr_pct": 100.6897234463086,
+      "markout_apr_pct": 26.00995292854637,
+      "cost_apr_pct": 21.20904781781617,
+      "edge_apr_pct": 53.47072269994606,
       "rebalances": 22,
-      "edge_apr_pct_upper": 85.17940323608745
+      "edge_apr_pct_upper": 73.65406668923582
      },
      "calibration": {
-      "fee_apr_pct": 167.2860557711146,
-      "markout_apr_pct": 27.54078631983748,
-      "cost_apr_pct": 20.751645314936102,
-      "edge_apr_pct": 118.993624136341,
+      "fee_apr_pct": 163.91131294820988,
+      "markout_apr_pct": 27.54298123373647,
+      "cost_apr_pct": 20.283108086965235,
+      "edge_apr_pct": 116.0852236275082,
       "rebalances": 11,
-      "edge_apr_pct_upper": 175.2720596841497
+      "edge_apr_pct_upper": 155.40582267023325
      },
      "test": {
-      "fee_apr_pct": 38.683510964424414,
-      "markout_apr_pct": 23.206227049434112,
-      "cost_apr_pct": 21.27245297063701,
-      "edge_apr_pct": -5.79516905564672,
+      "fee_apr_pct": 35.57532858588818,
+      "markout_apr_pct": 23.20852704217467,
+      "cost_apr_pct": 20.673133073501887,
+      "edge_apr_pct": -8.30633152978837,
       "rebalances": 11,
-      "edge_apr_pct_upper": -4.308438438115279
+      "edge_apr_pct_upper": -7.3633431601399595
      }
     }
    ],
@@ -259,6 +273,18 @@
     }
    },
    "swaps_replayed": 29915,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+    "fee_tier": 10000,
+    "hooks": null,
+    "tick_spacing": 200,
+    "cap_usd": 12578,
+    "confirmed_in_test": true,
+    "worst_half": -8.30633152978837,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -312,30 +338,31 @@
      "vault_capable": false,
      "swaps": 4860,
      "volume_usd": 550498.7699303466,
-     "pool_fees_usd": 1533.6895730259457,
+     "pool_fees_usd": 1320.68583887086,
+     "cap_usd": 68501.0,
      "full": {
-      "fee_apr_pct": 15.448159653767297,
+      "fee_apr_pct": 13.30266962113687,
       "markout_apr_pct": 18.082940936547143,
       "cost_apr_pct": 31.694269128829887,
-      "edge_apr_pct": -34.32905041160975,
+      "edge_apr_pct": -36.47454044424016,
       "rebalances": 22,
-      "edge_apr_pct_upper": -11.740747585417594
+      "edge_apr_pct_upper": -17.023373668801764
      },
      "calibration": {
-      "fee_apr_pct": 14.216780870800235,
+      "fee_apr_pct": 12.242308678770918,
       "markout_apr_pct": 17.93470449329168,
       "cost_apr_pct": 29.250970520022722,
-      "edge_apr_pct": -32.968894142514166,
+      "edge_apr_pct": -34.943366334543484,
       "rebalances": 11,
-      "edge_apr_pct_upper": -7.802955072764234
+      "edge_apr_pct_upper": -13.272553716491359
      },
      "test": {
-      "fee_apr_pct": 16.798770457081126,
+      "fee_apr_pct": 14.465703257887297,
       "markout_apr_pct": 18.517991911148567,
       "cost_apr_pct": 34.533625245304364,
-      "edge_apr_pct": -36.2528466993718,
+      "edge_apr_pct": -38.58591389856562,
       "rebalances": 11,
-      "edge_apr_pct_upper": -15.78388240940089
+      "edge_apr_pct_upper": -20.95974511606417
      }
     }
    ],
@@ -367,6 +394,7 @@
     }
    },
    "swaps_replayed": 40468,
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -417,33 +445,34 @@
      "id": "0x628c98ab436ee34a6a7decd606242890582591bdf7c9a35d90e0d08021c31ea0",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 8446,
      "volume_usd": 8517914.059819693,
-     "pool_fees_usd": 29804.1812953091,
+     "pool_fees_usd": 25540.952493052308,
+     "cap_usd": 23990,
      "full": {
-      "fee_apr_pct": 17.407134657295362,
-      "markout_apr_pct": 57.55581912937671,
-      "cost_apr_pct": 247.69745696023492,
-      "edge_apr_pct": -287.84614143231624,
+      "fee_apr_pct": 23.225198380114655,
+      "markout_apr_pct": 65.17847416544635,
+      "cost_apr_pct": 71.01169397787714,
+      "edge_apr_pct": -112.96496976320887,
       "rebalances": 22,
-      "edge_apr_pct_upper": -263.92057967694245
+      "edge_apr_pct_upper": -95.94945387453795
      },
      "calibration": {
-      "fee_apr_pct": 4.283521366009733,
-      "markout_apr_pct": 58.167788122488574,
-      "cost_apr_pct": 475.16812749586103,
-      "edge_apr_pct": -529.0523942523399,
+      "fee_apr_pct": 9.731879945813995,
+      "markout_apr_pct": 63.67363519828666,
+      "cost_apr_pct": 129.90764633675917,
+      "edge_apr_pct": -183.84940158923186,
       "rebalances": 11,
-      "edge_apr_pct_upper": -490.58371966909283
+      "edge_apr_pct_upper": -153.1280805001891
      },
      "test": {
-      "fee_apr_pct": 35.919260355119064,
-      "markout_apr_pct": 70.51549663958751,
-      "cost_apr_pct": 28.635215192776396,
-      "edge_apr_pct": -63.23145147724484,
+      "fee_apr_pct": 38.757021495683915,
+      "markout_apr_pct": 70.73132055809815,
+      "cost_apr_pct": 12.85068348501298,
+      "edge_apr_pct": -44.8249825474272,
       "rebalances": 11,
-      "edge_apr_pct_upper": -49.71552327801294
+      "edge_apr_pct_upper": -41.12424307272447
      }
     },
     {
@@ -451,33 +480,34 @@
      "id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
      "fee_tier": 2450,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 9601,
      "volume_usd": 1118681.5755403577,
-     "pool_fees_usd": 3180.4117192612375,
+     "pool_fees_usd": 2739.6900920873004,
+     "cap_usd": 2043,
      "full": {
-      "fee_apr_pct": 20.46493808696925,
-      "markout_apr_pct": 65.48665197534835,
-      "cost_apr_pct": 115.37637848860672,
-      "edge_apr_pct": -160.3980923769858,
+      "fee_apr_pct": 45.832763637536026,
+      "markout_apr_pct": 67.25803910129211,
+      "cost_apr_pct": 8.554497021710882,
+      "edge_apr_pct": -29.97977248546697,
       "rebalances": 22,
-      "edge_apr_pct_upper": -126.45002352675392
+      "edge_apr_pct_upper": -28.046596461479407
      },
      "calibration": {
-      "fee_apr_pct": 28.893700709620596,
-      "markout_apr_pct": 64.50626785548715,
-      "cost_apr_pct": 37.93980744765423,
-      "edge_apr_pct": -73.55237459352078,
+      "fee_apr_pct": 52.426413969762734,
+      "markout_apr_pct": 64.81812171312733,
+      "cost_apr_pct": 6.019019504346549,
+      "edge_apr_pct": -18.41072724771113,
       "rebalances": 11,
-      "edge_apr_pct_upper": -40.269104132718816
+      "edge_apr_pct_upper": -16.99688511904274
      },
      "test": {
-      "fee_apr_pct": 12.10472150546244,
-      "markout_apr_pct": 67.90151758942417,
-      "cost_apr_pct": 199.90307523827923,
-      "edge_apr_pct": -255.69987132224088,
+      "fee_apr_pct": 39.564388685023644,
+      "markout_apr_pct": 70.31277851247509,
+      "cost_apr_pct": 11.012827511179907,
+      "edge_apr_pct": -41.761217338631354,
       "rebalances": 11,
-      "edge_apr_pct_upper": -220.13801277941886
+      "edge_apr_pct_upper": -39.266588616902595
      }
     },
     {
@@ -485,33 +515,34 @@
      "id": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
      "fee_tier": 1500,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 14630,
      "volume_usd": 3271835.4432217088,
-     "pool_fees_usd": 5764.974050956651,
+     "pool_fees_usd": 4906.465401858917,
+     "cap_usd": 4881,
      "full": {
-      "fee_apr_pct": 19.06462335658056,
-      "markout_apr_pct": 65.03106529576701,
-      "cost_apr_pct": 111.31751845830698,
-      "edge_apr_pct": -157.2839603974934,
+      "fee_apr_pct": 37.93918680110347,
+      "markout_apr_pct": 67.57331350107783,
+      "cost_apr_pct": 9.321036685119998,
+      "edge_apr_pct": -38.955163385094366,
       "rebalances": 22,
-      "edge_apr_pct_upper": -129.13516366942514
+      "edge_apr_pct_upper": -35.44833289343269
      },
      "calibration": {
-      "fee_apr_pct": 20.791254182843847,
-      "markout_apr_pct": 64.6524371987551,
-      "cost_apr_pct": 76.17966479483388,
-      "edge_apr_pct": -120.04084781074515,
+      "fee_apr_pct": 41.35327809791223,
+      "markout_apr_pct": 65.87960151178484,
+      "cost_apr_pct": 6.830874612421063,
+      "edge_apr_pct": -31.357198026293652,
       "rebalances": 11,
-      "edge_apr_pct_upper": -88.33755582594553
+      "edge_apr_pct_upper": -27.14519830812917
      },
      "test": {
-      "fee_apr_pct": 17.612324760069324,
-      "markout_apr_pct": 67.78744146075402,
-      "cost_apr_pct": 156.1477797798006,
-      "edge_apr_pct": -206.3228964804853,
+      "fee_apr_pct": 34.80298098631721,
+      "markout_apr_pct": 69.86960341873997,
+      "cost_apr_pct": 11.812538185450027,
+      "edge_apr_pct": -46.87916061787279,
       "rebalances": 11,
-      "edge_apr_pct_upper": -180.4579204034044
+      "edge_apr_pct_upper": -44.03088455962816
      }
     }
    ],
@@ -543,6 +574,18 @@
     }
    },
    "swaps_replayed": 81393,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+    "fee_tier": 2450,
+    "hooks": null,
+    "tick_spacing": 25,
+    "cap_usd": 2043,
+    "confirmed_in_test": true,
+    "worst_half": -41.761217338631354,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -701,33 +744,34 @@
      "id": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 19083,
      "volume_usd": 7168215.702551734,
-     "pool_fees_usd": 25081.586743228516,
+     "pool_fees_usd": 21493.883999423793,
+     "cap_usd": 74871,
      "full": {
-      "fee_apr_pct": 12.890894423147744,
-      "markout_apr_pct": 7.982305210604361,
-      "cost_apr_pct": 3.318630726959308,
-      "edge_apr_pct": 1.589958485584076,
+      "fee_apr_pct": 11.193648635853199,
+      "markout_apr_pct": 7.982563089907045,
+      "cost_apr_pct": 3.213589112930398,
+      "edge_apr_pct": -0.0025035669842446147,
       "rebalances": 22,
-      "edge_apr_pct_upper": 2.300219792856821
+      "edge_apr_pct_upper": 0.4599171986919952
      },
      "calibration": {
-      "fee_apr_pct": 16.38865418068911,
-      "markout_apr_pct": 10.937580080310164,
-      "cost_apr_pct": 3.3122337352097153,
-      "edge_apr_pct": 2.1388403651692296,
+      "fee_apr_pct": 14.20759915126194,
+      "markout_apr_pct": 10.937735393333291,
+      "cost_apr_pct": 3.2151455030988783,
+      "edge_apr_pct": 0.054718254829773,
       "rebalances": 11,
-      "edge_apr_pct_upper": 2.926207421362837
+      "edge_apr_pct_upper": 0.5665487408141162
      },
      "test": {
-      "fee_apr_pct": 9.51492850105422,
-      "markout_apr_pct": 5.096658349058849,
-      "cost_apr_pct": 2.430130317049085,
-      "edge_apr_pct": 1.988139834946286,
+      "fee_apr_pct": 8.28701541802712,
+      "markout_apr_pct": 5.096721523854044,
+      "cost_apr_pct": 2.361789818523898,
+      "edge_apr_pct": 0.8285040756491792,
       "rebalances": 11,
-      "edge_apr_pct_upper": 2.638373799639075
+      "edge_apr_pct_upper": 1.252696884916252
      }
     },
     {
@@ -738,30 +782,31 @@
      "vault_capable": false,
      "swaps": 11311,
      "volume_usd": 405711.3174487103,
-     "pool_fees_usd": 153.76458931306118,
+     "pool_fees_usd": 121.70377699091642,
+     "cap_usd": 100000.0,
      "full": {
-      "fee_apr_pct": 1.122589303398145,
+      "fee_apr_pct": 0.8885228962241367,
       "markout_apr_pct": 8.994367009647274,
       "cost_apr_pct": 39.85881924700043,
-      "edge_apr_pct": -47.73059695324956,
+      "edge_apr_pct": -47.964663360423565,
       "rebalances": 22,
-      "edge_apr_pct_upper": -42.85660287519064
+      "edge_apr_pct_upper": -44.10692543141689
      },
      "calibration": {
-      "fee_apr_pct": 1.4825608937988974,
+      "fee_apr_pct": 1.1734383137264246,
       "markout_apr_pct": 11.881885350796646,
       "cost_apr_pct": 42.03490191571975,
-      "edge_apr_pct": -52.4342263727175,
+      "edge_apr_pct": -52.74334895278997,
       "rebalances": 11,
-      "edge_apr_pct_upper": -46.05432579672144
+      "edge_apr_pct_upper": -47.69369480033493
      },
      "test": {
-      "fee_apr_pct": 0.7694256000557698,
+      "fee_apr_pct": 0.6089958816827227,
       "markout_apr_pct": 6.339541035183344,
       "cost_apr_pct": 21.62424118113071,
-      "edge_apr_pct": -27.194356616258286,
+      "edge_apr_pct": -27.35478633463134,
       "rebalances": 11,
-      "edge_apr_pct_upper": -23.675720724631226
+      "edge_apr_pct_upper": -24.569806517236927
      }
     }
    ],
@@ -793,6 +838,18 @@
     }
    },
    "swaps_replayed": 171538,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+    "fee_tier": 3000,
+    "hooks": null,
+    "tick_spacing": 60,
+    "cap_usd": 74871,
+    "confirmed_in_test": true,
+    "worst_half": 0.054718254829773,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -843,33 +900,34 @@
      "id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
      "fee_tier": 10000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 11519,
      "volume_usd": 3955245.7183991023,
-     "pool_fees_usd": 43468.150445206134,
+     "pool_fees_usd": 39512.904726807035,
+     "cap_usd": 19116,
      "full": {
-      "fee_apr_pct": 88.700973467545,
+      "fee_apr_pct": 80.62991127759554,
       "markout_apr_pct": 38.65070034837997,
       "cost_apr_pct": 26.442615723572533,
-      "edge_apr_pct": 23.607657395592508,
+      "edge_apr_pct": 15.536595205643053,
       "rebalances": 22,
-      "edge_apr_pct_upper": 27.082127778914018
+      "edge_apr_pct_upper": 18.694917237433874
      },
      "calibration": {
-      "fee_apr_pct": 130.83863633033798,
+      "fee_apr_pct": 118.93339189627629,
       "markout_apr_pct": 51.516130324382694,
       "cost_apr_pct": 30.355823758721485,
-      "edge_apr_pct": 48.96668224723379,
+      "edge_apr_pct": 37.06143781317212,
       "rebalances": 11,
-      "edge_apr_pct_upper": 53.723425006582694
+      "edge_apr_pct_upper": 41.385355935637556
      },
      "test": {
-      "fee_apr_pct": 45.121871873234916,
+      "fee_apr_pct": 41.01615104764484,
       "markout_apr_pct": 24.951025890417842,
       "cost_apr_pct": 21.933424180453752,
-      "edge_apr_pct": -1.7625781976366814,
+      "edge_apr_pct": -5.868299023226749,
       "rebalances": 11,
-      "edge_apr_pct_upper": 0.2936521665974301
+      "edge_apr_pct_upper": -3.999168783126776
      }
     }
    ],
@@ -901,6 +959,18 @@
     }
    },
    "swaps_replayed": 38738,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+    "fee_tier": 10000,
+    "hooks": null,
+    "tick_spacing": 200,
+    "cap_usd": 19116,
+    "confirmed_in_test": true,
+    "worst_half": -5.868299023226749,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -951,33 +1021,34 @@
      "id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 247781,
      "volume_usd": 98100496.93008429,
-     "pool_fees_usd": 343253.63875836495,
+     "pool_fees_usd": 294154.1924513318,
+     "cap_usd": 24118,
      "full": {
-      "fee_apr_pct": 38.21120257131985,
+      "fee_apr_pct": 32.7454225266736,
       "markout_apr_pct": 33.957281338844346,
       "cost_apr_pct": 6.86628949615032,
-      "edge_apr_pct": -2.6123682636748238,
+      "edge_apr_pct": -8.078148308321074,
       "rebalances": 22,
-      "edge_apr_pct_upper": -2.4949321587047253
+      "edge_apr_pct_upper": -7.977510416332326
      },
      "calibration": {
-      "fee_apr_pct": 57.366849295942544,
+      "fee_apr_pct": 49.161020664384736,
       "markout_apr_pct": 44.818963908068895,
       "cost_apr_pct": 8.853114154290607,
-      "edge_apr_pct": 3.6947712335830483,
+      "edge_apr_pct": -4.5110573979747635,
       "rebalances": 11,
-      "edge_apr_pct_upper": 3.863581141553576
+      "edge_apr_pct_upper": -4.366394278491241
      },
      "test": {
-      "fee_apr_pct": 19.04212503764362,
+      "fee_apr_pct": 16.31831474027992,
       "markout_apr_pct": 23.079263374468916,
       "cost_apr_pct": 4.8928207177174645,
-      "edge_apr_pct": -8.929959054542762,
+      "edge_apr_pct": -11.65376935190646,
       "rebalances": 11,
-      "edge_apr_pct_upper": -8.86399000354785
+      "edge_apr_pct_upper": -11.597236599646696
      }
     },
     {
@@ -988,30 +1059,31 @@
      "vault_capable": false,
      "swaps": 45433,
      "volume_usd": 16402259.728076233,
-     "pool_fees_usd": 8673.775122943985,
+     "pool_fees_usd": 8529.099827445982,
+     "cap_usd": 24118.0,
      "full": {
-      "fee_apr_pct": 16.819675720594248,
+      "fee_apr_pct": 14.775948556520982,
       "markout_apr_pct": 35.0200933395122,
       "cost_apr_pct": 51.79822376956349,
-      "edge_apr_pct": -69.99864138848143,
+      "edge_apr_pct": -72.0423685525547,
       "rebalances": 22,
-      "edge_apr_pct_upper": -60.91701434374248
+      "edge_apr_pct_upper": -64.66556747312087
      },
      "calibration": {
-      "fee_apr_pct": 28.203857923010585,
+      "fee_apr_pct": 25.183894821381582,
       "markout_apr_pct": 45.9621181126478,
       "cost_apr_pct": 30.81557284318751,
-      "edge_apr_pct": -48.57383303282472,
+      "edge_apr_pct": -51.593796134453726,
       "rebalances": 11,
-      "edge_apr_pct_upper": -37.08232371455537
+      "edge_apr_pct_upper": -42.20165680367184
      },
      "test": {
-      "fee_apr_pct": 5.461071751787858,
+      "fee_apr_pct": 4.388557147010904,
       "markout_apr_pct": 24.315903807519526,
       "cost_apr_pct": 74.24881922043477,
-      "edge_apr_pct": -93.10365127616643,
+      "edge_apr_pct": -94.17616588094337,
       "rebalances": 11,
-      "edge_apr_pct_upper": -86.33795420621769
+      "edge_apr_pct_upper": -88.73920229936917
      }
     },
     {
@@ -1019,33 +1091,34 @@
      "id": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
      "fee_tier": 310,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 150171,
      "volume_usd": 44656880.525572985,
-     "pool_fees_usd": 16790.588385633542,
+     "pool_fees_usd": 13842.719123456352,
+     "cap_usd": 2622,
      "full": {
-      "fee_apr_pct": 28.757885237885667,
-      "markout_apr_pct": 34.901835153551204,
-      "cost_apr_pct": 3.1544781464199207,
-      "edge_apr_pct": -9.298428062085454,
+      "fee_apr_pct": 25.02690454669355,
+      "markout_apr_pct": 34.91351188248428,
+      "cost_apr_pct": 1.393558517847752,
+      "edge_apr_pct": -11.280165853638483,
       "rebalances": 22,
-      "edge_apr_pct_upper": -7.299119891982721
+      "edge_apr_pct_upper": -11.076799565050083
      },
      "calibration": {
-      "fee_apr_pct": 42.225190088838914,
-      "markout_apr_pct": 45.77974347667374,
-      "cost_apr_pct": 2.6746096586171295,
-      "edge_apr_pct": -6.229163046451949,
+      "fee_apr_pct": 36.772335469475394,
+      "markout_apr_pct": 45.786535475872824,
+      "cost_apr_pct": 1.5369969426509507,
+      "edge_apr_pct": -10.55119694904839,
       "rebalances": 11,
-      "edge_apr_pct_upper": -3.940008367867155
+      "edge_apr_pct_upper": -10.315386675807899
      },
      "test": {
-      "fee_apr_pct": 15.302410335494116,
-      "markout_apr_pct": 24.04446642737808,
-      "cost_apr_pct": 3.6425989400466223,
-      "edge_apr_pct": -12.384655031930585,
+      "fee_apr_pct": 13.28665595783065,
+      "markout_apr_pct": 24.049982362624416,
+      "cost_apr_pct": 1.2525487602590424,
+      "edge_apr_pct": -12.015875165052806,
       "rebalances": 11,
-      "edge_apr_pct_upper": -10.672484861289627
+      "edge_apr_pct_upper": -11.844819236097782
      }
     },
     {
@@ -1056,30 +1129,31 @@
      "vault_capable": false,
      "swaps": 15112,
      "volume_usd": 738096.7852062008,
-     "pool_fees_usd": 195.26627825500844,
+     "pool_fees_usd": 154.9918672669947,
+     "cap_usd": 24118.0,
      "full": {
-      "fee_apr_pct": 1.4792044493615257,
+      "fee_apr_pct": 1.1741315088789759,
       "markout_apr_pct": 20.153687865582384,
       "cost_apr_pct": 537.4793160631805,
-      "edge_apr_pct": -556.1537994794013,
+      "edge_apr_pct": -556.4588724198838,
       "rebalances": 22,
-      "edge_apr_pct_upper": -549.666814950716
+      "edge_apr_pct_upper": -551.3180457028207
      },
      "calibration": {
-      "fee_apr_pct": 2.9121001889828952,
+      "fee_apr_pct": 2.311567568446669,
       "markout_apr_pct": 22.783983997456193,
       "cost_apr_pct": 507.9826090844749,
-      "edge_apr_pct": -527.8544928929482,
+      "edge_apr_pct": -528.4550255134845,
       "rebalances": 11,
-      "edge_apr_pct_upper": -516.636992941306
+      "edge_apr_pct_upper": -519.5652144217111
      },
      "test": {
-      "fee_apr_pct": 0.04658876367806049,
+      "fee_apr_pct": 0.03691736663829223,
       "markout_apr_pct": 21.875442935519594,
       "cost_apr_pct": 884.5821952530354,
-      "edge_apr_pct": -906.4110494248771,
+      "edge_apr_pct": -906.4207208219168,
       "rebalances": 11,
-      "edge_apr_pct_upper": -904.1991072942586
+      "edge_apr_pct_upper": -904.6679574478335
      }
     }
    ],
@@ -1111,6 +1185,18 @@
     }
    },
    "swaps_replayed": 483024,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "fee_tier": 3000,
+    "hooks": null,
+    "tick_spacing": 60,
+    "cap_usd": 24118,
+    "confirmed_in_test": true,
+    "worst_half": -11.65376935190646,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -1161,33 +1247,34 @@
      "id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
      "fee_tier": 2500,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 57187,
      "volume_usd": 36963487.35275735,
-     "pool_fees_usd": 107157.14983564356,
+     "pool_fees_usd": 92371.75489454063,
+     "cap_usd": 22206,
      "full": {
-      "fee_apr_pct": 268.71542326011104,
+      "fee_apr_pct": 231.63844178234476,
       "markout_apr_pct": 256.16067879581067,
       "cost_apr_pct": 29.52808073698479,
-      "edge_apr_pct": -16.973336272684417,
+      "edge_apr_pct": -54.05031775045074,
       "rebalances": 22,
-      "edge_apr_pct_upper": 3.1564386575546535
+      "edge_apr_pct_upper": -36.69802125142769
      },
      "calibration": {
-      "fee_apr_pct": 322.44659770471617,
+      "fee_apr_pct": 277.95586328530044,
       "markout_apr_pct": 273.01841213396807,
       "cost_apr_pct": 28.25068604665974,
-      "edge_apr_pct": 21.177499524088415,
+      "edge_apr_pct": -23.313234895327405,
       "rebalances": 11,
-      "edge_apr_pct_upper": 46.67725021620493
+      "edge_apr_pct_upper": -1.3319044435857323
      },
      "test": {
-      "fee_apr_pct": 224.23235738238273,
+      "fee_apr_pct": 193.29308765042236,
       "markout_apr_pct": 249.13503664392334,
       "cost_apr_pct": 27.394229549233177,
-      "edge_apr_pct": -52.296908810773765,
+      "edge_apr_pct": -83.23617854273414,
       "rebalances": 11,
-      "edge_apr_pct_upper": -36.275365904107126
+      "edge_apr_pct_upper": -69.42526590949511
      }
     }
    ],
@@ -1219,6 +1306,18 @@
     }
    },
    "swaps_replayed": 69113,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "fee_tier": 2500,
+    "hooks": null,
+    "tick_spacing": 25,
+    "cap_usd": 22206,
+    "confirmed_in_test": true,
+    "worst_half": -83.23617854273414,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -1269,33 +1368,34 @@
      "id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
      "fee_tier": 10000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 5982,
      "volume_usd": 1851292.7538110293,
-     "pool_fees_usd": 20345.70736438321,
+     "pool_fees_usd": 18494.41461057218,
+     "cap_usd": 18258,
      "full": {
-      "fee_apr_pct": 56.928253951171214,
-      "markout_apr_pct": 37.082714552276926,
-      "cost_apr_pct": 40.60240928353283,
-      "edge_apr_pct": -20.756869884638537,
+      "fee_apr_pct": 62.70654947359895,
+      "markout_apr_pct": 37.20731883516555,
+      "cost_apr_pct": 28.221661257689178,
+      "edge_apr_pct": -2.72243061925578,
       "rebalances": 22,
-      "edge_apr_pct_upper": -4.621356486343707
+      "edge_apr_pct_upper": 1.1724726202587323
      },
      "calibration": {
-      "fee_apr_pct": 68.80969623413047,
-      "markout_apr_pct": 35.52224007146173,
-      "cost_apr_pct": 26.953578436886872,
-      "edge_apr_pct": 6.3338777257818615,
+      "fee_apr_pct": 73.75461355195631,
+      "markout_apr_pct": 35.56104988597503,
+      "cost_apr_pct": 21.997274061366383,
+      "edge_apr_pct": 16.196289604614908,
       "rebalances": 11,
-      "edge_apr_pct_upper": 22.62742647037441
+      "edge_apr_pct_upper": 19.897397642870555
      },
      "test": {
-      "fee_apr_pct": 43.43199328688598,
-      "markout_apr_pct": 36.823244247887246,
-      "cost_apr_pct": 48.22736761087817,
-      "edge_apr_pct": -41.618618571879445,
+      "fee_apr_pct": 49.286149043687736,
+      "markout_apr_pct": 36.939997803626184,
+      "cost_apr_pct": 30.517361821729178,
+      "edge_apr_pct": -18.17121058166763,
       "rebalances": 11,
-      "edge_apr_pct_upper": -26.90509744477973
+      "edge_apr_pct_upper": -14.458819022495645
      }
     }
    ],
@@ -1327,6 +1427,18 @@
     }
    },
    "swaps_replayed": 42304,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+    "fee_tier": 10000,
+    "hooks": null,
+    "tick_spacing": 200,
+    "cap_usd": 18258,
+    "confirmed_in_test": true,
+    "worst_half": -18.17121058166763,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -1411,33 +1523,139 @@
      "id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 20059,
      "volume_usd": 5351455.879942392,
-     "pool_fees_usd": 18724.744123918426,
+     "pool_fees_usd": 16046.332404669432,
+     "cap_usd": 56470,
      "full": {
-      "fee_apr_pct": 85.18657529859361,
-      "markout_apr_pct": 66.52504417864856,
-      "cost_apr_pct": 77.42968081098344,
-      "edge_apr_pct": -58.76814969103841,
+      "fee_apr_pct": 91.52573293240334,
+      "markout_apr_pct": 67.10497578773678,
+      "cost_apr_pct": 57.648747017129075,
+      "edge_apr_pct": -33.22798987246251,
       "rebalances": 22,
-      "edge_apr_pct_upper": 13.399419139691865
+      "edge_apr_pct_upper": 11.088604316383842
      },
      "calibration": {
-      "fee_apr_pct": 95.85177570173019,
-      "markout_apr_pct": 62.69514719744479,
-      "cost_apr_pct": 61.44830151604792,
-      "edge_apr_pct": -28.291673011762537,
+      "fee_apr_pct": 102.32960156478663,
+      "markout_apr_pct": 62.956229115935756,
+      "cost_apr_pct": 46.17211591001765,
+      "edge_apr_pct": -6.798743461166761,
       "rebalances": 11,
-      "edge_apr_pct_upper": 49.876398406236724
+      "edge_apr_pct_upper": 40.5604530950087
      },
      "test": {
-      "fee_apr_pct": 75.19643043626229,
-      "markout_apr_pct": 71.5502721791804,
-      "cost_apr_pct": 89.86611695408585,
-      "edge_apr_pct": -86.21995869700397,
+      "fee_apr_pct": 81.26155591116095,
+      "markout_apr_pct": 71.97107105661563,
+      "cost_apr_pct": 65.53491573792948,
+      "edge_apr_pct": -56.24443088338417,
       "rebalances": 11,
-      "edge_apr_pct_upper": -18.334066266424777
+      "edge_apr_pct_upper": -14.28157988332304
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x1d6b86ca25e01a320aa392d6b64e68c364245c2071a7315e80e3e0ccb7e87cc3",
+     "fee_tier": 50,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 27343,
+     "volume_usd": 13037010.21253843,
+     "pool_fees_usd": 651.8420361465594,
+     "cap_usd": 1296,
+     "full": {
+      "fee_apr_pct": 5.911073063746919,
+      "markout_apr_pct": 29.905546200871925,
+      "cost_apr_pct": 21.339078931012907,
+      "edge_apr_pct": -45.33355206813791,
+      "rebalances": 22,
+      "edge_apr_pct_upper": -43.55799178191105
+     },
+     "calibration": {
+      "fee_apr_pct": 0.0,
+      "markout_apr_pct": -0.0,
+      "cost_apr_pct": 0.7744984567901234,
+      "edge_apr_pct": -0.7744984567901234,
+      "rebalances": 11,
+      "edge_apr_pct_upper": -0.7744984567901234
+     },
+     "test": {
+      "fee_apr_pct": 11.825186202236623,
+      "markout_apr_pct": 59.829896453110464,
+      "cost_apr_pct": 41.92956420556273,
+      "edge_apr_pct": -89.93427445643657,
+      "rebalances": 11,
+      "edge_apr_pct_upper": -86.38136013550265
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "fee_tier": 100,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 234642,
+     "volume_usd": 173101698.78478342,
+     "pool_fees_usd": 17309.737080951625,
+     "cap_usd": 18992,
+     "full": {
+      "fee_apr_pct": 35.7636413711191,
+      "markout_apr_pct": 54.575666766052535,
+      "cost_apr_pct": 364.2281349844141,
+      "edge_apr_pct": -383.0401603793476,
+      "rebalances": 22,
+      "edge_apr_pct_upper": -355.593778150899
+     },
+     "calibration": {
+      "fee_apr_pct": 30.196419779434652,
+      "markout_apr_pct": 54.93342481520842,
+      "cost_apr_pct": 719.4227935400693,
+      "edge_apr_pct": -744.1597985758431,
+      "rebalances": 11,
+      "edge_apr_pct_upper": -694.6372733864766
+     },
+     "test": {
+      "fee_apr_pct": 55.81775811434097,
+      "markout_apr_pct": 76.08970396828248,
+      "cost_apr_pct": 15.154940179927456,
+      "edge_apr_pct": -35.42688603386898,
+      "rebalances": 11,
+      "edge_apr_pct_upper": -25.704318670339767
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xdf5c0bcd967d54774c139a4ef803ec994779736346fb4c21b50ed241b1fd2682",
+     "fee_tier": 375,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 19957,
+     "volume_usd": 2575186.6458758675,
+     "pool_fees_usd": 965.5983864770824,
+     "cap_usd": 2996,
+     "full": {
+      "fee_apr_pct": 47.06858906515653,
+      "markout_apr_pct": 74.26517575682333,
+      "cost_apr_pct": 80.10543695046434,
+      "edge_apr_pct": -107.30202364213113,
+      "rebalances": 22,
+      "edge_apr_pct_upper": -50.92583799113712
+     },
+     "calibration": {
+      "fee_apr_pct": 73.4595970548581,
+      "markout_apr_pct": 74.06612600484333,
+      "cost_apr_pct": 51.485720074225064,
+      "edge_apr_pct": -52.09224902421028,
+      "rebalances": 11,
+      "edge_apr_pct_upper": 33.34826553667939
+     },
+     "test": {
+      "fee_apr_pct": 20.817651147686938,
+      "markout_apr_pct": 75.51810376818383,
+      "cost_apr_pct": 107.04934295369073,
+      "edge_apr_pct": -161.74979557418763,
+      "rebalances": 11,
+      "edge_apr_pct_upper": -133.9005377978725
      }
     }
    ],
@@ -1468,7 +1686,19 @@
      "fee_per_dollar_lost": 2.8220872428839874
     }
    },
-   "swaps_replayed": 532985,
+   "swaps_replayed": 814927,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x1d6b86ca25e01a320aa392d6b64e68c364245c2071a7315e80e3e0ccb7e87cc3",
+    "fee_tier": 50,
+    "hooks": null,
+    "tick_spacing": 1,
+    "cap_usd": 1296,
+    "confirmed_in_test": false,
+    "worst_half": -89.93427445643657,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -1519,33 +1749,34 @@
      "id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
      "fee_tier": 10000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 20521,
      "volume_usd": 7180394.015080139,
-     "pool_fees_usd": 78912.53022573073,
+     "pool_fees_usd": 71732.1362106506,
+     "cap_usd": 24207,
      "full": {
-      "fee_apr_pct": 232.1223737382306,
+      "fee_apr_pct": 211.00113863921058,
       "markout_apr_pct": 50.70054911842393,
       "cost_apr_pct": 66.73787456072324,
-      "edge_apr_pct": 114.68395005908347,
+      "edge_apr_pct": 93.56271496006342,
       "rebalances": 22,
-      "edge_apr_pct_upper": 135.7072977148648
+      "edge_apr_pct_upper": 112.67311014489098
      },
      "calibration": {
-      "fee_apr_pct": 294.77292516314947,
+      "fee_apr_pct": 267.9510029463024,
       "markout_apr_pct": 34.04229293736529,
       "cost_apr_pct": 52.53094470612025,
-      "edge_apr_pct": 208.19968751966397,
+      "edge_apr_pct": 181.37776530281684,
       "rebalances": 11,
-      "edge_apr_pct_upper": 227.0513093262266
+      "edge_apr_pct_upper": 198.51404390587072
      },
      "test": {
-      "fee_apr_pct": 168.25773050943715,
+      "fee_apr_pct": 152.94765493987964,
       "markout_apr_pct": 66.81330781649488,
       "cost_apr_pct": 73.29374014628576,
-      "edge_apr_pct": 28.150682546656487,
+      "edge_apr_pct": 12.840606977099004,
       "rebalances": 11,
-      "edge_apr_pct_upper": 50.996533596379734
+      "edge_apr_pct_upper": 33.60767267197933
      }
     },
     {
@@ -1553,33 +1784,34 @@
      "id": "0xc59eaeda6d1a6f031bc7e1d039772f2d675e7b4de2c8668610f4471bd60b3802",
      "fee_tier": 1500,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 15348,
      "volume_usd": 3788655.5704484885,
-     "pool_fees_usd": 6675.611115130236,
+     "pool_fees_usd": 5681.492177265936,
+     "cap_usd": 10784,
      "full": {
-      "fee_apr_pct": 96.25609559815514,
-      "markout_apr_pct": 75.55970669303866,
-      "cost_apr_pct": 38.70484268913789,
-      "edge_apr_pct": -18.008453784021413,
+      "fee_apr_pct": 104.30924165332513,
+      "markout_apr_pct": 76.10948057378086,
+      "cost_apr_pct": 22.778056445544397,
+      "edge_apr_pct": 5.421704633999897,
       "rebalances": 22,
-      "edge_apr_pct_upper": 52.33205290056253
+      "edge_apr_pct_upper": 43.591727147804065
      },
      "calibration": {
-      "fee_apr_pct": 118.65139438830292,
-      "markout_apr_pct": 61.137883217031806,
-      "cost_apr_pct": 28.19310258659406,
-      "edge_apr_pct": 29.320408584677065,
+      "fee_apr_pct": 127.71676752528431,
+      "markout_apr_pct": 61.31528819365517,
+      "cost_apr_pct": 17.118254555522686,
+      "edge_apr_pct": 49.28322477610646,
       "rebalances": 11,
-      "edge_apr_pct_upper": 115.15775366787224
+      "edge_apr_pct_upper": 96.0447258913067
      },
      "test": {
-      "fee_apr_pct": 73.53380906732912,
-      "markout_apr_pct": 89.36061862285162,
-      "cost_apr_pct": 44.27541781085227,
-      "edge_apr_pct": -60.102227366374784,
+      "fee_apr_pct": 80.13691328470468,
+      "markout_apr_pct": 89.80167933516125,
+      "cost_apr_pct": 25.353453537378357,
+      "edge_apr_pct": -35.018219587834935,
       "rebalances": 11,
-      "edge_apr_pct_upper": -5.851215472927172
+      "edge_apr_pct_upper": -6.036308150903087
      }
     }
    ],
@@ -1611,6 +1843,18 @@
     }
    },
    "swaps_replayed": 53897,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "fee_tier": 10000,
+    "hooks": null,
+    "tick_spacing": 200,
+    "cap_usd": 24207,
+    "confirmed_in_test": true,
+    "worst_half": 12.840606977099004,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v4",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -1769,33 +2013,69 @@
      "id": "0xcb6ffbcc84359535c2cc0a5688c0a76520ea6e0a4820fddd3ac8d7880e576370",
      "fee_tier": 10000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 8176,
      "volume_usd": 2415177.2935441504,
-     "pool_fees_usd": 26542.798456050212,
+     "pool_fees_usd": 24127.621162506064,
+     "cap_usd": 57469,
      "full": {
-      "fee_apr_pct": 96.2758244565465,
-      "markout_apr_pct": 135.43441528443503,
-      "cost_apr_pct": 210.1191968322128,
-      "edge_apr_pct": -249.2777876601013,
+      "fee_apr_pct": 112.59278399428338,
+      "markout_apr_pct": 138.56311436676748,
+      "cost_apr_pct": 167.5922419389273,
+      "edge_apr_pct": -193.5625723114114,
       "rebalances": 22,
-      "edge_apr_pct_upper": -133.6222891803508
+      "edge_apr_pct_upper": -109.9051230679778
      },
      "calibration": {
-      "fee_apr_pct": 117.57338113712683,
-      "markout_apr_pct": 63.1877957457133,
-      "cost_apr_pct": 152.9183329776339,
-      "edge_apr_pct": -98.53274758622041,
+      "fee_apr_pct": 129.4664268569254,
+      "markout_apr_pct": 63.399189514403275,
+      "cost_apr_pct": 130.42584747672169,
+      "edge_apr_pct": -64.35861013419955,
       "rebalances": 11,
-      "edge_apr_pct_upper": -16.44417619773423
+      "edge_apr_pct_upper": -11.679807381241902
      },
      "test": {
-      "fee_apr_pct": 77.48879654430655,
-      "markout_apr_pct": 228.84920472137722,
-      "cost_apr_pct": 306.2696922450642,
-      "edge_apr_pct": -457.63010042213483,
+      "fee_apr_pct": 99.68419230220859,
+      "markout_apr_pct": 233.54226730674569,
+      "cost_apr_pct": 227.86812781599454,
+      "edge_apr_pct": -361.7262028205316,
       "rebalances": 11,
-      "edge_apr_pct_upper": -288.2566943265729
+      "edge_apr_pct_upper": -231.642131067638
+     }
+    },
+    {
+     "kind": "v4",
+     "id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "fee_tier": 250,
+     "hooks": null,
+     "vault_capable": true,
+     "swaps": 72842,
+     "volume_usd": 9264892.427275525,
+     "pool_fees_usd": 2316.1318151497057,
+     "cap_usd": 23,
+     "full": {
+      "fee_apr_pct": 104.1152487251066,
+      "markout_apr_pct": 163.35346814001204,
+      "cost_apr_pct": 48.531969340749406,
+      "edge_apr_pct": -107.77018875565483,
+      "rebalances": 22,
+      "edge_apr_pct_upper": -104.98809511344518
+     },
+     "calibration": {
+      "fee_apr_pct": 137.6070165811546,
+      "markout_apr_pct": 62.16222221484576,
+      "cost_apr_pct": 46.40691757234658,
+      "edge_apr_pct": 29.037876793962266,
+      "rebalances": 11,
+      "edge_apr_pct_upper": 29.213033070724304
+     },
+     "test": {
+      "fee_apr_pct": 75.21848447650784,
+      "markout_apr_pct": 283.09918478599906,
+      "cost_apr_pct": 51.319522096803524,
+      "edge_apr_pct": -259.2002224062947,
+      "rebalances": 11,
+      "edge_apr_pct_upper": -253.07475746169547
      }
     }
    ],
@@ -1826,7 +2106,19 @@
      "fee_per_dollar_lost": 4.909182277719626
     }
    },
-   "swaps_replayed": 465064,
+   "swaps_replayed": 537906,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+    "fee_tier": 250,
+    "hooks": null,
+    "tick_spacing": 3,
+    "cap_usd": 23,
+    "confirmed_in_test": true,
+    "worst_half": -259.2002224062947,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -1877,33 +2169,34 @@
      "id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 65521,
      "volume_usd": 24664157.359831028,
-     "pool_fees_usd": 86299.88660204876,
+     "pool_fees_usd": 73955.43873589463,
+     "cap_usd": 100000,
      "full": {
-      "fee_apr_pct": 15.713732162169721,
+      "fee_apr_pct": 13.466019504642219,
       "markout_apr_pct": 3.728431531021179,
       "cost_apr_pct": 8.389049559223324,
-      "edge_apr_pct": 3.5962510719252183,
+      "edge_apr_pct": 1.3485384143977128,
       "rebalances": 22,
-      "edge_apr_pct_upper": 3.935351631820063
+      "edge_apr_pct_upper": 1.6391335897801944
      },
      "calibration": {
-      "fee_apr_pct": 18.559586844902615,
+      "fee_apr_pct": 15.904799437350894,
       "markout_apr_pct": 3.502634163294475,
       "cost_apr_pct": 9.492096066716794,
-      "edge_apr_pct": 5.564856614891345,
+      "edge_apr_pct": 2.910069207339625,
       "rebalances": 11,
-      "edge_apr_pct_upper": 5.892096191070728
+      "edge_apr_pct_upper": 3.190500009522386
      },
      "test": {
-      "fee_apr_pct": 12.89143299742074,
+      "fee_apr_pct": 11.047425678031036,
       "markout_apr_pct": 3.9616654610626494,
       "cost_apr_pct": 7.284154365460376,
-      "edge_apr_pct": 1.645613170897715,
+      "edge_apr_pct": -0.19839414849198816,
       "rebalances": 11,
-      "edge_apr_pct_upper": 1.9978780696172693
+      "edge_apr_pct_upper": 0.10348232159182755
      }
     },
     {
@@ -1911,33 +2204,34 @@
      "id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
      "fee_tier": 500,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 52044,
      "volume_usd": 34959690.85621615,
-     "pool_fees_usd": 21849.806785135093,
+     "pool_fees_usd": 17477.659354392705,
+     "cap_usd": 100000,
      "full": {
-      "fee_apr_pct": 11.173145388593898,
+      "fee_apr_pct": 8.93739843739952,
       "markout_apr_pct": 8.54402331076724,
       "cost_apr_pct": 1.9668355473829484,
-      "edge_apr_pct": 0.6622865304437081,
+      "edge_apr_pct": -1.57346042075067,
       "rebalances": 22,
-      "edge_apr_pct_upper": 1.5392564535236937
+      "edge_apr_pct_upper": -0.8719722231494186
      },
      "calibration": {
-      "fee_apr_pct": 13.946200076602725,
+      "fee_apr_pct": 11.15556474361569,
       "markout_apr_pct": 9.114409711168667,
       "cost_apr_pct": 2.403381379367541,
-      "edge_apr_pct": 2.4284089860665174,
+      "edge_apr_pct": -0.36222634692051936,
       "rebalances": 11,
-      "edge_apr_pct_upper": 3.7627788210208055
+      "edge_apr_pct_upper": 0.7051360173075432
      },
      "test": {
-      "fee_apr_pct": 8.404833422821584,
+      "fee_apr_pct": 6.7230258344630895,
       "markout_apr_pct": 7.978355859228957,
       "cost_apr_pct": 1.528498296688459,
-      "edge_apr_pct": -1.1020207330958325,
+      "edge_apr_pct": -2.7838283214543273,
       "rebalances": 11,
-      "edge_apr_pct_upper": -0.6819737999106039
+      "edge_apr_pct_upper": -2.4478328006123173
      }
     },
     {
@@ -1945,17 +2239,18 @@
      "id": "0xe1ae6a4c6ccc9f037389a8d50a4f577bde1a9fe01d85d88ecbbd39955ce53288",
      "fee_tier": 100,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 20211,
      "volume_usd": 8902645.587161254,
-     "pool_fees_usd": 1112.8306983951568,
+     "pool_fees_usd": 890.2422998762736,
+     "cap_usd": 100000,
      "full": {
-      "fee_apr_pct": 1.483366353436821,
+      "fee_apr_pct": 1.1866634124553586,
       "markout_apr_pct": 2.2153988223018306,
       "cost_apr_pct": 128.7615201623638,
-      "edge_apr_pct": -129.49355263122882,
+      "edge_apr_pct": -129.7902555722103,
       "rebalances": 22,
-      "edge_apr_pct_upper": -128.54643174779312
+      "edge_apr_pct_upper": -129.03257780977384
      },
      "calibration": {
       "fee_apr_pct": 0.0,
@@ -1966,12 +2261,12 @@
       "edge_apr_pct_upper": -1.4830234230592603
      },
      "test": {
-      "fee_apr_pct": 2.9681911560942233,
+      "fee_apr_pct": 2.3744935551152806,
       "markout_apr_pct": 4.433337929940213,
       "cost_apr_pct": 256.35168943051656,
-      "edge_apr_pct": -257.8168362043626,
+      "edge_apr_pct": -258.41053380534146,
       "rebalances": 11,
-      "edge_apr_pct_upper": -255.9212374156346
+      "edge_apr_pct_upper": -256.89409269012646
      }
     }
    ],
@@ -2003,6 +2298,18 @@
     }
    },
    "swaps_replayed": 171364,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "fee_tier": 3000,
+    "hooks": null,
+    "tick_spacing": 60,
+    "cap_usd": 100000,
+    "confirmed_in_test": true,
+    "worst_half": -0.19839414849198816,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -2087,33 +2394,34 @@
      "id": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
      "fee_tier": 3000,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 23757,
      "volume_usd": 10605081.863294177,
-     "pool_fees_usd": 37107.181439666325,
+     "pool_fees_usd": 31799.32201159833,
+     "cap_usd": 83206,
      "full": {
-      "fee_apr_pct": 46.949481557897585,
+      "fee_apr_pct": 40.233766737703675,
       "markout_apr_pct": 35.989462396732115,
       "cost_apr_pct": 11.753532002357886,
-      "edge_apr_pct": -0.7935128411924236,
+      "edge_apr_pct": -7.509227661386325,
       "rebalances": 22,
-      "edge_apr_pct_upper": 4.257152214325663
+      "edge_apr_pct_upper": -3.181016295231128
      },
      "calibration": {
-      "fee_apr_pct": 49.998720550742675,
+      "fee_apr_pct": 42.846838624649855,
       "markout_apr_pct": 21.37987284691808,
       "cost_apr_pct": 10.860540100130732,
-      "edge_apr_pct": 17.75830760369386,
+      "edge_apr_pct": 10.60642567760104,
       "rebalances": 11,
-      "edge_apr_pct_upper": 22.459335578899083
+      "edge_apr_pct_upper": 14.635012505521198
      },
      "test": {
-      "fee_apr_pct": 44.744226895616286,
+      "fee_apr_pct": 38.34395456650764,
       "markout_apr_pct": 51.693732900980095,
       "cost_apr_pct": 12.844986541276912,
-      "edge_apr_pct": -19.794492546640722,
+      "edge_apr_pct": -26.19476487574937,
       "rebalances": 11,
-      "edge_apr_pct_upper": -14.17178275434905
+      "edge_apr_pct_upper": -21.37633479494241
      }
     }
    ],
@@ -2145,6 +2453,18 @@
     }
    },
    "swaps_replayed": 90107,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+    "fee_tier": 3000,
+    "hooks": null,
+    "tick_spacing": 60,
+    "cap_usd": 83206,
+    "confirmed_in_test": true,
+    "worst_half": -26.19476487574937,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -2229,33 +2549,34 @@
      "id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
      "fee_tier": 1200,
      "hooks": null,
-     "vault_capable": false,
+     "vault_capable": true,
      "swaps": 25541,
      "volume_usd": 11795266.20639225,
-     "pool_fees_usd": 16761.073279283384,
+     "pool_fees_usd": 14151.187584837362,
+     "cap_usd": 23359,
      "full": {
-      "fee_apr_pct": 36.73624980908139,
-      "markout_apr_pct": 26.677088182061176,
-      "cost_apr_pct": 3.559930347088801,
-      "edge_apr_pct": 6.499231279931412,
+      "fee_apr_pct": 36.71340100183297,
+      "markout_apr_pct": 26.692240727823307,
+      "cost_apr_pct": 1.986279811948364,
+      "edge_apr_pct": 8.034880462061308,
       "rebalances": 22,
-      "edge_apr_pct_upper": 15.917262261568366
+      "edge_apr_pct_upper": 10.306486650380918
      },
      "calibration": {
-      "fee_apr_pct": 52.027674931593474,
-      "markout_apr_pct": 33.377100820270236,
-      "cost_apr_pct": 3.5963061581199463,
-      "edge_apr_pct": 15.05426795320329,
+      "fee_apr_pct": 52.61497589384755,
+      "markout_apr_pct": 33.38772067578425,
+      "cost_apr_pct": 2.01159366097988,
+      "edge_apr_pct": 17.21566155708341,
       "rebalances": 11,
-      "edge_apr_pct_upper": 29.525560661448143
+      "edge_apr_pct_upper": 20.75947171070407
      },
      "test": {
-      "fee_apr_pct": 21.92709213143961,
-      "markout_apr_pct": 20.519170299318592,
-      "cost_apr_pct": 3.0587012967714777,
-      "edge_apr_pct": -1.6507794646504634,
+      "fee_apr_pct": 21.33415213904684,
+      "markout_apr_pct": 20.523327728919757,
+      "cost_apr_pct": 1.69906918826353,
+      "edge_apr_pct": -0.8882447781364482,
       "rebalances": 11,
-      "edge_apr_pct_upper": 2.932052980931333
+      "edge_apr_pct_upper": 0.1631224845697419
      }
     }
    ],
@@ -2287,6 +2608,18 @@
     }
    },
    "swaps_replayed": 59728,
+   "chosen_v4": {
+    "kind": "v4",
+    "id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "fee_tier": 1200,
+    "hooks": null,
+    "tick_spacing": 15,
+    "cap_usd": 23359,
+    "confirmed_in_test": true,
+    "worst_half": -0.8882447781364482,
+    "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
+   },
+   "venue": "v3",
    "recentre": {
     "requested": 22,
     "kept": 22,

@@ -18,6 +18,25 @@ export const vaultAbi = parseAbi([
   "error SwapBelowMinimum(uint256 got, uint256 wanted)",
 ]);
 
+/** StockVaultV4: the same health/rebalance/error surface as StockVault, plus the permissionless poke() that feeds the vault's TickOracleV4 ring and the position reads that replace currentRange(). */
+export const vaultV4Abi = parseAbi([
+  "function poke() returns (bool)",
+  "function positionOpen() view returns (bool)",
+  "function tickLower() view returns (int24)",
+  "function tickUpper() view returns (int24)",
+  "function poolId() view returns (bytes32)",
+  "function stockIsToken0() view returns (bool)",
+  "function health() view returns (uint8 status, uint256 price, uint256 updatedAt, uint160 sqrtOracle, uint160 sqrtTwap, uint160 sqrtSpot)",
+  "function rebalance()",
+  "event Rebalanced(int24 tickLower, int24 tickUpper, uint256 fees0, uint256 fees1)",
+  "error SpotOffTwap()",
+  "error TwapOffOracle()",
+  "error OracleUnhealthy(uint8 status)",
+  "error TooSoon()",
+  "error NotKeeper()",
+  "error SwapBelowMinimum(uint256 got, uint256 wanted)",
+]);
+
 export const poolAbi = parseAbi([
   "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
   "function token0() view returns (address)",
