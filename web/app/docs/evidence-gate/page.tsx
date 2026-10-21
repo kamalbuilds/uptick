@@ -90,7 +90,7 @@ export default function EvidenceGatePage() {
       <P>
         The window is 30 days, split into two halves of 15. The first half selects the pool: among
         the token's v3 USDG pools carrying at least $1,000,000 of volume, the one with the best
-        result wins. The second half is untouched during selection and reports the out-of-sample
+        result wins. When that pool's weaker half sits below the floor, the best static-fee v4 pool (net of the PoolManager's protocol fee) is judged the same way and the token deploys on it if it clears. The second half is untouched during selection and reports the out-of-sample
         figure. The gate takes the lower of the two kept APRs.
       </P>
       <P>

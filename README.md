@@ -26,7 +26,7 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 **1. Evidence engine** (`spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). For every eligible Stock Token (Chainlink feed, deep and busy USDG pool; `keeper/src/universe.ts`) it replays every swap on every USDG pool and fee tier, computes fee per dollar of 1 hour markout by session, and ranks pool and tier on a held-out half of the window.[^2]
 
-**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. 46 fork tests run against the real pool, router and tokens, and 14 guards are mutation-tested.[^3]
+**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 46 fork tests run against the real pool, router and tokens, and 14 guards are mutation-tested.[^3]
 
 **3. Keeper and stats API** refresh the evidence and recentre each vault once a day after each NYSE session, from 02:00 UTC with a jittered minute (`keeper/src/calendar.ts`). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 
@@ -41,6 +41,7 @@ Kept APR is fees earned less losses to informed traders (1 hour markout) and reb
 <!-- gates:start -->
 | Vault | Band | Vault size cap | First half kept | Held-out half kept (conservative to upper) | Status | Reason |
 |---|---|---|---|---|---|---|
+| PLTR | ±3.5% | $24,207 | +181.4% | +12.8% to +33.6% | Open | Both halves at or above break-even |
 | AAPL | ±7.5% | $73,983 | +2.7% | +3.9% to +6.6% | Open | Both halves at or above break-even |
 | GOOGL | ±20% | $100,000 | +0.2% | +2.2% to +2.5% | Open | Both halves at or above break-even |
 | QQQ | ±10% | $66,787 | +0.8% | -1.3% to -1.0% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
@@ -52,13 +53,14 @@ Kept APR is fees earned less losses to informed traders (1 hour markout) and reb
 | NVDA | ±1.5% | $100,000 | +29.4% | -6.6% to +5.4% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
 | META | ±15% | $17,025 | +4.8% | -10.8% to -10.0% | Reduced | Weaker half between -20% and break-even; up to $17,025 a deposit |
 | MU | ±15% | $86,710 | +7.3% | -14.5% to -10.2% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| PLTR | ±3.5% | $24,207 | +65.9% | -20.3% to +11.0% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 | TSLA | ±7.5% | $83,206 | +12.5% | -27.4% to -20.2% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 | CRCL | ±20% | $100,000 | -0.1% | -28.4% to -26.4% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 | MSTR | ±3.5% | $22,206 | +18.5% | -37.1% to -4.9% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 | GME | ±2.5% | $49,212 | +101.9% | -144.2% to -74.1% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 | SPCX | ±1.5% | $100,000 | +80.6% | -199.5% to -139.4% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 <!-- gates:end -->
+
+Every row is the vault's Uniswap v3 pool except PLTR, whose row is its Uniswap v4 1% pool (the v3 pool keeps -20.3% in its weaker half; the v4 pool, net of the PoolManager's protocol fee, keeps +12.8%), held by `StockVaultV4`.
 
 Seventeen tokens clear the registry rule in `keeper/src/universe.ts`: a Chainlink feed, a USDG pool trading at least $100K a day, and a vault sized to the pool. The vault size cap is the largest position that holds at most 20% of the pool's in-range liquidity, up to $100K and at least $10K, so a thinner pool gets a smaller vault instead of no vault; `StockVault` enforces the size on-chain through its `depositCap`. The replay simulates each vault at its own size, so every gate above reflects the vault a depositor can actually buy. The volume floor admits a token to a vault and the replay gate decides whether deposits open.
 

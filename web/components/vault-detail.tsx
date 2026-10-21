@@ -18,9 +18,9 @@ import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
 import { entryFeePct, perDepositLimitUsd, shortAddress, signed, usd, usdWhole } from "@/lib/format";
-import { REPLAY_WINDOW, USDG, isoDay, type VaultConfig } from "@/lib/vaults";
+import { POOL_MANAGER, REPLAY_WINDOW, USDG, isoDay, type VaultConfig } from "@/lib/vaults";
 
-function AddressRow({ label, address }: { label: string; address: string }) {
+function AddressRow({ label, address, link = true }: { label: string; address: string; link?: boolean }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="flex items-center justify-between gap-4 border-b border-hairline py-3">
@@ -34,9 +34,9 @@ function AddressRow({ label, address }: { label: string; address: string }) {
         >
           {copied ? <span className="text-xs">Copied</span> : <CopySimple size={16} aria-hidden />}
         </button>
-        <a aria-label={`${label} on the explorer`} className="-m-2 p-2 text-mute hover:text-fg" href={addressUrl(address)} target="_blank" rel="noreferrer">
+        {link && <a aria-label={`${label} on the explorer`} className="-m-2 p-2 text-mute hover:text-fg" href={addressUrl(address)} target="_blank" rel="noreferrer">
           <ArrowSquareOut size={16} aria-hidden />
-        </a>
+        </a>}
       </dd>
     </div>
   );
@@ -130,7 +130,14 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
               <dl>
                 {cfg.vault && <AddressRow label="Vault" address={cfg.vault} />}
                 <AddressRow label={`${cfg.symbol} Stock Token`} address={cfg.token} />
-                <AddressRow label="Pool" address={cfg.pool} />
+                {cfg.venue === "v4" ? (
+                  <>
+                    <AddressRow label="Uniswap v4 PoolManager" address={POOL_MANAGER} />
+                    <AddressRow label="Pool id" address={cfg.pool} link={false} />
+                  </>
+                ) : (
+                  <AddressRow label="Pool" address={cfg.pool} />
+                )}
                 <AddressRow label="USDG" address={USDG} />
               </dl>
             </section>

@@ -10,6 +10,8 @@ export const erc20Abi = parseAbi([
 
 export const routerAbi = parseAbi([
   "function depositUsdg(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256 shares)",
+  // the same zap for a StockVaultV4, swapping in the vault's Uniswap v4 pool
+  "function depositUsdgV4(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256 shares)",
 ]);
 
 export const vaultAbi = parseAbi([

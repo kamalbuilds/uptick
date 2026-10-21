@@ -6,7 +6,7 @@ App https://uptick-fi.pages.dev. Launch film https://x.com/uptickfi/status/21125
 
 ## 1. What Uptick does
 
-Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 2,705,097 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. 11 vaults take deposits, 2 open and 9 reduced. The pools behind the 17 vaults paid liquidity providers $996.6K in fees over the same 30 days.
+Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. 12 vaults take deposits, 3 open and 9 reduced. The pools behind the 17 vaults paid liquidity providers $1.1M in fees over the same 30 days.
 
 ## 2. The holder and the ask
 
@@ -14,7 +14,7 @@ Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlin
 
 ## 3. Three doors
 
-Open vaults take any amount: AAPL and GOOGL kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY and QQQ, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, PLTR, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way.
+Open vaults take any amount: AAPL, GOOGL and PLTR (on its Uniswap v4 pool) kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY and QQQ, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way.
 
 ## 4. The finding behind the engine
 
@@ -56,8 +56,8 @@ Kamal built StockVault, the keeper, the replay engine, the web app and the evide
 
 <!--
 Sources, read 2026-10-21. Every section mirrors the same-numbered slide of deck/index.html (12 slides).
-Live app (DOM read, https://uptick-fi.pages.dev): 11 of 17, 2 open, 9 reduced, 2.7M swaps, $996.6K, 17 tokens, door membership per vault.
-web/lib/vault-universe.json: sum of gate.swaps = 2,705,097; bands and weaker halves; rerun of keeper/replay on 2026-10-21 left every gate state unchanged.
+Vault list figures (web/lib/vault-universe.json and web/lib/pool-fees.json, regenerated 2026-10-22): 12 of 17, 3 open, 9 reduced, 3.1M swaps, $1.1M, 17 tokens, door membership per vault.
+web/lib/vault-universe.json: sum of gate.swaps = 3,059,881; bands and weaker halves; PLTR gated on its Uniswap v4 1% pool (open), every other gate state unchanged.
 Slide 2: gtm/uptick/DEMAND.md (verbatim quotes), Blockscout holder counts 2026-10-16 (docs/research/founder-house/PLATFORM-TRUTH.md).
 Slide 4: README.md, spikes/stock-vaults/FINDINGS.md, spikes/offchain-signals/FINDINGS.md.
 Slide 5 and 6: web/lib/vault-universe.json, keeper/data/params.json, /vault/aapl on the live app.

@@ -30,7 +30,7 @@ export default function HowVaultsWorkPage() {
     <Article
       eyebrow="Start here"
       title="How vaults work"
-      lede="One Stock Token, one Uniswap v3 position against USDG, and a share price that rises as fees accrue."
+      lede="One Stock Token, one Uniswap v3 or v4 position against USDG, and a share price that rises as fees accrue."
     >
       <TLDR>
         <ul>
@@ -58,7 +58,7 @@ export default function HowVaultsWorkPage() {
           ],
           [
             "Position",
-            "A single Uniswap v3 position, both legs, inside the band.",
+            "A single Uniswap v3 or v4 position, both legs, inside the band.",
             "Pool TWAP over at least 10 minutes.",
           ],
           [

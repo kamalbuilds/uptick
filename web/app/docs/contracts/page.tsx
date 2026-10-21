@@ -25,7 +25,7 @@ export default function ContractsPage() {
     >
       <TLDR>
         <ul>
-          <li>StockVault is an ERC-4626 vault per Stock Token with one managed Uniswap v3 position.</li>
+          <li>StockVault is an ERC-4626 vault per Stock Token with one managed Uniswap v3 position; StockVaultV4 holds the same position in a Uniswap v4 pool.</li>
           <li>UptickRouter swaps USDG into the Stock Token and deposits, or exits in kind with minimums.</li>
           <li>VaultFactory deploys each vault with CREATE2 and keeps the registry.</li>
         </ul>
@@ -62,7 +62,7 @@ export default function ContractsPage() {
       <H2>UptickRouter</H2>
       <P>
         The USDG on-ramp for a StockVault. It swaps USDG into the Stock Token through the same Uniswap v3
-        router and pool fee the vault uses, then deposits to the receiver. The swap floor is the
+        router and pool fee the vault uses (depositUsdgV4 swaps in the vault's Uniswap v4 pool), then deposits to the receiver. The swap floor is the
         Chainlink-implied stock amount from health().price less slippageBps, so a deposit reverts when the
         pool sits far below the oracle. The router holds no balances and leaves no allowances behind after
         any call.
@@ -124,7 +124,7 @@ export default function ContractsPage() {
 
       <H2>The v4 hook</H2>
       <P>
-        StockVault trades on a Uniswap v3 pool. The separately deployed <Code>UptickHook</Code> is a
+        StockVault trades on a Uniswap v3 pool and StockVaultV4 on a Uniswap v4 pool. The separately deployed <Code>UptickHook</Code> is a
         dynamic-fee hook for a v4 Stock Token / USDG pool, and it is built on{" "}
         <Code>CappedTakeHook</Code>. The fee follows the NYSE session: regular hours, off hours, and
         weekend, with the 20 observed NYSE full-day holidays of 2026 and 2027 compiled in. A swap

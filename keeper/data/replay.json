@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-21T17:27:31.580826+00:00",
+ "generated_at": "2026-10-21T23:28:00.059181+00:00",
  "engine": "spikes/stock-vaults/scripts/engine.py",
  "capital_usd": 100000.0,
  "default_band_bps": 500,
@@ -1855,6 +1855,26 @@
     "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
    },
    "venue": "v4",
+   "sessions_v4": {
+    "nyse_hours": {
+     "vault_fee_usd": 1868.3794964983126,
+     "markout_loss_usd": 754.6828778389086,
+     "pool_volume_usd": 2041205.633369777,
+     "fee_per_dollar_lost": 2.475714702642464
+    },
+    "weeknight": {
+     "vault_fee_usd": 1950.7975642346514,
+     "markout_loss_usd": 242.26209827442605,
+     "pool_volume_usd": 4387820.198034193,
+     "fee_per_dollar_lost": 8.052425774108734
+    },
+    "weekend": {
+     "vault_fee_usd": 378.93627875145125,
+     "markout_loss_usd": 11.801483483669351,
+     "pool_volume_usd": 751368.1836761683,
+     "fee_per_dollar_lost": 32.10920722600811
+    }
+   },
    "recentre": {
     "requested": 22,
     "kept": 22,

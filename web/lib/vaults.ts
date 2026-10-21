@@ -6,7 +6,10 @@ export type VaultConfig = {
   symbol: string;
   name: string;
   token: Address;
-  pool: Address;
+  /** The backend the vault holds its position in: a Uniswap v3 pool (StockVault) or a Uniswap v4 pool (StockVaultV4). */
+  venue: "v3" | "v4";
+  /** The v3 pool address, or the v4 pool id (32 bytes, lowercase). */
+  pool: string;
   /** Pool fee tier as shown, e.g. "0.05%". */
   feeTier: string;
   /** Fee kept in the vault on deposit and mint, in bps: the larger of the pool fee tier and 35 bp (StockVault.entryFee default). */
@@ -70,7 +73,8 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   symbol: v.symbol,
   name: v.name,
   token: v.token as Address,
-  pool: v.pool as Address,
+  venue: v.venue as "v3" | "v4",
+  pool: v.pool,
   feeTier: v.feeTier,
   entryFeeBps: v.entryFeeBps,
   depositCapUsd: v.depositCapUsd,
@@ -97,6 +101,8 @@ export const GATE_COUNTS = {
 export const REPLAYED_SWAPS = universe.vaults.reduce((n, v) => n + (v.gate?.swaps ?? 0), 0);
 
 export const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
+/** The Uniswap v4 PoolManager every StockVaultV4 holds its position in. */
+export const POOL_MANAGER: Address = "0x8366a39CC670B4001A1121B8F6A443A643e40951";
 
 /** UptickRouter, the USDG on-ramp. Unset or malformed keeps the USDG option hidden rather than pointing at a wrong contract. */
 export const ROUTER: `0x${string}` | undefined =

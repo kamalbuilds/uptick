@@ -12,13 +12,13 @@ describe("evidence built from data/replay.json", () => {
   });
 
   for (const sym of syms) {
-    test(`${sym}: chosen pool is one v3 row in a table sorted by fee APR`, () => {
+    test(`${sym}: chosen pool is one row of its venue in a table sorted by fee APR`, () => {
       const tok = replay.tokens[sym], ev: any = buildEvidence(tok, replay);
       expect(ev).not.toBeNull();
       const chosen = ev.pools.filter((p: any) => p.chosen);
       expect(chosen.length).toBe(1);
       expect(chosen[0].pool).toBe(ev.chosen_pool);
-      expect(chosen[0].kind).toBe("v3");
+      expect(chosen[0].kind).toBe(replay.tokens[sym].venue === "v4" ? "v4" : "v3");
       expect(chosen[0].vault_capable).toBe(true);
       expect(chosen[0].fee_apr_pct).toBe(ev.chosen_fee_apr_pct);
       expect(ev.chosen_fee_apr_pct).toBe(replayFeeApr(tok));
@@ -50,9 +50,9 @@ describe("evidence built from data/replay.json", () => {
     });
   }
 
-  test("the deposit-taking set is exactly AAPL, AMD, AMZN, GOOGL, INTC, META, MU, NVDA, QQQ, SPY and USO", () => {
+  test("the deposit-taking set is exactly AAPL, AMD, AMZN, GOOGL, INTC, META, MU, NVDA, PLTR (on its v4 pool), QQQ, SPY and USO", () => {
     const open = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).open).sort();
-    expect(open).toEqual(["AAPL", "AMD", "AMZN", "GOOGL", "INTC", "META", "MU", "NVDA", "QQQ", "SPY", "USO"]);
+    expect(open).toEqual(["AAPL", "AMD", "AMZN", "GOOGL", "INTC", "META", "MU", "NVDA", "PLTR", "QQQ", "SPY", "USO"]);
   });
 
   test("AAPL clears break-even on its weaker half, so its gate is open with no cap", () => {
@@ -77,7 +77,7 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
   });
 
-  test("every token's gate state matches its weaker half, AAPL and GOOGL are open, AMD, AMZN, INTC, META, MU, NVDA, QQQ, SPY and USO are reduced", () => {
+  test("every token's gate state matches its weaker half, AAPL, GOOGL and PLTR are open, AMD, AMZN, INTC, META, MU, NVDA, QQQ, SPY and USO are reduced", () => {
     for (const s of syms) {
       const ev: any = buildEvidence(replay.tokens[s], replay);
       const worst = ev.gate.worst_half_apr;
@@ -87,9 +87,9 @@ describe("evidence built from data/replay.json", () => {
     const reduced = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "reduced").sort();
     expect(reduced).toEqual(["AMD", "AMZN", "INTC", "META", "MU", "NVDA", "QQQ", "SPY", "USO"]);
     const opened = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "open").sort();
-    expect(opened).toEqual(["AAPL", "GOOGL"]);
+    expect(opened).toEqual(["AAPL", "GOOGL", "PLTR"]);
     const closed = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "closed").sort();
-    expect(closed).toEqual(["CRCL", "GME", "MSTR", "PLTR", "SPCX", "TSLA"]);
+    expect(closed).toEqual(["CRCL", "GME", "MSTR", "SPCX", "TSLA"]);
   });
 
   test("a half at or above break-even opens the gate outright, with no cap", () => {
@@ -142,4 +142,27 @@ describe("evidence built from data/replay.json", () => {
     expect(feeLabel(10000)).toBe("1%");
     expect(feeLabel(0x800000)).toBe("dynamic");
   });
+});
+
+describe("a token that deploys on v4 is gated on its v4 pool", () => {
+  const v4syms = syms.filter((s) => replay.tokens[s].venue === "v4");
+  test("at least one token has venue v4 and carries the session split of its v4 pool", () => {
+    expect(v4syms.length).toBeGreaterThan(0);
+    for (const s of v4syms) expect(replay.tokens[s].sessions_v4).toBeDefined();
+  });
+  for (const sym of v4syms) {
+    test(`${sym}: the gate, the chosen pool and the kept figures come from chosen_v4, not from the closed v3 pool`, () => {
+      const tok = replay.tokens[sym], ev: any = buildEvidence(tok, replay);
+      const row = tok.pools.find((p: any) => p.id === tok.chosen_v4.id);
+      expect(ev.chosen_pool).toBe(tok.chosen_v4.id);
+      expect(ev.chosen_kind).toBe("v4");
+      expect(ev.gate.worst_half_apr).toBe(Math.min(row.calibration.edge_apr_pct, row.test.edge_apr_pct));
+      expect(ev.gate.state).not.toBe("closed");
+      expect(ev.capital_usd).toBe(tok.chosen_v4.cap_usd);
+      expect(ev.keep.kept_first_half).toBe(row.calibration.edge_apr_pct);
+      expect(replayFeeApr(tok)).toBe(row.full.fee_apr_pct);
+      const v3row = tok.pools.find((p: any) => p.id === tok.chosen.id);
+      expect(ev.gate.worst_half_apr).not.toBe(Math.min(v3row.calibration.edge_apr_pct, v3row.test.edge_apr_pct));
+    });
+  }
 });

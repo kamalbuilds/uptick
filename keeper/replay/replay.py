@@ -263,6 +263,8 @@ def main(symbols):
                                     confirmed_in_test=(max(v4, key=lambda r: r["test"]["edge_apr_pct"])["id"] == v4_best["id"]), worst_half=worst(v4_best),
                                     rule="best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure")
         ent["venue"] = venue_for(worst(chosen) if chosen else None, worst(v4_best) if v4_best else None)
+        if ent["venue"] == "v4" and v4_best:  # the evidence page of a token that deploys on v4 reads the session split of its v4 pool
+            ent["sessions_v4"] = session_split(v4_best["_pl"], ref, t0, t1, plan, v4_best["cap_usd"])
         ent["recentre"] = slots
         res["tokens"][sym] = ent
     path = os.environ.get("REPLAY_OUT") or os.path.join(KEEPER, "data", "replay.json")

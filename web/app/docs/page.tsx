@@ -19,7 +19,7 @@ const symbolsIn = (state: GateState) => VAULTS.filter((v) => v.gate.state === st
 export const metadata: Metadata = {
   title: "Docs | Uptick",
   description:
-    "How Uptick vaults hold Stock Tokens, earn Uniswap v3 fees, and use a 30-day replay to decide which vaults take deposits.",
+    "How Uptick vaults hold Stock Tokens, earn Uniswap v3 and v4 fees, and use a 30-day replay to decide which vaults take deposits.",
 };
 
 export default function DocsPage() {
@@ -32,7 +32,7 @@ export default function DocsPage() {
     <Article
       eyebrow="Docs"
       title="Put stock tokens to work"
-      lede="Uptick turns a Robinhood Stock Token into a share of a Uniswap v3 pool against USDG. Each vault is one ERC-4626 contract, one managed position, and one published gate."
+      lede="Uptick turns a Robinhood Stock Token into a share of a Uniswap v3 or v4 pool against USDG. Each vault is one ERC-4626 contract, one managed position, and one published gate."
     >
       <TLDR>
         <ul>
@@ -64,7 +64,7 @@ export default function DocsPage() {
           ],
           [
             "StockVault",
-            "Holds one Uniswap v3 position in a band around Chainlink chosen per token. Fees accrue to the share price.",
+            "Holds one Uniswap v3 position (StockVaultV4: one Uniswap v4 position) in a band around Chainlink chosen per token. Fees accrue to the share price.",
           ],
           [
             "Keeper and evidence API",
@@ -77,7 +77,7 @@ export default function DocsPage() {
       <H2>What a vault holds</H2>
       <P>
         Every vault holds the same three things: idle balances of the Stock Token and USDG, both
-        legs of a Uniswap v3 position, and fees earned but uncollected. Shares are priced in
+        legs of a Uniswap v3 or v4 position, and fees earned but uncollected. Shares are priced in
         the Stock Token, so the share price rises as fees accumulate and falls when the position
         loses to informed flow.
       </P>
@@ -85,7 +85,7 @@ export default function DocsPage() {
         columns={["Holding", "How it is valued"]}
         rows={[
           ["Idle Stock Token and USDG", "Face value, expressed in the Stock Token."],
-          ["Both legs of the Uniswap v3 position", "Pool TWAP over at least 10 minutes."],
+          ["Both legs of the Uniswap v3 or v4 position", "Pool TWAP over at least 10 minutes (a v4 vault keeps its own observation ring)."],
           ["Fees earned but not collected", "Chainlink for USDG at $1, then the Stock Token."],
         ]}
         caption="Share price = totalAssets / totalSupply, with shares denominated in 24 decimals."

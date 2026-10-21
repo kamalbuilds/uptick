@@ -131,7 +131,7 @@ capUsd = min(100_000, floor(depth / 4))`}
             "A pool priced away from the feed is not a market the vault should join.",
           ],
         ]}
-        caption="The deepest USDG v3 pool by in-range depth is the one sized and replayed. v4 pools are replayed for comparison but do not enter eligibility, because StockVault holds a v3 position."
+        caption="The deepest USDG v3 pool by in-range depth is the one sized and replayed. v4 pools are replayed beside it; a token whose v3 pool is closed deploys on its best v4 pool when that clears the gate, sized to that pool's own depth."
       />
       <P>
         The checks are strict about the feed and looser about the pool. A token whose deepest pool

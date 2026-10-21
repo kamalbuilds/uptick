@@ -253,7 +253,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
         if (needsApproval) {
           return send("Approval", () => writeContractAsync({ address: USDG, abi: erc20Abi, functionName: "approve", args: [router, parsedAmount], chainId: robinhoodChain.id }));
         }
-        return send("Deposit", () => writeContractAsync({ address: router, abi: routerAbi, functionName: "depositUsdg", args: [vault, parsedAmount, minShares, address], chainId: robinhoodChain.id }));
+        return send("Deposit", () => writeContractAsync({ address: router, abi: routerAbi, functionName: cfg.venue === "v4" ? "depositUsdgV4" : "depositUsdg", args: [vault, parsedAmount, minShares, address], chainId: robinhoodChain.id }));
       }
       if (needsApproval) {
         return send("Approval", () => writeContractAsync({ address: cfg.token, abi: erc20Abi, functionName: "approve", args: [vault, parsedAmount], chainId: robinhoodChain.id }));

@@ -44,10 +44,11 @@ export function depositGate(worstHalfApr: number, swaps: number, days: number, f
 /** Shape read by web/lib/evidence.ts: chosen_pool, chosen_fee_tier, pools[{pool, fee_tier, fee_apr_pct}], fee_per_loss{regular,night,weekend},
  *  swaps_replayed, window{start,end}. Extra keys describe each pool (kind, hooks, volume) and the held-out half. */
 export function buildEvidence(tok: any, replay: any) {
-  const chosen = tok.chosen;
+  const v4 = tok.venue === "v4" && !!tok.chosen_v4 && !!tok.sessions_v4; // a token that deploys on v4 is gated on its v4 pool
+  const chosen = v4 ? tok.chosen_v4 : tok.chosen;
   if (!chosen) return null;
   const row = tok.pools.find((p: any) => p.id === chosen.id);
-  const s = tok.sessions;
+  const s = v4 ? tok.sessions_v4 : tok.sessions;
   const lost = { regular: s.nyse_hours.fee_per_dollar_lost, night: s.weeknight.fee_per_dollar_lost, weekend: s.weekend.fee_per_dollar_lost };
   if (![lost.regular, lost.night, lost.weekend].every(Number.isFinite)) return null;
   const pools = tok.pools
@@ -72,14 +73,15 @@ export function buildEvidence(tok: any, replay: any) {
     fee_per_loss: lost,
     swaps_replayed: tok.swaps_replayed,
     window: { start: replay.window.start, end: replay.window.end, days: replay.window.days },
-    strategy: replay.strategy, capital_usd: tok.capital_usd ?? replay.capital_usd,
+    strategy: replay.strategy, capital_usd: v4 ? chosen.cap_usd : tok.capital_usd ?? replay.capital_usd,
     out_of_sample: { window: { start: replay.window.calibration_end, end: replay.window.end, days: replay.window.days / 2 }, fee_apr_pct: row.test.fee_apr_pct, confirmed: chosen.confirmed_in_test },
-    selection: "the v3 pool with the best first-half result, checked on the second half",
+    selection: v4 ? "the v4 pool with the best first-half result, checked on the second half (v3 pool closed)" : "the v3 pool with the best first-half result, checked on the second half",
   };
 }
 
 /** 30-day fee APR of the chosen pool, the figure /vaults sorts by. */
 export function replayFeeApr(tok: any): number | null {
-  const row = tok?.chosen && tok.pools.find((p: any) => p.id === tok.chosen.id);
+  const chosen = tok?.venue === "v4" && tok.chosen_v4 && tok.sessions_v4 ? tok.chosen_v4 : tok?.chosen;
+  const row = chosen && tok.pools.find((p: any) => p.id === chosen.id);
   return row ? row.full.fee_apr_pct : null;
 }
