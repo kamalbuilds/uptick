@@ -150,3 +150,66 @@ no liquidity in the pool. Chainlink mocked at the pool price. V4R-M1's dollar fi
 replay APR; weekend pool volume was not measured. The fix for V4R-M1 was not built (source is read-only in this review), so
 its bytecode cost is an estimate against the 600 B headroom. Only PLTR measured (TSLA, the token0 orientation, was not
 re-run); the existing v4 suites were not re-run here.
+
+## Re-review of the fixes (b6afbd1, 4a2bf6b)
+
+Scope: `git diff de05c6e..4a2bf6b -- contracts/src` (StockVaultV4 only: `pendingFee0/1`, `_release`, `_harvest`,
+`_valuationAt`, `FORBIDDEN_HOOK_BITS`) plus the changed tests and the keeper/replay hook-mask mirrors. Source untouched.
+New file `test/security/v4/ReReviewV4.t.sol` (3 tests). Fork: the pinned local node (`FORK_URL=http://127.0.0.1:8546`,
+`FORK_BLOCK=93694185`). Runtime 24,267 B (309 B headroom).
+
+Commands:
+- `forge test --match-path 'test/{v4,security/v4}/*' -j 1` on the pinned fork: 146 pass, 1 fail (the V4R-RR-L1 witness
+  below); PLTR and TSLA vault suites 49 + 49, registry and router 14 + 14, oracle 10, fit 3, review 5.
+- `forge test --match-path test/security/v4/ReReviewV4.t.sol -j 1 -vv`: 2 pass, 1 fail.
+
+Verdict: **SHIP**. V4R-M1 and V4R-L1 are closed. One new Low (V4R-RR-L1, an edge case on a vault that has been emptied,
+which a few wei of donation or the next keeper harvest clears), worth a few bytes before the hash is pinned. Nothing
+in it blocks shipping.
+
+### V4R-M1 fix: what holds
+
+| Question | Result | Evidence |
+|---|---|---|
+| Cut minted after a closed-gate sweep | Yes | `test_V4R_M1_closedGateInKindExitForfeitsTheTreasuryCut`, `test_V4R_M1_laterClosedGateExitsCannotTakeThePendingCut` pass on the pinned fork |
+| Pending cut double-counted | No. Pending fees are idle, so they are already in `gross`; `_valuationAt` adds only their cut to the deduction; `_harvest` adds them to `f0/f1` once and zeroes them before minting | Source read; harvest of a pending cut moves price per share by under 1e-5 (`test_RR_depositBetweenSweepAndHarvestGainsNothing`) |
+| Deposit ordering around a pending cut | No gain. A depositor entering between the sweep and the harvest buys at NAV net of the cut; the harvest does not move the price; an in-kind round trip returns 0.9938 PLTR per PLTR (the entry fee) | `test_RR_depositBetweenSweepAndHarvestGainsNothing` PASS |
+| Withdraw/redeem ordering | Both run `_harvest` first under an Ok gate, so `pending` is 0 by the time `_release` reserves; only a closed-gate `redeemInKind` ever reserves | Source read |
+| `_idleStock() - rs` underflow in `_release` | Not reachable through the vault. `pending > 0` implies `positionOpen` (it is written after the early return), and every path that moves idle out (exit swaps, deploy and rebalance swaps, adds) runs `_harvest` first. Only an outside balance cut (issuer `adminBurn`, a USDG freeze) could reach it | Source read |
+| Rounding per leg vs combined NAV | Exits reserve `floor(pending * perf / 1e4)` per leg; NAV deducts the combined value floored once. Exiters can take at most a wei of PLTR and a micro-USDG per exit beyond the reserve. That gap is the cause of V4R-RR-L1 | Below |
+| `_harvest` at zero liquidity | Skips `_modify` when `liq == 0` (no `CannotUpdateEmptyPosition`), so the PoolManager cannot make it revert. The only revert is the underflow below | `test_fullInKindExitThenRedepositIntoTheEmptyRange` green; V4R-RR-L1 |
+| "Everyone exits before harvest" | The cut is minted against the near-empty vault if `gross > cut`; otherwise `pending` is zeroed with no mint, and the reserved tokens (measured 0.025 PLTR + 5.0 USDG in a 2 x UNIT vault, about $10) become unowned NAV | `test_RR_emptiedVaultWithPendingCutDoesNotBrickNav` logs treasury 0 after the keeper harvest |
+
+### V4R-RR-L1 (Low, liveness, from the M1 fix). An emptied vault with a pending cut reverts `totalAssets` until a donation
+`StockVaultV4.sol` `_valuationAt` (`v.net = v.gross - feeValue * params.perfFeeBps / 1e4`) with `_release`'s per-leg
+reserve. Sequence: the treasury holds no shares (launch, before any minting harvest; or after it redeemed), the gate is
+closed, and the holders leave in kind in two steps (the first sweeps the fees into pending, the last takes idle net of the
+per-leg floored reserve). Supply is 0 and the vault holds exactly the floored reserves, a few wei of PLTR below the
+combined cut, so `gross - cut` underflows (Panic 0x11).
+
+Measured (`test_RR_emptiedVaultWithPendingCutDoesNotBrickNav`, PLTR, gate reopened): `totalAssets` reverts 0x11, and a
+new `deposit` reverts 0x11 (so do every preview, `maxDeposit`, `pricePerShare` and the lens). An hour later the keeper's
+rebalance went through: at the new TWAP the rounding came out with `gross == cut`, and the harvest zeroed `pending` with
+no mint. Whether that harvest reverts depends on rounding at the price it reads. Green case: `test_RR_aDonationUnbricksTheEmptiedVault`
+(1e12 wei of PLTR sent to the vault by anyone: `totalAssets` works and the rebalance mints the treasury its cut).
+
+Impact: no funds at risk; a fresh or fully drained vault refuses deposits until a donation or a favourable-rounding
+harvest; about $10 of reserved cut is stranded as unowned NAV. A griefer must own the whole supply, so it only affects a
+vault at launch or after a total exit. Fix (a few bytes): saturate in `_valuationAt`
+(`v.net = v.gross > cutValue ? v.gross - cutValue : 0`), or round the per-leg reserve up. Failing-before-fix test:
+`test_RR_emptiedVaultWithPendingCutDoesNotBrickNav`.
+
+### V4R-L1 fix
+
+`FORBIDDEN_HOOK_BITS` now carries bits 11, 10, 9, 8, 7, 6, 3, 2, 1, 0, so only initialize (13, 12) and donate (5, 4) hooks
+pass; the vault never calls `donate`, and initialize hooks run only at pool creation. `keeper/src/v4.ts` and
+`keeper/replay/replay.py` carry the same expression. Every `chosen_v4` in `keeper/data/replay.json` (PLTR is the only v4
+deploy entry, pool `0xee430ee1...`) is hookless, so no deployable pool is excluded. The witness test now expects
+`ForbiddenHook` for the swap hook and for bits 11 and 10. Closed.
+
+### Re-review blind spots
+
+Mutations of the fix were not re-run here (source is read-only in this review); the builder's five rows in `SECURITY.md`
+were taken as given, and the in-test control branches are the green cases. One pinned block and PLTR only for the new
+tests. V4R-RR-L1's revert depends on wei rounding at the price read: it was reproduced at the pinned block, and a later
+price did not reproduce it in the harvest.
