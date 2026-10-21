@@ -18,10 +18,12 @@ function liveCapUsd(symbol: string, capUsd: number): number {
 }
 
 const universe = readUniverse(), replay = readReplay();
+/** The web pages describe the v3 evidence pool (the gate in vault-universe.json is the v3 pool's); a token that deploys on a v4 pool keeps its chosen v3 pool here. */
+const webPool = (t: any) => t.venue === "v4" ? { pool: replay.tokens[t.symbol].chosen.id, feeTier: replay.tokens[t.symbol].chosen.fee_tier } : { pool: t.pool, feeTier: t.feeTier };
 const vaults = eligibleTickers(universe, replay)
   .map((t) => {
     const ev: any = buildEvidence(replay.tokens[t.symbol], replay);
-    return { id: t.id, symbol: t.symbol, name: t.name, token: t.stock, pool: t.pool, feeTierPips: t.feeTier, feeTier: feeLabel(t.feeTier), entryFeeBps: Math.max(t.feeTier, 3500) / 100, feed: t.feed, bandBps: t.rangeBps, depositCapUsd: liveCapUsd(t.symbol, t.capUsd), refPriceUsd: universe.tokens.find((x: any) => x.symbol === t.symbol).feed.usd, open: ev?.open ?? false, gate: ev?.gate ?? null, keep: ev?.keep ?? null, feeAprPct: ev?.keep.fee_apr_pct ?? null, keptAprPct: ev?.keep.kept_second_half ?? null, keptAprUpperPct: ev?.keep.kept_second_half_upper ?? null, _apr: replayFeeApr(replay.tokens[t.symbol]) ?? -1 };
+    return { id: t.id, symbol: t.symbol, name: t.name, token: t.stock, pool: webPool(t).pool, feeTierPips: webPool(t).feeTier, feeTier: feeLabel(webPool(t).feeTier), entryFeeBps: Math.max(webPool(t).feeTier, 3500) / 100, feed: t.feed, bandBps: t.rangeBps, depositCapUsd: liveCapUsd(t.symbol, t.capUsd), refPriceUsd: universe.tokens.find((x: any) => x.symbol === t.symbol).feed.usd, open: ev?.open ?? false, gate: ev?.gate ?? null, keep: ev?.keep ?? null, feeAprPct: ev?.keep.fee_apr_pct ?? null, keptAprPct: ev?.keep.kept_second_half ?? null, keptAprUpperPct: ev?.keep.kept_second_half_upper ?? null, _apr: replayFeeApr(replay.tokens[t.symbol]) ?? -1 };
   })
   .sort((a, b) => b._apr - a._apr)
   .map(({ _apr, ...v }) => v);

@@ -25,6 +25,8 @@ export const vaultV4Abi = parseAbi([
   "function tickLower() view returns (int24)",
   "function tickUpper() view returns (int24)",
   "function poolId() view returns (bytes32)",
+  "function pricePerShare() view returns (uint256)",
+  "function feesEarnedLifetime() view returns (uint256 stockFees, uint256 usdgFees, uint256 valueInUSDG)",
   "function stockIsToken0() view returns (bool)",
   "function health() view returns (uint8 status, uint256 price, uint256 updatedAt, uint160 sqrtOracle, uint160 sqrtTwap, uint160 sqrtSpot)",
   "function rebalance()",
@@ -46,4 +48,9 @@ export const poolAbi = parseAbi([
 export const feedAbi = parseAbi([
   "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
   "function decimals() view returns (uint8)",
+]);
+
+/** The read-only helpers a v4 vault does not carry itself (contracts/src/v4/StockVaultV4Lens.sol, one deployment for every v4 vault; address in VAULT_LENS). */
+export const lensAbi = parseAbi([
+  "function totalValueInUSDG(address vault) view returns (uint256)",
 ]);

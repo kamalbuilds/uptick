@@ -1,9 +1,10 @@
 import { expect, test } from "bun:test";
 import { toEventSelector, toFunctionSelector, type AbiEvent, type AbiFunction } from "viem";
-import { vaultAbi, vaultV4Abi } from "../src/abi";
+import { lensAbi, vaultAbi, vaultV4Abi } from "../src/abi";
 import { factoryAbi } from "../src/registry";
 import compiled from "../../contracts/out/StockVault.sol/StockVault.json";
 import compiledV4 from "../../contracts/out/StockVaultV4.sol/StockVaultV4.json";
+import compiledLens from "../../contracts/out/StockVaultV4Lens.sol/StockVaultV4Lens.json";
 import compiledFactory from "../../contracts/out/VaultFactory.sol/VaultFactory.json";
 
 const sig = (x: AbiEvent | AbiFunction) => `${x.name}(${x.inputs.map((i) => i.type).join(",")})`;
@@ -69,4 +70,9 @@ test("the drift check can fail: a wrong output, a wrong mutability and a missing
   expect(drift([{ ...poke, outputs: [{ type: "uint256" }] }], art)).toEqual(["function poke() outputs differ"]);
   expect(drift([{ ...poke, stateMutability: "view" }], art)).toEqual(["function poke() mutability view vs nonpayable"]);
   expect(drift([{ ...poke, name: "poke2" }], art)).toEqual(["missing function poke2()"]);
+});
+
+test("every fragment of lensAbi matches the compiled StockVaultV4Lens ABI", () => {
+  expect(lensAbi.length).toBeGreaterThan(0);
+  expect(drift(lensAbi as unknown as readonly Frag[], compiledLens.abi as unknown as readonly Frag[])).toEqual([]);
 });

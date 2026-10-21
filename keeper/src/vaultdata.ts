@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { vaultAbi } from "./abi.ts";
+import type { Address } from "viem";
+import { lensAbi, vaultAbi, vaultV4Abi } from "./abi.ts";
 import { feeAprPct, feesInWindow, windowApr, type FeeEvent } from "./apr.ts";
 import { blockTs, boundedLogs, client, retry, snapshot } from "./chain.ts";
 import type { Ticker } from "./config.ts";
@@ -51,16 +52,36 @@ export function ppsHistory(t: Ticker, max = 1000) {
   return readFileSync(f, "utf8").trim().split("\n").filter(Boolean).slice(-max).map((l) => JSON.parse(l));
 }
 
+/** v3 vaults report value and range themselves; a v4 vault's value comes from the lens (VAULT_LENS) and its range from positionOpen/tickLower/tickUpper. */
+async function valueAndRange(t: Ticker): Promise<{ tvl: bigint; range: [number, number] }> {
+  if (t.venue !== "v4") {
+    const [tvl, range] = await Promise.all([
+      retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "totalValueInUSDG" })),
+      retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "currentRange" })),
+    ]);
+    return { tvl, range: [Number(range[0]), Number(range[1])] };
+  }
+  const lens = process.env.VAULT_LENS?.trim() as Address | undefined;
+  if (!lens || !/^0x[0-9a-fA-F]{40}$/.test(lens)) throw new Error(`${t.symbol}: VAULT_LENS (the StockVaultV4Lens address) is required to read a v4 vault's value`);
+  const [tvl, open, lo, hi] = await Promise.all([
+    retry(() => client.readContract({ address: lens, abi: lensAbi, functionName: "totalValueInUSDG", args: [t.vault!] })),
+    retry(() => client.readContract({ address: t.vault!, abi: vaultV4Abi, functionName: "positionOpen" })),
+    retry(() => client.readContract({ address: t.vault!, abi: vaultV4Abi, functionName: "tickLower" })),
+    retry(() => client.readContract({ address: t.vault!, abi: vaultV4Abi, functionName: "tickUpper" })),
+  ]);
+  return { tvl, range: open ? [Number(lo), Number(hi)] : [0, 0] };
+}
+
 export async function onchainVault(t: Ticker) {
   const s = store(t);
-  const [snap, tvl, pps, life, range] = await Promise.all([
+  const [snap, vr, pps, life] = await Promise.all([
     snapshot(t),
-    retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "totalValueInUSDG" })),
-    retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "pricePerShare" })),
-    retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "feesEarnedLifetime" })),
-    retry(() => client.readContract({ address: t.vault!, abi: vaultAbi, functionName: "currentRange" })),
+    valueAndRange(t),
+    retry(() => client.readContract({ address: t.vault!, abi: t.venue === "v4" ? vaultV4Abi : vaultAbi, functionName: "pricePerShare" })),
+    retry(() => client.readContract({ address: t.vault!, abi: t.venue === "v4" ? vaultV4Abi : vaultAbi, functionName: "feesEarnedLifetime" })),
     s.refresh(),
   ]);
+  const tvl = vr.tvl, range = vr.range;
   const tvlUsd = Number(tvl) / 1e6; // totalValueInUSDG is USDG (6 dp)
   const startS = await blockTs(t.deployBlock!);
   const now = snap.ts;
@@ -70,11 +91,11 @@ export async function onchainVault(t: Ticker) {
   const [lo, hi] = [priceFromTick(Number(range[0]), t.stockIsToken0), priceFromTick(Number(range[1]), t.stockIsToken0)].sort((a, b) => a - b);
   const d1 = sum(86400), d7 = sum(7 * 86400);
   return {
-    id: t.id, ticker: t.symbol, source: "onchain" as const, vault: t.vault, pool: t.pool, fee_tier: t.feeTier,
+    id: t.id, ticker: t.symbol, source: "onchain" as const, vault: t.vault, pool: t.venue === "v4" ? t.poolId : t.pool, venue: t.venue, fee_tier: t.feeTier,
     block: Number(snap.block), as_of: snap.ts,
     tvl_usd: tvlUsd,
     fees_lifetime_usd: all,
-    fees_lifetime_view_raw: life.toString(),
+    fees_lifetime_view_raw: (Array.isArray(life) ? life[2] : life).toString(), // a v4 vault returns (stock fees, usdg fees, value in USDG)
     fees_24h_usd: d1.feesUsd, fees_7d_usd: d7.feesUsd,
     fee_apr_pct: { "24h": d1.aprPct, "7d": d7.aprPct, lifetime: feeAprPct(all, tvlUsd, now - startS) },
     fee_apr_basis: "realized FeesCollected/Rebalanced fees, stock leg valued at the current pool price, divided by current TVL, window clamped to vault age",
