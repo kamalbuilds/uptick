@@ -13,3 +13,9 @@ keeper/data/raw/
 .DS_Store
 contracts/lib/
 web/.next/
+docs/WIN-CONDITIONS.md
+__pycache__/
+*.pyc
+*.tsbuildinfo
+brand/x/live/
+.progress/

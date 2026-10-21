@@ -1,0 +1,52 @@
+{
+ "title": "",
+ "h1": {
+  "text": "Put your stock tokens to work.",
+  "font": "Literata, serif",
+  "size": "68px",
+  "weight": "400",
+  "tracking": "-0.6px",
+  "leading": "70.72px",
+  "color": "rgb(233, 235, 236)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(233, 235, 236)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "h2": null,
+ "h3": null,
+ "body": {
+  "text": "Put your stock tokens to work.\nLiquidity vaults for Robinhoo",
+  "font": "\"Hanken Grotesk\", sans-serif",
+  "size": "16px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "normal",
+  "color": "rgb(233, 235, 236)",
+  "bg": "rgb(10, 11, 12)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(233, 235, 236)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": null,
+ "a": null,
+ "button": null,
+ "input": null,
+ "loadedFonts": [
+  "Hanken Grotesk",
+  "Literata"
+ ],
+ "htmlBg": "rgba(0, 0, 0, 0)",
+ "textLen": 278,
+ "height": 500,
+ "url": "file:///Users/kamal/Desktop/arbitrium/stock-vaults-app/brand/x/cards/banner.html",
+ "viewport": [
+  1500,
+  500
+ ],
+ "lumaStddev": 34.9
+}

@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0b0c;--line:#2a2e31;--text:#e9ebec;--mute:#8b9196;--kept:#1fd16b;--warn:#e0a63a;--loss:#e0653a}
+*{box-sizing:border-box;margin:0}
+body{width:1500px;height:500px;background:var(--ink);color:var(--text);font-family:"Hanken Grotesk",sans-serif;position:relative;overflow:hidden}
+.left{position:absolute;left:96px;top:92px;width:640px}
+h1{font-family:Literata,serif;font-weight:400;font-size:68px;line-height:1.04;letter-spacing:-.6px}
+.sub{color:var(--mute);font-size:21px;line-height:1.45;margin-top:22px;max-width:560px}
+.right{position:absolute;right:96px;top:96px;width:560px}
+.cap{color:var(--mute);font-size:16px;letter-spacing:.04em;margin-bottom:18px}
+.row{display:grid;grid-template-columns:130px 1fr 48px;align-items:center;height:58px;border-top:1px solid var(--line)}
+.row:last-of-type{border-bottom:1px solid var(--line)}
+.lbl{font-size:24px}
+.bar{height:16px;border-radius:3px}
+.n{text-align:right;font-size:28px;font-variant-numeric:tabular-nums}
+.foot{margin-top:22px;font-size:19px;color:var(--mute)}
+.foot b{color:var(--kept);font-weight:500}
+</style></head><body>
+<div class="left"><h1>Put your stock tokens to work.</h1>
+<div class="sub">Liquidity vaults for Robinhood Stock Tokens, each one opened, reduced or closed by a replay of the chain's own swaps.</div></div>
+<div class="right"><div class="cap">17 STOCK TOKEN VAULTS, 30-DAY REPLAY</div>
+<div class="row"><div class="lbl">Open</div><div><div class="bar" style="width:14%;background:var(--kept)"></div></div><div class="n" style="color:var(--kept)">2</div></div>
+<div class="row"><div class="lbl">Reduced</div><div><div class="bar" style="width:64%;background:var(--warn)"></div></div><div class="n" style="color:var(--warn)">9</div></div>
+<div class="row"><div class="lbl">Closed</div><div><div class="bar" style="width:43%;background:#4a4f54"></div></div><div class="n" style="color:var(--mute)">6</div></div>
+<div class="foot">AAPL kept <b>+2.7%</b> a year in its weaker half, after informed traders.</div></div>
+</body></html>

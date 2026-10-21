@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0b0c;--panel:#16181a;--line:#2a2e31;--text:#e9ebec;--mute:#8b9196;--kept:#1fd16b;--loss:#e0653a}
+*{box-sizing:border-box;margin:0}
+body{width:1600px;height:900px;background:var(--ink);color:var(--text);font-family:"Hanken Grotesk",sans-serif;padding:88px 120px}
+h1{font-family:Literata,serif;font-weight:400;font-size:58px;line-height:1.08;letter-spacing:-.5px;max-width:1150px}
+h1 b{font-weight:500;color:var(--kept)}
+.sub{color:var(--mute);font-size:22px;margin-top:22px}
+.chart{margin-top:58px;position:relative}
+.row{display:grid;grid-template-columns:230px 1fr 90px;align-items:center;height:62px}
+.lbl{font-size:24px}
+.lbl small{display:block;color:var(--mute);font-size:16px;margin-top:2px}
+.track{position:relative;height:30px}
+.bar{position:absolute;left:0;top:0;height:30px;border-radius:4px}
+.val{text-align:right;font-size:28px;font-variant-numeric:tabular-nums;font-weight:500}
+.grp{font-size:18px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 6px 230px}
+.even{position:absolute;top:0;bottom:0;width:2px;background:#5b6166}
+.even span{position:absolute;top:-28px;left:-40px;width:80px;text-align:center;color:var(--mute);font-size:15px}
+.src{position:absolute;left:120px;bottom:52px;color:var(--mute);font-size:16px}
+.brand{position:absolute;right:120px;bottom:48px;font-size:24px;font-weight:600}
+</style></head><body>
+<h1>Stock LPs earn <b>$7.07</b> per dollar lost on SPCX weekends. In NYSE hours, <span style="color:var(--loss)">$0.78</span>.</h1>
+<div class="sub">Fees earned per $1 lost to informed traders, daily ±2% band, Robinhood Chain</div>
+<div class="chart" id="c"></div>
+<div class="src">5,113,049 swaps replayed, 2026-08-24 to 2026-10-17. 1 hour markout. Below 1.0 the pool pays traders more than it collects.</div>
+<div class="brand">Uptick</div>
+<script>
+const data=[["NVDA",[["NYSE hours",1.21],["Weeknights",1.23],["Weekends",3.83]]],["SPCX",[["NYSE hours",0.78],["Weeknights",3.02],["Weekends",7.07]]]];
+const max=7.5,W=1600-240-230-90-40; const c=document.getElementById('c'); let html='';
+for(const [tok,rows] of data){html+=`<div class="grp">${tok}</div>`;
+ for(const [s,v] of rows){const w=v/max*W, col=v>=1?'var(--kept)':'var(--loss)';
+  html+=`<div class="row"><div class="lbl">${s}</div><div class="track"><div class="bar" style="width:${w}px;background:${col}"></div></div><div class="val" style="color:${col}">${v.toFixed(2)}</div></div>`;}}
+c.innerHTML=html+`<div class="even" style="left:${230+1/max*W}px"><span>break-even</span></div>`;
+</script></body></html>

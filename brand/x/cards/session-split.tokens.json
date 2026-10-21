@@ -1,0 +1,52 @@
+{
+ "title": "",
+ "h1": {
+  "text": "Stock LPs earn $7.07 per dollar lost on SPCX weekends. In NY",
+  "font": "Literata, serif",
+  "size": "58px",
+  "weight": "400",
+  "tracking": "-0.5px",
+  "leading": "62.64px",
+  "color": "rgb(233, 235, 236)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px none rgb(233, 235, 236)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "h2": null,
+ "h3": null,
+ "body": {
+  "text": "Stock LPs earn $7.07 per dollar lost on SPCX weekends. In NY",
+  "font": "\"Hanken Grotesk\", sans-serif",
+  "size": "16px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "normal",
+  "color": "rgb(233, 235, 236)",
+  "bg": "rgb(10, 11, 12)",
+  "radius": "0px",
+  "padding": "88px 120px",
+  "border": "0px none rgb(233, 235, 236)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": null,
+ "a": null,
+ "button": null,
+ "input": null,
+ "loadedFonts": [
+  "Hanken Grotesk",
+  "Literata"
+ ],
+ "htmlBg": "rgba(0, 0, 0, 0)",
+ "textLen": 396,
+ "height": 900,
+ "url": "file:///Users/kamal/Desktop/arbitrium/stock-vaults-app/brand/x/cards/session-split.html",
+ "viewport": [
+  1600,
+  900
+ ],
+ "lumaStddev": 44.5
+}
