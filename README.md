@@ -28,7 +28,7 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 **2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. 46 fork tests run against the real pool, router and tokens, and 14 guards are mutation-tested.[^3]
 
-**3. Keeper and stats API** refresh the evidence and recentre each vault daily on the NYSE calendar (13:35 UTC in EDT, 14:35 UTC in EST). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
+**3. Keeper and stats API** refresh the evidence and recentre each vault once a day after each NYSE session, from 02:00 UTC with a jittered minute (`keeper/src/calendar.ts`). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 
 **4. Pools under a declared cap.** The cap standard (`CappedTakeHook` + `CapRegistry`) lets a hook declare its maximum take and enforces it inside every swap on every router. The vault targets pools without take-capable hooks, or hooks with a registered cap. On a mainnet fork the cap stops 200 of 200 over-cap swaps, accounting matches to the wei, and the cap holds against a nested self-swap.[^4] `UptickHook` is one reference implementation of the standard.
 
@@ -79,7 +79,7 @@ Session-fee and oracle-gap hooks (Fables, SessionFeeHook, Bellswap, ClosingBell)
 | Claim | Number | Source |
 |---|---|---|
 | Swaps replayed | 5.1M over 54 days on NVDA, SPCX, TSLA pools | `spikes/stock-vaults/FINDINGS.md` |
-| NVDA vault fee APR, 30 day replay, daily recentre, 5% band | 40.6% | keeper `/vaults` |
+| NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 94.4% | evidence API `/vaults`, read 2026-10-21 |
 | Hook share of v4 trades on Robinhood Chain | 74.5% | Bitquery |
 | Hooks labelled malicious by 0x | 80% of 84K | 0x |
 | Taken in 49 hours by hooks keeping 5 to 11% while pools quote 0 to 1% | about $1.2M | `docs/research/founder-house/OUTREACH-fomo-gmgn.md` |
