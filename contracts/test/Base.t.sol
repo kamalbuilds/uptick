@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import {ForkPin} from "./ForkPin.sol";
 import {Test, Vm} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -52,10 +53,7 @@ abstract contract Base is Test, Addrs {
     uint80 feedRound;
 
     function setUp() public virtual {
-        uint256 blk = vm.envOr("FORK_BLOCK", uint256(0));
-        string memory url = vm.envOr("FORK_URL", string("robinhood"));
-        if (blk == 0) vm.createSelectFork(url);
-        else vm.createSelectFork(url, blk);
+        ForkPin.select(vm);
         (feedRound,,,,) = IAggregatorV3(FEED).latestRoundData();
         // The live pool trades while tests run: spot can sit tens of bp off its 10-minute TWAP at fork time. Moving
         // past the TWAP window makes the TWAP equal to spot, so every test starts inside the spot-to-TWAP band.

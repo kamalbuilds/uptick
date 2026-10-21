@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import {ForkPin} from "../ForkPin.sol";
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -33,7 +34,7 @@ contract ReReviewPltrTest is Test {
     uint160 sqrt0;
 
     function setUp() public {
-        vm.createSelectFork("robinhood");
+        ForkPin.select(vm);
         (feedRound,,,,) = IAggregatorV3(FEED).latestRoundData();
         vm.warp(vm.getBlockTimestamp() + 11 minutes);
         _setFeed(_price());

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+import {ForkPin} from "./ForkPin.sol";
 import {Test} from "forge-std/Test.sol";
 import {DeployAll} from "../script/DeployAll.s.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
@@ -27,7 +28,7 @@ contract DeployAllTest is Test {
     DeployAll forkScript;
 
     function setUp() public {
-        vm.createSelectFork("robinhood");
+        ForkPin.select(vm);
         vm.setEnv("ANVIL_KEY", vm.toString(uint256(keccak256("deploy-all-test-signer"))));
         vm.setEnv("OWNER", vm.toString(makeAddr("owner")));
         vm.setEnv("KEEPER", vm.toString(makeAddr("keeper")));

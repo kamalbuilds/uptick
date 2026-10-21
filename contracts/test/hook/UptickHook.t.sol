@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import {ForkPin} from "../ForkPin.sol";
 import {Test, Vm, console2} from "forge-std/Test.sol";
 import {MockERC20} from "solmate/src/test/utils/mocks/MockERC20.sol";
 import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
@@ -61,7 +62,7 @@ contract UptickHookTest is Test {
     uint160 initSqrt;
 
     function setUp() public {
-        vm.createSelectFork(RPC);
+        ForkPin.select(vm, RPC);
         require(block.chainid == 4663, "not the 4663 fork");
         require(address(PM).code.length > 20_000, "PoolManager missing");
         require(USDG.code.length > 100 && NVDA.code.length > 100 && FEED.code.length > 100, "tokens missing");
