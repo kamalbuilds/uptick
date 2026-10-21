@@ -46,3 +46,7 @@
 | @geckoterminal | @uptickfi | GeckoTerminal / CoinGecko | queued |  |  |  |  |
 | @dberenzon | @kamalbuilds | investor | queued |  |  |  |  |
 | @tarunchitra | @kamalbuilds | investor | queued |  |  |  |  |
+| @harsagarwal | @kamalbuilds | investor | queued |  |  |  |  |
+| @kaleb0x | @kamalbuilds | investor | queued |  |  |  |  |
+| @franklinbi | @kamalbuilds | investor | queued |  |  |  |  |
+| @giancarlomkts | @kamalbuilds | investor | queued |  |  |  |  |
