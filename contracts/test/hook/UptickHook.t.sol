@@ -20,12 +20,11 @@ import {HookMiner} from "v4-periphery/test/shared/HookMiner.sol";
 import {CapRegistry} from "../../src/hook/CapRegistry.sol";
 import {UptickHook} from "../../src/hook/UptickHook.sol";
 
-/// Runs on the shared local Anvil fork of Robinhood Chain (4663): real PoolManager, real NVDA, USDG
+/// Runs on a fork of Robinhood Chain (4663), pinned by ForkPin: real PoolManager, real NVDA, USDG
 /// and Chainlink NVDA feed. Only the feed's latestRoundData is mocked, to control price and age.
 contract UptickHookTest is Test {
     using PoolIdLibrary for PoolKey;
 
-    string constant RPC = "http://127.0.0.1:8545";
     IPoolManager constant PM = IPoolManager(0x8366a39CC670B4001A1121B8F6A443A643e40951);
     address constant NVDA = 0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC;
     address constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
@@ -62,7 +61,7 @@ contract UptickHookTest is Test {
     uint160 initSqrt;
 
     function setUp() public {
-        ForkPin.select(vm, RPC);
+        ForkPin.select(vm);
         require(block.chainid == 4663, "not the 4663 fork");
         require(address(PM).code.length > 20_000, "PoolManager missing");
         require(USDG.code.length > 100 && NVDA.code.length > 100 && FEED.code.length > 100, "tokens missing");
