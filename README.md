@@ -122,11 +122,11 @@ contracts/   StockVault (ERC-4626), CappedTakeHook, CapRegistry, UptickHook (ref
              implementation), fork tests, invariants, SECURITY.md
 keeper/      evidence refresh, rebalance keeper, NYSE calendar, eligibility rule, stats API
 web/         Next.js app: vaults, tier comparison and session evidence, portfolio
-docs/        ARCHITECTURE.md, PITCH.md, architecture.html
+docs/        ARCHITECTURE.md, DEMO-SCRIPT.md, SUBMISSION.md, architecture.html
 deck/        investor deck (index.html, uptick-deck.pdf)
 ```
 
-Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture.html](docs/architecture.html). Demo: [docs/PITCH.md](docs/PITCH.md).
+Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture.html](docs/architecture.html). Demo: [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md).
 
 [^1]: Holder counts: `docs/research/founder-house/PLATFORM-TRUTH.md`, Stock Tokens table (Blockscout, 2026-10-16).
 [^2]: `spikes/stock-vaults/FINDINGS.md`, `spikes/stock-vaults/logs/session_split.txt`, engine `spikes/stock-vaults/scripts/engine.py`. Window 2026-08-24 to 2026-10-17.
