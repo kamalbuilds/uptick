@@ -2,6 +2,8 @@
 
 Eleven targets from `DIRECTORY-SWEEP.md` and `BEST-IN-CLASS.md`. Every row is `not contacted` until a real reply arrives. A sent DM is not a conversation; the status changes only when a reply URL is logged. Counts live in `EVIDENCE.md`.
 
+Handles and named owners checked on 2026-10-21 are in `TARGETS.md`, with a drafted message per project in `OUTREACH-BATCH-2026-10-21.md`. Where the two differ, `TARGETS.md` is current: StonkBrokers is reached through @ClutchMarkets and its founder @OxSimpleFarmer, and Saffron is @saffron.
+
 | Project | URL | Integration ask that benefits them | Contact channel | Status |
 |---|---|---|---|---|
 | Lit Hub | https://github.com/techcobain/lit_hub_ecosystem | List Uptick under Data and Yield as a product that uses Lighter RH weekend marks | GitHub PR | not contacted |
