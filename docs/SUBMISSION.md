@@ -6,7 +6,7 @@ App https://uptick-fi.pages.dev. Launch film https://x.com/uptickfi/status/21125
 
 ## 1. What Uptick does
 
-Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. 12 vaults take deposits, 3 open and 9 reduced. The pools behind the 17 vaults paid liquidity providers $1.1M in fees over the same 30 days.
+Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. 12 vaults launch first, 3 open and 9 reduced. The pools behind the 17 vaults paid liquidity providers $1.1M in fees over the same 30 days.
 
 ## 2. The holder and the ask
 

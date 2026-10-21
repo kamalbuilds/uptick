@@ -9,12 +9,12 @@ Setup: one browser window, six tabs in order: `/`, `/vaults`, `/vault/aapl`, `/v
 ## 0:00 to 0:20 Launch film
 
 Screen: the launch film, 20 seconds.
-Say: "Which of your stock tokens can actually earn? We replayed 3,059,881 Robinhood Chain swaps, ranked 17 Stock Tokens by what a liquidity provider kept, and 12 take deposits."
+Say: "Which of your stock tokens can actually earn? We replayed 3,059,881 Robinhood Chain swaps, ranked 17 Stock Tokens by what a liquidity provider kept, and 12 vaults launch first."
 
 ## 0:20 to 0:50 Home, `/`
 
 Screen: the headline "Which of your stock tokens can earn, and how much you would keep."
-Point at the four figures: Taking deposits 12 of 17 (3 open, 9 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $1.1M on the 17 vault pools, Stock Tokens tracked 17.
+Point at the four figures: Vaults at launch 12 (3 open, 9 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $1.1M on the 17 vault pools, Stock Tokens tracked 17.
 Say: "Every vault sits behind one of three doors. Open takes any amount. Reduced takes up to $25,000 a deposit. Closed takes none. The door comes from the replay, not from us."
 Point at the ticker: "Prices are Chainlink, read on Robinhood Chain 4663."
 

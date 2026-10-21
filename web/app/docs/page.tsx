@@ -19,7 +19,7 @@ const symbolsIn = (state: GateState) => VAULTS.filter((v) => v.gate.state === st
 export const metadata: Metadata = {
   title: "Docs | Uptick",
   description:
-    "How Uptick vaults hold Stock Tokens, earn Uniswap v3 and v4 fees, and use a 30-day replay to decide which vaults take deposits.",
+    "How Uptick vaults hold Stock Tokens, earn Uniswap v3 and v4 fees, and use a 30-day replay to decide which vaults open.",
 };
 
 export default function DocsPage() {

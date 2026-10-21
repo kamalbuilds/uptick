@@ -6,8 +6,8 @@ export type TermId = "taking" | "kept" | "worstHalf" | "open" | "reduced" | "clo
 /** One plain sentence or two for each word the list leans on. Every number is the gate's own: the -20% floor and the per-deposit cap. */
 export const TERMS: Record<TermId, { label: string; text: string }> = {
   taking: {
-    label: "Taking deposits",
-    text: "Open and reduced vaults both take deposits. A closed vault does not.",
+    label: "Vaults at launch",
+    text: "Open and reduced vaults clear the replay gate and launch first. A closed vault stays shut until its numbers recover.",
   },
   kept: {
     label: "Kept",
