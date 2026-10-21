@@ -44,3 +44,5 @@
 | @arrakisfinance | @uptickfi | Arrakis | queued |  |  |  |  |
 | @vnovakovski | @kamalbuilds | Lighter (Robinhood Chain perps) | queued |  |  |  |  |
 | @geckoterminal | @uptickfi | GeckoTerminal / CoinGecko | queued |  |  |  |  |
+| @dberenzon | @kamalbuilds | investor | queued |  |  |  |  |
+| @tarunchitra | @kamalbuilds | investor | queued |  |  |  |  |
