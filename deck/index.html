@@ -3,299 +3,378 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Uptick: investor deck</title>
+<title>Uptick: put your stock tokens to work</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;900&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,500&display=swap" rel="stylesheet">
 <style>
-:root{--lime:#9fe870;--lime-pale:#e2f6d5;--ink:#0e0f0c;--deep:#163300;--body:#454745;--mute:#868685;--sage:#e8ebe6;--white:#fff;--cyan:#38c8ff;--orange:#ffc091}
+/* Hallmark · system-managed by web/DESIGN.md (Uptick-ink-and-hairline) · macrostructure: Ruled Column deck, one serif verdict per slide · tone: austere
+   pre-emit critique: P5 H4 E4 S5 R5 V4 */
+:root{
+  --canvas:#0a0b0c;--panel:#16181a;--panel-raised:#1f2124;--hairline:#2a2e31;--border:#42494d;
+  --text:#f4f5f5;--mute:#919fa6;--soft:#c3cbd0;--bar:#9aa6ad;--kept:#1fd16b;--kept-dim:#0f3d24;--loss:#ec5e2a;--loss-dim:#3a1d12;
+  --caution:#f2b84b;--caution-dim:#352a12;--closed:#6b747a;
+  --font-display:Literata,Georgia,serif;--font-sans:"Hanken Grotesk",system-ui,sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#000;overflow:hidden;font-family:Figtree,system-ui,sans-serif;color:var(--ink)}
+html,body{height:100%;background:#000;overflow:hidden;font-family:var(--font-sans);color:var(--text);font-variant-numeric:tabular-nums}
 #viewport{position:fixed;inset:0;display:grid;place-items:center}
-.slide{position:absolute;width:1920px;height:1080px;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center;background:var(--white);padding:84px 112px 96px;display:none;overflow:hidden}
+.slide{position:absolute;width:1920px;height:1080px;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center;background:var(--canvas);padding:92px 112px 96px;display:none;overflow:hidden}
 .slide.on{display:block}
-.slide.dark{background:var(--ink);color:var(--white)}
-.slide.green{background:var(--lime);color:var(--ink)}
-.slide.sage{background:var(--sage)}
-h1,h2,.num{font-family:Archivo,Impact,sans-serif;font-weight:900;letter-spacing:-.01em}
-h2{font-size:96px;line-height:.9;max-width:1500px}
-h2 em{font-style:normal;background:var(--lime);padding:0 .12em;border-radius:12px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.dark h2 em{background:none;color:var(--lime);padding:0}
-.green h2 em{background:var(--ink);color:var(--lime)}
-p.lead{font-size:34px;line-height:1.3;color:var(--body);max-width:1100px;margin-top:36px}
-.dark p.lead{color:#c9ccc6}
-.fn{position:absolute;left:112px;right:240px;bottom:34px;font-size:15px;line-height:1.35;color:var(--mute)}
-.dark .fn{color:#8a8d86}
-.fn b{font-weight:600;color:inherit}
-sup{font-size:.45em;font-weight:600;vertical-align:super;margin-left:2px}
-.card{background:var(--sage);border-radius:24px;padding:36px}
-.card.g{background:var(--lime-pale)}
-.card.d{background:var(--ink);color:var(--lime)}
-.card.w{background:#fff;border:2px solid var(--ink)}
-.num{font-size:150px;line-height:.85}
-.lab{font-size:25px;line-height:1.3;margin-top:16px;color:var(--body)}
-.d .lab{color:#c9ccc6}
-.k{font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
-.row{display:flex;gap:32px}
-/* week strip */
-.week{display:grid;grid-template-columns:repeat(24,1fr);grid-auto-rows:1fr;gap:5px}
-.week i{display:block;border-radius:5px;background:#2a2c27}
-.week i.o{background:var(--lime)}
-.week i.h{background:linear-gradient(90deg,#2a2c27 50%,var(--lime) 50%)}
-.light .week i{background:#d5d9d0}
-.light .week i.o{background:var(--ink)}
-.light .week i.h{background:linear-gradient(90deg,#d5d9d0 50%,var(--ink) 50%)}
-.daylab{display:grid;grid-template-rows:repeat(7,1fr);font-size:18px;color:var(--mute);padding-right:14px}
-/* nav */
-#ctr{position:fixed;right:28px;bottom:20px;font:600 16px Figtree,sans-serif;color:#fff;mix-blend-mode:difference;z-index:9;letter-spacing:.08em}
+.v{font-family:var(--font-display);font-weight:400;letter-spacing:-.022em;line-height:1.08;color:var(--text);font-style:normal}
+.kept{color:var(--kept)}
+.loss{color:var(--loss)}
+.src{position:absolute;left:112px;right:112px;bottom:38px;font-size:18px;line-height:1.35;color:var(--mute);letter-spacing:-.005em}
+.led{border-top:1px solid var(--hairline)}
+.led>div{border-bottom:1px solid var(--hairline);padding:22px 0}
+.t{font-size:30px;line-height:1.3;letter-spacing:-.01em;font-weight:500}
+.p{font-size:26px;line-height:1.38;color:var(--mute);letter-spacing:-.005em}
+.p b{color:var(--text);font-weight:500}
+.fig{font-size:44px;line-height:1;font-weight:500;letter-spacing:-.02em}
+.chip{display:inline-block;font-size:22px;font-weight:500;line-height:1;padding:7px 18px;border-radius:9999px}
+.chip.o{color:var(--kept);background:var(--kept-dim)}
+.chip.r{color:var(--caution);background:var(--caution-dim)}
+.chip.c{color:var(--soft);background:var(--hairline)}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.sum>div{padding:26px 28px 26px 0}
+.sum>div+div{padding-left:32px;border-left:1px solid var(--hairline)}
+.sum .l{font-size:22px;color:var(--mute);line-height:1.3}
+.sum .n{font-size:48px;font-weight:500;line-height:1.1;margin:10px 0 8px;letter-spacing:-.02em}
+.sum .n small{font-size:26px;color:var(--mute);font-weight:400;margin-left:6px}
+.sum .w{font-size:22px;color:var(--mute);line-height:1.3}
+figure.shot{border:1px solid var(--hairline);border-radius:8px;overflow:hidden;background:var(--canvas)}
+figure.shot img{display:block}
+table{border-collapse:collapse;width:100%}
+th{font-size:22px;font-weight:400;color:var(--mute);text-align:left;padding:0 24px 16px 0;border-bottom:1px solid var(--border)}
+td{font-size:26px;line-height:1.3;padding:20px 24px 20px 0;border-bottom:1px solid var(--hairline);vertical-align:top;letter-spacing:-.005em}
+td.n{font-weight:600;font-size:28px;white-space:nowrap}
+tr.us td{background:var(--panel)}
+tr.us td:first-child{padding-left:20px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:26px 30px}
+.code{font-size:25px;line-height:1.5;color:var(--text);letter-spacing:-.005em;white-space:pre-wrap}
+.r2{display:grid;grid-template-columns:150px 1fr;column-gap:16px}
+.ch{display:grid;grid-template-columns:100px 96px 520px 150px 140px;align-items:center}
+.ch .hd{white-space:nowrap;font-size:20px;color:var(--mute);height:44px;display:flex;align-items:flex-end;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.ch .c{height:41px;border-bottom:1px solid var(--hairline);display:flex;align-items:center;font-size:24px}
+.ch .s{font-weight:600}
+.ch .band{color:var(--mute)}
+.ch .val{justify-content:flex-end;padding-right:22px;font-weight:500}
+.ch .bar{position:relative}
+.ch .bar i{position:absolute;top:13px;height:15px;border-radius:2px}
+.ch .bar b{position:absolute;top:0;bottom:0;width:1px;background:var(--border)}
+.ch .bar b.f{background:var(--closed)}
+.vbar{position:relative;height:48px}
+.vbar i{position:absolute;left:0;top:0;height:48px;border-radius:3px}
+.vbar span{position:absolute;top:9px;font-size:26px;font-weight:500;white-space:nowrap}
+#ctr{position:fixed;right:28px;bottom:18px;font:500 15px var(--font-sans);color:var(--mute);z-index:9;letter-spacing:.02em}
 @media print{
  @page{size:1920px 1080px;margin:0}
- html,body{overflow:visible;height:auto;background:#fff}
+ html,body{overflow:visible;height:auto;background:var(--canvas)}
  #viewport{position:static;display:block}
  .slide{display:block;position:relative;left:0;top:0;transform:none;page-break-after:always;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact}
  #ctr{display:none}
 }
-.fill{border:3px dashed var(--ink);border-radius:24px;padding:36px;background:repeating-linear-gradient(135deg,#fff 0 14px,#f4f6f1 14px 28px)}
-table{border-collapse:collapse;width:100%}
-td,th{text-align:left;padding:18px 20px;font-size:26px;border-bottom:2px solid var(--ink)}
-th{font-size:19px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);font-weight:600}
-.yes{font-family:Archivo;font-weight:900;color:var(--deep);background:var(--lime);border-radius:99px;padding:4px 18px;font-size:22px}
-.node{background:#fff;border:3px solid var(--ink);border-radius:20px;padding:20px 26px;font-size:26px;font-weight:600;line-height:1.2}
-.node small{display:block;font-weight:400;font-size:20px;color:var(--body);margin-top:6px}
-.node.l{background:var(--lime)}
-.node.d{background:var(--ink);color:var(--lime);border-color:var(--ink)}
-.node.d small{color:#c9ccc6}
 </style>
 </head>
 <body>
 <div id="viewport">
 
-<!-- 1 -->
-<section class="slide dark" data-t="Title">
-  <div class="k" style="color:var(--lime)">Robinhood Chain &middot; chain 4663</div>
-  <h1 style="font-size:430px;line-height:.8;color:var(--lime);margin-top:30px;margin-left:-12px">Uptick</h1>
-  <h2 style="font-size:88px;line-height:1;margin-top:40px;color:var(--canvas,#fff)">Put your stock tokens to work.</h2>
-  <p style="font-size:40px;line-height:1.15;max-width:1450px;margin-top:24px;font-weight:600">Deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.<sup>1</sup></p>
-  <div class="week" style="position:absolute;left:112px;right:112px;bottom:92px;height:150px;grid-template-columns:repeat(24,1fr);grid-template-rows:repeat(7,1fr);grid-auto-flow:row" id="w1"></div>
-  <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md. Strip: one week, 7 rows by 24 hours, NYSE regular session (Mon to Fri, 09:30 to 16:00 ET) in lime.</div>
+<!-- 1 TITLE -->
+<section class="slide" data-t="Title">
+<!-- notes:
+Open on the one sentence. The four figures are the live app's summary row, read 2026-10-21 from https://uptick-fi.pages.dev (home): 11 of 17 taking deposits (2 open, 9 reduced), 2.7M swaps replayed over the 30 days to 2026-10-17, $996.6K of fees paid to liquidity providers on the 17 vault pools, 17 Stock Tokens tracked. Gate table: README.md (generated from web/lib/vault-universe.json). Chain: Robinhood Chain 4663, an Arbitrum Orbit chain.
+-->
+  <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:38px;font-weight:600;letter-spacing:-.02em">Uptick</div><div class="p" style="font-size:24px">Robinhood Chain 4663</div></div>
+  <h1 class="v" style="font-size:158px;line-height:1.0;letter-spacing:-.034em;margin-top:92px;max-width:1700px">Put your stock<br>tokens to work.</h1>
+  <p class="p" style="font-size:34px;line-height:1.32;max-width:1380px;margin-top:44px;color:var(--soft)">Deposit AAPL, GOOGL, NVDA and 14 more Stock Tokens and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where past swaps say it holds up.</p>
+  <div class="sum" style="position:absolute;left:112px;right:112px;bottom:104px">
+    <div><div class="l">Taking deposits</div><div class="n">11<small>of 17</small></div><div class="w">2 open, 9 reduced</div></div>
+    <div><div class="l">Swaps replayed</div><div class="n">2.7M</div><div class="w">30 days to 2026-10-17</div></div>
+    <div><div class="l">Fees paid to liquidity providers</div><div class="n">$996.6K</div><div class="w">On the 17 vault pools, 30 days</div></div>
+    <div><div class="l">Stock Tokens tracked</div><div class="n">17</div><div class="w">Chainlink priced, USDG pools</div></div>
+  </div>
+  <div class="src">Source: live app, uptick-fi.pages.dev, summary row on the home page.</div>
 </section>
 
-<!-- 2 -->
-<section class="slide light" data-t="Problem">
-  <h2>Stock Tokens trade all week. The NYSE price exists <em>6.5 hours</em> a day.</h2>
-  <div class="row" style="margin-top:64px;align-items:stretch">
-    <div style="flex:1.45">
-      <div style="display:flex;gap:10px;height:330px">
-        <div class="daylab"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
-        <div class="week" id="w2" style="flex:1;grid-template-rows:repeat(7,1fr)"></div>
+<!-- 2 PROBLEM -->
+<section class="slide" data-t="Problem">
+<!-- notes:
+Four quotes, verbatim, from gtm/uptick/DEMAND.md (each carries its URL there). Nibel_eth 2026-10-11 https://x.com/Nibel_eth/status/2109362739504435283. WazzCrypto 2026-10-15 https://x.com/WazzCrypto/status/2110798586254344623. JackNomadsGOD 2026-10-13 https://x.com/JackNomadsGOD/status/2110043007349370881. u/SolBrothers_ on r/solana 2026-09-14 https://www.reddit.com/r/solana/comments/1wg6c93/ (a live Kraken and Kamino product on another chain). Holder count: docs/research/founder-house/PLATFORM-TRUTH.md, Stock Tokens table, Blockscout 2026-10-16 (NVDA 189,012 holders; README.md also cites 114,550 SPCX holders).
+-->
+  <div style="display:grid;grid-template-columns:600px 1fr;column-gap:96px">
+    <div>
+      <h2 class="v" style="font-size:72px">Holders ask for yield on the stock they already hold.</h2>
+      <div style="margin-top:56px;border-top:1px solid var(--hairline);padding-top:28px">
+        <div class="fig">189,012</div>
+        <div class="p" style="margin-top:12px">wallets hold NVDA on Robinhood Chain. The tokens sit in wallets and earn nothing.</div>
       </div>
-      <p style="font-size:24px;color:var(--body);margin-top:20px">The dark cells are the NYSE session. The other 81% of the week's hours have no equity price discovery.<sup>2</sup></p>
-    </div>
-    <div style="flex:1;display:flex;flex-direction:column;gap:28px">
-      <div class="card d"><div class="num">78%</div><div class="lab">of Stock Token flow arrives outside NYSE regular hours.<sup>3</sup></div></div>
-      <div class="card"><div class="lab" style="margin:0;font-size:30px;color:var(--ink)">Holders cannot see which pool, fee tier and hour pays liquidity providers best. The chain's swap history can.<sup>1</sup></div></div>
-    </div>
-  </div>
-  <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md. [2] derived: 5 days x 6.5 h = 32.5 of 168 hours (19%). [3] docs/research/founder-house/PLATFORM-TRUTH.md, verdict line 3 and Gap 3 (78%, interval 69 to 85).</div>
-</section>
-
-<!-- 3 -->
-<section class="slide green" data-t="Insight">
-  <h2>Weekends pay <em>$3.94 to $33.27</em> per $1 lost. NYSE hours pay $1.03 to $1.35.<sup>1</sup></h2>
-  <div style="margin-top:56px;position:relative;height:430px">
-    <div style="position:absolute;left:260px;right:60px;top:0;bottom:46px">
-      <div style="position:absolute;left:2.5%;top:-10px;bottom:0;border-left:4px dashed var(--ink)"></div>
-      <div style="position:absolute;left:calc(2.5% + 12px);top:-14px;font-size:20px;font-weight:600">$1 earned = $1 lost</div>
-      <!-- scale 0..40 => 0..100% ; 1 => 2.5% -->
-      <div class="bar" style="top:50px"><span style="left:2.575%;width:0.8%"></span></div>
-      <div class="bar" style="top:170px"><span style="left:3.25%;width:6.5%"></span></div>
-      <div class="bar" style="top:290px"><span style="left:9.85%;width:73.3%"></span></div>
-      <div style="position:absolute;left:0;right:0;bottom:-46px;display:flex;justify-content:space-between;font-size:20px;font-weight:600"><span>0</span><span>10</span><span>20</span><span>30</span><span>40</span></div>
-    </div>
-    <div style="position:absolute;left:0;top:56px;font:900 40px Archivo">NYSE hours<div style="font:400 24px Figtree;margin-top:4px">1.03 to 1.35</div></div>
-    <div style="position:absolute;left:0;top:176px;font:900 40px Archivo">Weeknights<div style="font:400 24px Figtree;margin-top:4px">1.30 to 3.90</div></div>
-    <div style="position:absolute;left:0;top:296px;font:900 40px Archivo">Weekends<div style="font:400 24px Figtree;margin-top:4px">3.94 to 33.27</div></div>
-  </div>
-  <style>.bar{position:absolute;left:0;right:0;height:78px}.bar span{position:absolute;top:0;bottom:0;background:var(--ink);border-radius:14px;min-width:20px}</style>
-  <p style="position:absolute;left:112px;right:112px;bottom:92px;font-size:28px;font-weight:600">Pool and fee tier move the number as much as the clock does. Uptick's evidence engine measures it per token and the vault deposits where it is best.<sup>1</sup></p>
-  <div class="fn" style="color:#2c4a14"><b>Sources.</b> [1] spikes/stock-vaults/FINDINGS.md and stock-vaults-app/README.md. Fee earned per $1 lost to informed traders (1 hour markout), static &plusmn;2% vault, NVDA, SPCX and TSLA pools, 5.1M swaps, 2026-08-24 to 10-17. Range ends are per-pool values: NYSE 1.03 (SPCX) to 1.35 (TSLA 0.30%); weeknights 1.30 (NVDA) to 3.90 (SPCX); weekends 3.94 (NVDA) to 33.27 (TSLA); pooled 1.16, 2.74 and 13.64.</div>
-</section>
-
-<!-- 4 -->
-<section class="slide sage" data-t="Product">
-  <h2>One click, into the pool the <em>evidence</em> picks.</h2>
-  <div class="row" style="margin-top:52px;gap:36px;align-items:flex-start">
-    <div style="width:430px;display:flex;flex-direction:column;gap:22px">
-      <div class="card w" style="padding:26px"><div class="k">Evidence engine</div><div style="font-size:27px;line-height:1.25;margin-top:8px">Replays every swap on every USDG pool and tier, and picks the best.<sup>1</sup></div></div>
-      <div class="card w" style="padding:26px"><div class="k">Vault</div><div style="font-size:27px;line-height:1.25;margin-top:8px">ERC-4626 per Stock Token. Deposits into the pick, recentred daily.<sup>1</sup></div></div>
-      <div class="card w" style="padding:26px"><div class="k">App</div><div style="font-size:27px;line-height:1.25;margin-top:8px">Tier comparison, deposit, redeem, portfolio.<sup>1</sup></div></div>
-    </div>
-    <div style="width:560px;height:660px;overflow:hidden;border-radius:20px;border:3px solid var(--ink);background:#fff"><img src="img/home-1440.png" alt="Uptick home" style="width:100%;display:block"></div>
-    <div style="width:560px;height:660px;overflow:hidden;border-radius:20px;border:3px solid var(--ink);background:#fff"><img src="img/vault-nvda-1440.png" alt="Uptick NVDA vault" style="width:100%;display:block"></div>
-  </div>
-  <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md, docs/ARCHITECTURE.md. Screens: web/screens/home-1440.png and vault-nvda-1440.png, the running web app (top of page shown).</div>
-</section>
-
-<!-- 5 -->
-<section class="slide light" data-t="How it works">
-  <h2>An engine that <em>measures</em> the pools. A vault that <em>collects</em> the fees.</h2>
-  <div style="margin-top:54px;display:grid;grid-template-columns:1fr 1fr;gap:40px">
-    <div class="card" style="padding:32px">
-      <div class="k" style="color:var(--ink)">Evidence engine &middot; cap standard</div>
-      <div style="display:flex;align-items:center;gap:18px;margin-top:22px">
-        <div class="node">PoolManager<small>0x8366...0951<br>every swap</small></div><span style="font-size:38px">&rarr;</span>
-        <div class="node d">Evidence engine<small>fee per $ of<br>1h markout<br>pool and tier pick</small></div>
+      <div style="margin-top:36px;border-top:1px solid var(--hairline);padding-top:28px">
+        <div class="fig">114,550</div>
+        <div class="p" style="margin-top:12px">wallets hold SPCX on the same chain.</div>
       </div>
-      <ol style="font-size:25px;line-height:1.4;margin:26px 0 0 28px;color:var(--ink)">
-        <li>Replays every swap on every USDG pool and fee tier, split by session.</li>
-        <li>Selects the pool and tier with the best out-of-sample result; the keeper refreshes it daily.</li>
-        <li>Pools sit under the cap standard: <b>TakeExceedsCap</b> reverts any take above a hook's declared maximum, on every router.<sup>1</sup></li>
-      </ol>
     </div>
-    <div class="card g" style="padding:32px">
-      <div class="k" style="color:var(--deep)">Vault layer &middot; ERC-4626</div>
-      <div style="display:flex;align-items:center;gap:18px;margin-top:22px">
-        <div class="node">Holder<small>deposit NVDA</small></div><span style="font-size:38px">&rarr;</span>
-        <div class="node l">StockVault<small>shares at NAV</small></div><span style="font-size:38px">&rarr;</span>
-        <div class="node">Selected pool<small>NVDA / USDG<br>position</small></div>
+    <div class="led" style="margin-top:6px">
+      <div><div class="t" style="font-weight:400;font-size:37px;line-height:1.28">"borrow/lend markets, where users can get yield by lending stock or pay yield by shorting stock"</div><div class="p" style="font-size:22px;margin-top:10px">@Nibel_eth, X, 2026-10-11</div></div>
+      <div><div class="t" style="font-weight:400;font-size:37px;line-height:1.28">"tokenized equities like xStocks need to plug directly into defi lending markets so users can earn yield on SPYx or NVDAx while holding them"</div><div class="p" style="font-size:22px;margin-top:10px">@JackNomadsGOD, X, 2026-10-13</div></div>
+      <div><div class="t" style="font-weight:400;font-size:37px;line-height:1.28">"I'd have been massively profitable on RH chain if I had stuck to LP'ing tokenized stocks"</div><div class="p" style="font-size:22px;margin-top:10px">@WazzCrypto, X, 2026-10-15</div></div>
+      <div><div class="t" style="font-weight:400;font-size:37px;line-height:1.28">"Clients holding SPYx, QQQx or NVDAx can deposit them and earn yield in the same asset while keeping market exposure."</div><div class="p" style="font-size:22px;margin-top:10px">u/SolBrothers_, r/solana, 2026-09-14, on a live product on another chain</div></div>
+    </div>
+  </div>
+  <div class="src">Source: gtm/uptick/DEMAND.md, verbatim. Holder count: Blockscout, 2026-10-16.</div>
+</section>
+
+<!-- 3 THREE DOORS -->
+<section class="slide" data-t="What Uptick does">
+<!-- notes:
+Door counts and rules from the live app home page (read 2026-10-21): 2 open, 9 reduced, 6 closed; "Open takes any amount. Reduced takes up to $25,000 a deposit, or the vault's size if smaller." Closed rule: the weaker half kept less than the -20% floor. The picture is a crop of https://uptick-fi.pages.dev/ captured with ui-craft refshot.py in the deepsurge profile, wallet header cropped out. Exit in kind: contracts/SECURITY.md, row redeemInKind: no oracle, no swap, no pause, always open.
+-->
+  <div style="display:grid;grid-template-columns:720px 860px;column-gap:116px;align-items:start">
+    <div>
+      <h2 class="v" style="font-size:72px">Every vault sits behind one of three doors.</h2>
+      <div class="led" style="margin-top:52px">
+        <div class="r2" style="grid-template-columns:150px 1fr;align-items:baseline"><span class="chip o">Open</span><div><div class="t">2 vaults take any amount</div><div class="p" style="font-size:23px;margin-top:4px">AAPL and GOOGL kept money in both halves of the replay.</div></div></div>
+        <div class="r2" style="grid-template-columns:150px 1fr;align-items:baseline"><span class="chip r">Reduced</span><div><div class="t">9 vaults take up to $25,000 a deposit</div><div class="p" style="font-size:23px;margin-top:4px">The weaker half sits between -20% and break-even.</div></div></div>
+        <div class="r2" style="grid-template-columns:150px 1fr;align-items:baseline"><span class="chip c">Closed</span><div><div class="t">6 vaults take none</div><div class="p" style="font-size:23px;margin-top:4px">The weaker half kept less than the -20% floor.</div></div></div>
       </div>
-      <ol style="font-size:25px;line-height:1.4;margin:26px 0 0 28px;color:var(--ink)">
-        <li>Every value-in and value-out passes an oracle gate: Chainlink fresh, TWAP and spot within bounds.</li>
-        <li>Keeper recentres at 02:00 UTC after each NYSE session, after an <b>eth_call</b> simulation passes.</li>
-        <li><b>redeemInKind</b> pays both tokens with no oracle, no swap, no pause.<sup>1</sup></li>
-      </ol>
+      <p class="p" style="margin-top:40px;color:var(--soft)"><b>Exit in kind is always open.</b> Both tokens come back, with no oracle, no swap and no pause in the way.</p>
     </div>
+    <figure class="shot"><img src="img/live-vaults.png" width="860" height="760" alt="The Uptick vault list: AAPL and GOOGL open, nine reduced, with each token's kept figure against the minus 20 percent floor"></figure>
   </div>
-  <div class="fn"><b>Sources.</b> [1] stock-vaults-app/docs/ARCHITECTURE.md (components, data flow per swap and per deposit). Interactive diagram: docs/architecture.html.</div>
+  <div class="src">Source: live app, uptick-fi.pages.dev, vault list as served 2026-10-21. contracts/SECURITY.md for exit in kind.</div>
 </section>
 
-<!-- 6 -->
-<section class="slide dark" data-t="Proof">
-  <h2>The cap holds on a mainnet fork: <em>200 of 200</em> over-cap swaps revert.<sup>1</sup></h2>
-  <div class="row" style="margin-top:56px;gap:28px">
-    <div class="card" style="flex:1;background:#1b1d18"><div class="num" style="color:var(--lime);font-size:120px">0 wei</div><div class="lab">take accounting vs a no-hook pool, per leg, 64 swaps per shape<sup>1</sup></div></div>
-    <div class="card" style="flex:1;background:#1b1d18"><div class="num" style="color:var(--lime);font-size:120px">2 of 2</div><div class="lab">nested self-swap directions blocked with NestedStateChange<sup>1</sup></div></div>
-    <div class="card" style="flex:1;background:#1b1d18"><div class="num" style="color:var(--lime);font-size:120px">~25k</div><div class="lab">gas added per swap by the cap<sup>1</sup></div></div>
-    <div class="card" style="flex:1;background:#1b1d18"><div class="num" style="color:var(--lime);font-size:120px">5.1M</div><div class="lab">swaps replayed over 54 days on NVDA, SPCX and TSLA pools<sup>2</sup></div></div>
-  </div>
-  <div class="row" style="margin-top:28px;gap:28px;align-items:stretch">
-    <div style="flex:1.2;background:#000;border-radius:20px;padding:30px 34px;font:500 24px/1.5 ui-monospace,Menlo,monospace;color:#c9ccc6">
-      <span style="color:#8a8d86">$ forge test  # fork of chain 4663</span><br>
-      cap 250, 3% hook : <span style="color:var(--lime)">200/200 revert TakeExceedsCap</span><br>
-      cap 300, 3% hook : <span style="color:var(--lime)">200/200 pass</span><br>
-      3.01% under cap 300 : reverts 60/60<br>
-      2.99% under cap 300 : passes 60/60<br>
-      delete the cap revert : tests go red; restore : green
+<!-- 4 SESSION FINDING -->
+<section class="slide" data-t="Evidence: sessions">
+<!-- notes:
+Session table: README.md "The insight" and spikes/stock-vaults/FINDINGS.md. Fee earned per $1 lost to informed traders (1 hour markout), static band, NVDA, SPCX and TSLA pools, 5.1M swaps, 2026-08-24 to 2026-10-17. Range ends are per-pool: NYSE 1.03 to 1.35, weeknights 1.30 to 3.90, weekends 3.94 to 33.27. Pooled: weekends 13.64, weeknights 2.74, NYSE 1.16; the weekend ratio beats NYSE in 22 of 23 pool-weeks. The engine drops its own ideas: spikes/stock-vaults/FINDINGS.md, the hours-aware strategy met its bar on 0 of 3 tokens and random session labels beat the real schedule in 64 of 64 cells. spikes/offchain-signals/FINDINGS.md, 12 signals (Hyperliquid perp, CoinGlass open interest and funding, price gaps) on NVDA and SPCX, none clears the bar of 40% of loss in the top 20% of hours against the shuffled control.
+-->
+  <h2 class="v" style="font-size:72px;max-width:1560px">A weekend pays $13.64 in fees for every $1 lost to fast traders. NYSE hours pay $1.16.</h2>
+  <div style="position:relative;margin-top:64px;height:372px">
+    <div style="position:absolute;left:0;top:0;width:300px"><div class="t">NYSE hours</div><div class="p" style="font-size:23px">$1.03 to $1.35</div></div>
+    <div style="position:absolute;left:0;top:140px;width:300px"><div class="t">Weeknights</div><div class="p" style="font-size:23px">$1.30 to $3.90</div></div>
+    <div style="position:absolute;left:0;top:280px;width:300px"><div class="t">Weekends</div><div class="p" style="font-size:23px">$3.94 to $33.27</div></div>
+    <div style="position:absolute;left:320px;top:0;width:1296px;height:372px;white-space:nowrap">
+      <div style="position:absolute;left:0;top:-6px;bottom:-6px;width:1px;background:var(--border)"></div>
+      <div style="position:absolute;left:38px;top:8px;width:13px;height:44px;background:var(--bar);border-radius:3px"></div>
+      <div style="position:absolute;left:48px;top:148px;width:96px;height:44px;background:var(--bar);border-radius:3px"></div>
+      <div style="position:absolute;left:146px;top:288px;width:1074px;height:44px;background:var(--text);border-radius:3px"></div>
+      <div style="position:absolute;left:1000px;width:200px;text-align:right;top:296px;font-size:26px;font-weight:600;white-space:nowrap;color:var(--canvas)">13.64 pooled</div>
+      <div style="position:absolute;left:68px;top:12px;font-size:23px;color:var(--mute)">1.16 pooled</div>
+      <div style="position:absolute;left:162px;top:152px;font-size:23px;color:var(--mute)">2.74 pooled</div>
     </div>
-    <div class="card" style="flex:.8;background:var(--lime);color:var(--ink)"><div class="num" style="font-size:96px">40.9%</div><div class="lab" style="color:var(--ink)">NVDA vault fee APR, 30 day replay, daily recentre, 5% band<sup>3</sup></div></div>
   </div>
-  <div class="fn"><b>Sources.</b> [1] spikes/capped-hooks/FINDINGS.md (verdict table, mutation run, gas table). [2] spikes/stock-vaults/FINDINGS.md. [3] stock-vaults-app/README.md, Evidence table (keeper /vaults).</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:96px;margin-top:44px;border-top:1px solid var(--hairline);padding-top:30px">
+    <div><div class="t">5.1M swaps, 54 days, three pools</div><div class="p" style="margin-top:8px">NVDA, SPCX and TSLA on Robinhood Chain. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.</div></div>
+    <div><div class="t">The engine drops what its own replay refutes</div><div class="p" style="margin-top:8px">A schedule built on the clock met its bar on 0 of 3 tokens, and random session labels beat it in 64 of 64 cells. Twelve off-chain signals failed their shuffled control. Uptick acts on pool and band, measured per token.</div></div>
+  </div>
+  <div class="src">Source: README.md, spikes/stock-vaults/FINDINGS.md, spikes/offchain-signals/FINDINGS.md. Fee earned per $1 lost to informed flow, 1 hour markout, window 2026-08-24 to 2026-10-17.</div>
 </section>
 
-<!-- 7 -->
-<section class="slide light" data-t="Why now">
-  <h2>Hooks carry <em>74.5%</em> of v4 trades on the chain. Quoted fees no longer tell the price.<sup>1</sup></h2>
-  <div class="row" style="margin-top:56px;gap:28px">
-    <div class="card d" style="flex:1"><div class="num" style="font-size:132px">$15B</div><div class="lab">cumulative Stock Token volume in the first 100 days since the July 1 mainnet<sup>2</sup></div></div>
-    <div class="card" style="flex:1"><div class="num" style="font-size:132px">80%</div><div class="lab">of 84K hooks labelled malicious by 0x<sup>1</sup></div></div>
-    <div class="card g" style="flex:1"><div class="num" style="font-size:132px">$1.2M</div><div class="lab">taken in 49 hours by hooks keeping 5 to 11% while pools quote 0 to 1%<sup>3</sup></div></div>
+<!-- 5 BANDS AND GATE -->
+<section class="slide" data-t="Evidence: bands and gate">
+<!-- notes:
+Rows are generated from web/lib/vault-universe.json (gate.worst_half_apr, bandBps, gate.state), window 2026-09-17 to 2026-10-17, calibration half ends 2026-10-02, universe block 93099228. Bands come from keeper/data/params.json: full-replay calibration pick over 150 to 2000 bps, grid run 2026-10-20. NVDA: band 150 bps, calibration half +29.38% a year, held-out half -6.57%. AAPL: band 750 bps, calibration +2.71%, held-out +3.91%. The conservative accounting bound decides the gate; the upper figure is shown beside it (README.md "How vaults open"). Gate floor KEEP_FLOOR_APR -20, keeper/src/evidence.ts. Bars are clamped at -40 for GME (-144.2) and SPCX (-199.5); the printed value is exact.
+-->
+  <div style="display:grid;grid-template-columns:640px 1006px;column-gap:50px;align-items:start">
+    <div>
+      <h2 class="v" style="font-size:66px">Each token picks its band on the first half. The second half decides the door.</h2>
+      <div class="led" style="margin-top:48px">
+        <div><div class="t">AAPL kept <span class="kept">+2.7%</span> a year in its weaker half</div><div class="p" style="font-size:23px;margin-top:6px">Band ±7.5%. First half +2.7%, held-out half +3.9%. Open.</div></div>
+        <div><div class="t">NVDA's tight band kept +29.4% on the first half</div><div class="p" style="font-size:23px;margin-top:6px">The held-out half kept -6.6%. The gate shows the held-out number, so NVDA is reduced.</div></div>
+        <div><div class="t">The conservative figure decides</div><div class="p" style="font-size:23px;margin-top:6px">The upper accounting bound sits beside it on every vault page.</div></div>
+      </div>
+    </div>
+    <div class="ch">
+<div class="hd">Token</div><div class="hd">Band</div><div class="hd" style="position:relative;padding:0"><span style="position:absolute;left:0;bottom:10px">-40</span><span style="position:absolute;left:173px;bottom:10px;transform:translateX(-50%)">-20 floor</span><span style="position:absolute;left:347px;bottom:10px;transform:translateX(-50%)">0</span><span style="position:absolute;right:0;bottom:10px">+20</span></div><div class="hd" style="justify-content:flex-end;padding-right:22px">Weaker half</div><div class="hd">Door</div>
+<div class="c s">AAPL</div><div class="c band">±7.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:347px;width:23px;background:var(--kept)"></i></div><div class="c val kept">+2.7%</div><div class="c"><span class="chip o" style="font-size:20px;padding:6px 14px">Open</span></div>
+<div class="c s">GOOGL</div><div class="c band">±20%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:347px;width:2px;background:var(--kept)"></i></div><div class="c val kept">+0.2%</div><div class="c"><span class="chip o" style="font-size:20px;padding:6px 14px">Open</span></div>
+<div class="c s">QQQ</div><div class="c band">±10%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:336px;width:11px;background:var(--loss)"></i></div><div class="c val loss">-1.3%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">INTC</div><div class="c band">±20%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:330px;width:17px;background:var(--loss)"></i></div><div class="c val loss">-2.0%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">AMZN</div><div class="c band">±7.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:322px;width:25px;background:var(--loss)"></i></div><div class="c val loss">-2.9%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">SPY</div><div class="c band">±2.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:312px;width:35px;background:var(--loss)"></i></div><div class="c val loss">-4.0%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">USO</div><div class="c band">±20%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:308px;width:39px;background:var(--loss)"></i></div><div class="c val loss">-4.5%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">AMD</div><div class="c band">±20%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:307px;width:40px;background:var(--loss)"></i></div><div class="c val loss">-4.7%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">NVDA</div><div class="c band">±1.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:290px;width:57px;background:var(--loss)"></i></div><div class="c val loss">-6.6%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">META</div><div class="c band">±15%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:254px;width:93px;background:var(--loss)"></i></div><div class="c val loss">-10.8%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">MU</div><div class="c band">±15%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:221px;width:126px;background:var(--loss)"></i></div><div class="c val loss">-14.5%</div><div class="c"><span class="chip r" style="font-size:20px;padding:6px 14px">Reduced</span></div>
+<div class="c s">PLTR</div><div class="c band">±3.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:171px;width:176px;background:var(--loss)"></i></div><div class="c val loss">-20.3%</div><div class="c"><span class="chip c" style="font-size:20px;padding:6px 14px">Closed</span></div>
+<div class="c s">TSLA</div><div class="c band">±7.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:110px;width:237px;background:var(--loss)"></i></div><div class="c val loss">-27.4%</div><div class="c"><span class="chip c" style="font-size:20px;padding:6px 14px">Closed</span></div>
+<div class="c s">CRCL</div><div class="c band">±20%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:101px;width:246px;background:var(--loss)"></i></div><div class="c val loss">-28.4%</div><div class="c"><span class="chip c" style="font-size:20px;padding:6px 14px">Closed</span></div>
+<div class="c s">MSTR</div><div class="c band">±3.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:26px;width:321px;background:var(--loss)"></i></div><div class="c val loss">-37.1%</div><div class="c"><span class="chip c" style="font-size:20px;padding:6px 14px">Closed</span></div>
+<div class="c s">GME</div><div class="c band">±2.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:0px;width:347px;background:var(--loss)"></i></div><div class="c val loss">-144.2%</div><div class="c"><span class="chip c" style="font-size:20px;padding:6px 14px">Closed</span></div>
+<div class="c s">SPCX</div><div class="c band">±1.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:0px;width:347px;background:var(--loss)"></i></div><div class="c val loss">-199.5%</div><div class="c"><span class="chip c" style="font-size:20px;padding:6px 14px">Closed</span></div>
+    </div>
   </div>
-  <p class="lead" style="max-width:1600px;font-size:38px;color:var(--ink);font-weight:600">Uptick's cap standard makes a hook declare its maximum and the pool enforce it inside the swap. The vault targets pools without take-capable hooks, or with a registered cap.</p>
-  <div class="fn"><b>Sources.</b> [1] stock-vaults-app/README.md (Bitquery 74.5%; 0x 80% of 84K). [2] docs/research/founder-house/QWEN-LANE.md line 63 (cryptobriefing, Oct 12 2026). [3] docs/research/founder-house/OUTREACH-fomo-gmgn.md, hidden-take table.</div>
+  <div class="src">Source: web/lib/vault-universe.json, keeper/data/params.json. Weaker half of two 15 day halves, 30 days to 2026-10-17. Bars end at -40.</div>
 </section>
 
-<!-- 8 -->
-<section class="slide sage" data-t="Market">
-  <h2><em>189,012</em> wallets hold NVDA on the chain. Their tokens sit idle.<sup>1</sup></h2>
-  <div class="row" style="margin-top:52px;gap:28px;align-items:stretch">
-    <div style="flex:1;display:flex;flex-direction:column;gap:24px">
-      <div class="card w"><div class="num" style="font-size:96px">$47M</div><div class="lab">of top-10 Stock Token supply already sits in AMM pools on the chain<sup>2</sup></div></div>
-      <div class="card w"><div class="num" style="font-size:96px">$1,054.8M</div><div class="lab">Robinhood Chain TVL<sup>3</sup></div></div>
-    </div>
-    <div style="flex:1;display:flex;flex-direction:column;gap:24px">
-      <div class="card d"><div class="num" style="font-size:96px">$30.6M</div><div class="lab">in 87 Raydium stock-token LP pools on Solana, 97% TVL-weighted 1-day fee APY<sup>4</sup></div></div>
-      <div class="card g" style="flex:1"><div class="k" style="color:var(--deep)">@WazzCrypto, 62.0k followers, Oct 15</div><div style="font-size:27px;line-height:1.3;margin-top:10px">"All my stock lps have been printing and have been in range for 1 month+ I could have gotten almost 3 digit yield in size"<sup>4</sup></div></div>
-    </div>
+<!-- 6 WHERE FEES GO -->
+<section class="slide" data-t="Where fees go">
+
+  <h2 class="v" style="font-size:66px;max-width:1696px">AAPL's pool paid 18.8% a year. Depositors <span class="kept">kept 3.2%</span>.</h2>
+  <figure class="shot" style="border:none;margin-top:44px"><img src="img/live-aapl-fees.png" width="1696" height="356" alt="The AAPL vault page: where a year of fees goes, 3.2 percent kept, 1.7 percent recentring, 13.9 percent lost to informed traders"></figure>
+  <div class="sum" style="margin-top:44px">
+    <div><div class="n kept">$17.08</div><div class="w">of every $100 the pool pays stays with depositors. $9.01 pays for recentring and $73.91 goes to informed traders.</div></div>
+    <div><div class="n">0.35%</div><div class="w">entry fee, kept in the vault for the holders who stay. It covers 97.2% of the feed's round-to-round moves.</div></div>
+    <div><div class="n">10%</div><div class="w">of collected fees is Uptick's share, minted so the share price never steps at harvest.</div></div>
+    <div><div class="n">No fee</div><div class="w">on exit in kind, in either token.</div></div>
   </div>
-  <div class="fn"><b>Sources.</b> [1] docs/research/founder-house/PLATFORM-TRUTH.md, Stock Tokens table (Blockscout holders, 2026-10-16). [2] same file, Gap 3 (49% of top-10 supply, $47M). [3] same file, DefiLlama historicalChainTvl, last point 2026-10-16. [4] docs/research/founder-house/vaults/DEMAND.md, section 2 and 3 (DefiLlama yields API, 2026-10-17; X status 2110798586254344623).</div>
+  <div class="src">Source: live app, uptick-fi.pages.dev/vault/aapl, 30 days to 2026-10-17. Dollar split derived from the same figures. contracts/SECURITY.md, contracts/script/DeployAll.s.sol.</div>
 </section>
 
-<!-- 9 -->
-<section class="slide light" data-t="Competition">
-  <h2>Hooks price swaps. Vaults pick ranges by hand. <em>None</em> publishes a calibration.<sup>1</sup></h2>
-  <div class="row" style="margin-top:50px;gap:40px;align-items:flex-start">
-    <div style="flex:1">
-      <table>
-        <tr><th>Approach</th><th>What it prices</th></tr>
-        <tr><td>Session-fee and oracle-gap hooks</td><td>SessionFeeHook and Fables are live on the chain, Bellswap charges a Chainlink gap surcharge, ClosingBell won a Uniswap Foundation prize at ETHOnline 2026. Fees are hand-set.<sup>2</sup></td></tr>
-        <tr><td>Vault products</td><td>AutoRange, HedgeHood, Saffron choose ranges by hand.<sup>1</sup></td></tr>
-        <tr><td style="background:var(--lime);font-weight:600">Uptick</td><td style="background:var(--lime);font-weight:600">A published calibration of every pool and tier, a cap standard, and one-click vaults across Stock Tokens.</td></tr>
-      </table>
+<!-- 7 SECURITY -->
+<section class="slide" data-t="Security">
+<!-- notes:
+All from contracts/SECURITY.md and the four reports in contracts/. Round 1 SECURITY-REVIEW-2026-10-20.md: 1 High and 3 Medium (H1 deploy-and-sandwich by any caller; M1 stale-price round trip with in-kind exit; M2 owner powers without a timelock; M3 corporate actions invisible); closed with a same-block share lock plus spot-to-TWAP band, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and an oraclePaused/effectiveAt corporate-action gate. Round 2 SECURITY-REREVIEW-2026-10-20.md: confirmed those closed; its findings (swap floors without the pool fee so 1% pools could not rebalance, the band breaking router deposits, a TWAP drag across blocks, arbitrage on off-chain moves) were closed in the next round. Round 3 SECURITY-REVIEW-3: TWAP-to-Chainlink bound now 30 bp, entry fee 35 bp, pool fee in the exit previews so 1% pools exit. Round 4 SECURITY-REVIEW-4: verdict SHIP, no Critical, High or Medium; baseline 80 of 80 security tests (10 suites); one Low fixed before the bytecode hash is pinned; two liveness Lows documented with measured bounds. The Accepted residuals table in SECURITY.md carries the numbers and the lever for each. 50 rows in the Test and mutation evidence table. Owner: Roles table, queued changes executable after 24 hours, void 7 days later, cancellable; no function moves or sweeps user funds, and none pauses redeemInKind or withdrawals. Pinned creation-code hash: SECURITY.md Bytecode size section and VaultFactory.
+-->
+  <div style="display:grid;grid-template-columns:1fr 470px;column-gap:80px">
+    <div>
+      <h2 class="v" style="font-size:66px;max-width:1100px">Four review rounds, each re-reading the last round's fixes. The fourth ended SHIP.</h2>
+      <div class="led" style="margin-top:40px">
+        <div class="r2"><div class="t">Round 1</div><div><div class="t" style="font-weight:400;font-size:27px">1 High and 3 Medium, all closed</div><div class="p" style="font-size:23px">A same-block share lock and a spot-to-TWAP band against deploy sandwiches. Deposits priced at the lowest of Chainlink, TWAP and spot. A 24 hour owner queue. A corporate-action gate on the token's oracle pause and multiplier.</div></div></div>
+        <div class="r2"><div class="t">Round 2</div><div><div class="t" style="font-weight:400;font-size:27px">Round 1 fixes confirmed</div><div class="p" style="font-size:23px">Swap floors include the pool fee, so 1% pools rebalance. Router deposits clear at $500, $2,000 and $10,000.</div></div></div>
+        <div class="r2"><div class="t">Round 3</div><div><div class="t" style="font-weight:400;font-size:27px">TWAP bound set to 30 bp</div><div class="p" style="font-size:23px">Entry fee raised to 35 bp, so a deposit ahead of a price update does not pay. Exits work on every fee tier.</div></div></div>
+        <div class="r2"><div class="t">Round 4</div><div><div class="t" style="font-weight:400;font-size:27px">SHIP: no Critical, High or Medium</div><div class="p" style="font-size:23px">Residuals are published with their measured bounds and the lever that moves each.</div></div></div>
+      </div>
     </div>
-    <div style="flex:.85;display:grid;gap:18px">
-      <div class="card g" style="padding:26px"><b style="font-size:30px">Cap standard.</b><div class="lab" style="margin-top:6px">200 of 200 over-cap swaps revert.<sup>3</sup></div></div>
-      <div class="card g" style="padding:26px"><b style="font-size:30px">Evidence engine.</b><div class="lab" style="margin-top:6px">5.1M swaps replayed, pool and tier picked out-of-sample, 54 days.<sup>4</sup></div></div>
-      <div class="card g" style="padding:26px"><b style="font-size:30px">One-click vaults.</b><div class="lab" style="margin-top:6px">Many Stock Tokens; oracle-gated in and out.<sup>5</sup></div></div>
-      <div class="card g" style="padding:26px"><b style="font-size:30px">Robinhood Chain specifics.</b><div class="lab" style="margin-top:6px">24/5 Chainlink equity feed, NYSE calendar with DST, USDG.<sup>5</sup></div></div>
+    <div class="led" style="align-self:start">
+      <div><div class="fig">80 of 80</div><div class="p" style="font-size:23px;margin-top:8px">security tests pass on a fork of the real pools</div></div>
+      <div><div class="fig">50</div><div class="p" style="font-size:23px;margin-top:8px">mutation checks: break a guard, see red, restore, see green</div></div>
+      <div><div class="fig">24 h</div><div class="p" style="font-size:23px;margin-top:8px">queue on every owner setting, with the full calldata emitted</div></div>
+      <div><div class="fig" style="font-size:36px">In kind</div><div class="p" style="font-size:23px;margin-top:8px">exit stays open when everything else is closed</div></div>
     </div>
   </div>
-  <div class="fn"><b>Sources.</b> [1] docs/research/founder-house/vaults/COMPETITORS.md, "Off-hours aware" column: HedgeHood, Saffron, StonkBrokers, TickerSpring, AutoRange, EARN, Crossbow, Arrowfarm. [2] docs/research/founder-house/vaults/HOOK-DESIGN.md, section A (prior art, read 2026-10-17). [3] spikes/capped-hooks/FINDINGS.md. [4] spikes/stock-vaults/FINDINGS.md. [5] docs/ARCHITECTURE.md.</div>
+  <div class="src">Source: contracts/SECURITY.md and the four reports in contracts/ (SECURITY-REVIEW, SECURITY-REREVIEW, SECURITY-REVIEW-3, SECURITY-REVIEW-4, 2026-10-20). Contracts final, creation-code hash pinned.</div>
 </section>
 
-<!-- 10 -->
-<section class="slide green" data-t="Business model">
-  <h2>Uptick earns a performance share of the fees the vault <em>collects</em>.<sup>1</sup></h2>
-  <div style="margin-top:62px;display:flex;align-items:center;gap:22px">
-    <div class="node" style="flex:1">Pool trades<small>fees accrue to the selected position</small></div><span style="font-size:48px">&rarr;</span>
-    <div class="node" style="flex:1">Rebalance<small>vault collects fees</small></div><span style="font-size:48px">&rarr;</span>
-    <div class="node d" style="flex:1.1">Treasury shares minted<small>from uncollected fees, before NAV is computed</small></div><span style="font-size:48px">&rarr;</span>
-    <div class="node" style="flex:1">Holders<small>share price identical one second before and after</small></div>
-  </div>
-  <div class="card d" style="margin-top:56px;padding:44px 52px"><div class="k" style="color:var(--lime)">Revenue, as arithmetic</div>
-    <div style="font:900 62px/1.15 Archivo;color:var(--lime);margin-top:14px">performance share &times; vault TVL &times; fee APR</div>
-    <div style="font-size:26px;color:#c9ccc6;margin-top:16px">Fee APR is observed per vault from FeesCollected events; one vault per Stock Token, so revenue scales with the number of tokens and the TVL in each.<sup>1</sup></div>
-  </div>
-  <div class="fn" style="color:#2c4a14"><b>Sources.</b> [1] stock-vaults-app/docs/ARCHITECTURE.md, "Data flow per deposit" step 4 and Stats API row. The model is a design of the contracts above; the share rate is a vault parameter.</div>
-</section>
-
-<!-- 11 -->
-<section class="slide light" data-t="Go to market">
-  <h2>NVDA first, then SPCX. The holders and the <em>asks</em> are already there.</h2>
-  <div class="row" style="margin-top:54px;gap:28px;align-items:stretch">
-    <div class="card" style="flex:1"><div class="num" style="font-size:96px">1</div><div class="lab" style="color:var(--ink);font-size:30px;font-weight:600">First vaults</div><div class="lab">The NVDA vault, then SPCX, built for the 189,012 NVDA holders.<sup>1</sup></div></div>
-    <div class="card g" style="flex:1"><div class="num" style="font-size:96px">2</div><div class="lab" style="color:var(--ink);font-size:30px;font-weight:600">Robinhood Chain ecosystem</div><div class="lab">6 chain LPs reporting results, 10 explicit asks for stock-token yield, 9 accounts already lending or LPing stock tokens.<sup>2</sup></div></div>
-    <div class="card d" style="flex:1"><div class="num" style="font-size:96px">3</div><div class="lab" style="color:var(--lime);font-size:30px;font-weight:600">Judges and partners</div><div class="lab">Arbitrum Founder House, Singapore, Oct 23 to 25 2026.<sup>3</sup></div></div>
-  </div>
-  <p class="lead" style="max-width:1650px;color:var(--ink);font-size:32px">Hook builders get a registry they can read: CapRegistry records each hook's declared maximum, so routers and integrators check what a hook may charge.<sup>4</sup></p>
-  <div class="fn"><b>Sources.</b> [1] docs/research/founder-house/PLATFORM-TRUTH.md. [2] docs/research/founder-house/vaults/DEMAND.md, section 1 counts. [3] PLATFORM-TRUTH.md header. [4] stock-vaults-app/docs/ARCHITECTURE.md, components.</div>
-</section>
-
-<!-- 12 -->
-<section class="slide dark" data-t="Team and ask">
-  <h2>Built by <em>one founder</em>, shipped end to end.</h2>
-  <div class="row" style="margin-top:56px;gap:36px;align-items:stretch">
-    <div class="fill" style="flex:1;background:#1b1d18;border-color:var(--lime);color:#fff">
-      <div class="k" style="color:var(--lime)">Team</div>
-      <div style="font:900 64px/1 Archivo;margin-top:16px">Kamal</div>
-      <div style="font-size:28px;line-height:1.4;margin-top:16px;color:#c9ccc6">Builder. Contracts, keeper, replay engine, web app and the spikes behind them.</div>
-      <div style="font-size:26px;margin-top:28px;color:var(--lime);border-top:2px dashed var(--lime);padding-top:20px">[Founder bio, prior work, links: to be filled by the founder]</div>
+<!-- 8 AGENTS -->
+<section class="slide" data-t="Agents">
+<!-- notes:
+Live endpoint https://uptick-evidence.earn-shield-alerts.workers.dev (api/src/mcp.ts, api/src/worker.ts). Tools from tools/list read 2026-10-21: list_vaults, get_vault_evidence, prepare_deposit, prepare_withdraw. The two responses on the slide are real: GET /vaults/aapl gate.reason, and tools/call prepare_deposit for id spcx returning isError with the gate reason. Streamable HTTP per MCP spec revision 2025-06-18 (gtm/uptick/EDGE.md, adopted). web/public/llms.txt carries each gate for agents. Free-tier Cloudflare Worker, 100,000 requests a day (EDGE.md).
+-->
+  <div style="display:grid;grid-template-columns:760px 1fr;column-gap:96px">
+    <div>
+      <h2 class="v" style="font-size:70px">Agents read the same evidence the app shows.</h2>
+      <div class="led" style="margin-top:48px">
+        <div style="display:grid;grid-template-columns:320px 1fr;column-gap:12px;align-items:baseline"><div class="t">list_vaults</div><div class="p" style="font-size:23px">Every vault with its door, fee APR and kept APR.</div></div>
+        <div style="display:grid;grid-template-columns:320px 1fr;column-gap:12px;align-items:baseline"><div class="t">get_vault_evidence</div><div class="p" style="font-size:23px">Replay pools, gate rule, reason and swap count.</div></div>
+        <div style="display:grid;grid-template-columns:320px 1fr;column-gap:12px;align-items:baseline"><div class="t">prepare_deposit</div><div class="p" style="font-size:23px">Unsigned transactions. The user signs and sends.</div></div>
+        <div style="display:grid;grid-template-columns:320px 1fr;column-gap:12px;align-items:baseline"><div class="t">prepare_withdraw</div><div class="p" style="font-size:23px">Unsigned exit transactions, in kind included.</div></div>
+      </div>
+      <p class="p" style="margin-top:36px;color:var(--soft)"><b>One endpoint, MCP over Streamable HTTP.</b> A closed vault returns its gate reason, so an agent never routes a deposit past the door.</p>
     </div>
-    <div class="fill" style="flex:1;background:var(--lime);border-color:var(--ink)">
-      <div class="k" style="color:var(--deep)">The ask</div>
-      <div style="font:900 64px/1 Archivo;margin-top:16px;color:var(--ink)">Pre-seed</div>
-      <div style="font-size:28px;line-height:1.5;margin-top:22px;color:var(--ink)">Amount: <b>[to be filled]</b><br>Instrument: <b>[to be filled]</b><br>Use of funds: <b>[to be filled]</b></div>
+    <div style="display:grid;gap:28px;align-content:start;margin-top:6px">
+      <div class="panel"><div class="p" style="font-size:22px">GET /vaults/aapl, gate.reason</div><div class="code" style="margin-top:14px">"Open: the weaker half of the 30-day replay kept 2.7% a year, at or above break-even, across 95,275 swaps."</div></div>
+      <div class="panel"><div class="p" style="font-size:22px">tools/call prepare_deposit, id spcx, amount 10</div><div class="code" style="margin-top:14px">{"error": "Closed: the weaker half kept -199.5% a year, below the -20% floor."}</div></div>
+      <div class="panel"><div class="p" style="font-size:22px">GET /vaults/aapl, pools: fee APR, first half, held-out half</div>
+        <div style="display:grid;grid-template-columns:1fr 120px 130px 130px;row-gap:10px;margin-top:16px;font-size:26px">
+          <div class="p" style="font-size:22px">Pool</div><div class="p" style="font-size:22px;text-align:right">Fees</div><div class="p" style="font-size:22px;text-align:right">First</div><div class="p" style="font-size:22px;text-align:right">Held-out</div>
+          <div>v3 0.05%</div><div style="text-align:right">18.8%</div><div style="text-align:right" class="kept">+2.7%</div><div style="text-align:right" class="kept">+3.9%</div>
+          <div>v4 0.3%</div><div style="text-align:right">26.8%</div><div style="text-align:right" class="kept">+12.3%</div><div style="text-align:right" class="kept">+3.3%</div>
+          <div>v3 0.3%</div><div style="text-align:right">11.3%</div><div style="text-align:right" class="loss">-16.4%</div><div style="text-align:right" class="loss">-12.8%</div>
+        </div></div>
+      <div class="p" style="font-size:22px">uptick-evidence.earn-shield-alerts.workers.dev, responses as served 2026-10-21. llms.txt and the evidence API are open to any agent.</div>
     </div>
   </div>
-  <p style="position:absolute;left:112px;bottom:96px;font:900 38px/1.15 Archivo;max-width:1550px;color:var(--lime)">Uptick. Deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens and earn a share of every trade's fee. Uptick shows what you earn and what you keep after losses to fast traders, and opens a vault only where 5.1 million past trades say it holds up.</p>
-  <div class="fn"><b>Sources.</b> Team and ask panels are founder-supplied fields.</div>
+  <div class="src">Source: live evidence API and MCP endpoint, api/src/mcp.ts, web/public/llms.txt.</div>
+</section>
+
+<!-- 9 COMPETITION -->
+<section class="slide" data-t="Competition">
+<!-- notes:
+Code-level study of four vault codebases, each cited by file and line in the STUDY.md files. Arrakis V2: competitors/oss-v2-core/STUDY.md (no timelock, ArrakisV2Storage.sol:214; no ERC-8056 logic; deposits read pool.slot0, Underlying.sol:167). Gamma Hypervisor: competitors/oss-hypervisor/STUDY.md (no timelock anywhere, Hypervisor.sol:609; no multiplier logic; deposits read slot0, optional 1 hour TWAP filter in ClearingV2). Veda BoringVault: competitors/oss-boring-vault/STUDY.md (no timelock contract in the repo, ManagerWithMerkleVerification.sol:96; no 8056, split or rebase logic; stored rate pushed by an updater, no max-age check, AccountantWithRateProviders.sol:354). AutoRange: competitors/autorange-factory/src/STUDY.md (24 onlyOwner functions, no timelock; no multiplier handling; valuation reads pool slot0, AutoRangeVaultRobinhoodV1.sol:2183). Uptick: contracts/SECURITY.md (24 hour queue, CHANGE_GRACE 7 days; corporate-action gate; deposit priced at the lowest of Chainlink, TWAP and spot). Hook prior art (Fables, SessionFeeHook, Bellswap, ClosingBell) and hand-picked range vaults: docs/research/founder-house/vaults/HOOK-DESIGN.md section A and COMPETITORS.md.
+-->
+  <h2 class="v" style="font-size:66px;max-width:1696px">None of four vault codebases has a settings timelock or stock-split handling. Uptick has both.</h2>
+  <table style="margin-top:44px">
+    <tr><th style="width:250px">Codebase</th><th style="width:440px">Owner settings</th><th style="width:480px">Stock split</th><th>Deposit priced from</th></tr>
+    <tr><td class="n">AutoRange</td><td>24 setters, each takes effect at once</td><td>Raw balances and ticks, no multiplier</td><td>Pool spot</td></tr>
+    <tr><td class="n">Arrakis V2</td><td>Manager, fee, pool and router change at once</td><td>Plain ERC-20 shares, no multiplier</td><td>Pool spot</td></tr>
+    <tr><td class="n">Gamma</td><td>setFee, setTwapCheck, ownership: one transaction</td><td>Raw balances, no multiplier</td><td>Pool spot, optional 1 hour TWAP filter</td></tr>
+    <tr><td class="n">Veda</td><td>Bounds, fees and roots apply in the same transaction</td><td>No ERC-8056 or rebase logic</td><td>Stored rate, no maximum age</td></tr>
+    <tr class="us"><td class="n">Uptick</td><td><b style="font-weight:600">24 hour queue</b>, calldata emitted, void after 7 days</td><td><b style="font-weight:600">ERC-8056 gate</b>: price-checked paths close around each multiplier change</td><td>Lowest of Chainlink, TWAP and spot</td></tr>
+  </table>
+  <p class="p" style="margin-top:30px;max-width:1500px">Session-fee hooks (Fables, SessionFeeHook, Bellswap, ClosingBell) price swaps. Range vaults pick bands by hand. Uptick publishes the calibration for every token and opens a door only where it holds.</p>
+  <div class="src">Source: competitors/*/STUDY.md with file and line citations (Arrakis V2, Gamma Hypervisor, Veda BoringVault, AutoRange). Uptick: contracts/SECURITY.md.</div>
+</section>
+
+<!-- 10 VENUE CENSUS -->
+<section class="slide" data-t="Venue census">
+<!-- notes:
+docs/research/founder-house/vaults/VENUES.md, 7 days, blocks 87,352,064 to 93,292,983 (2026-10-13 to 2026-10-20), public RPC, bounded eth_getLogs. Across the 17 eligible tokens Uniswap v3 plus v4 moved $488.40M and paid $623.9k in LP fees; the fee pot open to an outside depositor and paired with USDG is $184.8k in v3 (what vaults reach today) and $198.5k in v4; Pons hook pools (256 traded, $9.95M) emit a pool fee of 0 and skim in the hook, so they pay an outside depositor nothing. PLTR: keeper/data/replay.json tokens.PLTR.pools, held-out half, conservative accounting: v3 0.3% pool -20.3%, v4 1% pool +28.15% (+51.0% upper), band 350 bps for both. VENUES.md lists the Uniswap v4 PositionManager adapter for USDG pairs as build item 1.
+-->
+  <div style="display:grid;grid-template-columns:1fr 600px;column-gap:96px">
+    <div>
+      <h2 class="v" style="font-size:66px;max-width:1000px">The fees sit in more than one pool. A v4 adapter widens the pot a vault can reach.</h2>
+      <div style="margin-top:52px">
+        <div style="display:grid;grid-template-columns:330px 1fr;align-items:center;height:92px"><div class="t" style="font-size:26px">All LP fees, 7 days</div><div class="vbar" style="height:48px"><i style="width:100%;background:var(--border)"></i><span style="right:16px">$623.9k</span></div></div>
+        <div style="display:grid;grid-template-columns:330px 1fr;align-items:center;height:92px"><div class="t" style="font-size:26px">Reachable in v3 today</div><div class="vbar" style="height:48px"><i style="width:29.6%;background:var(--bar)"></i><span style="left:calc(29.6% + 16px)">$184.8k</span></div></div>
+        <div style="display:grid;grid-template-columns:330px 1fr;align-items:center;height:92px"><div class="t" style="font-size:26px">Reachable in v4</div><div class="vbar" style="height:48px"><i style="width:31.8%;background:var(--text)"></i><span style="left:calc(31.8% + 16px)">$198.5k</span></div></div>
+        <div style="display:grid;grid-template-columns:330px 1fr;align-items:center;height:92px"><div class="t" style="font-size:26px">Pons launchpad pools</div><div class="vbar" style="height:48px"><i style="width:4px;background:var(--loss)"></i><span style="left:22px">$0 to an outside LP</span></div></div>
+      </div>
+      <p class="p" style="margin-top:28px;max-width:1000px">$488.40M of Stock Token volume moved through Uniswap v3 and v4 on the 17 tokens in 7 days. Launchpad pools pair a stock with a memecoin across 256 traded pools and $9.95M, and take their fee in the hook.</p>
+    </div>
+    <div class="led" style="align-self:start;margin-top:8px">
+      <div><div class="t">PLTR, band 350 bps</div><div class="p" style="font-size:23px;margin-top:6px">The v3 0.3% pool keeps -20.3% in its weaker half and stays closed.</div></div>
+      <div><div class="fig kept">+28.2%</div><div class="p" style="font-size:23px;margin-top:10px">What the PLTR v4 1% pool kept in its weaker half in the same replay.</div></div>
+      <div><div class="t">Next build: the v4 position adapter</div><div class="p" style="font-size:23px;margin-top:6px">It points a vault at hookless v4 pools, where the same engine already measures the evidence.</div></div>
+    </div>
+  </div>
+  <div class="src">Source: docs/research/founder-house/vaults/VENUES.md (2026-10-13 to 2026-10-20, read over the public RPC). keeper/data/replay.json, PLTR pools.</div>
+</section>
+
+<!-- 11 TRACTION -->
+<section class="slide" data-t="Traction">
+<!-- notes:
+Shipped items. Live app https://uptick-fi.pages.dev (read 2026-10-21: 17 vaults, 2 open, 9 reduced, 6 closed). Evidence API and MCP: https://uptick-evidence.earn-shield-alerts.workers.dev. Launch film: brand/x/films/uptick-launch-v2-music.mp4 and video/out/uptick-launch-film.mp4. X handle @uptickfi (brand/x/README.md). Contracts final, creation-code hash pinned (contracts/SECURITY.md Bytecode size), deploy ready (contracts/script/DeployAll.s.sol, docs/submission/MAINNET-FUNDING.md); each vault page reads "Deposits unlock here the moment its address is live on Robinhood Chain". Dated plan: gtm/uptick/EVIDENCE.md targets by 2026-10-23 (10 customer interviews, 3 holder LOIs, 6 integration conversations, 1 integration LOI), each counted from files in gtm/uptick; gtm/uptick/LAUNCH.md weekly review (refresh the replay, reopen or close vaults on the new halves); Founder House Singapore 2026-10-23 to 2026-10-25 (docs/WIN-CONDITIONS.md).
+-->
+  <h2 class="v" style="font-size:70px;max-width:1560px">The app, the evidence API, the MCP endpoint and the launch film are live.</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:96px;margin-top:52px">
+    <div>
+      <div class="t" style="margin-bottom:18px;font-size:32px">Shipped</div>
+      <div class="led">
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">App</div><div class="p" style="color:var(--text)">uptick-fi.pages.dev, 17 vaults, each with its gate and reason</div></div>
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">Evidence API</div><div class="p" style="color:var(--text)">JSON for every vault, plus the MCP endpoint and llms.txt</div></div>
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">Launch film</div><div class="p" style="color:var(--text)">The weekend finding and the three doors, on screen</div></div>
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">X</div><div class="p" style="color:var(--text)">@uptickfi</div></div>
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">Contracts</div><div class="p" style="color:var(--text)">Final, creation-code hash pinned, deploy ready</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="t" style="margin-bottom:18px;font-size:32px">The plan, by date</div>
+      <div class="led">
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">Oct 23</div><div class="p" style="color:var(--text)">10 holder interviews, 3 signed holder LOIs, 6 integration conversations, 1 integration LOI, each counted from a file</div></div>
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">Oct 23 to 25</div><div class="p" style="color:var(--text)">Founder House, Singapore</div></div>
+        <div style="display:grid;grid-template-columns:200px 1fr;align-items:baseline"><div class="t">Every week</div><div class="p" style="color:var(--text)">The replay refreshes and each vault opens or closes on its new halves</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Source: live app and API read 2026-10-21. Dated targets: gtm/uptick/EVIDENCE.md and LAUNCH.md.</div>
+</section>
+
+<!-- 12 ASK AND TEAM -->
+<section class="slide" data-t="Ask and team">
+<!-- notes:
+Team: one builder. Kamal (GitHub kamalbuilds) wrote the contracts, keeper, replay engine, web app and evidence API in this repository (WIN-PATH.md: one author per repo). The three asks come from the repository's own build and outreach files: first mainnet vault deposits (contracts/script/DeployAll.s.sol, docs/submission/MAINNET-FUNDING.md), the v4 position adapter (VENUES.md build item 1), holder LOIs and integration LOIs (gtm/uptick/EVIDENCE.md, LOI-TEMPLATES.md, INTEGRATIONS.md). Closing line: the app's home sentence.
+-->
+  <h2 class="v" style="font-size:72px;max-width:1560px">One builder shipped the contracts, the engine and the app. The ask is to open the doors.</h2>
+  <div style="display:grid;grid-template-columns:600px 1fr;column-gap:96px;margin-top:56px">
+    <div class="led" style="align-self:start">
+      <div><div class="t" style="font-size:34px">Kamal</div><div class="p" style="margin-top:8px">Built StockVault, the keeper, the replay engine, the web app and the evidence API. github.com/kamalbuilds</div></div>
+      <div><div class="t">Four security reviews</div><div class="p" style="margin-top:8px;font-size:23px">Each round's fixes were re-read in the next, ending SHIP.</div></div>
+    </div>
+    <div class="led" style="align-self:start">
+      <div style="display:grid;grid-template-columns:400px 1fr;align-items:baseline"><div class="t">Capital</div><div class="p" style="color:var(--text)">Seed deposits for the first mainnet vaults, AAPL and GOOGL, and the v4 position adapter</div></div>
+      <div style="display:grid;grid-template-columns:400px 1fr;align-items:baseline"><div class="t">Holders and LPs</div><div class="p" style="color:var(--text)">Introductions to Stock Token holders who will size a deposit and sign a letter of intent</div></div>
+      <div style="display:grid;grid-template-columns:400px 1fr;align-items:baseline"><div class="t">Integrations</div><div class="p" style="color:var(--text)">Range vaults, hook builders and chain data surfaces that carry the kept APR</div></div>
+    </div>
+  </div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:112px;font-size:34px;line-height:1.3;color:var(--soft)">Uptick shows which of your stock tokens can earn, and how much you would keep.</p>
+  <div class="src">Source: this repository. uptick-fi.pages.dev, @uptickfi.</div>
 </section>
 
 </div>
 <div id="ctr"></div>
 <script>
-// week strips: 7 rows x 24 cols; NYSE Mon-Fri 09:30-16:00 ET
-function strip(id){var el=document.getElementById(id),h='';for(var d=0;d<7;d++)for(var x=0;x<24;x++){var c='';if(d<5){if(x===9)c='h';else if(x>=10&&x<=15)c='o'}h+='<i class="'+c+'"></i>'}el.innerHTML=h}
-strip('w1');strip('w2');
 var S=[].slice.call(document.querySelectorAll('.slide')),i=0,ctr=document.getElementById('ctr');
 function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.documentElement.style.setProperty('--s',s);S.forEach(function(e){e.style.setProperty('--s',s)})}
 function go(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach(function(e,k){e.classList.toggle('on',k===i)});ctr.textContent=(i+1)+' / '+S.length;history.replaceState(null,'','#'+(i+1))}
