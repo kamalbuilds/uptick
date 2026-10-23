@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { SectionTitle } from "./ledger";
 import { Skeleton } from "./status";
 import { StepList, runLabel, useStepRunner } from "./step-runner";
+import { Term } from "./term";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain } from "@/lib/chain";
 import { collateralMarket } from "@/lib/collateral-markets";
 import { num, pct, usd } from "@/lib/format";
-import { DEFAULT_TARGET_HEALTH, hasLoan, liquidationInStock, loanView, marketStateOf, planSafer, type SaferPlan } from "@/lib/loan";
+import { DEFAULT_TARGET_HEALTH, hasLoan, liquidationInStock, loanView, marketStateOf, planSafer, type LoanView, type SaferPlan } from "@/lib/loan";
 import { MORPHO_BLUE, irmAbi, marketId, morphoAbi, oracleAbi, sharePriceUsd, type MarketParams } from "@/lib/morpho";
 import { usePrices } from "@/lib/prices";
 import { cn } from "@/lib/utils";
@@ -122,11 +123,28 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
   }
   if (!view || !input) return <div aria-busy="true" className="py-6"><Skeleton className="h-8 w-80" /><Skeleton className="mt-4 h-40 w-full" /></div>;
 
+  return <LoanArticle cfg={cfg} view={view} price={input.price} stockPrice={stockPrice} plan={plan} target={target} setTarget={setTarget} runner={runner} />;
+}
+
+type LoanArticleProps = {
+  cfg: VaultConfig;
+  view: LoanView;
+  /** The share oracle's answer: raw USDG per raw share, scaled by 1e36. */
+  price: bigint;
+  stockPrice: number;
+  plan: SaferPlan | undefined;
+  target: number;
+  setTarget: (n: number) => void;
+  runner: ReturnType<typeof useStepRunner>;
+};
+
+/** One loan as the holder reads it: the verdict, the figures, and the Make it safer ticket. Everything here is a function of its props, so it renders without a wallet. */
+export function LoanArticle({ cfg, view, price, stockPrice, plan, target, setTarget, runner }: LoanArticleProps) {
   const hf = view.risk.healthFactor;
   const drop = view.risk.dropToLiquidation;
   const stockLiq = liquidationInStock(stockPrice, drop);
   const liqShare = view.risk.liquidationPrice > 0n ? sharePriceUsd(view.risk.liquidationPrice, SHARE_DECIMALS, USDG_DECIMALS) : undefined;
-  const sharePrice = sharePriceUsd(input.price, SHARE_DECIMALS, USDG_DECIMALS);
+  const sharePrice = sharePriceUsd(price, SHARE_DECIMALS, USDG_DECIMALS);
   const tone = hf === null ? "" : hf < 1.1 ? "text-loss" : hf < 1.25 ? "text-caution" : "";
   const word = hf === null ? "No debt" : hf < 1.1 ? "Close to liquidation" : hf < 1.25 ? "Thin margin" : "Comfortable";
   const verdict =
@@ -141,12 +159,12 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
         <p className="text-[13px] leading-5 text-mute">{cfg.symbol} vault shares as collateral, borrowing USDG</p>
         <p className="serif mt-2 max-w-[560px] text-[26px] leading-8" data-testid="loan-verdict">{verdict}</p>
         <dl className="mt-4">
-          <Row k="Collateral"><span className="figure" data-testid="loan-collateral">{shares(view.collateral)}</span> shares, worth <span className="figure">{usdg(view.collateralValue)}</span> USDG</Row>
+          <Row k={<Term id="collateral" />}><span className="figure" data-testid="loan-collateral">{shares(view.collateral)}</span> shares, worth <span className="figure">{usdg(view.collateralValue)}</span> USDG</Row>
           <Row k="Debt, interest included"><span className="figure" data-testid="loan-debt">{usdg(view.debt)}</span> USDG</Row>
-          <Row k="Health factor">
+          <Row k={<Term id="healthFactor" />}>
             {hf !== null ? <><span className={cn("figure text-[20px] font-medium leading-6", tone)} data-testid="loan-health">{hf > 99 ? ">99" : hf.toFixed(2)}</span> <span className={cn("text-[13px]", tone || "text-mute")}>{word}</span></> : <span className="text-mute">{word}</span>}
           </Row>
-          <Row k="Liquidation price" last>
+          <Row k={<Term id="liquidationPrice" />} last>
             {stockLiq !== undefined && liqShare !== undefined ? (
               <span className="block">
                 <span className="figure text-[20px] font-medium leading-6" data-testid="loan-liquidation">{usd(stockLiq, { compact: false })}</span> <span className="text-[15px] font-semibold">{cfg.symbol}</span>
@@ -181,7 +199,7 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
         <div className="mt-5">
           {runner.canRetry && run ? (
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={() => void runner.retry()}>Retry from “{run.steps[runner.failedAt].label}”</Button>
+              <Button size="lg" className="px-5" onClick={() => void runner.retry()}>Retry the failed step</Button>
               <Button size="lg" variant="outline" onClick={runner.reset}>Start over</Button>
             </div>
           ) : runner.failedAt >= 0 ? (
@@ -226,8 +244,8 @@ function PlanLines({ plan, symbol, stockPrice }: { plan: SaferPlan; symbol: stri
           <Row k={`${symbol} back to you`}><span className="figure">{num(Number(formatUnits(plan.stock, 18)), 4)}</span> {symbol}</Row>
         </>
       )}
-      <Row k="Health factor"><span className="figure">{plan.before.healthFactor?.toFixed(2)}</span> to <span className="figure text-kept" data-testid="safer-after">{plan.after.healthFactor === null ? "no debt" : plan.after.healthFactor.toFixed(2)}</span></Row>
-      <Row k="Liquidation price" last>
+      <Row k={<Term id="healthFactor" />}><span className="figure">{plan.before.healthFactor?.toFixed(2)}</span> to <span className="figure text-kept" data-testid="safer-after">{plan.after.healthFactor === null ? "no debt" : plan.after.healthFactor.toFixed(2)}</span></Row>
+      <Row k={<Term id="liquidationPrice" />} last>
         {before !== undefined && after !== undefined ? <><span className="figure">{usd(before, { compact: false })}</span> to <span className="figure">{usd(after, { compact: false })}</span></> : <span className="text-mute">Nothing owed</span>}
       </Row>
     </dl>

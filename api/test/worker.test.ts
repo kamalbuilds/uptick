@@ -43,7 +43,7 @@ describe("GET /vaults", () => {
       universe.map((v) => v.feeAprPct),
     );
     expect(body.map((v) => v.kept_apr_pct)).toEqual(
-      universe.map((v) => v.keptAprPct),
+      universe.map((v) => v.gate.worst_half_apr),
     );
     expect(body.every((v) => v.window_days === replay.window.days)).toBe(true);
   });

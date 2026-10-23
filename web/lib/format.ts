@@ -83,3 +83,6 @@ export const entryFeePct = (bps: number): string => `${bps / 100}%`;
 
 /** What a deposit of `amountUsd` is worth once the vault keeps its entry fee: the base every yearly figure is earned on. */
 export const netOfEntryFee = (amountUsd: number, entryFeeBps: number): number => (amountUsd * (10_000 - entryFeeBps)) / 10_000;
+
+/** A token balance in a narrow cell: four decimals below 1,000 and two from there up, so 11,515.5963 NVDA fits beside its logo at 375px as 11,515.6 NVDA. */
+export const tokenBalance = (n: number): string => num(n, Math.abs(n) >= 1000 ? 2 : 4);

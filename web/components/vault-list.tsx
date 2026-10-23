@@ -82,7 +82,7 @@ function ColumnHeads() {
       <span className="col-span-2 sm:col-span-1">Vault</span>
       <span className="hidden text-right sm:block">Price</span>
       <span className="hidden sm:block"><RowAxis /></span>
-      <span className="text-right">Kept</span>
+      <span className="text-right"><Term id="kept" /></span>
       <span className="hidden text-right lg:block">Fees</span>
       <span className="hidden text-right sm:block">State</span>
       <span className="hidden sm:block" />

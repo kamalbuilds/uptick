@@ -36,9 +36,10 @@ export default function CollateralPage() {
 
       <H2>Deposit, supply, borrow</H2>
       <P>
-        Morpho Blue on Robinhood Chain already lends USDG against NVDA, SPCX, GOOGL and AAPL. An
-        Uptick share is a second kind of collateral for the same loan: the Stock Token, plus the
-        fees its Uniswap position earns while you borrow.
+        Morpho Blue is the lending market on Robinhood Chain, and it already lends USDG against NVDA,
+        SPCX, GOOGL and AAPL. An Uptick share is a second kind of collateral for the same loan: the
+        Stock Token, plus the fees its Uniswap position earns while you borrow. The loan-to-value
+        limit, the most you can borrow as a share of what the collateral is worth, is 62.5%.
       </P>
       <DataTable
         columns={["Step", "Where", "What happens"]}
@@ -48,7 +49,7 @@ export default function CollateralPage() {
           ["Borrow", "Morpho Blue market", "USDG up to a 62.5% loan-to-value limit, the limit the live NVDA/USDG market uses."],
           ["Repay and withdraw", "Morpho Blue market", "Repay needs no oracle. Withdraw the shares and redeem in the vault."],
         ]}
-        caption="One market per vault: loan token USDG, collateral token the vault share, the share oracle, the IRM the chain's markets use."
+        caption="One market per vault: loan token USDG, collateral token the vault share, the share oracle, and the interest rate model the chain's markets use."
       />
 
       <H2>How the share is priced</H2>
@@ -86,10 +87,21 @@ export default function CollateralPage() {
         in every state of the vault, so a liquidation always ends in the underlying tokens.
       </P>
 
+      <H2>For liquidators</H2>
+      <P>
+        Redeem exactly the seized share amount in your liquidation callback:{" "}
+        <Code>redeemInKind(seized, receiver, owner)</Code>, never your whole share balance. A deposit
+        of dust made for your address in the liquidation block locks those dust shares until the next
+        block, so a callback that redeems everything it holds reverts with <Code>SharesLocked</Code>{" "}
+        and takes the liquidation down with it. The lock covers only the dust, so the exact seized
+        amount always passes and the liquidation completes in the same block.
+      </P>
+
       <H2>Watching the loan</H2>
       <P>
         Your loan section on the vault page and on Portfolio shows the collateral and its value, the debt with
-        interest counted to the latest block the way Morpho counts it, the health factor, the
+        interest counted to the latest block the way Morpho counts it, the health factor (the
+        collateral&apos;s borrowing limit divided by what you owe, safe above 1), the
         liquidation price in stock terms and how far the stock can fall before it. Make it safer takes the
         loan to a health factor you choose, 1.6 by default, with the least action. A wallet holding USDG
         repays; a wallet without it takes shares out of Morpho, exits them in kind, repays with the USDG leg

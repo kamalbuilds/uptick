@@ -49,7 +49,7 @@ export function EarnBorrow({ cfg }: { cfg: VaultConfig }) {
   const market = collateralMarket(cfg.id, cfg.vault);
   return (
     <section aria-labelledby="earn-borrow">
-      <SectionTitle id="earn-borrow" aside={market ? `Morpho Blue · ${pct(Number(market.lltv) / 1e16, 1)} loan to value limit` : "Morpho Blue"}>Earn and borrow</SectionTitle>
+      <SectionTitle id="earn-borrow" aside={market ? <><Term id="morpho">Morpho Blue</Term> · {pct(Number(market.lltv) / 1e16, 1)} <Term id="lltv">loan-to-value limit</Term></> : <Term id="morpho">Morpho Blue</Term>}>Earn and borrow</SectionTitle>
       <p className="mt-4 max-w-[690px] text-[20px] font-medium leading-7 tracking-[-0.2px]">Earn the pool fees on your {cfg.symbol}, and borrow USDG against the same position.</p>
       <p className="mt-2 max-w-[690px] text-mute">
         One click deposits {cfg.symbol} into the vault, then posts the vault shares as collateral and sends USDG to your wallet. Fresh shares are held for the next block, about 12 seconds, so the loan follows the deposit by that long. The shares keep earning pool fees while they are collateral.
@@ -70,7 +70,7 @@ function Opening({ cfg }: { cfg: VaultConfig }) {
       </div>
       <dl className="min-w-0 self-start">
         <Row k={<>You keep, <Term id="worstHalf">weaker half</Term></>}><span className={cn("figure", toneClass(kept))}>{signed(kept)}</span> a year</Row>
-        <Row k="Collateral">The {cfg.symbol} vault share, earning while posted</Row>
+        <Row k={<Term id="collateral" />}>The {cfg.symbol} vault share, earning while posted</Row>
         <Row k="You borrow">USDG, at the market rate</Row>
         <Row k="Share price" last>Chainlink only, so a swap in the pool never moves it</Row>
       </dl>
@@ -251,7 +251,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
             <span className="absolute -inset-y-1 w-px bg-mute" style={{ left: `${capPct}%` }} aria-hidden />
           </div>
           <div className="figure mt-1 flex justify-between gap-3 text-[12px] leading-4 text-mute">
-            <span>{room ? `${num(limitPct, 0)}% of the limit` : "n/a"}</span>
+            <span>{room ? `${num(limitPct, 0)}% of the limit` : "Waiting for the oracle price"}</span>
             <span>{room ? `Slider stops at ${Number(BORROW_CAP_BPS) / 100}% (${usdg(room.cap)})` : ""}</span>
           </div>
           <p className="mt-2 text-[13px] leading-5 text-mute">
@@ -264,14 +264,14 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
             <WalletButton size="lg" label={!isConnected ? "Connect wallet" : undefined} className="w-full" />
           ) : canRetry && run ? (
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={retry}>Retry from “{run.steps[failedAt].label}”</Button>
+              <Button size="lg" className="px-5" onClick={retry}>Retry the failed step</Button>
               <Button size="lg" variant="outline" onClick={reset}>Start over</Button>
             </div>
           ) : failedAt >= 0 ? (
             <Button size="lg" variant="outline" onClick={reset}>Start over</Button>
           ) : (
-            <Button size="lg" className="w-full" disabled={blocker !== null || running || finished} onClick={start}>
-              {running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {runLabel(run)}</> : borrow > 0n ? `Deposit ${cfg.symbol} and borrow ${usdg(borrow)} USDG` : `Deposit ${cfg.symbol}`}
+            <Button size="lg" className="w-full px-4 sm:px-8" disabled={blocker !== null || running || finished} onClick={start}>
+              {running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {runLabel(run)}</> : borrow > 0n ? `Deposit and borrow ${usdg(borrow)} USDG` : `Deposit ${cfg.symbol}`}
             </Button>
           )}
           {!run && blocker && (parsed !== null || unreadable) && <p className="mt-2 text-[13px] leading-5 text-caution">{blocker}</p>}
@@ -294,11 +294,11 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
         <dl>
           <Row k={<>You keep, <Term id="worstHalf">weaker half</Term></>}><span className={cn("figure", toneClass(kept))}>{signed(kept)}</span> a year</Row>
           <Row k="You receive">{shown ? <><span className="figure" data-testid="eb-shares">{shown}</span> {shown === "1" ? "vault share" : "vault shares"}</> : <span className="text-mute">Reading the vault</span>}</Row>
-          <Row k={<>Max borrow at {pct(lltvPct, 1)}</>}>{limitText ? <><span className="figure" data-testid="eb-max-borrow">{limitText}</span> USDG</> : <span className="text-mute">Waiting for the oracle price</span>}</Row>
+          <Row k={<>Max borrow at <Term id="lltv">{pct(lltvPct, 1)} limit</Term></>}>{limitText ? <><span className="figure" data-testid="eb-max-borrow">{limitText}</span> USDG</> : <span className="text-mute">Waiting for the oracle price</span>}</Row>
           <Row k="Borrow rate" last>{borrowApr !== undefined ? <><span className="figure">{pct(borrowApr, 2)}</span> a year, moves with use</> : <span className="text-mute">Reading the market</span>}</Row>
         </dl>
         <dl className="mt-6 rounded-sm border border-line px-4">
-          <Row k="Liquidation price">
+          <Row k={<Term id="liquidationPrice" />}>
             {stockLiq !== undefined && liqSharePrice !== undefined && sharePrice !== undefined ? (
               <span className="block">
                 <span className="figure text-[20px] font-medium leading-6" data-testid="eb-liquidation">{usd(stockLiq, { compact: false })}</span> <span className="text-[15px] font-semibold">{cfg.symbol}</span>
@@ -307,7 +307,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
               </span>
             ) : <span className="text-mute">Nothing owed, so nothing to liquidate</span>}
           </Row>
-          <Row k="Health factor" last>
+          <Row k={<Term id="healthFactor" />} last>
             {hf !== null ? <><span className={cn("figure text-[20px] font-medium leading-6", hfTone)} data-testid="eb-health">{hf > 99 ? ">99" : hf.toFixed(2)}</span> <span className={cn("text-[13px]", hfTone || "text-mute")}>{hfWord}</span></> : <span className="text-mute">Shown once you borrow</span>}
           </Row>
         </dl>
