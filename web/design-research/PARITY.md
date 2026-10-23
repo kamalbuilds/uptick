@@ -14,13 +14,13 @@ One row per interactive element or information unit a direct competitor shows on
 | Row select loads a panel | Y | - | - | - | - | | build on /vaults at 1024px and up; below that rows open the vault page |
 | Chevron or Open button to detail page | Y | Y | - | - | - | | build |
 | Docked panel tabs Supply / Withdraw | Y | - | - | - | - | | have: Deposit / Withdraw, now also in the side panel |
-| Borrow / Repay tabs | Y | - | - | - | - | | skip: Uptick has no debt |
+| Borrow / Repay tabs | Y | - | - | - | - | | have: Earn and borrow on the vault page, one confirmation deposits, posts the shares and borrows USDG against them |
 | Amount input with token selector | Y | Y | - | - | - | | have: stock / USDG switch |
 | Amount in USD under the input | Y | - | - | - | - | | build |
 | Wallet balance line | Y | Y | - | - | - | | have |
 | 25/50/75/Max chips | Y | Y | - | - | - | | build |
 | Yield or APY row in the panel | Y | Y | - | - | - | | have: worst-half rate row |
-| Health factor row | Y | - | - | - | - | | skip: no liquidation exists to warn about; the gate scale on the vault page is the equivalent |
+| Health factor row | Y | - | - | - | - | | have: health factor and the stock-terms liquidation price in an outlined risk box beside the borrow slider |
 | Primary Connect Wallet button | Y | Y | Y | Y | Y | | have |
 | "Trade stock tokens" card | Y | - | - | - | - | | skip: USDG pay-with swaps inside the deposit, so the user does not leave |
 | Isolated tag | Y | - | - | - | - | | skip: every vault is its own contract, nothing is pooled |
