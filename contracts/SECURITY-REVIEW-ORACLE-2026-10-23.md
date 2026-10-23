@@ -173,3 +173,247 @@ the incentive is 1.0741 and the bad-debt gap falls to 17.3%, inside the range of
 - The builder's -37.9% and 323K gas figures were not re-measured; the NVDA market oracle's 349,200 s bound was taken
   from the builder's warp, only its live `price()` was read here.
 - ERC-8056 behaviour of the Chainlink feed across a real split was reasoned, not observed.
+
+## Fix verification (branch `r2-oracle-fix`, 2026-10-23)
+
+Fixes in `git log integration..r2-oracle-fix`: O-M1 `649b89a`, O-L1 `e4d5b2c`, O-L2 `01c4c8c`. `git diff integration...HEAD --stat` restricted to
+`src/StockVault.sol`, `src/v4` and `src/VaultFactory.sol` is empty: StockVault runtime 24,504 / initcode 36,068, StockVaultV4 24,277 /
+43,911, VaultFactory 8,597 / 9,850, all unchanged (`forge build --sizes`). New sizes: `UptickShareOracle` runtime 5,047
+(was 3,243), initcode 6,588; `UptickShareOracleFactory` runtime 7,678, initcode 7,818. Gas of `price()` first call / warm:
+v3 323,285 / 183,646 before, 325,561 / 185,922 after (+2,276); v4 204,748 / 118,609 before, 207,312 / 121,173 after (+2,564).
+Suites, one forge process (`-j 1`) on the public RPC at head: `--match-contract 'OracleReview|ShareCollateral|DeployAll'`
+75 of 75 pass (a first run had one red, the O-M1 PoC dividing by zero because its `FakeVault` reported a zero TWAP to the
+new rebuild; the fake now reports 1.0; that revert exists only for a forged vault).
+
+| Finding | Fix | Evidence it can fail |
+|---|---|---|
+| O-M1 | `UptickShareOracleFactory` (immutable VaultFactory, `isVault` required, CREATE2 per vault, `isOracle`, `oracleOf`, `OracleCreated`); oracle constructor takes no argument, reads the factory and vault from its deployer, stores `factory()`, `vault()`, `oracleFactory()`; `DeployAll` deploys the factory by default | With the `isVault` checks removed from the factory and the oracle and `isOracle` never recorded: `test_poc_forgedFactoryOracleCannotComeFromTheOracleFactory`, `test_onlyFactoryVaultsGetAnOracle`, `test_aLenderCanVerifyTheOracleAgainstTheOracleFactory`, `test_createOracleEmitsAndLandsOnThePredictedAddress` red; restored, green. `DEPLOY_ORACLE_FACTORY` default flipped to false: `test_oracleFactoryIsDeployedByDefaultAndBoundToTheVaultFactory` red; restored, green |
+| O-L1 | `cut += _pendingCutUsdg(...)`: gross rebuilt at `min(Chainlink, TWAP)` from `positionInfo()` and idle balances, minus the uncollected cut, minus `totalAssets()` | Subtraction removed: Chainlink 60 bp above the pool, price change across the sweep +1,263 ppm (the whole cut); restored: -3 ppm (95 bp: -5 ppm; Chainlink at the pool: 0 ppm). Both pool orientations: TSLA (Stock Token currency0) cut 424 ppm, change -1 ppm |
+| O-L2 | Documented in `SECURITY.md` residuals with the PoC references | Sweep liquidator reverts `SharesLocked`, exact liquidator passes in the same block (`test_poc_dustMintToLiquidatorRevertsLiquidation`), control green. The `web/app/docs/collateral/page.tsx` paragraph was not written: the UI skill guard hook blocked the edit (no Hallmark/ui-craft/DESIGN.md read in this lane) and was not overridden |
+
+Deviation from the brief, measured: the O-L1 PoC lands within 1 ppm on the upside (the price does not rise) but sits 3 ppm
+below the pre-sweep price at 60 bp, not within 1 ppm. The vault does not say which leg its pending fees are in, so the
+rebuild takes the dearer reading (all stock, valued at Chainlink) and over-deducts the USDG part of the cut by
+`(Chainlink / TWAP - 1)`, at most 1% of the cut under the deviation gate (bound asserted in the test). It is the lender-safe
+side and the only alternative that is exact for one split is wrong by the same amount for the other.
+
+### Fresh-eyes re-review of the diff to `contracts/src` and `contracts/script` (`git diff integration...HEAD`)
+
+No Critical, High, Medium or Low finding. Verdict: **SHIP**, with the conditions at the end.
+
+- **CREATE2 squatting.** The deployer in the CREATE2 formula is the oracle factory itself, so no one else can occupy a
+  vault's oracle address; a rival factory computes a different address (`test_createOracleEmitsAndLandsOnThePredictedAddress`).
+  Pre-funding the predicted address changes nothing: the oracle holds no funds and no balance is read from it.
+- **Deploying an oracle before the vault's owner.** `createOracle` is permissionless but takes no parameter beyond a vault
+  the VaultFactory registered, and a second call returns the existing oracle without reverting
+  (`test_createOracleIsIdempotentAndPermissionless`), so the first caller gets exactly the oracle the owner would, and a
+  front-run cannot make the owner's transaction fail. No script in the repo calls `createOracle`, so no deploy can be
+  blocked by an earlier one.
+- **Griefing the constructor.** Its inputs are the VaultFactory (immutable), a registered vault's immutables and the token
+  decimals; a caller controls none of them, so if `createOracle` can revert for a vault it reverts for everyone and the
+  cause is in the vault, not in the caller.
+- **Reentrancy and `isOracle`.** The oracle constructor makes external calls (vault, tokens; the Stock Token is an issuer
+  upgradeable proxy). A hostile token could re-enter `createOracle` for another vault and clobber `_deploying`, but the
+  constructor read its parameters before any such call, and `isOracle` and `oracleOf` are written only after `new`
+  returns, only for the address `new` returned. No path writes `isOracle[x]` for an address the factory did not create.
+- **Spoofing by imitation.** A contract that copies the factory and binds it to a yes-registry yields an oracle with the
+  same runtime code; it is not in the real factory's `isOracle`, `oracleFactory()` and `factory()` name the imitation, and
+  `test_poc_forgedFactoryOracleCannotComeFromTheOracleFactory` shows the genuine oracle passes all four checks while the
+  look-alike fails each. This is detection, not prevention: nothing on chain can tie the oracle factory to the VaultFactory
+  without changing VaultFactory, and an oracle factory that is bound to the real VaultFactory but has different code looks
+  identical through `factory()`. The root of trust is the published oracle factory address (and its verified source),
+  exactly as the VaultFactory address already is.
+- **Underflow in the pending-cut subtraction.** Every subtraction is guarded (`gross > uncollectedCut + ta`,
+  `value > cut`), the sum cannot overflow at realistic balances, and `value` saturates at zero. When the vault's own `net`
+  saturates to zero, `totalAssets()` is 0, the cap is 0 and the price is 0 whatever the subtraction does.
+- **Double count with the cap.** The cap is not reduced by the pending cut: the result is `min(value - cut - pending,
+  ta x px)`. A double count would drop the price by the whole cut; the measured change is 0 ppm with the cap binding
+  (Chainlink at the pool) and -1 to -5 ppm when it does not, and the test's lower bound (`offset x cut + 1` ppm) fails on a
+  double count. On v3 the rebuilt pending cut is exactly 0 after pushes, accrued fees and a 50 bp Chainlink offset
+  (`test_pendingCutIsZeroOnV3`); on v4 it is 0 before the sweep.
+- **Mismatch attribution.** The rebuild attributes any difference between its gross and the vault's to the pending cut.
+  The inputs are the vault's own: `positionInfo()` reads the same `_readLenient` snapshot as `totalAssets()` and `health()`
+  (same TWAP, same fee reads), the formulas are copied with the vault's rounding, and the measured residual with nothing
+  pending is under one USDG unit. A future vault version that changed `_valuationAt` would shift this silently: the oracle
+  is bound to the audited creation codes through `isVault`, which is what keeps this closed.
+- **New revert surface.** `_sqrtToUsd` and the nav division can divide by zero only where the vault's own `totalAssets()`
+  does, and `totalAssets()` is called before them; no new revert path for a registered vault.
+- **Gas.** +2.3K (v3) and +2.6K (v4) on a 207K to 326K call, about 1%. `valueInUsdg` gained a third argument; nothing in
+  the repo besides the oracle and its tests calls it.
+
+Conditions on SHIP: publish the oracle factory address next to the VaultFactory, and have the market-creation flow check
+`oracleFactory.isOracle(oracle)`, `oracle.factory()`, `collateralToken == oracle.vault()` and `loanToken == oracle.usdg()`
+(all four are asserted in `test_aLenderCanVerifyTheOracleAgainstTheOracleFactory` and the O-M1 PoC).
+
+Blind spots: head-of-chain public RPC fork, not the pinned block, so pool depth and cut sizes (1,263 ppm PLTR, 424 ppm TSLA)
+drift; v3 vaults were tested with the NVDA pool only and v4 with PLTR and TSLA, no hooked v4 pool; a Stock Token that
+reenters from its transfer hooks was reasoned, not run; the 3 ppm drift was measured on two pools, its bound is analytic;
+the `collateral` docs page paragraph for O-L2 is not written (hook-blocked); no mainnet deploy was run, `DeployAll` was
+exercised in its simulated fork form only; `backstage gate --fail-on HIGH` fails on five existing findings in
+`docs/research/FABLES.md` and none in files this branch changes.
+
+## Independent re-review (2026-10-23)
+
+Reviewer did not write the fix. Scope: `git diff integration...r2-oracle-fix -- contracts/src contracts/script`
+(`UptickShareOracle.sol`, `UptickShareOracleFactory.sol`, `DeployAll.s.sol`) against `StockVault.sol`,
+`v4/StockVaultV4.sol`, `v4/TickOracleV4.sol`, `v4/VaultMathV4.sol`, `VaultFactory.sol`. Source untouched; one new file,
+`test/security/oracle/FreshReview.t.sol` (contract `FreshReviewV4`, 4 own tests plus the 3 inherited from
+`ShareCollateralV4Test`, a `PushLiquidator` attacker and `PreFixOracle`, the `integration` oracle verbatim and renamed so the
+before/after difference is measured in the same block). Fork: public RPC `https://rpc.mainnet.chain.robinhood.com` at head,
+PLTR v4 pool (Stock Token currency1, 1% fee), real PoolManager, real Morpho Blue singleton `0x9D53...1010`, IRM
+`0x2BD3...0fa1`, LLTV 62.5%. One forge process, `-j 1`.
+
+Verdict: **FIX-FIRST**. One Critical, introduced by the O-L1 fix. The O-M1 fix and the `DeployAll` wiring hold.
+
+### C-1 (Critical). The O-L1 pending-cut rebuild reads spot whenever the v4 ring has lapsed; one swap zeroes the price
+
+`UptickShareOracle.sol:215-220` (called from `:178`), with `StockVaultV4.sol:907` and `TickOracleV4.sol:31`.
+
+`_pendingCutUsdg` derives the pending cut in Stock Token units at `nav = min(px, _sqrtToUsd(sqrtTwap))`, then multiplies
+it by `px`. The derived amount is `bps x (pendingStock + pendingUsdg / nav)`, so its USDG part reaches the price as
+`bps x pendingUsdg x px / nav`. `health()` returns spot as `sqrtTwap` whenever the observation ring has lapsed
+(`if (!twapOk) s.sqrtTwap = spot`): no `poke` for `MAX_GAP` = 120 s, which is every weekend once the feed is older than
+`maxStaleness` (poke writes nothing), plus any keeper outage. The oracle keeps answering then (up to 97 h). A sell of the
+Stock Token in the same transaction sets `nav` to anything the attacker likes, and the deduction grows as `px / nav`
+without bound until `value` saturates to 0. The docstring's "Spot never enters" is false. With a live ring the TWAP is
+clamped to Chainlink plus or minus `maxDeviationBps` ticks, so the drift stays at the builder's few ppm; the builder's
+spot-fallback test (`test_measure_v4SpotFallbackPushCannotRevertPrice`) pushed only the buy direction and ran with
+nothing pending, the two conditions under which this cannot show.
+
+Preconditions, all attacker-controlled: a weekend (or lapsed ring); some USDG in the pending fees, which any holder creates
+by `redeemInKind` of a dust amount while the gate is closed (it sweeps every uncollected fee into pending; USDG fees accrue
+from any USDG-to-stock swap, and the attacker can wash-trade to add more); a borrower in the market. No inventory: the
+attacker sells inside a PoolManager `unlock`, liquidates, buys back and settles only the net, so the cost is the two legs'
+pool fees on the liquidity crossed.
+
+Measured (`test_measure_weekendSpotPushWithPendingFees`, $3,962 vault, pending cut 5.08 USDG):
+
+| Spot pushed down by | PLTR sold, cumulative | Oracle price change |
+|---|---|---|
+| 2x | 2,553 | +4,132 ppm (fees the push pays) |
+| 10x | 2,572 | -1,053 ppm |
+| 100x | 2,592 | -59,401 ppm |
+| 1,000x | 2,655 | -642,877 ppm |
+| 10,000x | 2,854 | -1,000,000 ppm (price 0) |
+
+Same weekend, same push, the `integration` oracle: +6,063 ppm (it cannot be lowered); this branch: -1,000,000 ppm
+(`test_poc_weekendSpotPushZeroesPriceThroughPendingCut`). Must-fail control: the same push with nothing pending leaves the
+price at or above where it was (`test_control_weekendSpotPushWithoutPendingFeesDoesNotLowerPrice`).
+
+End to end (`test_poc_weekendSpotPushLiquidatesForFree`): vault $63,769 (near the $100,000 cap), borrower carol posts
+$59,846 of shares and borrows $29,923 (80% of the LLTV limit, healthy). Weekend, dust sweep, then one `unlock`: sell PLTR to
+1/10,000 of Chainlink, `liquidate(carol, all collateral, 0)`, buy back, settle. Oracle price during the push 0, repaid 0,
+all 302.4e24 shares seized, $29,923 of lender supply written off as bad debt. The attacker redeems the shares in kind next
+block: PnL **+$48,868** after a push round trip cost of $10,978 (2,860 PLTR crossed, dominated by the in-range liquidity of
+the 1% pool). Price increase: none found; the attack is a forced wrongful liquidation at zero price.
+
+Impact at the $100,000 cap: every borrower against the share can be liquidated for nothing in one transaction on any
+weekend. Lenders lose 100% of outstanding borrows (up to $62,500 at the LLTV), borrowers lose all posted collateral, the
+attacker keeps the collateral less roughly $11,000 of pool fees (measured at a $64K vault; the cost grows with the vault's
+own in-range liquidity). Profitable once about $11,000 of shares is posted.
+
+Fix: never multiply a nav-scaled quantity by `px`. Value the rebuilt cut at the price it was rebuilt at:
+`return pending.mulDiv(navScale, stockScale);`. The USDG part of the cut is then exact, and as spot falls the deduction
+only shrinks, so no push lowers the price. What it gives up: the stock part is under-deducted by `(px - nav) / px`, at
+most `maxDeviationBps` (1%) of the cut with a live ring, and at most the stock part of the pending cut (the original O-L1
+amount, 13 bp in the review's run) with a lapsed ring. If that residual is not acceptable, use the tight upper bound
+instead: attribute the cut to the stock leg up to `perfFeeBps x idle stock`, value that part at `px` and the rest at `nav`;
+over-deduction is then bounded by `perfFeeBps x idle stock value`, independent of spot. Either way keep `FreshReviewV4` as
+the regression: the PoC must go red (price not lowered, liquidation reverts healthy) and the control must stay green.
+
+### Checked and holding
+
+- **O-M1, squatting and races.** The CREATE2 deployer is the oracle factory, so no other account or contract can occupy
+  `oracleAddress(vault)`. `createOracle` requires `factory.isVault` before anything else and records `isOracle` and
+  `oracleOf` only for the address `new` returned; it is idempotent, so a first caller gets exactly the owner's oracle.
+  A re-entrant `createOracle(sameVault)` from a hostile token hook would collide at the same CREATE2 address and revert the
+  outer call; only an issuer-controlled Stock Token could do that, and it would block, not forge. Any contract implementing
+  `deployParams()` can still deploy a working `UptickShareOracle` against any registry; that oracle is absent from the
+  published factory's `isOracle` and names its deployer in `oracleFactory()`. Detection, not prevention, as the builder states.
+- **Trust root (Info).** `VaultFactory` is `onlyOwner` for `createVault*` and `setDefaults` (which includes `usdg`), so the
+  `isVault` chain proves "deployed by the factory owner from pinned code", not "priced against real USDG and a real Stock
+  Token". A curator must check `loanToken == USDG 0x5fc5...d168` and the vault's `stock()` and `feed()` against the
+  published list, not only `isOracle`.
+- **O-L1 arithmetic with a live ring.** Every subtraction saturates, no underflow; v3 rebuild is exactly zero (same
+  `vaultMath.amounts`, same fee reads, same rounding as `_valuationAt`), so v3 is unaffected by C-1. `VaultMathV4.info` and
+  `VaultMath.amounts` are the same formula, so v4 has no residual with nothing pending. No upside path found: `nav <= px`,
+  so the rebuilt cut is never below the true cut.
+- **Revert surface and gas inside `liquidate`.** `price()` reverts for a registered vault only where `totalAssets()` does
+  (called first). That is reachable in the sell direction: pushing the PLTR pool to tick 556,742 (all of 50M PLTR offered)
+  made `price()` revert on this branch and on `integration` alike. It blocks liquidations only while spot is held there,
+  which hands arbitrageurs the pool; pre-existing, Info, and the original review's "unreachable" holds only for the buy
+  direction. Liquidation with the oracle inside a PoolManager unlock ran at default gas (7.77M for the whole PoC).
+- **DeployAll.** `new UptickShareOracleFactory(IVaultFactory(address(factory)))` is bound to the VaultFactory deployed in
+  the same run, `DEPLOY_ORACLE_FACTORY` defaults to true, and no script, keeper or web path deploys or calls
+  `UptickShareOracle` outside the factory (repo grep).
+
+### Suite counts
+
+`forge test --match-contract 'OracleReview|ShareCollateral|DeployAll' -j 1`, public RPC at head: 84 tests in 8 suites (the
+builder's "75" predates `OracleReviewV4Token0`, 9 tests). First run 63 passed, 1 failed: `OracleReviewV3` `setUp` hit an RPC
+backend error (`connection refused` from the public endpoint's upstream), so its 21 tests did not execute. Re-run of
+`OracleReviewV3` alone: 21 of 21 pass. Total 84 of 84. `FreshReviewV4`: 7 of 7 pass (the PoCs assert the vulnerable
+behaviour and go red once C-1 is fixed).
+
+### Blind spots
+
+Head-of-chain fork, not pinned: pool depth, and so the $10,978 push cost, move with the chain; only the PLTR v4 pool was
+attacked (TSLA currency0 orientation reasoned from the symmetric formula, not run). No arbitrageurs exist on the fork, but
+the attack is atomic so none could interfere. The `$100,000` figures extrapolate the measured $64K vault run. Both fixes
+proposed for C-1 are reasoned, not implemented or run (src is read-only for this review).
+
+## C-1 fix (round 1, branch r2-oracle-fix)
+
+Change: `UptickShareOracle._pendingCutUsdg` returns `pending.mulDiv(navScale, stockScale)` instead of
+`pending.mulDiv(px * usdgScale, stockScale)`. The rebuilt pending cut is valued at the `nav = min(Chainlink, TWAP)` it was
+rebuilt at, never at Chainlink. One line in `src/UptickShareOracle.sol`, plus the docstring; runtime 5,034 bytes (was 5,047).
+`StockVault.sol`, `StockVaultV4.sol`, `VaultFactory.sol` and `TickOracleV4.sol` untouched.
+
+Why this fix and not the tighter alternative. The alternative (attribute the cut to the stock leg up to `perfFeeBps x idle
+stock`, value that part at Chainlink and the rest at `nav`) is not strictly safer. Write the pending cut in stock units at
+`nav` as `X = pS + pU / nav`, with `pS`, `pU` the cut's stock and USDG parts, unknown separately. Its value is
+`X x nav + pS x (px - nav)`. The alternative estimates `pS` as `min(X, perfFeeBps x idle)`, and `X` grows without bound as
+`nav` falls (the `pU / nav` term), so with a lapsed ring a same-transaction push drives the estimate up to the cap and the
+deduction up to `perfFeeBps x idle stock value` of the price: on a vault whose position is out of range (mostly idle stock)
+that is a push-controlled drop of up to the performance fee (10% in the test params) of the vault. The proposed fix has
+value `X x nav = pS x nav + pU`, which is non-decreasing in `nav`: a lower spot can only shrink the deduction. Its price is
+an under-deduction of `pS x (px - nav)`, at most 1% of the cut with a live ring and the stock part of the cut (the original
+O-L1 amount) with a lapsed ring, which is the O-L1 Low and never a way to lower the price. Both keep the O-L1 leak closed
+(without the subtraction the price rises by the whole cut, 1,282 ppm in the 60 bp scenario).
+
+Regression tests (`test/security/oracle/FreshReview.t.sol`, `FreshReviewV4` on PLTR with the Stock Token as currency1 and
+`FreshReviewV4Token0` on TSLA with it as currency0, which also puts the other orientation of `_sqrtToUsd` and the push
+direction under test; the PoCs now assert the safe behaviour):
+
+| Test | Asserts | Pre-fix code (RED) | After the fix (GREEN) |
+|---|---|---|---|
+| `test_c1_weekendSpotPushWithPendingFeesNeverLowersPrice` | seven pushes, 2x to 100,000,000x below Chainlink, weekend, fees pending (5.10 USDG): price never below the pre-push price less 1 ppm | PLTR 198.88 < 199.09, TSLA 373.92 < 374.09 (first violating push) | +5,098 ppm at 2x, +5,414 ppm from 1,000x on, flat (TSLA +1,585 ppm) |
+| `test_c1_weekendSpotPushDoesNotLowerPrice` | push to 1/10,000 of Chainlink: price at or above pre-push less 1 ppm; fixed oracle at or below the pre-O-L1 oracle at the start | price 0 (both pools) | +5,414 ppm (integration oracle +6,062 ppm); TSLA +1,585 ppm |
+| `test_c1_weekendSpotPushCannotLiquidateAHealthyBorrower` | in one PoolManager unlock: sell to 1/10,000, liquidate the whole collateral of an 80%-of-limit borrower, buy back, settle. Morpho reverts `position is healthy`, nothing seized, lender supply unchanged, borrower keeps all collateral, attacker PnL negative, oracle price during the push at or above the pre-push price | liquidation succeeded, all shares seized | refused; attacker PnL -$10,986 (PLTR), -$4,833 (TSLA); price during the push $198.83 against $199.09 before |
+
+RED run: the three tests above were written first and run against the unmodified oracle source (`git diff --quiet src` exit 0):
+6 of 15 failed in `FreshReviewV4` and `FreshReviewV4Token0`, the control `test_control_weekendSpotPushWithoutPendingFeesDoesNotLowerPrice`
+and the inherited tests passed. The TSLA run shows the attack was not specific to the PLTR orientation (liquidation
+succeeded there too). GREEN run after the one-line change: 15 of 15. Command: `forge test --match-contract FreshReview -j 1`.
+
+O-L1 regression (price must not rise by the cut when Chainlink is above the TWAP) stays green with its bound changed from
+"at most 1 ppm and a fall of at most `offset x cut`" to "at most `offset x cut`, no fall": the oracle no longer
+over-deducts (it was -3 ppm at 60 bp, now +3 ppm; at 95 bp +5 ppm; TSLA +1 ppm), which is the accepted residual above, 3 and
+5 ppm against a bound of 7.6 and 12. Without the subtraction (`cut += _pendingCutUsdg(...)` commented out) both fail,
+`test_poc_v4PendingCutDoesNotLeakWhenFeedAboveTwap` with "1282 > 8" and `...AtTheEdgeOfTheGate` with "1282 > 13"; restored,
+green. O-M1 tests unchanged and green.
+
+Suites: `forge test --match-contract 'OracleReview|ShareCollateral|DeployAll|FreshReview' -j 1`, public RPC at head,
+10 suites, 99 tests. First run 97 passed, 2 failed (the two O-L1 bound tests above, whose bound was the over-deducting
+code's); after the bound change those two pass, so 99 of 99 (final counts in the commit message).
+
+`price()` gas (fork, `test_measure_priceGasV3` and `test_measure_priceGasV4`): v3 325,092 cold, 185,453 warm; v4 207,227
+cold, 121,088 warm. The C-1 change swaps one multiplication operand and adds no call; the O-L1 rebuild's own cost against
+the pre-O-L1 oracle (323,285 and 204,748 cold) is +1.8K and +2.5K. Runtime size 5,034 bytes.
+
+Blind spots: the fix leaves `price()` reverting when spot is pushed to the sqrt-price limit (`totalAssets()` divides by a zero
+`nav`, pre-existing and Info above), which blocks liquidations only while spot is held there. Head-of-chain fork, not
+pinned, so the dollar figures move with the chain; the sweep of pushes is bounded by the Stock Token the trader holds
+(1e8 factor reached, then the limit). The tests assert a floor of the pre-push price, so a regression that raised the price
+by the push's own fee income would not be caught here (the existing `test_v4PoolPushMovesThePriceOnlyByTheFeesItPays` covers
+that). Only the weekend/lapsed-ring path is attacked; with a live ring the TWAP is clamped to Chainlink by `maxDeviationBps` ticks.
