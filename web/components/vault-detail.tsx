@@ -13,6 +13,7 @@ import { SectionTitle, StateChip, toneClass } from "./ledger";
 import { PriceLine } from "./price";
 import { Term } from "./term";
 import { PairLogo } from "./token-logo";
+import { RealSwap } from "./real-swap";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
 import { useVaultStats } from "@/lib/hooks";
@@ -113,6 +114,8 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
             <SectionTitle id="fee">Why this pool</SectionTitle>
             <WhyThisPool id={cfg.id} symbol={cfg.symbol} />
           </section>
+
+          <RealSwap symbol={cfg.symbol} pool={cfg.pool} />
 
           <div className="grid gap-x-16 gap-y-14 lg:grid-cols-2">
             <section aria-labelledby="tvl">
