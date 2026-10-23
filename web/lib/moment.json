@@ -1,0 +1,39 @@
+{
+  "window": {
+    "start": "2026-09-17T00:00:00+00:00",
+    "end": "2026-10-17T00:00:00+00:00",
+    "days": 30
+  },
+  "vaults": 17,
+  "swaps": 1567200,
+  "offHours": {
+    "swapsPct": 58.2,
+    "feesPct": 51.4,
+    "volumePct": 49.0,
+    "clockPct": 80.1
+  },
+  "sessions": {
+    "nyse_hours": {
+      "swapsPct": 41.8,
+      "feesPct": 48.6,
+      "clockPct": 19.9,
+      "feePerDollarLost": 0.98,
+      "poolFeePerDollarLost": 1.05
+    },
+    "weeknight": {
+      "swapsPct": 37.8,
+      "feesPct": 42.2,
+      "clockPct": 50.7,
+      "feePerDollarLost": 1.46,
+      "poolFeePerDollarLost": 1.53
+    },
+    "weekend": {
+      "swapsPct": 20.4,
+      "feesPct": 9.2,
+      "clockPct": 29.4,
+      "feePerDollarLost": 2.76,
+      "poolFeePerDollarLost": 2.65
+    }
+  },
+  "source": "keeper/scripts/moment.py over keeper/data/replay.json: the gate pool of each vault in web/lib/vault-universe.json; feePerDollarLost is the vault replay (sessions block) summed over tokens, poolFeePerDollarLost the whole pool by the same markout"
+}
