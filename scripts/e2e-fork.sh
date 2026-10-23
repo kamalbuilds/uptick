@@ -15,6 +15,7 @@ FORK_JSON="$HOME/.cache/uptick-fork/fork.json"
 TMP=$(mktemp -d)
 STEP=00-preflight
 SNAP=""
+ONLY=${E2E_ONLY:-all}           # all: every user path on the NVDA vault, then the Morpho demo; demo: only the Morpho demo (needs no fork.json, any anvil fork of 4663)
 JSALT=e2e-fork-jitter-salt   # the keeper's local jitter salt for this run; the slot the script waits for is computed from the same one
 
 NVDA=0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC
@@ -37,7 +38,8 @@ keeper_dry_nvda() {
 }
 
 scrub() { sed -E 's#https?://[^ "]+#<url>#g'; }
-report() { echo "$1" >&3; }
+report() { echo "$1" >&3; echo "$1" >>"$TMP/report.log"; }
+info() { report "  info: $*"; }
 die() { # also ends the main shell when called inside $(...)
   [ -f "$TMP/failed" ] || report "FAIL $STEP: $(printf '%s' "$*" | scrub | tr '\n' ' ' | cut -c1-600)"
   : > "$TMP/failed"; kill -TERM $$ 2>/dev/null; exit 1
@@ -59,6 +61,7 @@ cleanup() {
   if [ -n "$SNAP" ] && [ "${E2E_KEEP:-0}" != 1 ]; then
     cast rpc evm_revert "$SNAP" -r "$R" >/dev/null 2>&1 || report "WARN fork revert failed, run scripts/fork-up.sh state check"
   fi
+  [ -f "$TMP/anvil.pid" ] && kill "$(cat "$TMP/anvil.pid")" 2>/dev/null
   rm -rf "$TMP"
 }
 trap 'echo "$LINENO" > "$TMP/errline"' ERR
@@ -122,15 +125,25 @@ settle() { local before; before=$(off_twap_bps); warp $(( $(ts) + 700 )); chk "T
 feedupdated() { cast call "$FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | sed -n 4p | num; }
 swap() { # FROM tokenIn tokenOut amountIn -> receipt (fee 500 pool, recipient = FROM). Fixed gas limit: eth_estimateGas on a swap
   # intermittently lands below what the mined tx needs (out of gas inside the pool's USDG balanceOf, measured on this fork)
-  send "$1" "$SWAPROUTER" --gas-limit 1500000 'exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))(uint256)' "($2,$3,500,$1,$4,0,0)" >/dev/null
+  local rc; rc=$(send "$1" "$SWAPROUTER" --gas-limit "${SWAP_GAS:-1500000}" 'exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))(uint256)' "($2,$3,500,$1,$4,0,0)")
+  if declare -F logtx >/dev/null; then logtx "${SWAP_LABEL:-trader swap}" "$(jq -r .transactionHash <<<"$rc")"; fi
 }
 
 # ---------------------------------------------------------------- 00 preflight
+if [ "$ONLY" = demo ] && [ -z "${E2E_RPC:-}" ]; then   # the one-command demo brings its own fork of the public RPC (FORK_BLOCK pins a block)
+  PORT=$(/usr/bin/python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])')
+  anvil --fork-url "${UPSTREAM_RPC:-https://rpc.mainnet.chain.robinhood.com}" ${FORK_BLOCK:+--fork-block-number "$FORK_BLOCK"} --host 127.0.0.1 --port "$PORT" --silent >"$TMP/anvil.log" 2>&1 &
+  echo $! >"$TMP/anvil.pid"; R=http://127.0.0.1:$PORT
+  for _ in $(seq 90); do nc -z 127.0.0.1 "$PORT" 2>/dev/null && break; sleep 1; done
+  nc -z 127.0.0.1 "$PORT" 2>/dev/null || die "anvil fork did not start: $(tail -3 "$TMP/anvil.log")"
+  cast rpc anvil_mine 1 -r "$R" >/dev/null   # forge's eth_feeHistory asks the upstream for fork-block state unless one local block exists
+fi
+cast chain-id -r "$R" >"$TMP/cid" 2>&1 || die "no RPC at $R: $(cat "$TMP/cid")"
+chk "fork chain id" "$(cat "$TMP/cid") == 4663"
+if [ "$ONLY" != demo ]; then
 [ -f "$FORK_JSON" ] || die "no $FORK_JSON, start scripts/fork-up.sh"
 V=$(jq -r '.vaults.NVDA.address // empty' "$FORK_JSON"); ROUTER=$(jq -r '.router // empty' "$FORK_JSON"); FACTORY=$(jq -r '.factory // empty' "$FORK_JSON")
 [ -n "$V" ] && [ -n "$ROUTER" ] && [ -n "$FACTORY" ] || die "fork.json lacks vaults.NVDA, router or factory: run scripts/fork-up.sh on the current bytecode"
-cast chain-id -r "$R" >"$TMP/cid" 2>&1 || die "no RPC at $R: $(cat "$TMP/cid")"
-chk "fork chain id" "$(cat "$TMP/cid") == 4663"
 [ "$(cast code "$V" -r "$R" | wc -c)" -gt 100 ] || die "no vault code at $V"
 chk "vault share decimals are 24" "$(call "$V" 'decimals()(uint8)') == 24"
 chk "NVDA vault is registered in the factory" "'$(call "$FACTORY" 'isVault(address)(bool)' "$V")' == 'true'"
@@ -141,18 +154,23 @@ chk "NVDA depositCap is the deploy-list cap" "$(call "$V" 'depositCap()(uint256)
 chk "entry fee defaults to max(pool fee tier, 35 bp): 3500 pips on the 5 bp NVDA pool" "$(call "$V" 'entryFee()(uint24)') == 3500 and $(call "$V" 'poolFee()(uint24)') == 500"
 chk "rebalance TWAP-to-Chainlink bound defaults to 30 bp" "$(call "$V" 'maxTwapOracleBps()(uint16)') == 30"
 chk "vault is keyed to anvil account 0" "'$(cast call "$V" 'keeper()(address)' -r "$R" | tr A-Z a-z)' == '$(echo $A0 | tr A-Z a-z)'"
+fi
 ANVIL0_KEY=$(cast wallet private-key "test test test test test test test test test test test junk") # public Foundry test mnemonic, account 0
 SNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
 START_BLOCK=$(cast block-number -r "$R")
-START_SUPPLY=$(call "$V" 'totalSupply()(uint256)')
 T0=$(ts)
 warp $((T0 + 1))   # anvil's wall clock can sit behind the head after a restart: pin the chain clock at the head first
 chk "chain clock moves forward" "$(ts) == $((T0 + 1))"
-echo "  info: spot is $(off_twap_bps) bp from the TWAP at start; instantDeploy=$(call "$V" 'instantDeploy()(bool)'), depositCap=$(call "$V" 'depositCap()(uint256)')" >&3
+if [ "$ONLY" != demo ]; then
+START_SUPPLY=$(call "$V" 'totalSupply()(uint256)')
+info "spot is $(off_twap_bps) bp from the TWAP at start; instantDeploy=$(call "$V" 'instantDeploy()(bool)'), depositCap=$(call "$V" 'depositCap()(uint256)')"
 if [ "$(off_twap_bps)" -gt 5 ]; then settle; fi
 chk "spot is within the 10 bp band of the TWAP before the first deposit" "$(off_twap_bps) <= 5"
+fi
+PRE=$(cast rpc evm_snapshot -r "$R" | tr -d '"')   # the demo starts from here: a fork that no earlier step has touched
 pass
 
+if [ "$ONLY" != demo ]; then
 # ---------------------------------------------------------------- 01 fund the fresh user
 step 01-fund-fresh-user
 chk "user starts with no vault shares" "$(bal "$V" "$USER") == 0"
@@ -441,7 +459,7 @@ chk "lifetime fee counter rose" "$(cast call "$V" 'feesEarnedLifetime()(uint256,
 chk "redeem returned at least previewRedeem NVDA" "$(bal "$NVDA" "$USER") - $n0 >= $prev"
 chk "redeem burned exactly the shares asked" "$(bal "$V" "$USER") == $sh_user - $part"
 pps_post=$(pps)
-echo "  info: pps before swaps $pps_pre, after swaps (fees uncollected) $pps_swaps, after harvest $pps_post; FeesCollected fees0=$f0 fees1=$f1 value_in_NVDA=$fv treasuryShares=$tsh" >&3
+info "pps before swaps $pps_pre, after swaps (fees uncollected) $pps_swaps, after harvest $pps_post; FeesCollected fees0=$f0 fees1=$f1 value_in_NVDA=$fv treasuryShares=$tsh"
 chk "share price after harvest is not below the pre-swap price" "$pps_post >= $pps_pre"
 chk "harvest did not dilute holders (post-harvest >= pre-harvest less 1e-9 rounding)" "$pps_post * 10**9 >= $pps_swaps * (10**9 - 1)"
 pass
@@ -485,7 +503,7 @@ while [ "$(off_feed_bps 6)" -gt 4 ] && [ $aligns -lt 8 ]; do
   aligns=$((aligns + 1))
 done
 settle
-echo "  info: TWAP was $g_start bp off the feed at the slot; $aligns aligning trades, now $(off_feed_bps 5) bp" >&3
+info "TWAP was $g_start bp off the feed at the slot; $aligns aligning trades, now $(off_feed_bps 5) bp"
 chk "the pool sits within 10 bp of Chainlink, so the keeper's 15 bp deferral is not what the next steps exercise" "$(off_feed_bps 5) <= 10"
 
 # (1) the TWAP walks 65 to 95 bp away from Chainlink, inside the 100 bp gate: every path stays open except rebalance
@@ -495,7 +513,7 @@ sells=0
 while [ "$(off_feed_bps 6)" -lt 65 ] && [ $sells -lt 40 ]; do swap "$TRADER" "$NVDA" "$USDG" 100000000000000000000; sells=$((sells + 1)); done
 settle
 FD=$(off_feed_bps 5)
-echo "  info: $sells sells of 100 NVDA, then a TWAP window: TWAP is $FD bp from Chainlink (rebalance bound 30, gate 100)" >&3
+info "$sells sells of 100 NVDA, then a TWAP window: TWAP is $FD bp from Chainlink (rebalance bound 30, gate 100)"
 chk "TWAP is between 30 and 100 bp from Chainlink" "$FD > 30 and $FD < 100"
 chk "the Chainlink gate is Ok, so only the rebalance bound can refuse (health status 0)" "$(health) == 0"
 chk "spot sits on the TWAP, so the spot-to-TWAP band is not what refuses" "$(off_twap_bps) <= 1"
@@ -503,13 +521,13 @@ rd=$(revdata "$A0" "$V" 'rebalance()')
 chk "the keeper's rebalance reverts TwapOffOracle()" "'${rd:0:10}' == '$(cast sig 'TwapOffOracle()')'"
 chk "a deposit is still accepted (eth_call)" "$(cast call --from "$USER" "$V" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER" -r "$R" | num) > 0"
 kd=$(keeper_dry_nvda)
-echo "  info: keeper dry run, TWAP $FD bp off the feed: $(jq -c '{action,twap_feed_bps,max_bps}' <<<"$kd" | cut -c1-200)" >&3
+info "keeper dry run, TWAP $FD bp off the feed: $(jq -c '{action,twap_feed_bps,max_bps}' <<<"$kd" | cut -c1-200)"
 chk "the keeper defers its scheduled send while the TWAP is over 15 bp off the feed (dry run, slot assumed due)" "'$(jq -r .action <<<"$kd")' == 'deferred_twap_off_feed'"
 cast rpc evm_revert "$FSNAP" -r "$R" >/dev/null || die "evm_revert of the feed-gap snapshot failed"
 chk "back at the start of the step: spot on the TWAP" "$(off_twap_bps) <= 1"
 G1=$(off_feed_bps 5)
 kc=$(keeper_dry_nvda)
-echo "  info: keeper dry run, TWAP $G1 bp off the feed (start of the step): $(jq -c '{action,twap_feed_bps}' <<<"$kc" | cut -c1-200)" >&3
+info "keeper dry run, TWAP $G1 bp off the feed (start of the step): $(jq -c '{action,twap_feed_bps}' <<<"$kc" | cut -c1-200)"
 chk "control: with the TWAP within 15 bp of the feed the same dry run would send" "$G1 <= 10 and '$(jq -r .action <<<"$kc")' == 'dry_run_would_send'"
 
 # (2) a push UP leaves the deposit, the mint and the router zap open (shares are priced at the lowest of feed, TWAP and
@@ -517,7 +535,7 @@ chk "control: with the TWAP within 15 bp of the feed the same dry run would send
 USNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
 buys=0
 while [ "$(off_twap_bps)" -lt 14 ] && [ $buys -lt 6 ]; do swap "$TRADER" "$USDG" "$NVDA" 30000000000; buys=$((buys + 1)); done
-echo "  info: $buys buys of 30,000 USDG put spot $(off_twap_bps) bp above the TWAP (band is 10 bp)" >&3
+info "$buys buys of 30,000 USDG put spot $(off_twap_bps) bp above the TWAP (band is 10 bp)"
 chk "spot is more than the 10 bp band above the TWAP" "$(off_twap_bps) > 10 and $buys > 0"
 chk "the Chainlink gate is still Ok (health status 0)" "$(health) == 0"
 send "$USER" "$USDG" 'approve(address,uint256)' "$ROUTER" 1000000000 >/dev/null
@@ -540,7 +558,7 @@ chk "the TWAP sits within 15 bp of the feed before the push down ($G2 bp)" "$G2 
 sells=0
 while [ "$(off_twap_bps)" -lt 14 ] && [ $sells -lt 6 ]; do swap "$TRADER" "$NVDA" "$USDG" 140000000000000000000; sells=$((sells + 1)); done
 OFF=$(off_twap_bps)
-echo "  info: $sells sells of 140 NVDA put spot $OFF bp below the TWAP (band is 10 bp)" >&3
+info "$sells sells of 140 NVDA put spot $OFF bp below the TWAP (band is 10 bp)"
 chk "spot is more than the 10 bp band below the TWAP" "$OFF > 10 and $sells > 0"
 chk "the Chainlink gate is still Ok, so only the band can refuse (health status 0)" "$(health) == 0"
 sh0=$(bal "$V" "$USER"); n0=$(bal "$NVDA" "$USER")
@@ -583,7 +601,7 @@ done
 kill -0 "$kp" 2>/dev/null || die "keeper process died on the SpotOffTwap revert: $(tail -3 "$TMP/keeper.log" | cut -c1-300)"
 chk "every simulate_failed line names SpotOffTwap" "$(grep '"event":"simulate_failed"' "$TMP/keeper.log" | grep -c 'SpotOffTwap') == $(grep -c '"event":"simulate_failed"' "$TMP/keeper.log")"
 chk "keeper sent nothing while the band was closed" "$(grep -cE '"event":"(sent|rebalanced)"' "$TMP/keeper.log" || true) == 0 and $(call "$V" 'lastRebalance()(uint256)') == $lastreb and $(call "$V" 'tokenId()(uint256)') == $tok0"
-echo "  info: keeper while closed: $(grep '"event":"simulate_failed"' "$TMP/keeper.log" | head -1 | jq -c '{event,action,error}' | cut -c1-260)" >&3
+info "keeper while closed: $(grep '"event":"simulate_failed"' "$TMP/keeper.log" | head -1 | jq -c '{event,action,error}' | cut -c1-260)"
 settle
 done_k=0
 for _ in $(seq 120); do
@@ -593,7 +611,7 @@ for _ in $(seq 120); do
 done
 [ $done_k = 1 ] || die "keeper did not rebalance after the TWAP caught up: $(tail -4 "$TMP/keeper.log" | cut -c1-400)"
 killtree "$(cat "$TMP/keeper.pid")"; rm -f "$TMP/keeper.pid"
-echo "  info: keeper $(grep '"event":"simulate_ok"' "$TMP/keeper.log" | head -1 | jq -c '{trigger,note,guards_ok,chainlink_age_s,deviation_bps}')" >&3
+info "keeper $(grep '"event":"simulate_ok"' "$TMP/keeper.log" | head -1 | jq -c '{trigger,note,guards_ok,chainlink_age_s,deviation_bps}')"
 khash=$(grep '"event":"rebalanced"' "$TMP/keeper.log" | head -1 | jq -r .hash)
 krc=$(cast receipt "$khash" --json -r "$R")
 chk "keeper tx mined with status 1" "'$(jq -r .status <<<"$krc")' == '0x1'"
@@ -669,14 +687,412 @@ rd=$(revdata "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uin
 chk "router deposit reverts Unhealthy(FeedStale)" "'${rd:0:10}' == '$(cast sig 'Unhealthy(uint8)')' and int('${rd:10:64}',16) == 2"
 chk "control: exits are not oracle-gated (redeemInKind eth_call succeeds on the stale feed)" "'$(cast call --from "$A0" "$V" 'redeemInKind(uint256,address,address)(uint256,uint256)' 1000000000000000000000 "$A0" "$A0" -r "$R" | sed -n 1p | num)' != ''"
 pass
+fi
+
+# ---------------------------------------------------------------- DEMO
+# The Morpho demo. One run, one fork: a fresh factory and router, PLTR (Uniswap v4) and AAPL (Uniswap v3) vaults, an UptickShareOracle
+# on the AAPL share, a market on the real Morpho Blue singleton, a lender, a borrower using the web app's own call encoding, a 3% pool
+# push, a stale feed, a feed drop and a liquidation. Every transaction is logged with its hash and block to $TXLOG (label, hash, block).
+MORPHO=0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010
+MIRM=0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1
+LENDER=0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc      # anvil account 5
+LIQUIDATOR=0x976EA74026E726554dB657fA54763abd0C3a0aa9  # anvil account 6
+AAPL_CEIL_BPS=9432   # AAPL max LLTV 94.32% (keeper/data/weekend-gaps.json max_lltv_pct: 1 - worst adverse weekend gap 0.68% - 5 pt)
+TXLOG="$TMP/fork-txs.tsv"; : >"$TXLOG"
+logtx() { printf '%s\t%s\t%s\n' "$1" "$2" "$(cast receipt "$2" blockNumber -r "$R")" >>"$TXLOG"; }
+dsend() { local label=$1 rc; shift; rc=$(send "$@"); logtx "$label" "$(jq -r .transactionHash <<<"$rc")"; printf '%s' "$rc"; }
+dsend_reverts() { local label=$1 from=$2 out; shift 2
+  out=$(cast send --unlocked --from "$from" --gas-limit 3000000 --json -r "$R" "$@" 2>&1) || true
+  [ "$(jq -r .status <<<"$out" 2>/dev/null)" = 0x0 ] || die "expected a mined revert for $label, got: $(printf '%s' "$out" | tail -2)"
+  logtx "$label (reverts)" "$(jq -r .transactionHash <<<"$out")"; }
+fund_tok() { cast rpc anvil_setStorageAt "$1" "$(cast index address "$2" $NVDA_NS)" "$(cast to-uint256 "$3")" -r "$R" >/dev/null; }   # every Stock Token shares the ERC-7201 balance base
+d_health() { cast call "$1" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n "${2}p" | num; }   # 1 status 2 price 3 updatedAt 4 oracle 5 twap 6 spot
+d_off_twap_bps() { python3 -c "import sys;t,s=map(int,sys.argv[1:]);print(abs(s*s-t*t)*10000//(t*t))" "$(d_health "$1" 5)" "$(d_health "$1" 6)"; }
+d_off_feed_bps() { python3 -c "import sys;o,x=map(int,sys.argv[1:]);print(abs(x*x-o*o)*10000//(o*o))" "$(d_health "$1" 4)" "$(d_health "$1" "$2")"; }
+d_liq() { cast call "$1" 'positionInfo()((uint256,int24,int24,uint128,uint256,uint256,uint256,uint256,bool))' -r "$R" | tr -d '()' | awk -F', ' '{print $4}' | num; }
+d_settle() { warp $(( $(ts) + 700 )); }
+
+# Trades move a pool the way a trader does: through the v3 SwapRouter, or the v4 PoolManager through a minimal swapper.
+# d_gap VAULT -> "bp side": distance of pool spot from the Chainlink-implied price, and "buy" when the pool prices the stock below the feed
+# (a buyer of the stock, who pays USDG, closes it) or "sell" when above.
+d_gap() { python3 -c "
+import sys
+o,x,t0=map(int,sys.argv[1:4])
+bp=abs(x*x-o*o)*10000//(o*o)
+over=(x>o)==(t0==1)
+print(bp, 'sell' if over else 'buy')" "$(d_health "$1" 4)" "$(d_health "$1" 6)" "$([ "$(call "$1" 'stockIsToken0()(bool)')" = true ] && echo 1 || echo 0)"; }
+# d_trade VENUE VAULT STOCK buy|sell USDG_VALUE_RAW: a trade worth that much USDG at the Chainlink price. v4 needs $SWAPPER and $V4KEY.
+d_trade() {
+  local venue=$1 vlt=$2 tok=$3 dir=$4 usdg_raw=$5 px amt z
+  px=$(d_health "$vlt" 2)
+  if [ "$dir" = buy ]; then
+    if [ "$venue" = v3 ]; then SWAP_LABEL="AAPL pool: trader buys AAPL (walks the pool onto the feed)" swap "$TRADER" "$USDG" "$tok" "$usdg_raw"; else
+      z=$([ "$(py "1 if int('$USDG',16) < int('$tok',16) else 0")" = 1 ] && echo true || echo false)
+      dsend "PLTR pool: trader buys PLTR (walks the pool onto the feed)" "$TRADER" "$SWAPPER" --gas-limit 3000000 'swap((address,address,uint24,int24,address),bool,uint256)(uint256)' "$V4KEY" "$z" "$usdg_raw" >/dev/null; fi
+  else
+    amt=$(py "$usdg_raw * 10**20 // $px")
+    if [ "$venue" = v3 ]; then SWAP_LABEL="AAPL pool: trader sells AAPL (walks the pool onto the feed)" swap "$TRADER" "$tok" "$USDG" "$amt"; else
+      z=$([ "$(py "1 if int('$tok',16) < int('$USDG',16) else 0")" = 1 ] && echo true || echo false)
+      dsend "PLTR pool: trader sells PLTR (walks the pool onto the feed)" "$TRADER" "$SWAPPER" --gas-limit 3000000 'swap((address,address,uint24,int24,address),bool,uint256)(uint256)' "$V4KEY" "$z" "$amt" >/dev/null; fi
+  fi
+}
+# d_align VENUE VAULT STOCK: trade until spot is within 4 bp of the Chainlink price; the size of each trade is learned from the move of the last.
+d_align() {
+  local venue=$1 vlt=$2 tok=$3 it=0 rate=30000000 g0 g1 side0 side1 usd moved
+  read -r g0 side0 < <(d_gap "$vlt")
+  while [ "$g0" -gt 4 ] && [ $it -lt 16 ]; do
+    usd=$(py "max(1000000, int($rate * ($g0 - 1) * 9 // 10))")
+    d_trade "$venue" "$vlt" "$tok" "$side0" "$usd"
+    read -r g1 side1 < <(d_gap "$vlt")
+    moved=$(py "abs($g0 - $g1) if '$side0' == '$side1' else $g0 + $g1")
+    [ "$moved" -gt 0 ] && rate=$(py "int($usd / $moved)")
+    g0=$g1; side0=$side1; it=$((it + 1))
+  done
+  [ "$g0" -le 4 ] || die "could not walk the pool onto the feed: $g0 bp after $it trades"
+  info "$venue pool walked onto the feed in $it trades ($(py "$rate / 10**6") USD per bp)"
+}
+
+# ---------------------------------------------------------------- 10 deploy the factory, the router and both vaults
+step 10-deploy-factory-router-and-two-vaults
+FORK_BLOCK_N=$(cast rpc anvil_nodeInfo -r "$R" | jq -r '.forkConfig.forkBlockNumber')
+chk "the fork has a recorded fork block" "$FORK_BLOCK_N > 0"
+node "$APP/scripts/deploy-list.mjs" 2>/dev/null | jq '[.[] | select(.symbol=="PLTR" or .symbol=="AAPL")]' >"$TMP/demo-list.json"
+chk "the deploy list holds exactly AAPL (v3) and PLTR (v4)" "$(jq length "$TMP/demo-list.json") == 2 and '$(jq -r 'map(.symbol + ":" + .venue) | sort | join(",")' "$TMP/demo-list.json")' == 'AAPL:v3,PLTR:v4'"
+AAPL=$(jq -r '.[] | select(.symbol=="AAPL") | .token' "$TMP/demo-list.json"); PLTR=$(jq -r '.[] | select(.symbol=="PLTR") | .token' "$TMP/demo-list.json")
+AAPL_POOL=$(jq -r '.[] | select(.symbol=="AAPL") | .pool' "$TMP/demo-list.json"); AAPL_FEED=$(jq -r '.[] | select(.symbol=="AAPL") | .feed' "$TMP/demo-list.json")
+mkdir -p "$APP/contracts/cache"; cp "$TMP/demo-list.json" "$APP/contracts/cache/demo-deploy-list.json"
+OUT=$(cd "$APP/contracts" && DEPLOY_LIST=cache/demo-deploy-list.json ANVIL_KEY=$ANVIL0_KEY OWNER=$A0 KEEPER=$A0 TREASURY=$TREASURY MIN_REBALANCE_INTERVAL=3600 \
+  forge script script/DeployAll.s.sol --rpc-url "$R" --broadcast 2>&1) || die "DeployAll failed: $(printf '%s' "$OUT" | tail -8)"
+DFACTORY=$(echo "$OUT" | awk '$1=="VaultFactory"{print $2}'); DROUTER=$(echo "$OUT" | awk '$1=="UptickRouter"{print $2}')
+VA=$(echo "$OUT" | awk '$1=="StockVault" && $2=="AAPL"{print $3}'); VP=$(echo "$OUT" | awk '$1=="StockVaultV4" && $2=="PLTR"{print $3}')
+[ -n "$DFACTORY" ] && [ -n "$DROUTER" ] && [ -n "$VA" ] && [ -n "$VP" ] || die "could not parse DeployAll output: $(printf '%s' "$OUT" | tail -8)"
+BCAST="$APP/contracts/broadcast/DeployAll.s.sol/4663/run-latest.json"
+jq -r '.transactions[] | [(if .transactionType == "CREATE" then "deploy: " + .contractName else .contractName + "." + (.function | split("(")[0]) end), .hash] | @tsv' "$BCAST" | while IFS=$'\t' read -r nm h; do logtx "$nm" "$h"; done
+chk "DeployAll logged its deployments, vault creations and settings" "$(wc -l <"$TXLOG") >= 5"
+chk "the demo factory has code" "$(cast code "$DFACTORY" -r "$R" | wc -c) > 100"
+chk "AAPL vault is registered in the new factory" "'$(call "$DFACTORY" 'isVault(address)(bool)' "$VA")' == 'true'"
+chk "PLTR vault is registered in the new factory" "'$(call "$DFACTORY" 'isVault(address)(bool)' "$VP")' == 'true'"
+chk "router is bound to the new factory" "'$(call "$DROUTER" 'registry()(address)' | tr A-Z a-z)' == '$(echo "$DFACTORY" | tr A-Z a-z)'"
+chk "AAPL vault holds AAPL, PLTR vault holds PLTR" "'$(call "$VA" 'asset()(address)' | tr A-Z a-z)' == '$(echo "$AAPL" | tr A-Z a-z)' and '$(call "$VP" 'asset()(address)' | tr A-Z a-z)' == '$(echo "$PLTR" | tr A-Z a-z)'"
+chk "both share tokens have 24 decimals" "$(call "$VA" 'decimals()(uint8)') == 24 and $(call "$VP" 'decimals()(uint8)') == 24"
+PLTR_FEE=$(jq -r '.[] | select(.symbol=="PLTR") | .feeTier' "$TMP/demo-list.json"); PLTR_TS=$(jq -r '.[] | select(.symbol=="PLTR") | .tickSpacing' "$TMP/demo-list.json"); PLTR_HOOKS=$(jq -r '.[] | select(.symbol=="PLTR") | .hooks' "$TMP/demo-list.json")
+if [ "$(py "1 if int('$USDG',16) < int('$PLTR',16) else 0")" = 1 ]; then V4KEY="($USDG,$PLTR,$PLTR_FEE,$PLTR_TS,$PLTR_HOOKS)"; else V4KEY="($PLTR,$USDG,$PLTR_FEE,$PLTR_TS,$PLTR_HOOKS)"; fi
+out=$(cd "$APP/contracts" && forge create test/fixtures/V4Swapper.sol:V4Swapper --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args 0x8366a39CC670B4001A1121B8F6A443A643e40951 2>&1) || die "forge create V4Swapper failed: $(printf '%s' "$out" | tail -3)"
+SWAPPER=$(jq -r .deployedTo <<<"$out"); logtx "deploy: V4Swapper (trader helper for the PLTR v4 pool)" "$(jq -r .transactionHash <<<"$out")"
+fund_usdg "$TRADER" 20000000000000; fund_tok "$AAPL" "$TRADER" 100000000000000000000000; fund_tok "$PLTR" "$TRADER" 100000000000000000000000
+dsend "trader approve USDG to the v3 router" "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPROUTER" 20000000000000 >/dev/null; dsend "trader approve AAPL to the v3 router" "$TRADER" "$AAPL" 'approve(address,uint256)' "$SWAPROUTER" 100000000000000000000000 >/dev/null
+dsend "trader approve USDG to the v4 swapper" "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPPER" 20000000000000 >/dev/null; dsend "trader approve PLTR to the v4 swapper" "$TRADER" "$PLTR" 'approve(address,uint256)' "$SWAPPER" 100000000000000000000000 >/dev/null
+info "forked at block $FORK_BLOCK_N; factory $DFACTORY router $DROUTER AAPL vault $VA PLTR vault $VP"
+pass
+
+# ---------------------------------------------------------------- 11 seed and rebalance both vaults
+step 11-seed-and-rebalance
+# A vault may rebalance 3,600 s after it is created. A v4 pool keeps no price history, so the PLTR vault builds its TWAP from the
+# observations its keeper writes with poke() every minute: eleven of them span the 600 s window and open its gate.
+need=$(py "max($(call "$VA" 'lastRebalance()(uint256)'), $(call "$VP" 'lastRebalance()(uint256)')) + 3600 + 1 - $(ts)")
+[ "$need" -le 0 ] || warp $(( $(ts) + need ))
+# The pools are the real market's and sit off Chainlink by whatever the market did since the last print. The vault rebalances only with
+# the TWAP within 30 bp of the feed, so a trader walks each pool onto the feed first (a v3 TWAP needs one quiet window to follow).
+read -r ga sa < <(d_gap "$VA"); read -r gp sp < <(d_gap "$VP")
+info "at the fork AAPL spot is $ga bp ($sa side) from Chainlink and PLTR $gp bp ($sp side)"
+d_align v3 "$VA" "$AAPL"
+warp $(( $(ts) + 700 ))
+chk "AAPL TWAP caught up with the aligned pool (within 10 bp of the feed)" "$(d_off_feed_bps "$VA" 5) <= 10"
+d_align v4 "$VP" "$PLTR"
+chk "PLTR gate is closed before its keeper has observed the pool (TwapUnavailable, status 3)" "$(d_health "$VP" 1) == 3"
+VPO=$(call "$VP" 'oracle()(address)')
+for i in $(seq 11); do
+  warp $(( $(ts) + 60 ))
+  chk "poke $i would write an observation" "'$(cast call --from "$A0" "$VP" 'poke()(bool)' -r "$R")' == 'true'"
+  dsend "PLTR: keeper poke $i of 11 (TWAP observation)" "$A0" "$VP" 'poke()(bool)' >/dev/null
+done
+chk "the ring holds eleven observations" "$(call "$VPO" 'count()(uint16)') == 11"
+chk "PLTR gate is Ok after eleven minutes of observations (status 0)" "$(d_health "$VP" 1) == 0"
+for pair in "AAPL $VA $AAPL" "PLTR $VP $PLTR"; do
+  set -- $pair; sym=$1; vlt=$2; tok=$3
+  chk "$sym vault gate is Ok (status 0)" "$(d_health "$vlt" 1) == 0"
+  chk "$sym spot is within the 10 bp band of its TWAP ($(d_off_twap_bps "$vlt") bp)" "$(d_off_twap_bps "$vlt") <= 8"
+  px=$(d_health "$vlt" 2); amt=$(py "5000 * 10**26 // $px")
+  fund_tok "$tok" "$A0" $(py "$amt + 10**19")
+  dsend "$sym: approve seed" "$A0" "$tok" 'approve(address,uint256)' "$vlt" $amt >/dev/null
+  dsend "$sym: seed deposit (5,000 USD of $sym)" "$A0" "$vlt" 'deposit(uint256,address)(uint256)' $amt "$A0" >/dev/null
+  chk "$sym seed minted shares" "$(bal "$vlt" "$A0") > 0"
+done
+for pair in "AAPL $VA" "PLTR $VP"; do
+  set -- $pair; sym=$1; vlt=$2
+  if ! cast call --from "$A0" "$vlt" 'rebalance()' -r "$R" >/dev/null 2>"$TMP/rb.err"; then die "$sym rebalance does not simulate: $(tr '\n' ' ' <"$TMP/rb.err" | cut -c1-300)"; fi
+  dsend "$sym: keeper rebalance (mints the position)" "$A0" "$vlt" 'rebalance()' >/dev/null
+  chk "$sym position holds liquidity after the rebalance" "$(d_liq "$vlt") > 0"
+done
+info "after the rebalance AAPL spot is $(d_off_feed_bps "$VA" 6) bp from Chainlink, PLTR $(d_off_feed_bps "$VP" 6) bp"
+pass
+
+# ---------------------------------------------------------------- 12 a user deposits PLTR (v4) and exits in kind
+step 12-user-deposits-pltr-v4
+# straight after the rebalance, before any quiet window: the v4 TWAP is built from the last eleven minutes of pokes and a gap would reopen TwapUnavailable
+fund_tok "$PLTR" "$USER" 100000000000000000000
+PL_IN=20000000000000000000   # 20 PLTR
+chk "PLTR gate is Ok for the user's deposit" "$(d_health "$VP" 1) == 0"
+sh0=$(bal "$VP" "$USER"); prev=$(call "$VP" 'previewDeposit(uint256)(uint256)' $PL_IN)
+dsend "PLTR: user approve" "$USER" "$PLTR" 'approve(address,uint256)' "$VP" $PL_IN >/dev/null
+rc=$(dsend "PLTR: user deposit 20 PLTR into the v4 vault" "$USER" "$VP" 'deposit(uint256,address)(uint256)' $PL_IN "$USER")
+dsh=$(py "$(bal "$VP" "$USER") - $sh0")
+ev=$(evdata "$rc" "$VP" 'Deposit(address,address,uint256,uint256)'); [ -n "$ev" ] || die "no Deposit event from the PLTR vault"
+chk "Deposit.shares equals the share delta and previewDeposit to the wei" "$(word "${ev#*|}" 1) == $dsh and $dsh == $prev and $dsh > 0"
+chk "20 PLTR mints about 20 whole shares at 24 decimals (the 100 bp entry fee on a 1% pool, less the seed's drift)" "abs($dsh - 20 * 10**24) * 100 <= 3 * 20 * 10**24"
+chk "the user's PLTR fell by the deposit" "$(bal "$PLTR" "$USER") == 100 * 10**18 - $PL_IN"
+rc=$(dsend "PLTR: user redeemInKind of a quarter of the shares" "$USER" "$VP" 'redeemInKind(uint256,address,address)(uint256,uint256)' $(py "$dsh // 4") "$USER" "$USER")
+ev=$(evdata "$rc" "$VP" 'RedeemedInKind(address,address,address,uint256,uint256,uint256,uint256)'); [ -n "$ev" ] || die "no RedeemedInKind event from the PLTR vault"
+chk "both legs came back from the v4 position (PLTR and USDG)" "$(word "${ev#*|}" 1) > 0 and $(word "${ev#*|}" 2) > 0"
+pass
+
+# ---------------------------------------------------------------- 13 the share oracle for the AAPL vault, and one for the PLTR vault
+step 13-share-oracles
+oracle_of() { local o; o=$(cd "$APP/contracts" && forge create src/UptickShareOracle.sol:UptickShareOracle --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args "$DFACTORY" "$1" 2>&1) || die "forge create UptickShareOracle failed: $(printf '%s' "$o" | tail -3)"
+  logtx "deploy: UptickShareOracle for the $2 vault" "$(jq -r .transactionHash <<<"$o")"; jq -r .deployedTo <<<"$o"; }
+ORA=$(oracle_of "$VA" AAPL); ORP=$(oracle_of "$VP" PLTR)
+out=$(cd "$APP/contracts" && forge create test/fixtures/SpotShareOracle.sol:SpotShareOracle --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args "$VA" 2>&1) || die "forge create SpotShareOracle failed: $(printf '%s' "$out" | tail -3)"
+SPOTORA=$(jq -r .deployedTo <<<"$out"); logtx "deploy: SpotShareOracle (the control: an oracle that reads pool spot)" "$(jq -r .transactionHash <<<"$out")"
+if [ "${DEMO_ORACLE:-}" = spot ]; then ORA=$SPOTORA; info "DEMO_ORACLE=spot: the AAPL market uses the spot-reading oracle"; fi   # the must-fail switch: step 17 goes red
+chk "the AAPL oracle is wired to the AAPL vault" "'$(call "$ORA" 'vault()(address)' | tr A-Z a-z)' == '$(echo "$VA" | tr A-Z a-z)'"
+INIT="$(cd "$APP/contracts" && forge inspect src/UptickShareOracle.sol:UptickShareOracle bytecode 2>/dev/null)$(cast abi-encode 'constructor(address,address)' "$DFACTORY" "$DROUTER" | cut -c3-)"
+if out=$(cast call -r "$R" --create "$INIT" 2>&1); then die "the oracle accepted the router as a vault: $out"; fi
+rd=$(printf '%s' "$out" | grep -oE '0x[0-9a-fA-F]{8,}' | tail -1 || true)
+info "constructor with a non-vault answered: $(printf '%s' "$out" | tr '\n' ' ' | cut -c1-200)"
+chk "the oracle refuses an address the factory did not deploy (NotRegisteredVault)" "'${rd:0:10}' == '$(cast sig 'NotRegisteredVault()')'"
+for pair in "AAPL $VA $ORA" "PLTR $VP $ORP"; do
+  set -- $pair; sym=$1; vlt=$2; ora=$3
+  px=$(d_health "$vlt" 2); op=$(call "$ora" 'price()(uint256)')
+  nav=$(py "$(call "$vlt" 'convertToAssets(uint256)(uint256)' 1000000000000000000000000) * $px // 10**20")   # USDG raw of one whole share at Chainlink, from the vault's own NAV
+  info "$sym share: oracle price $op (1e36 scale) = $(py "$op / 10**12") USDG raw per whole share; vault NAV at Chainlink $nav"
+  chk "$sym oracle price is within 1.5% of the vault's own NAV per share at Chainlink" "abs($op // 10**12 - $nav) * 1000 <= 15 * $nav and $nav > 0"
+done
+pass
+
+# ---------------------------------------------------------------- 14 a market on the real Morpho Blue singleton
+step 14-morpho-market
+chk "Morpho Blue has code on the fork" "$(cast code "$MORPHO" -r "$R" | wc -c) > 1000"
+chk "the singleton's IRM is enabled" "'$(call "$MORPHO" 'isIrmEnabled(address)(bool)' "$MIRM")' == 'true'"
+CEIL=$AAPL_CEIL_BPS
+file_ceil=$(jq -r '[.tokens[] | select(.symbol == "AAPL") | .max_lltv_pct * 100 | round][0]' "$APP/keeper/data/weekend-gaps.json")
+chk "the price-gap ceiling pinned here equals the one derived in keeper/data/weekend-gaps.json" "$file_ceil == $CEIL"
+# 62.5% is the market's LLTV (contracts/SECURITY-REVIEW-ORACLE-2026-10-23.md): the gap ceiling bounds the price only, Morpho's liquidation
+# incentive at 62.5% is 12.68% and a position borrowed to the limit leaves bad debt only after a further 29.6% fall of the share.
+LLTV_BPS=6250
+LLTV=625000000000000000
+chk "the market LLTV is 62.5%, enabled on the singleton and under the 94.32% price-gap ceiling" "$LLTV_BPS == 6250 and $LLTV_BPS <= $CEIL and '$(call "$MORPHO" 'isLltvEnabled(uint256)(bool)' "$LLTV")' == 'true'"
+MKT="($USDG,$VA,$ORA,$MIRM,$LLTV)"
+mplan() { jq -nc --arg v "$VA" --arg u "$USDG" --arg o "$ORA" --arg i "$MIRM" --arg l "$LLTV" '{market:{loanToken:$u,collateralToken:$v,oracle:$o,irm:$i,lltv:$l}}'; }
+MID=$(MODE=id PLAN="$(mplan)" bun "$APP/scripts/fork-demo-steps.ts")
+chk "market id has the shape of a bytes32" "'${MID:0:2}' == '0x' and ${#MID} == 66"
+chk "the market does not exist yet (lastUpdate 0)" "$(cast call "$MORPHO" 'market(bytes32)(uint128,uint128,uint128,uint128,uint128,uint128)' "$MID" -r "$R" | sed -n 5p | num) == 0"
+rd=$(revdata "$A0" "$MORPHO" 'createMarket((address,address,address,address,uint256))' "($USDG,$VA,$ORA,$MIRM,900000000000000000)")
+chk "an LLTV Morpho has not enabled (90%) is refused with an Error(string)" "'${rd:0:10}' == '0x08c379a0'"
+dsend "Morpho: createMarket USDG / AAPL share, UptickShareOracle, LLTV 62.5%" "$A0" "$MORPHO" 'createMarket((address,address,address,address,uint256))' "$MKT" >/dev/null
+chk "the market now exists (lastUpdate set)" "$(cast call "$MORPHO" 'market(bytes32)(uint128,uint128,uint128,uint128,uint128,uint128)' "$MID" -r "$R" | sed -n 5p | num) > 0"
+mp=$(cast call "$MORPHO" 'idToMarketParams(bytes32)(address,address,address,address,uint256)' "$MID" -r "$R" | num | tr '\n' ' ' | sed 's/ $//')
+chk "Morpho stores the five parameters under the id the app derives" "'$(echo "$mp" | tr A-Z a-z)' == '$(echo "$USDG $VA $ORA $MIRM $LLTV" | tr A-Z a-z)'"
+rd=$(revdata "$A0" "$MORPHO" 'createMarket((address,address,address,address,uint256))' "$MKT")
+chk "creating it twice is refused (Error(string))" "'${rd:0:10}' == '0x08c379a0'"
+info "market $MID, LLTV $LLTV_BPS bp (ceiling $CEIL bp)"
+pass
+
+# ---------------------------------------------------------------- 15 a lender supplies USDG
+step 15-lender-supplies-usdg
+SUPPLY=300000000000   # 300,000 USDG
+fund_usdg "$LENDER" $SUPPLY
+dsend "Morpho: lender approve USDG" "$LENDER" "$USDG" 'approve(address,uint256)' "$MORPHO" $SUPPLY >/dev/null
+dsend "Morpho: lender supply 300,000 USDG" "$LENDER" "$MORPHO" 'supply((address,address,address,address,uint256),uint256,uint256,address,bytes)(uint256,uint256)' "$MKT" $SUPPLY 0 "$LENDER" 0x >/dev/null
+mk() { cast call "$MORPHO" 'market(bytes32)(uint128,uint128,uint128,uint128,uint128,uint128)' "$MID" -r "$R" | sed -n "${1}p" | num; }
+pos() { cast call "$MORPHO" 'position(bytes32,address)(uint256,uint128,uint128)' "$MID" "$1" -r "$R" | sed -n "${2}p" | num; }   # 1 supplyShares 2 borrowShares 3 collateral
+chk "the market holds the lender's 300,000 USDG" "$(mk 1) == $SUPPLY and $(mk 3) == 0"
+chk "the lender holds supply shares and the lender's wallet is empty" "$(pos "$LENDER" 1) > 0 and $(bal "$USDG" "$LENDER") == 0"
+pass
+
+# ---------------------------------------------------------------- 16 a borrower deposits AAPL and borrows, with the web app's own calls
+step 16-borrower-earn-and-borrow
+warp $(( $(ts) + 700 ))   # the rebalance swapped in the pool: let the TWAP catch up before a deposit
+chk "AAPL vault gate is Ok (status 0)" "$(d_health "$VA" 1) == 0"
+chk "spot is within the 10 bp band of the TWAP" "$(d_off_twap_bps "$VA") <= 8"
+# the vault's deposit cap (the deploy list sizes it from the pool's depth) bounds what a single user can put in: deposit 60% of what it still accepts
+AP_IN=$(py "$(call "$VA" 'maxDeposit(address)(uint256)' "$USER") * 60 // 100 // 10**17 * 10**17")
+chk "the borrower deposits a non-trivial amount under the cap (at least 10 AAPL)" "$AP_IN >= 10 * 10**18"
+fund_tok "$AAPL" "$USER" $(py "$AP_IN + 10**19")
+quote=$(call "$VA" 'previewDeposit(uint256)(uint256)' $AP_IN)
+collateral=$(py "$quote * 9950 // 10000")   # web/lib/morpho.ts collateralFromQuote: the quote less 50 bp
+oprice=$(call "$ORA" 'price()(uint256)')
+maxb=$(py "$collateral * $oprice // 10**36 * $LLTV // 10**18")
+BORROW=$(py "$maxb * 95 // 100")
+chk "the borrow is 95% of the limit and the market has the USDG to lend it" "$BORROW > 0 and $BORROW < $SUPPLY and $BORROW * 100 >= $maxb * 95 - 100"
+PLAN=$(jq -nc --arg v "$VA" --arg t "$AAPL" --arg a "$USER" --arg u "$USDG" --arg o "$ORA" --arg i "$MIRM" --arg l "$LLTV" --arg d "$AP_IN" --arg c "$collateral" --arg b "$BORROW" \
+  '{symbol:"AAPL",token:$t,vault:$v,account:$a,market:{loanToken:$u,collateralToken:$v,oracle:$o,irm:$i,lltv:$l},deposit:$d,collateral:$c,borrow:$b,tokenAllowance:"0",shareAllowance:"0"}')
+STEPS=$(PLAN="$PLAN" bun "$APP/scripts/fork-demo-steps.ts") || die "web/lib/morpho.ts earnAndBorrowSteps failed"
+chk "the app's flow is five calls: approve token, deposit, approve shares, supply collateral, borrow" "'$(jq -r 'map(.id) | join(",")' <<<"$STEPS")' == 'approve-token,deposit,approve-shares,supply-collateral,borrow'"
+chk "the supply-collateral and borrow calls target the Morpho singleton" "'$(jq -r '[.[3].to, .[4].to] | map(ascii_downcase) | join(",")' <<<"$STEPS")' == '$(echo "$MORPHO,$MORPHO" | tr A-Z a-z)'"
+u0=$(bal "$USDG" "$USER"); a0=$(bal "$AAPL" "$USER")
+for i in 0 1 2 3 4; do
+  id=$(jq -r ".[$i].id" <<<"$STEPS"); to=$(jq -r ".[$i].to" <<<"$STEPS"); data=$(jq -r ".[$i].data" <<<"$STEPS")
+  dsend "AAPL flow $((i + 1))/5: $id" "$USER" "$to" "$data" >/dev/null
+done
+minted=$(bal "$VA" "$USER")
+chk "the deposit minted exactly the previewed shares, all but the 50 bp margin went to Morpho as collateral" "$minted + $collateral == $quote and $(pos "$USER" 3) == $collateral"
+chk "the user's AAPL fell by the deposit" "$(bal "$AAPL" "$USER") == $a0 - $AP_IN"
+chk "the user received the borrowed USDG" "$(bal "$USDG" "$USER") == $u0 + $BORROW"
+debt=$(py "($(pos "$USER" 2) * ($(mk 3) + 1) + ($(mk 4) + 10**6) - 1) // ($(mk 4) + 10**6)")
+chk "the position owes the borrow (rounded up by Morpho's virtual shares) and holds the collateral" "$debt >= $BORROW and $debt <= $BORROW + 2"
+chk "control: borrowing 6% of the limit more (101% in all) is refused (Error(string): insufficient collateral)" "'$(revdata "$USER" "$MORPHO" 'borrow((address,address,address,address,uint256),uint256,uint256,address,address)' "$MKT" $(py "$maxb * 6 // 100") 0 "$USER" "$USER" | cut -c1-10)' == '0x08c379a0'"
+info "$(py "$AP_IN / 10**18") AAPL deposited, $collateral share units posted, $(py "$BORROW / 10**6") USDG borrowed against a limit of $(py "$maxb / 10**6") at LLTV $LLTV_BPS bp"
+pass
+
+# ---------------------------------------------------------------- 17 a 3% push of the AAPL pool leaves the oracle where it was
+step 17-pool-push-oracle-holds
+# The market's oracle is $ORA. SpotShareOracle (a fixture) is the control: the same push, the same vault, an oracle that reads spot.
+LTV_OK() { python3 -c "import sys;d,c,p,l=map(int,sys.argv[1:]);sys.exit(0 if d <= c*p//10**36*l//10**18 else 1)" "$debt" "$collateral" "$1" "$LLTV"; }
+LTV_OK "$(call "$ORA" 'price()(uint256)')" || die "the borrower is not healthy before the push"
+P_BEFORE=$(call "$ORA" 'price()(uint256)'); S_BEFORE=$(call "$SPOTORA" 'price()(uint256)'); SUP=$(call "$VA" 'totalSupply()(uint256)')
+VAL_BEFORE=$(py "$P_BEFORE * ($SUP + 10**6) // 10**36")   # the vault's holdings in USDG raw units, as the oracle values them
+SPOT0=$(d_health "$VA" 6); STK0=$([ "$(call "$VA" 'stockIsToken0()(bool)')" = true ] && echo 1 || echo 0)
+moved_bp() { python3 -c "import sys;s0,s1,t=map(int,sys.argv[1:]);m=(s1*s1)/(s0*s0) if t==1 else (s0*s0)/(s1*s1);print(int(round((m-1)*10000)))" "$SPOT0" "$(d_health "$VA" 6)" "$STK0"; }   # stock price in the pool, bp above its start
+# The pool is thin on this side (about 20,000 USDG moves it 3.4%, and the depth falls off a cliff past that), so buy in 1,000 USDG clips
+# until the pool prices AAPL 3% higher: the last clip moves it by about 35 bp at most, which lands inside the 3% to 3.6% window.
+VOL=0; mb=0; it=0; CLIP=1000000000
+while [ "$mb" -lt 300 ] && [ $it -lt 80 ]; do
+  SWAP_GAS=8000000 SWAP_LABEL="AAPL pool: 3% push, buy $((it + 1)) of 1,000 USDG" swap "$TRADER" "$USDG" "$AAPL" "$CLIP"; VOL=$(py "$VOL + $CLIP")
+  mb=$(moved_bp); it=$((it + 1))
+done
+chk "the push moved the pool price of AAPL up by 3% to 3.6% ($mb bp, $it buys, $(py "$VOL / 10**6") USDG)" "$mb >= 300 and $mb <= 360"
+chk "the pool now prices AAPL more than 100 bp off Chainlink" "$(d_off_feed_bps "$VA" 6) > 100"
+chk "the vault's own gate refuses to price at that spot (status is not Ok)" "$(d_health "$VA" 1) != 0"
+P_AFTER=$(call "$ORA" 'price()(uint256)'); S_AFTER=$(call "$SPOTORA" 'price()(uint256)')
+DV=$(py "($P_AFTER - $P_BEFORE) * ($SUP + 10**6) // 10**36")          # change of the checked oracle, in USDG raw units
+FEE_BOUND=$(py "$VOL * 500 // 10**6")                                  # every USDG of fee the trader paid, the vault's share of it at most
+SV=$(py "($S_AFTER - $S_BEFORE) * ($SUP + 10**6) // 10**36")
+info "market oracle ($ORA) moved $DV USDG raw on a vault of $VAL_BEFORE (bound: +$FEE_BOUND of fee income, -$(py "$VAL_BEFORE * 2 // 10000") of rounding and TWAP drift); the spot-reading control moved $SV ($(py "round($SV * 10000 / $VAL_BEFORE)") bp)"
+chk "the oracle moved by no more than the fee income the push paid, and fell by no more than 2 bp" "$DV <= $FEE_BOUND and $DV * 10000 >= -2 * $VAL_BEFORE"
+chk "control: an oracle that reads pool spot moved by more than 50 bp on the same push (so the bound above is able to fail)" "abs($SV) * 10000 >= 50 * $VAL_BEFORE"
+LTV_OK "$P_AFTER" || die "the borrower is not healthy after the push"
+chk "the borrower is as healthy after the push as before (same oracle price to within the bound)" "abs($P_AFTER - $P_BEFORE) * 10000 <= 2 * $P_BEFORE"
+pass
+
+# ---------------------------------------------------------------- 18 a stale feed closes deposits, exits stay open, the oracle keeps answering
+step 18-stale-feed
+d_fu=$(d_health "$VA" 3); maxstale=$(cast call "$VA" 'params()(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)' -r "$R" | sed -n 6p | num)
+fund_tok "$AAPL" "$USER" 10000000000000000000; dsend "AAPL: user approve (stale-feed deposit attempt)" "$USER" "$AAPL" 'approve(address,uint256)' "$VA" 1000000000000000000 >/dev/null
+dsend "USDG: user approve to the router (stale-feed zap attempt)" "$USER" "$USDG" 'approve(address,uint256)' "$DROUTER" 1000000000 >/dev/null
+chk "control: the feed is fresh, so the gate is not the stale one" "$(d_health "$VA" 1) != 2 and $(py "$(ts) - $d_fu") < $maxstale"
+P_FRESH=$(call "$ORA" 'price()(uint256)')
+warp $(( d_fu + maxstale + 1 ))
+chk "chain time is past maxStaleness ($maxstale s) since the last Chainlink print" "$(ts) - $d_fu > $maxstale"
+chk "vault health reports FeedStale (2)" "$(d_health "$VA" 1) == 2"
+sh0=$(bal "$VA" "$USER"); n0=$(bal "$AAPL" "$USER")
+rd=$(revdata "$USER" "$VA" 'deposit(uint256,address)(uint256)' 1000000000000000000 "$USER")
+chk "vault deposit reverts OracleUnhealthy(FeedStale)" "'${rd:0:10}' == '$(cast sig 'OracleUnhealthy(uint8)')' and int('${rd:10:64}',16) == 2"
+dsend_reverts "AAPL: deposit on a stale feed" "$USER" "$VA" 'deposit(uint256,address)' 1000000000000000000 "$USER"
+chk "the refused deposit minted nothing and took no AAPL" "$(bal "$VA" "$USER") == $sh0 and $(bal "$AAPL" "$USER") == $n0"
+rd=$(revdata "$USER" "$DROUTER" 'depositUsdg(address,uint256,uint256,address)(uint256)' "$VA" 1000000000 0 "$USER")
+chk "the router zap reverts Unhealthy(FeedStale) too" "'${rd:0:10}' == '$(cast sig 'Unhealthy(uint8)')' and int('${rd:10:64}',16) == 2"
+a_sh0=$(bal "$VA" "$A0"); a_n0=$(bal "$AAPL" "$A0"); a_u0=$(bal "$USDG" "$A0")
+rc=$(dsend "AAPL: redeemInKind on a stale feed" "$A0" "$VA" 'redeemInKind(uint256,address,address)(uint256,uint256)' 1000000000000000000000000 "$A0" "$A0")
+chk "redeemInKind still pays out both legs while the feed is stale" "$(bal "$VA" "$A0") == $a_sh0 - 10**24 and $(bal "$AAPL" "$A0") > $a_n0 and $(bal "$USDG" "$A0") > $a_u0"
+P_STALE=$(call "$ORA" 'price()(uint256)')
+chk "the share oracle keeps answering at the last print while the vault is closed (age under its 97 h bound)" "$(ts) - $d_fu < $(call "$ORA" 'MAX_FEED_AGE()(uint256)') and abs($P_STALE - $P_FRESH) * 1000 <= 5 * $P_FRESH"
+pass
+
+# ---------------------------------------------------------------- 19 a new round at a lower price, then a liquidation
+step 19-feed-drop-and-liquidation
+FEEDDROP_BPS=1200
+liq_call() { cast call --from "$LIQUIDATOR" "$MORPHO" 'liquidate((address,address,address,address,uint256),address,uint256,uint256,bytes)(uint256,uint256)' "$MKT" "$USER" "$1" 0 0x -r "$R" 2>&1; }
+SEIZE=$(py "$(pos "$USER" 3) // 2")
+fund_usdg "$LIQUIDATOR" 100000000000
+dsend "USDG: liquidator approve to Morpho" "$LIQUIDATOR" "$USDG" 'approve(address,uint256)' "$MORPHO" 100000000000 >/dev/null
+out=$(liq_call "$SEIZE") && die "control: a healthy position was liquidated: $out"
+chk "control: before the drop the liquidation is refused (Error(string): position is healthy)" "'$(printf '%s' "$out" | grep -oE '0x08c379a0[0-9a-f]*' | head -1 | cut -c1-10)' == '0x08c379a0'"
+read -r rid rans rstart rupd rans2 <<<"$(cast call "$AAPL_FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | awk '{print $1}' | tr '\n' ' ')"
+NEWANS=$(py "$rans * (10000 - $FEEDDROP_BPS) // 10000"); NOW=$(ts)
+out=$(cd "$APP/contracts" && forge create test/fixtures/SettableFeed.sol:SettableFeed --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args 8 $((rid + 1)) "$NEWANS" "$NOW" "$NOW" 2>&1) || die "forge create SettableFeed failed: $(printf '%s' "$out" | tail -3)"
+MOCK=$(jq -r .deployedTo <<<"$out"); logtx "deploy: SettableFeed (the code anvil_setCode copies over the AAPL feed)" "$(jq -r .transactionHash <<<"$out")"
+cast rpc anvil_setCode "$AAPL_FEED" "$(cast code "$MOCK" -r "$R")" -r "$R" >/dev/null
+mine
+chk "the AAPL feed now answers a new round $((rid + 1)) at $NEWANS ($(py "$FEEDDROP_BPS / 100")% below the last print $rans)" "$(cast call "$AAPL_FEED" 'latestRoundData()(uint80,int256,uint256,uint256,uint80)' -r "$R" | sed -n 2p | num) == $NEWANS"
+P_DROP=$(call "$ORA" 'price()(uint256)')
+dsend "Morpho: accrueInterest" "$A0" "$MORPHO" 'accrueInterest((address,address,address,address,uint256))' "$MKT" >/dev/null   # the stored totals include the 25 h of interest
+debt=$(py "($(pos "$USER" 2) * ($(mk 3) + 1) + ($(mk 4) + 10**6) - 1) // ($(mk 4) + 10**6)")
+cval=$(py "$(pos "$USER" 3) * $P_DROP // 10**36")
+info "share price fell $(py "round((1 - $P_DROP / $P_FRESH) * 10000)") bp on a $FEEDDROP_BPS bp feed drop; debt $debt against collateral worth $cval at LLTV $LLTV_BPS bp (LTV $(py "round($debt * 10000 / $cval)") bp after the drop, $(py "round($BORROW * 10000 / ($(pos "$USER" 3) * $P_FRESH // 10**36))") bp when borrowed; liquidation threshold $LLTV_BPS bp)"
+chk "the position is now over its LLTV" "$debt * 10**18 > $cval * $LLTV"
+chk "and the collateral still covers the debt, so there is no bad debt to write off" "$cval > $debt"
+c0=$(pos "$USER" 3); b0=$(pos "$USER" 2); lq_u0=$(bal "$USDG" "$LIQUIDATOR")
+rc=$(dsend "Morpho: liquidate half of the AAPL-share collateral" "$LIQUIDATOR" "$MORPHO" 'liquidate((address,address,address,address,uint256),address,uint256,uint256,bytes)(uint256,uint256)' "$MKT" "$USER" "$SEIZE" 0 0x)
+repaid=$(py "$lq_u0 - $(bal "$USDG" "$LIQUIDATOR")")
+chk "the liquidator received exactly the seized shares and the borrower's collateral fell by them" "$(bal "$VA" "$LIQUIDATOR") == $SEIZE and $(pos "$USER" 3) == $c0 - $SEIZE"
+chk "the borrower's debt shares fell and the liquidator paid USDG" "$(pos "$USER" 2) < $b0 and $repaid > 0"
+bonus_bp=$(py "round(($SEIZE * $P_DROP // 10**36) * 10000 / $repaid) - 10000")
+chk "the liquidator's incentive is Morpho's LIF at 62.5% (1 / (1 - 0.3 * 0.375) = 1.1268): between 1,200 and 1,300 bp over the repayment" "$bonus_bp >= 1200 and $bonus_bp <= 1300"
+sh_l=$(bal "$VA" "$LIQUIDATOR"); n_l=$(bal "$AAPL" "$LIQUIDATOR"); u_l=$(bal "$USDG" "$LIQUIDATOR")
+rc=$(dsend "AAPL: liquidator exits the seized shares with redeemInKind" "$LIQUIDATOR" "$VA" 'redeemInKind(uint256,address,address)(uint256,uint256)' "$SEIZE" "$LIQUIDATOR" "$LIQUIDATOR")
+out_val=$(py "($(bal "$AAPL" "$LIQUIDATOR") - $n_l) * $NEWANS // 10**20 + ($(bal "$USDG" "$LIQUIDATOR") - $u_l)")
+chk "the liquidator holds no shares after the exit and both legs came back" "$(bal "$VA" "$LIQUIDATOR") == 0 and $(bal "$AAPL" "$LIQUIDATOR") > $n_l and $(bal "$USDG" "$LIQUIDATOR") > $u_l"
+info "repaid $(py "$repaid / 10**6") USDG, seized shares exit for $(py "$out_val / 10**6") USDG at the new Chainlink price ($(py "round($out_val * 10000 / $repaid) - 10000") bp over the repayment)"
+chk "the seized shares exit for more than the USDG repaid at the new Chainlink price (the incentive covers the exit)" "$out_val > $repaid"
+pass
+
+# ---------------------------------------------------------------- 20 past 97 hours the oracle refuses and Morpho freezes
+step 20-feed-older-than-97h
+warp $(( NOW + $(call "$ORA" 'MAX_FEED_AGE()(uint256)') + 1 ))
+rd=$(revdata "$A0" "$ORA" 'price()(uint256)')
+chk "the oracle reverts FeedTooOld(updatedAt) once the print is older than 97 h" "'${rd:0:10}' == '$(cast sig 'FeedTooOld(uint256)')' and int('${rd:10:64}',16) == $NOW"
+out=$(liq_call "$(py "$(pos "$USER" 3) // 4")") && die "a liquidation went through on a dead oracle: $out"
+chk "Morpho cannot liquidate on a dead oracle either (the same revert data comes back)" "'$(printf '%s' "$out" | grep -oE '0x[0-9a-f]{8,}' | tail -1 | cut -c1-10)' == '$(cast sig 'FeedTooOld(uint256)')'"
+pass
 
 # ---------------------------------------------------------------- 09 leave the fork as found
 step 09-fork-restored
 cast rpc evm_revert "$SNAP" -r "$R" >/dev/null || die "evm_revert failed"
 SNAP=""
 chk "head block is back at the start block" "$(cast block-number -r "$R") == $START_BLOCK"
+if [ "$ONLY" != demo ]; then
 chk "vault supply is back to its start value" "$(call "$V" 'totalSupply()(uint256)') == $START_SUPPLY"
 chk "fresh user holds no USDG again" "$(bal "$USDG" "$USER") == 0"
 chk "the hand-deployed vault is gone" "$(cast code "$ROGUE" -r "$R" | wc -c) <= 3"
 chk "the factory router is still deployed" "$(cast code "$ROUTER" -r "$R" | wc -c) > 100"
+fi
+chk "the demo's factory is gone" "$(cast code "$DFACTORY" -r "$R" | wc -c) <= 3"
+pass
+
+# ---------------------------------------------------------------- 21 the run's transactions go to docs/FORK-DEMO.md
+step 21-fork-demo-doc
+DOC="$APP/docs/FORK-DEMO.md"
+FORK_TXS="$TMP/fork-txs.tsv" FORK_LOG="$TMP/report.log" FORK_BLOCK_N="$FORK_BLOCK_N" FORK_DOC="$DOC" /usr/bin/python3 - <<'PY'
+import os, re
+txs = [l.rstrip("\n").split("\t") for l in open(os.environ["FORK_TXS"]) if l.strip()]
+log = open(os.environ["FORK_LOG"]).read().splitlines()
+res = [l for l in log if l.startswith("PASS 1") or l.startswith("PASS 2") or l.startswith("  info:")]
+b = os.environ["FORK_BLOCK_N"]
+rows = "\n".join(f"| FORK | {lbl} | {int(blk)} | `{h}` |" for lbl, h, blk in txs)
+sec = f"""<!-- fork-demo-txs:start -->
+## Morpho demo run: every transaction
+
+`scripts/fork-demo.sh` runs the product end to end on an Anvil fork of Robinhood Chain 4663 taken at block {b}: a fresh VaultFactory and UptickRouter, the PLTR (Uniswap v4) and AAPL (Uniswap v3) vaults, an UptickShareOracle on the AAPL share, a market on the real Morpho Blue singleton `0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010`, a lender, a borrower using the app's own call encoding, a 3% pool push, a stale feed, a feed drop and a liquidation. The hashes below exist on that fork only (label FORK), in the order sent, with the block that mined each.
+
+| Network | Step | Block | Hash |
+|---|---|---|---|
+{rows}
+
+What the run measured:
+
+```
+{chr(10).join(res)}
+```
+<!-- fork-demo-txs:end -->
+"""
+p = os.environ["FORK_DOC"]
+d = open(p).read()
+if "<!-- fork-demo-txs:start -->" in d:
+    d = re.sub(r"<!-- fork-demo-txs:start -->.*?<!-- fork-demo-txs:end -->\n?", lambda m: sec, d, flags=re.S)
+else:
+    d = d.rstrip("\n") + "\n\n" + sec
+open(p, "w").write(d)
+PY
+chk "the doc lists every logged transaction with a FORK label" "$(grep -c '^| FORK |' "$DOC") == $(wc -l <"$TXLOG")"
+chk "the doc names the fork block" "$(grep -c "taken at block $FORK_BLOCK_N" "$DOC") == 1"
 pass
