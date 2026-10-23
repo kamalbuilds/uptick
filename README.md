@@ -60,7 +60,7 @@ Kept APR is fees earned less losses to informed traders (1 hour markout) and reb
 | SPCX | ±1.5% | $100,000 | +80.9% | -195.4% to -136.1% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 <!-- gates:end -->
 
-Every row is the vault's Uniswap v3 pool. Every range bound in the replay sits on a multiple of its pool's tick spacing, rounded outward, so the figures are for positions Uniswap can hold. `StockVaultV4` runs the same vault over a Uniswap v4 pool, and the deploy list moves a token to it when its v3 pool falls below the floor and its v4 pool does not; PLTR's v4 1% pool, net of the PoolManager's protocol fee, keeps +7.9% in its weaker half.
+Every row is the vault's Uniswap v3 pool. Every range bound in the replay sits on a multiple of its pool's tick spacing, rounded outward, so the figures are for positions Uniswap can hold. `StockVaultV4` runs the same vault over a Uniswap v4 pool, and the deploy list moves a token to it when its v3 pool falls below the floor and its v4 pool does not; PLTR's v4 1% pool, net of the PoolManager's protocol fee, keeps +7.9% in its weaker half. Holding the token, one position set once and the vault are priced side by side for every token in [docs/DIY-BASELINE.md](docs/DIY-BASELINE.md).
 
 Seventeen tokens clear the registry rule in `keeper/src/universe.ts`: a Chainlink feed, a USDG pool trading at least $100K a day, and a vault sized to the pool. The vault size cap is the largest position that holds at most 20% of the pool's in-range liquidity, up to $100K and at least $10K, so a thinner pool gets a smaller vault instead of no vault; `StockVault` enforces the size on-chain through its `depositCap`. The replay simulates each vault at its own size, so every gate above reflects the vault a depositor can actually buy. The volume floor admits a token to a vault and the replay gate decides whether deposits open.
 
@@ -81,7 +81,7 @@ Session-fee and oracle-gap hooks (Fables, SessionFeeHook, Bellswap, ClosingBell)
 | Claim | Number | Source |
 |---|---|---|
 | Swaps replayed | 5.1M over 54 days on NVDA, SPCX, TSLA pools | `spikes/stock-vaults/FINDINGS.md` |
-| NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 94.4% | evidence API `/vaults`, read 2026-10-21 |
+| NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 92.8% | `web/lib/vault-universe.json` feeAprPct, regenerated 2026-10-23 |
 | Hook share of v4 trades on Robinhood Chain | 74.5% | Bitquery |
 | Hooks labelled malicious by 0x | 80% of 84K | 0x |
 | Taken in 49 hours by hooks keeping 5 to 11% while pools quote 0 to 1% | about $1.2M | `docs/research/founder-house/OUTREACH-fomo-gmgn.md` |

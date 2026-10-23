@@ -1,57 +1,52 @@
 # Uptick: 3 minute Founder House demo
 
-Live app: https://uptick-fi.pages.dev. Launch film: https://x.com/uptickfi/status/2112531006792360167.
+Live app: https://uptick-fi.pages.dev.
 
-One line: deposit AAPL, GOOGL, NVDA and 14 more Stock Tokens into a vault and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
+One line: deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens into a vault, earn a share of every trade's fee, borrow USDG against the share, and exit in kind. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
 
-Setup: one browser window, six tabs in order: `/`, `/vaults`, `/vault/aapl`, `/vault/nvda`, `/docs`, `/research`. No wallet is connected. The Chainlink ticker in the footer runs on every page.
+Setup: one browser window, six tabs in order: the PLTR swap on Blockscout (https://robinhoodchain.blockscout.com/tx/0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36), `/`, `/vault/nvda`, `/docs/collateral`, `/docs/exit-in-kind`, `/research`. No wallet is connected for the opening; connect the demo wallet before the deposit. The Chainlink ticker in the footer runs on every page.
 
-## 0:00 to 0:20 Launch film
+## 0:00 to 0:25 The real swap
 
-Screen: the launch film, 20 seconds.
-Say: "Which of your stock tokens can actually earn? We replayed 3,059,881 Robinhood Chain swaps, ranked 17 Stock Tokens by what a liquidity provider kept, and 12 vaults launch first."
+Screen: the Blockscout page for transaction 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36, block 70,152,155, status Success.
+Say: "This is a real trade on Robinhood Chain. Nasdaq was shut, it was 10:21 at night in New York, and someone sold 95.8 PLTR into the PLTR and USDG pool at $186.51 while Chainlink read $184.67. The pool earned $178.30 in fees. An hour later its price stood at $183.75, and the people providing the liquidity were $241.83 worse off. Fees alone said 74 cents earned for every dollar lost. That is the number a pool page leaves out, and the number Uptick measures for every token."
 
-## 0:20 to 0:50 Home, `/`
+## 0:25 to 0:50 The doors, `/`
 
 Screen: the headline "Which of your stock tokens can earn, and how much you would keep."
-Point at the four figures: Vaults at launch 12 (3 open, 9 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $1.1M on the 17 vault pools, Stock Tokens tracked 17.
-Say: "Every vault sits behind one of three doors. Open takes any amount. Reduced takes up to $25,000 a deposit. Closed takes none. The door comes from the replay, not from us."
-Point at the ticker: "Prices are Chainlink, read on Robinhood Chain 4663."
+Point at the four figures: Vaults at launch 12 (2 open, 10 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $996.6K on the 17 vault pools, Stock Tokens tracked 17.
+Say: "We replayed every swap on 17 tokens. Every vault sits behind one of three doors. Open takes any amount. Reduced takes up to $25,000 a deposit. Closed takes none. The door comes from the replay, not from us."
 
-## 0:50 to 1:20 Vault list, `/vaults`
+## 0:50 to 1:25 Deposit, `/vault/nvda`
 
-Screen: the table of 17 Stock Token vaults.
-Say: "Kept is a year of the pool's fees less what leaks to informed traders, read in the worst half of the replay." Run down the Kept column: AAPL +2.7%, GOOGL +0.2%, QQQ -1.3%, INTC -2.0%, NVDA -6.6%. Click the 0.05% pool filter, then clear it.
-Say: "NVDA's pool pays 94% a year in fees. The Fees column says so. What depositors keep is the number in the Kept column."
+Screen: the NVDA vault, state chip Reduced, "Replay to 2026-10-17, 814,927 swaps".
+Say: "NVDA kept +29.0% a year on the first 15 days and -6.8% on the last 15. The gate reads the weaker half, so the door is Reduced and a deposit is up to $25,000."
+Connect the demo wallet, enter an amount under the limit, deposit NVDA. The panel shows the shares minted and the 0.35% entry fee that stays in the vault for the holders who stay.
+Say: "I deposit the Stock Token itself, not USDG and not a pair. The vault holds roughly half NVDA and half USDG inside a band around the Chainlink price and recentres it every night after the NYSE session. The share rises as fees accrue."
 
-## 1:20 to 2:05 One vault, `/vault/aapl`
+## 1:25 to 2:05 Borrow against the share, `/docs/collateral`
 
-Screen: the AAPL vault, state chip Open, "Replay to 2026-10-17, 95,275 swaps".
-Say: "AAPL kept +2.7% a year in its weaker half." Scroll to "Where a year of fees goes": the pool paid +18.8%, recentring costs 1.7%, informed traders take 13.9%, depositors keep +3.2% over the full 30 days.
-Scroll to "Why it is open": worst half +2.7% on the first 15 days, +3.9% on the last 15, both above break-even, so the door is Open.
-Scroll to "The band follows the price": a plus or minus 7.5% band around the Chainlink price, recentred at 02:00 UTC after each NYSE session.
-Scroll to "Why this pool": the v3 0.05% pool pays 18.8%, the v3 0.3% pool 11.3%, the v4 0.3% pool 23.0%. Fees per $1 lost to informed traders: NYSE hours $1.23, weeknights $1.45, weekends $4.58.
-Say: "The engine picks pool and band on the first half and scores them on the second. The vault is $73,983 in size, which is what the pool can carry at 20% of its in-range liquidity."
+Screen: the table "Deposit, supply, borrow" on the Borrow against a vault share page.
+Say: "The share is collateral. Morpho Blue on Robinhood Chain, singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010, lends USDG against NVDA already. An Uptick share is a second kind of collateral for the same loan: the Stock Token, plus the fees its position earns while you borrow."
+Point down the four rows: Deposit in the vault, supply the share to Morpho, borrow USDG up to the 62.5% limit the NVDA market uses, repay and withdraw.
+Say: "UptickShareOracle prices the share from Chainlink alone, so a swap in the pool never moves the liquidation price. A set-once Uniswap position cannot be posted as Morpho collateral. An Uptick share can."
 
-## 2:05 to 2:25 The other doors, `/vault/nvda`
+## 2:05 to 2:30 Exit in kind, `/docs/exit-in-kind`
 
-Screen: NVDA vault, state chip Reduced, 814,927 swaps.
-Say: "NVDA kept +29.4% on the first half and -6.6% on the held-out half. The gate reads the held-out number, so deposits cap at $25,000 each." Switch to the SPCX tab if open: "SPCX kept -199.5% in its weaker half, below the -20% floor. The door is closed."
+Screen: the exit preview on the NVDA vault, then the Exit in kind page.
+Say: "Repay, withdraw the share, and redeemInKind pays out my slice of both tokens with no oracle gate and no swap, so the exit works when the feed is stale. A liquidator exits the same way."
 
-## 2:25 to 2:45 Docs, `/docs`
-
-Screen: the Docs overview.
-Say: "A vault is one ERC-4626 contract, one managed position and one published gate." Point at the gate table and the "Vaults today" table: Open AAPL and GOOGL, Reduced the nine others, Closed six.
-Open Exit in kind: "redeemInKind pays your share of both tokens with no oracle gate and no swap, so an exit works when the feed is stale." Open For agents: "An evidence API and an MCP endpoint with four tools. A closed vault returns its gate reason, so an agent never routes a deposit past the door."
-
-## 2:45 to 3:00 Research, `/research`
+## 2:30 to 3:00 Why it holds, `/research`
 
 Screen: three notes, newest first.
-Say: "58% of the swaps and half the fees in these pools happen while the NYSE is shut. Weekends pay $2.76 in fees for every $1 lost to fast traders, NYSE hours $0.98. The replay refreshes and each vault opens or closes on its new halves. Uptick shows which of your Stock Tokens earn."
+Say: "58% of the swaps and half the fees in these pools happen while the NYSE is shut. Weekends pay $2.59 in fees for every $1 lost to fast traders, NYSE hours $0.97. The replay refreshes and each vault opens or closes on its new halves. Uptick shows which of your Stock Tokens earn, and lets the deposit keep working."
 
 <!--
-Sources, read 2026-10-21.
-Sources (repo files regenerated 2026-10-22, vault list and vault pages as served by the web app from them): home figures (12 of 17, 3 open, 9 reduced, 3.1M swaps, 30 days to 2026-10-17, $1.1M fees, 17 tokens), /vaults Kept column and 0.05% filter, /vault/aapl (95,275 swaps, +18.8%, +3.2%, 1.7%, 13.9%, worst half +2.7%, last 15 days +3.9%, band 7.5%, pools 18.8% / 11.3% / 23.0%, $1.23 / $1.45 / $4.58, vault size $73,983), /vault/nvda (814,927 swaps, +29.4%, -6.6%, $25,000, fee APR 94.4%), /vault/spcx (-199.5%, floor -20%), /vault/pltr (open on its Uniswap v4 1% pool, +12.8% in the weaker half, vault size $24,207), /docs (tables, exit in kind, for agents), /research (13.64, 1.16, 22 of 23).
-Launch film text: api.fxtwitter.com/uptickfi/status/2112531006792360167, posted 2026-10-20, 2,705,097 swaps, 17 tokens, 11 take deposits.
-Repo files: web/lib/vault-universe.json (swap total 3,059,881 is the sum of each vault's gate.swaps), web/lib/pool-fees.json (fee total $1,054,235.96), README.md gate table, keeper/data/replay.json (PLTR rerun 2026-10-22 with the v4 session split).
+Sources, repo files regenerated 2026-10-23.
+Opening: web/lib/real-swap.json (tx 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36, block 70152155, 2026-09-23T02:21:36Z, sold 95.7986 PLTR, pool price 186.5087, Chainlink 184.6724, pool price an hour later 183.7504, pool fee 178.30, loss to liquidity providers 241.83, 178.30 / 241.83 = 0.74), written by keeper/scripts/moment.py and read back from the chain over the public RPC.
+Home figures: web/lib/vault-universe.json (12 of 17 launch, 2 open, 10 reduced, 5 closed, swap total 3,059,881 is the sum of each vault's gate.swaps), web/lib/pool-fees.json (fee total $996,621.05, shown as $996.6K).
+NVDA: web/lib/vault-universe.json gate and keep (814,927 swaps, first half +29.03%, held-out half -6.85%, state reduced, $25,000 a deposit), contracts/SECURITY.md Entry fee row (35 bp).
+Borrow: web/app/docs/collateral/page.tsx (four steps, 62.5% limit of the live NVDA/USDG market, share priced from the Chainlink answer alone), Morpho Blue singleton and the NVDA market parameters in web/lib/morpho.ts; the Morpho calls and the borrow limit run against the real singleton on a 4663 fork (keeper, scripts/e2e-fork.sh). Wedge: a set-once Uniswap position cannot be posted as Morpho collateral; an Uptick share can, through UptickShareOracle.
+Exit in kind: contracts/SECURITY.md row redeemInKind (no oracle, no swap, no pause), web/app/docs/exit-in-kind/page.tsx.
+Research: web/lib/moment.json (58.0% of swaps, 49.8% of LP fees outside NYSE hours; weekend $2.59, NYSE hours $0.97 per $1 lost over the vault replay).
 -->
