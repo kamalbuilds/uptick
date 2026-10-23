@@ -34,7 +34,7 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 **1. Evidence engine** (`spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). For every eligible Stock Token (Chainlink feed, deep and busy USDG pool; `keeper/src/universe.ts`) it replays every swap on every USDG pool and fee tier, computes fee per dollar of 1 hour markout by session, and ranks pool and tier on a held-out half of the window.[^2]
 
-**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 383 contract tests cover the vaults, 118 of them in a security suite that runs on a fork of Robinhood Chain, and 14 guards are mutation-tested.[^3]
+**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 412 contract tests cover the vaults, 141 of them in a security suite that runs on a fork of Robinhood Chain, and 14 guards are mutation-tested.[^3]
 
 **3. Keeper and stats API** refresh the evidence and recentre each vault once a day after each NYSE session, from 02:00 UTC with a jittered minute (`keeper/src/calendar.ts`). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 
@@ -88,7 +88,7 @@ Session-fee and oracle-gap hooks (Fables, SessionFeeHook, Bellswap, ClosingBell)
 
 | Claim | Number | Source |
 |---|---|---|
-| Swaps replayed | 5.1M over 54 days on NVDA, SPCX, TSLA pools | `spikes/stock-vaults/FINDINGS.md` |
+| Swaps replayed | 3,059,881 over the 30 days to 2026-10-17, 17 vault pools | `keeper/data/replay.json` |
 | NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 92.8% | `web/lib/vault-universe.json` feeAprPct, regenerated 2026-10-23 |
 | Hook share of v4 trades on Robinhood Chain | 74.5% | Bitquery |
 | Hooks labelled malicious by 0x | 80% of 84K | 0x |

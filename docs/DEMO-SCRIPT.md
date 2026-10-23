@@ -2,7 +2,7 @@
 
 Live app: https://uptick-fi.pages.dev.
 
-One line: deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens into a vault, earn a share of every trade's fee, borrow USDG against the share, and exit in kind. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
+One line: deposit AAPL, GOOGL, NVDA or 9 more Stock Tokens into a vault, earn a share of every trade's fee, borrow USDG against the share, and exit in kind. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
 
 Setup: one browser window, six tabs in order: the PLTR swap on Blockscout (https://robinhoodchain.blockscout.com/tx/0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36), `/`, `/vault/nvda`, `/docs/collateral`, `/docs/exit-in-kind`, `/research`. No wallet is connected for the opening; connect the demo wallet before the deposit. The Chainlink ticker in the footer runs on every page.
 
