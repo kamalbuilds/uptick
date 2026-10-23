@@ -321,18 +321,17 @@ contract OracleReviewV4 is ShareCollateralV4Test {
         emit log_named_int("price change across the sweep, ppm (signed)", changePpm);
     }
 
-    /// @dev Chainlink 60 bp above the pool: before the fix the price rose 1,319 ppm (the whole cut, 1,318 ppm) across
-    /// the sweep. Now it does not rise (at most 1 ppm). It can fall by a hair, never more than `offset x cut`: the vault
-    /// does not say whether the pending fees are stock or USDG, and the oracle takes the dearer reading (all stock), so
-    /// the part of the cut that is USDG is deducted at Chainlink / TWAP times its value. Measured: -3 ppm of a 1,263 ppm
-    /// cut. That is the lender-side error bound of the rebuild, not a double count: a double count would drop the price
-    /// by the whole cut.
+    /// @dev Chainlink 60 bp above the pool: before the O-L1 fix the price rose 1,319 ppm (the whole cut, 1,318 ppm) across
+    /// the sweep. The rebuilt cut is valued at nav = min(Chainlink, TWAP) (review C-1: valuing it at Chainlink let a spot
+    /// push scale its USDG part without bound), so the stock part of the cut is deducted at TWAP / Chainlink of its value
+    /// and the price can rise by at most `offset x cut`. Measured: +3 ppm of a 1,263 ppm cut (bound 7.6). The bound is the
+    /// accepted residual of the C-1 fix; the leak itself (the whole cut) stays closed.
     function test_poc_v4PendingCutDoesNotLeakWhenFeedAboveTwap() public {
         (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) = _sweepWithFeedOffset(60);
         assertGe(cutPpm, 300, "a cut of at least 3 bp is at stake");
         assertGe(pendingPpm, cutPpm * 9 / 10, "the oracle sees the pending cut");
-        assertLe(changePpm, 1, "the price did not rise by the treasury's cut");
-        assertGe(changePpm, -int256(cutPpm * 60 / 1e4 + 1), "and fell by no more than offset x cut");
+        assertLe(changePpm, int256(cutPpm * 60 / 1e4 + 1), "the price rose by more than offset x cut");
+        assertGe(changePpm, -1, "the price fell: the cut was deducted more than once");
     }
 
     /// @dev Before the O-L1 change: 204,748 cold and 118,609 warm.
@@ -348,8 +347,8 @@ contract OracleReviewV4 is ShareCollateralV4Test {
     /// @dev The edge of the deviation gate (100 bp): same bounds.
     function test_poc_v4PendingCutDoesNotLeakAtTheEdgeOfTheGate() public {
         (uint256 cutPpm, int256 changePpm,) = _sweepWithFeedOffset(95);
-        assertLe(changePpm, 1);
-        assertGe(changePpm, -int256(cutPpm * 95 / 1e4 + 1));
+        assertLe(changePpm, int256(cutPpm * 95 / 1e4 + 1), "the price rose by more than offset x cut");
+        assertGe(changePpm, -1, "the price fell: the cut was deducted more than once");
     }
 
     function test_poc_v4PendingCutControlFeedAtPool() public {

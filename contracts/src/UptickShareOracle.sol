@@ -182,7 +182,7 @@ contract UptickShareOracle is IOracle {
     }
 
     /// @notice The treasury's cut of the fees a closed-gate `redeemInKind` moved into the vault's idle balances and
-    /// recorded as pending (v4; always zero on v3), in USDG raw units at the current Chainlink answer.
+    /// recorded as pending (v4; always zero on v3), in USDG raw units at `nav = min(Chainlink, TWAP)`.
     function pendingCutUsdg() external view returns (uint256) {
         (, uint256 px,,, uint160 sqrtTwap,) = vault.health();
         IUptickVault.PositionInfo memory p = vault.positionInfo();
@@ -198,11 +198,19 @@ contract UptickShareOracle is IOracle {
     /// with every term at `nav = min(Chainlink, TWAP)`, and everything but the pending cut is readable: the idle
     /// balances, the position's legs at the vault's TWAP and the uncollected fees all come from `positionInfo()`. So
     /// the pending cut is `gross - cut(uncollected) - ta`, rebuilt here with the vault's own formulas and rounding (it
-    /// is zero on v3, and within a wei or two of zero on v4 when nothing is pending), saturating at zero. The cut is
-    /// returned in stock units at `nav`; multiplying by `px >= nav` values it at the Chainlink price. The vault does not
-    /// say whether the pending fees sit in the stock leg or the USDG leg, so the result is the upper bound of the cut
-    /// at `px` (all stock), at most `px / nav - 1` above it (the vault's deviation gate keeps that under 1%) and always
-    /// toward the lender. Spot never enters.
+    /// is zero on v3, and within a wei or two of zero on v4 when nothing is pending), saturating at zero.
+    ///
+    /// The cut is valued at `nav`, the price it was rebuilt at, and never at Chainlink (review C-1). The vault reports
+    /// the spot price as its TWAP whenever its observation ring has lapsed (a weekend, a keeper outage), so `nav` can be
+    /// moved down by a same-transaction swap. Scaling a nav-denominated amount by `px / nav` made the USDG part of the
+    /// deduction grow without bound as spot fell and drove the price to zero. At `nav` the USDG part is exact and the
+    /// deduction can only shrink as spot falls, so no push lowers the price. The price paid is that the stock part of
+    /// the pending cut is deducted at `nav` instead of `px`: under-deducted by `(px - nav) / px`, at most `maxDeviationBps`
+    /// (1%) of the cut with a live ring and at most the stock part of the pending cut (the O-L1 leak, 13 bp of the price
+    /// in the review's run) with a lapsed ring, and never a path that lowers the price. The tighter alternative (stock
+    /// part up to `perfFeeBps x idle` at `px`, the rest at `nav`) was rejected: its split moves with `nav`, so a push
+    /// could still lower the price by up to `perfFeeBps x idle stock value`, which is not safe when the position is
+    /// out of range and the vault is mostly idle stock. Spot enters only through `nav`, in the safe direction.
     function _pendingCutUsdg(
         IUptickVault.PositionInfo memory p,
         uint256 idle,
@@ -217,7 +225,7 @@ contract UptickShareOracle is IOracle {
             + (idleUsdg + p.usdgAmount + p.uncollectedUsdg).mulDiv(stockScale, navScale);
         uint256 uncollectedCut = (p.uncollectedStock + p.uncollectedUsdg.mulDiv(stockScale, navScale)) * perfFeeBps / 1e4;
         uint256 pending = gross > uncollectedCut + ta ? gross - uncollectedCut - ta : 0;
-        return pending.mulDiv(px * usdgScale, stockScale);
+        return pending.mulDiv(navScale, stockScale);
     }
 
     /// @dev USD per Stock Token (feed decimals) of a sqrt price, the vault's own `_sqrtToUsd`.

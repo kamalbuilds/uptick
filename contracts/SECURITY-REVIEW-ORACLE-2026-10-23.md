@@ -361,3 +361,59 @@ Head-of-chain fork, not pinned: pool depth, and so the $10,978 push cost, move w
 attacked (TSLA currency0 orientation reasoned from the symmetric formula, not run). No arbitrageurs exist on the fork, but
 the attack is atomic so none could interfere. The `$100,000` figures extrapolate the measured $64K vault run. Both fixes
 proposed for C-1 are reasoned, not implemented or run (src is read-only for this review).
+
+## C-1 fix (round 1, branch r2-oracle-fix)
+
+Change: `UptickShareOracle._pendingCutUsdg` returns `pending.mulDiv(navScale, stockScale)` instead of
+`pending.mulDiv(px * usdgScale, stockScale)`. The rebuilt pending cut is valued at the `nav = min(Chainlink, TWAP)` it was
+rebuilt at, never at Chainlink. One line in `src/UptickShareOracle.sol`, plus the docstring; runtime 5,034 bytes (was 5,047).
+`StockVault.sol`, `StockVaultV4.sol`, `VaultFactory.sol` and `TickOracleV4.sol` untouched.
+
+Why this fix and not the tighter alternative. The alternative (attribute the cut to the stock leg up to `perfFeeBps x idle
+stock`, value that part at Chainlink and the rest at `nav`) is not strictly safer. Write the pending cut in stock units at
+`nav` as `X = pS + pU / nav`, with `pS`, `pU` the cut's stock and USDG parts, unknown separately. Its value is
+`X x nav + pS x (px - nav)`. The alternative estimates `pS` as `min(X, perfFeeBps x idle)`, and `X` grows without bound as
+`nav` falls (the `pU / nav` term), so with a lapsed ring a same-transaction push drives the estimate up to the cap and the
+deduction up to `perfFeeBps x idle stock value` of the price: on a vault whose position is out of range (mostly idle stock)
+that is a push-controlled drop of up to the performance fee (10% in the test params) of the vault. The proposed fix has
+value `X x nav = pS x nav + pU`, which is non-decreasing in `nav`: a lower spot can only shrink the deduction. Its price is
+an under-deduction of `pS x (px - nav)`, at most 1% of the cut with a live ring and the stock part of the cut (the original
+O-L1 amount) with a lapsed ring, which is the O-L1 Low and never a way to lower the price. Both keep the O-L1 leak closed
+(without the subtraction the price rises by the whole cut, 1,282 ppm in the 60 bp scenario).
+
+Regression tests (`test/security/oracle/FreshReview.t.sol`, `FreshReviewV4` on PLTR with the Stock Token as currency1 and
+`FreshReviewV4Token0` on TSLA with it as currency0, which also puts the other orientation of `_sqrtToUsd` and the push
+direction under test; the PoCs now assert the safe behaviour):
+
+| Test | Asserts | Pre-fix code (RED) | After the fix (GREEN) |
+|---|---|---|---|
+| `test_c1_weekendSpotPushWithPendingFeesNeverLowersPrice` | seven pushes, 2x to 100,000,000x below Chainlink, weekend, fees pending (5.10 USDG): price never below the pre-push price less 1 ppm | PLTR 198.88 < 199.09, TSLA 373.92 < 374.09 (first violating push) | +5,098 ppm at 2x, +5,414 ppm from 1,000x on, flat (TSLA +1,585 ppm) |
+| `test_c1_weekendSpotPushDoesNotLowerPrice` | push to 1/10,000 of Chainlink: price at or above pre-push less 1 ppm; fixed oracle at or below the pre-O-L1 oracle at the start | price 0 (both pools) | +5,414 ppm (integration oracle +6,062 ppm); TSLA +1,585 ppm |
+| `test_c1_weekendSpotPushCannotLiquidateAHealthyBorrower` | in one PoolManager unlock: sell to 1/10,000, liquidate the whole collateral of an 80%-of-limit borrower, buy back, settle. Morpho reverts `position is healthy`, nothing seized, lender supply unchanged, borrower keeps all collateral, attacker PnL negative, oracle price during the push at or above the pre-push price | liquidation succeeded, all shares seized | refused; attacker PnL -$10,986 (PLTR), -$4,833 (TSLA); price during the push $198.83 against $199.09 before |
+
+RED run: the three tests above were written first and run against the unmodified oracle source (`git diff --quiet src` exit 0):
+6 of 15 failed in `FreshReviewV4` and `FreshReviewV4Token0`, the control `test_control_weekendSpotPushWithoutPendingFeesDoesNotLowerPrice`
+and the inherited tests passed. The TSLA run shows the attack was not specific to the PLTR orientation (liquidation
+succeeded there too). GREEN run after the one-line change: 15 of 15. Command: `forge test --match-contract FreshReview -j 1`.
+
+O-L1 regression (price must not rise by the cut when Chainlink is above the TWAP) stays green with its bound changed from
+"at most 1 ppm and a fall of at most `offset x cut`" to "at most `offset x cut`, no fall": the oracle no longer
+over-deducts (it was -3 ppm at 60 bp, now +3 ppm; at 95 bp +5 ppm; TSLA +1 ppm), which is the accepted residual above, 3 and
+5 ppm against a bound of 7.6 and 12. Without the subtraction (`cut += _pendingCutUsdg(...)` commented out) both fail,
+`test_poc_v4PendingCutDoesNotLeakWhenFeedAboveTwap` with "1282 > 8" and `...AtTheEdgeOfTheGate` with "1282 > 13"; restored,
+green. O-M1 tests unchanged and green.
+
+Suites: `forge test --match-contract 'OracleReview|ShareCollateral|DeployAll|FreshReview' -j 1`, public RPC at head,
+10 suites, 99 tests. First run 97 passed, 2 failed (the two O-L1 bound tests above, whose bound was the over-deducting
+code's); after the bound change those two pass, so 99 of 99 (final counts in the commit message).
+
+`price()` gas (fork, `test_measure_priceGasV3` and `test_measure_priceGasV4`): v3 325,092 cold, 185,453 warm; v4 207,227
+cold, 121,088 warm. The C-1 change swaps one multiplication operand and adds no call; the O-L1 rebuild's own cost against
+the pre-O-L1 oracle (323,285 and 204,748 cold) is +1.8K and +2.5K. Runtime size 5,034 bytes.
+
+Blind spots: the fix leaves `price()` reverting when spot is pushed to the sqrt-price limit (`totalAssets()` divides by a zero
+`nav`, pre-existing and Info above), which blocks liquidations only while spot is held there. Head-of-chain fork, not
+pinned, so the dollar figures move with the chain; the sweep of pushes is bounded by the Stock Token the trader holds
+(1e8 factor reached, then the limit). The tests assert a floor of the pre-push price, so a regression that raised the price
+by the push's own fee income would not be caught here (the existing `test_v4PoolPushMovesThePriceOnlyByTheFeesItPays` covers
+that). Only the weekend/lapsed-ring path is attacked; with a live ring the TWAP is clamped to Chainlink by `maxDeviationBps` ticks.
