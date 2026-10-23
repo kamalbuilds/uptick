@@ -9,6 +9,7 @@ import { robinhoodChain, txUrl } from "@/lib/chain";
 import { PARENT_BLOCK_SECONDS, isBatchUnsupported, supportsAtomicBatch, type Step } from "@/lib/morpho";
 import { depositParentBlock, waitForParentBlockAfter } from "@/lib/parent-block";
 import { knownRevert } from "@/lib/revert";
+import { runPhases } from "@/lib/run-phases";
 import { errMessage, waitForReceipt } from "@/lib/tx";
 
 export type StepState = "waiting" | "signing" | "pending" | "confirmed" | "failed";
@@ -143,15 +144,8 @@ export function useStepRunner() {
     return true;
   }
 
-  async function drive(id: number, k0: number, fromStep: number) {
-    const { phases } = live.current;
-    for (let k = k0; k < phases.length; k++) {
-      if (!current(id)) return;
-      const from = k === k0 ? fromStep : 0;
-      if (k > 0 && from === 0 && !(await gate(id, k))) return;
-      if (!(await runPhase(id, k, from))) return;
-    }
-  }
+  const drive = (id: number, k0: number, fromStep: number) =>
+    runPhases({ count: live.current.phases.length, k0, fromStep, current: () => current(id), gate: (k) => gate(id, k), phase: (k, from) => runPhase(id, k, from) });
 
   async function start(phases: Step[][]) {
     const steps = phases.flat();
