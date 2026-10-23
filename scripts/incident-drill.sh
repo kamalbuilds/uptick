@@ -5,7 +5,8 @@
 #                       that opens at 26 h still sits behind the oracle gate
 #   B  stale feed       deposit, redeem and rebalance refuse with OracleUnhealthy(FeedStale); redeemInKind pays the holder out in
 #                       kind; the keeper dry-run defers with chainlink_stale where it sent the same tick before the feed aged
-#   C  owner actions    pause closes deposits and leaves redeemInKind open; setKeeper waits the 24 h queue, then retires the old keeper
+#   C  owner actions    pause closes deposits and leaves redeemInKind open; setKeeper waits the 24 h queue, then retires the old keeper;
+#                       cancelChange deletes a queued change; renounceOwnership reverts and ownership moves in two steps
 # Prints PASS/FAIL per assertion and exits 1 at the first mismatch (2 when the fork cannot be set up: the drill seeds a holder, so the
 # feed must be inside the vault's 90,000 s bound at the fork block, which holds from Friday's US open to Saturday 21:00 UTC and on
 # weekday market hours). DRILL_BREAK=1 flips one expectation (the stale status) to prove the drill goes red.
@@ -139,4 +140,17 @@ send "$OWNER" "$V" "executeChange(bytes)" "$DATA"
 [ "$(call "$V" "keeper()(address)" | tr 'A-F' 'a-f')" = "$(echo $NEWKEEPER | tr 'A-F' 'a-f')" ] || die "keeper did not change after the delay"; pass
 STEP=C3-retired-keeper-is-a-stranger
 expect_selector "$STEP" "$(reverts "$KEEPER" "$V" "rebalance()")" "NotKeeper()"; pass
+STEP=C4-cancelChange-deletes-a-queued-change
+DATA2=$(cast calldata "setKeeper(address)" "$STRANGER")
+send "$OWNER" "$V" "queueChange(bytes)" "$DATA2"
+[ "$(call "$V" "changeEta(bytes32)(uint256)" "$(cast keccak "$DATA2")")" != 0 ] || die "queued change has no eta"
+send "$OWNER" "$V" "cancelChange(bytes32)" "$(cast keccak "$DATA2")"
+warp $(( $(now) + 24 * 3600 + 1 ))
+expect_selector "$STEP execute after cancel" "$(reverts "$OWNER" "$V" "executeChange(bytes)" "$DATA2")" "ChangeNotQueued()"; pass
+STEP=C5-ownership-is-two-step-and-cannot-be-renounced
+expect_selector "$STEP renounce" "$(reverts "$OWNER" "$V" "renounceOwnership()")" "BadConfig()"
+send "$OWNER" "$V" "transferOwnership(address)" "$HOLDER"
+[ "$(call "$V" "owner()(address)" | tr 'A-F' 'a-f')" = "$(echo $OWNER | tr 'A-F' 'a-f')" ] || die "owner changed before acceptOwnership"
+send "$HOLDER" "$V" "acceptOwnership()"
+[ "$(call "$V" "owner()(address)" | tr 'A-F' 'a-f')" = "$(echo $HOLDER | tr 'A-F' 'a-f')" ] || die "owner did not change after acceptOwnership"; pass
 echo "DRILL OK: fork block $FORK_BLOCK, vault $V"
