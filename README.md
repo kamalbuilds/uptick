@@ -14,7 +14,7 @@ Deposit NVDA, AAPL, GOOGL and 9 more Stock Tokens (12 of 17 vaults take deposits
 
 Every vault page shows fee APR next to what LPs keep.
 
-Robinhood Chain (chain 4663) lists 189,012 NVDA holders and 114,550 SPCX holders. Their tokens sit idle, and holders cannot see which pool or fee tier pays liquidity providers best.[^1] Uptick publishes that calibration and routes the deposit by it.
+Robinhood Chain (chain 4663) lists 189,012 NVDA holders and 114,222 SPCX holders. Their tokens sit idle, and holders cannot see which pool or fee tier pays liquidity providers best.[^1] Uptick publishes that calibration and routes the deposit by it.
 
 ## The insight
 
@@ -26,7 +26,7 @@ Liquidity economics on a stock token differ by session and by pool and tier. Fee
 | Weeknights | 1.30 to 3.90 |
 | Weekends | 3.94 to 33.27 |
 
-Pooled across the three pools, weekends pay 13.64 and NYSE hours 1.16, and the weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
+Pooled across the NVDA, SPCX and TSLA pools in a fixed range, 24 August to 17 October 2026, weekends pay 13.64 and NYSE hours 1.16, and the weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
 
 The spread between pools and tiers is as large as the spread between sessions. The evidence engine measures it per token and selects the pool and tier with the best out-of-sample result.
 
@@ -34,7 +34,7 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 **1. Evidence engine** (`spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). For every eligible Stock Token (Chainlink feed, deep and busy USDG pool; `keeper/src/universe.ts`) it replays every swap on every USDG pool and fee tier, computes fee per dollar of 1 hour markout by session, and ranks pool and tier on a held-out half of the window.[^2]
 
-**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 412 contract tests cover the vaults, 141 of them in a security suite that runs on a fork of Robinhood Chain, and 14 guards are mutation-tested.[^3]
+**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 412 contract tests cover the vaults, 141 of them in a security suite that runs on a fork of Robinhood Chain, and 89 mutation checks (50 on StockVault, 36 on StockVaultV4, 3 on the share oracle) each break a guard, see named tests go red and restore to green.[^3]
 
 **3. Keeper and stats API** refresh the evidence and recentre each vault once a day after each NYSE session, from 02:00 UTC with a jittered minute (`keeper/src/calendar.ts`). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 

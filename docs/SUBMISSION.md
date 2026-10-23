@@ -10,7 +10,7 @@ Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlin
 
 ## 2. The holder and the ask
 
-189,012 wallets hold NVDA on Robinhood Chain and 114,550 hold SPCX. The tokens sit in wallets and earn nothing. Holders say what they want, verbatim and dated in `gtm/uptick/DEMAND.md`: "I'd have been massively profitable on RH chain if I had stuck to LP'ing tokenized stocks" (@WazzCrypto, X, 2026-10-15), and "tokenized equities like xStocks need to plug directly into defi lending markets so users can earn yield on SPYx or NVDAx while holding them" (@JackNomadsGOD, X, 2026-10-13).
+189,012 wallets hold NVDA on Robinhood Chain and 114,222 hold SPCX. The tokens sit in wallets and earn nothing. Holders say what they want, verbatim and dated in `gtm/uptick/DEMAND.md`: "I'd have been massively profitable on RH chain if I had stuck to LP'ing tokenized stocks" (@WazzCrypto, X, 2026-10-15), and "tokenized equities like xStocks need to plug directly into defi lending markets so users can earn yield on SPYx or NVDAx while holding them" (@JackNomadsGOD, X, 2026-10-13).
 
 ## 3. Three doors
 
@@ -20,7 +20,7 @@ The /check page opens the doors for any wallet address with no connection: it re
 
 ## 4. The finding behind the engine
 
-Fees earned per $1 lost to informed traders, 1 hour markout, from 5,113,049 swaps between 24 August and 17 October 2026 on the NVDA, SPCX and TSLA pools: NYSE hours $1.03 to $1.35, weeknights $1.30 to $3.90, weekends $3.94 to $33.27. Pooled, a weekend pays $13.64 and NYSE hours $1.16. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
+Fees earned per $1 lost to informed traders, 1 hour markout, from 5,113,049 swaps between 24 August and 17 October 2026 on the NVDA, SPCX and TSLA pools: NYSE hours $1.03 to $1.35, weeknights $1.30 to $3.90, weekends $3.94 to $33.27. Pooled in a fixed range on those three pools, a weekend pays $13.64 and NYSE hours $1.16. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
 
 The engine drops what its own replay refutes. A schedule built on the clock met its bar on 0 of 3 tokens, random session labels beat it in 64 of 64 cells, and twelve off-chain signals failed their shuffled control. Uptick acts on pool and band, measured per token.
 
@@ -32,9 +32,9 @@ Each token chooses its band on the first 15 days. The last 15 days decide the do
 
 AAPL's pool paid 18.7% a year and depositors kept 3.3%. Of every $100 the pool pays, $17.37 stays with depositors, $8.88 pays for recentring and $73.75 goes to informed traders. The entry fee is 0.35%, kept in the vault for the holders who stay.Uptick launches with a 0% performance fee, so the kept figure is what a depositor keeps; the owner can switch on a share of up to 10% per vault through the 24-hour queue where depositors still keep money net of it. Exit in kind carries no fee in either token.
 
-## 7. Five security reviews
+## 7. Six security reviews
 
-Five review reports sit in `contracts/`: four rounds on StockVault, each re-reading the last round's fixes, with round four closing at SHIP with no Critical, High or Medium finding, and one on StockVaultV4, which closes at SHIP after its one Medium was fixed. Round 1 closed 1 High and 3 Medium: a same-block share lock, a spot-to-TWAP band against deploy sandwiches, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and a corporate-action gate on the token's oracle pause and multiplier. Round 2 confirmed the fixes and added the pool fee to swap floors. Round 3 set the TWAP bound at 30 bp and the entry fee at 35 bp. Round 4 closes at SHIP. 141 security tests run on a fork of the real pools inside 412 contract tests, and 50 mutation checks break a guard, see red, restore and see green. Detail in `contracts/SECURITY.md` and the five reports in `contracts/`.
+Six review reports sit in `contracts/`: four rounds on StockVault, each re-reading the last round's fixes, with round four closing at SHIP with no Critical, High or Medium finding, and one on StockVaultV4, which closes at SHIP after its one Medium was fixed, and one on the share oracle that lets a vault share serve as Morpho Blue collateral. Round 1 closed 1 High and 3 Medium: a same-block share lock, a spot-to-TWAP band against deploy sandwiches, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and a corporate-action gate on the token's oracle pause and multiplier. Round 2 confirmed the fixes and added the pool fee to swap floors. Round 3 set the TWAP bound at 30 bp and the entry fee at 35 bp. Round 4 closes at SHIP. 141 security tests run on a fork of the real pools inside 412 contract tests, and 89 mutation checks (50 on StockVault, 36 on StockVaultV4, 3 on the share oracle) break a guard, see red, restore and see green. Detail in `contracts/SECURITY.md` and the six reports in `contracts/`.
 
 ## 8. Agents read the same evidence
 
@@ -63,7 +63,7 @@ web/lib/vault-universe.json: sum of gate.swaps = 3,059,881; bands and weaker hal
 Slide 2: gtm/uptick/DEMAND.md (verbatim quotes), Blockscout holder counts 2026-10-16 (docs/research/founder-house/PLATFORM-TRUTH.md).
 Slide 4: README.md, spikes/stock-vaults/FINDINGS.md, spikes/offchain-signals/FINDINGS.md.
 Slide 5 and 6: web/lib/vault-universe.json, keeper/data/params.json, /vault/aapl on the live app.
-Slide 7: contracts/SECURITY-REVIEW-4-2026-10-20.md (80/80), contracts/SECURITY.md (50 mutation rows).
+Slide 7: contracts/SECURITY-REVIEW-4-2026-10-20.md (80/80), contracts/SECURITY.md (89 mutation checks).
 Slide 8: live evidence API and MCP endpoint, api/src/mcp.ts, web/public/llms.txt.
 Slide 9 and 10: competitors/*/STUDY.md, docs/research/founder-house/vaults/VENUES.md.
 Slide 11 and 12: deck/index.html.

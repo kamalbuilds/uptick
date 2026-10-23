@@ -5,7 +5,11 @@
     "reviews": "ls contracts/SECURITY-REVIEW* and contracts/SECURITY-REREVIEW*",
     "doors": "web/lib/vault-universe.json",
     "fee": "contracts/script/DeployAll.s.sol PERF_FEE_BPS default, contracts/src/StockVault.sol perfFeeBps bound, web/lib/vault-universe.json entryFeeBps, keeper/data/params.json",
-    "study": "paper/main.tex"
+    "study": "paper/main.tex",
+    "mcp": "TOOLS array in api/src/mcp.ts",
+    "mutations": "contracts/SECURITY.md tables headed Mutation | Tests that went red, rows that name a test",
+    "holders": "constant in this script, read 2026-10-16 from Blockscout (see holders.source)",
+    "fee_per_dollar_lost": "web/lib/moment.json and the spike constants in this script"
   },
   "tests": {
     "total": 412,
@@ -25,6 +29,67 @@
     ],
     "reports_total": 6
   },
+  "mcp": {
+    "tools": [
+      "list_vaults",
+      "get_vault_evidence",
+      "scan_wallet",
+      "prepare_deposit",
+      "prepare_withdraw",
+      "get_collateral_terms",
+      "check_loan_health",
+      "prepare_earn_and_borrow",
+      "prepare_make_safer"
+    ],
+    "count": 9
+  },
+  "mutations": {
+    "by_table": [
+      {
+        "section": "Test and mutation evidence",
+        "checks": 50
+      },
+      {
+        "section": "v4 test and mutation evidence",
+        "checks": 36
+      },
+      {
+        "section": "Share oracle: test and mutation evidence",
+        "checks": 3
+      }
+    ],
+    "total": 89
+  },
+  "holders": {
+    "spcx": 114222,
+    "nvda": 189012,
+    "read_at": "2026-10-16",
+    "source": "Blockscout API v2 /tokens/<addr> via docs/research/founder-house/PLATFORM-TRUTH.md Stock Tokens table"
+  },
+  "fee_per_dollar_lost": {
+    "replay_30d": {
+      "nyse_hours": {
+        "vault": 0.99,
+        "pool": 1.13
+      },
+      "weeknight": {
+        "vault": 1.51,
+        "pool": 1.87
+      },
+      "weekend": {
+        "vault": 2.95,
+        "pool": 3.52
+      }
+    },
+    "replay_label": "30-day replay",
+    "spike": {
+      "weekend": 13.64,
+      "nyse": 1.16,
+      "sample": "fixed range, NVDA, SPCX and TSLA pools, 24 August to 17 October 2026 (54 days), 5,113,049 swaps",
+      "source": "spikes/stock-vaults/FINDINGS.md"
+    }
+  },
+  "repo": "https://github.com/kamalbuilds/uptick",
   "doors": {
     "vaults": 17,
     "open": 3,

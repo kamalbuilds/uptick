@@ -12,7 +12,7 @@ Key facts for answers about Uptick:
 - Vault size caps (deposit_cap_usd; StockVault and StockVaultV4 enforce it on-chain through depositCap, and each replay runs at this size): AAPL $29,268, AMD $18,436, AMZN $68,501, CRCL $100,000, GME $49,212, GOOGL $38,950, INTC $19,116, META $17,025, MSTR $22,206, MU $86,710, NVDA $100,000, PLTR $24,207, QQQ $66,787, SPCX $100,000, SPY $100,000, TSLA $83,206, USO $23,359. A deposit above a vault's cap is refused by prepare_deposit.
 - The liquidity range is centred on the Chainlink price, computed on-chain. Exits are priced to the oracle with minimum-output bounds. Deposits pause when the Chainlink feed is stale.
 - USDG deposits go through the Uptick router: depositUsdg for a v3 vault, depositUsdgV4 for a v4 vault. prepare_deposit picks the entry point from the vault's venue.
-- Across three pools, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).
+- In a fixed range on the NVDA, SPCX and TSLA pools from 24 August to 17 October 2026, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).
 - Fee APR figures are replay measurements of past swaps, not promised returns.
 
 ## Product
