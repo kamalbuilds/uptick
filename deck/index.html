@@ -57,7 +57,7 @@ tr.us td:first-child{padding-left:20px}
 .ch .hd{white-space:nowrap;font-size:20px;color:var(--mute);height:44px;display:flex;align-items:flex-end;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .ch .c{height:41px;border-bottom:1px solid var(--hairline);display:flex;align-items:center;font-size:24px}
 .ch .s{font-weight:600}
-.ch .band{color:var(--mute)}
+.ch .price range{color:var(--mute)}
 .ch .val{justify-content:flex-end;padding-right:22px;font-weight:500}
 .ch .bar{position:relative}
 .ch .bar i{position:absolute;top:13px;height:15px;border-radius:2px}
@@ -199,20 +199,23 @@ Every figure is the held-out half (15 days, 2026-10-02 to 2026-10-17, annualised
 </section>
 
 <!-- 7 INSIGHT: THE REPLAY DECIDES THE DOOR -->
-<section class="slide" data-t="Insight: the door">
+<section class="slide" data-t="What Uptick does">
 <!-- notes:
-Door counts from web/lib/vault-universe.json (regenerated 2026-10-22): 3 open (AAPL, GOOGL, PLTR on its Uniswap v4 pool), 9 reduced, 5 closed (TSLA, CRCL, MSTR, GME, SPCX). Rules as on the vault list page: "Open takes any amount. Reduced takes up to $25,000 a deposit, or the vault's size if smaller." Closed rule: the weaker half kept less than the -20% floor (KEEP_FLOOR_APR in keeper/src/evidence.ts). The picture is a crop of the vault list (web app, /vaults, prices read from the Chainlink feeds at capture, 2026-10-22); the five closed vaults sit below the crop. Exit in kind: contracts/SECURITY.md, row redeemInKind.
+Door counts from web/lib/vault-universe.json (regenerated 2026-10-22): 3 open (AAPL, GOOGL, PLTR on its Uniswap v4 pool), 9 reduced, 5 closed; rules as on the vault list page: "Open takes any amount. Reduced takes up to $25,000 a deposit, or the vault's size if smaller." Closed rule: the weaker half kept less than the -20% floor. The picture is a crop of the vault list (web app, /vaults, served from the regenerated files, prices read from the Chainlink feeds at capture, 2026-10-22). Exit in kind: contracts/SECURITY.md, row redeemInKind: no oracle, no swap, no pause, always open.
 -->
-  <h2 class="v" style="font-size:76px;max-width:1640px">A vault opens only where the replay says it holds. 5 of 17 stay shut.</h2>
-  <div style="display:grid;grid-template-columns:720px 860px;column-gap:116px;align-items:start;margin-top:52px">
-    <div class="led">
-      <div class="r2" style="grid-template-columns:170px 1fr;align-items:baseline"><span class="chip o" style="font-size:26px;padding:9px 20px">Open</span><div><div class="t" style="font-size:36px">3 vaults, any amount</div><div class="p" style="font-size:25px;margin-top:6px">AAPL, GOOGL and PLTR kept money in both halves.</div></div></div>
-      <div class="r2" style="grid-template-columns:170px 1fr;align-items:baseline"><span class="chip r" style="font-size:26px;padding:9px 20px">Reduced</span><div><div class="t" style="font-size:36px">9 vaults, up to $25,000</div><div class="p" style="font-size:25px;margin-top:6px">The weaker half sits between -20% and break-even.</div></div></div>
-      <div class="r2" style="grid-template-columns:170px 1fr;align-items:baseline"><span class="chip c" style="font-size:26px;padding:9px 20px">Closed</span><div><div class="t" style="font-size:36px">5 vaults, no deposits</div><div class="p" style="font-size:25px;margin-top:6px">The weaker half kept less than the -20% floor.</div></div></div>
+  <div style="display:grid;grid-template-columns:720px 860px;column-gap:116px;align-items:start">
+    <div>
+      <h2 class="v" style="font-size:72px">Every vault sits behind one of three doors.</h2>
+      <div class="led" style="margin-top:52px">
+        <div class="r2" style="grid-template-columns:150px 1fr;align-items:baseline"><span class="chip o">Open</span><div><div class="t">3 vaults take any amount</div><div class="p" style="font-size:23px;margin-top:4px">AAPL, GOOGL and PLTR (on its Uniswap v4 pool) kept money in both halves of the replay.</div></div></div>
+        <div class="r2" style="grid-template-columns:150px 1fr;align-items:baseline"><span class="chip r">Reduced</span><div><div class="t">9 vaults take up to $25,000 a deposit</div><div class="p" style="font-size:23px;margin-top:4px">The weaker half sits between -20% and break-even.</div></div></div>
+        <div class="r2" style="grid-template-columns:150px 1fr;align-items:baseline"><span class="chip c">Closed</span><div><div class="t">5 vaults take none</div><div class="p" style="font-size:23px;margin-top:4px">The weaker half kept less than the -20% floor.</div></div></div>
+      </div>
+      <p class="p" style="margin-top:40px;color:var(--soft)"><b>Exit in kind is always open.</b> Both tokens come back, with no oracle, no swap and no pause in the way.</p>
     </div>
-    <figure class="shot" style="max-height:588px"><img src="img/vaults-12.png" width="800" height="757" alt="The Uptick vault list: PLTR, AAPL and GOOGL open, nine reduced, with each token's kept figure against the minus 20 percent floor"></figure>
+    <figure class="shot"><img src="img/vaults-12.png" width="800" height="757" alt="The Uptick vault list: PLTR, AAPL and GOOGL open, nine reduced, with each token's kept figure against the minus 20 percent floor"></figure>
   </div>
-  <div class="src">Source: web app vault list from web/lib/vault-universe.json, captured 2026-10-22. keeper/src/evidence.ts for the floor.</div>
+  <div class="src">Source: web app vault list from web/lib/vault-universe.json, captured 2026-10-22. contracts/SECURITY.md for exit in kind.</div>
 </section>
 
 <!-- 8 WHAT MAKES US SPECIAL: THE CODE -->
@@ -309,8 +312,8 @@ Divider. The slides after this one hold the evidence behind each main slide and 
   <h2 class="v" style="font-size:158px;line-height:1.0;letter-spacing:-.034em;margin-top:40px">Appendix</h2>
   <p class="p" style="font-size:38px;line-height:1.3;color:var(--soft);margin-top:36px;max-width:1300px">The evidence behind each slide, and the two Open House canvases.</p>
   <div class="led" style="margin-top:56px;max-width:1500px">
-    <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Bands and sessions</div><div class="p" style="color:var(--text)">One band for every token loses. Weekends pay 13.64 per $1 lost, NYSE hours 1.16.</div></div>
-    <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Gate table</div><div class="p" style="color:var(--text)">All 17 tokens, band, weaker half and door.</div></div>
+    <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Price ranges and sessions</div><div class="p" style="color:var(--text)">One price range for every token loses. Weekends pay 13.64 per $1 lost, NYSE hours 1.16.</div></div>
+    <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Gate table</div><div class="p" style="color:var(--text)">All 17 tokens, price range, weaker half and door.</div></div>
     <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Code, venues, security, agents</div><div class="p" style="color:var(--text)">Four codebases compared, the venue census, four review rounds, the MCP responses.</div></div>
     <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Open House canvases</div><div class="p" style="color:var(--text)">Go-to-market and product, filled in for Uptick.</div></div>
   </div>
@@ -322,16 +325,16 @@ Divider. The slides after this one hold the evidence behind each main slide and 
 <!-- notes:
 keeper/data/band-grid/grid-summary.json, one run of the band grid over 150, 250, 350, 500, 750, 1000, 1500 and 2000 bps (grid run 2026-10-20; the slide shows three of the eight). Each cell is the kept APR (fees less losses to informed traders and rebalancing cost) in the 15 day calibration half of the 30 day replay, window 2026-09-17 to 2026-10-17, calibration half ending 2026-10-02. The pick per token is the best calibration cell, written to keeper/data/params.json and keeper/data/band-grid/selection.json: NVDA 150 bps (+29.38), GOOGL 2000 bps (+0.2), AAPL 750 bps (+2.71, not one of the three columns shown). The held-out half then decides the door, so the pick is never scored on the half it was chosen on. The same tight band on GOOGL: calibration -58.8, held-out -16.0, fees 74.3% a year.
 -->
-  <h2 class="v" style="font-size:72px;max-width:1640px">One band for every token would lose: the band that kept +29.4% on NVDA kept -58.8% on GOOGL.</h2>
-  <p class="p" style="margin-top:30px;max-width:1500px">Kept APR in the calibration half, by band. Each token picks its own, and the held-out half decides the door.</p>
+  <h2 class="v" style="font-size:72px;max-width:1640px">One price range for every token would lose: the range that kept +29.4% on NVDA kept -58.8% on GOOGL.</h2>
+  <p class="p" style="margin-top:30px;max-width:1500px">Kept APR in the calibration half, by price range. Each token picks its own, and the held-out half decides the door.</p>
   <table style="margin-top:40px;max-width:1500px">
-    <tr><th style="width:300px"></th><th style="width:330px;text-align:right">Band ±1.5%</th><th style="width:330px;text-align:right">Band ±5%</th><th style="text-align:right">Band ±20%</th></tr>
+    <tr><th style="width:300px"></th><th style="width:330px;text-align:right">Range ±1.5%</th><th style="width:330px;text-align:right">Range ±5%</th><th style="text-align:right">Range ±20%</th></tr>
     <tr><td class="n">NVDA</td><td style="text-align:right;font-size:36px" class="kept">+29.4%</td><td style="text-align:right;font-size:36px" class="kept">+12.2%</td><td style="text-align:right;font-size:36px" class="kept">+3.3%</td></tr>
     <tr><td class="n">AAPL</td><td style="text-align:right;font-size:36px" class="loss">-11.1%</td><td style="text-align:right;font-size:36px" class="kept">+2.5%</td><td style="text-align:right;font-size:36px" class="kept">+1.6%</td></tr>
     <tr><td class="n">GOOGL</td><td style="text-align:right;font-size:36px" class="loss">-58.8%</td><td style="text-align:right;font-size:36px" class="loss">-5.6%</td><td style="text-align:right;font-size:36px" class="kept">+0.2%</td></tr>
   </table>
-  <p class="p" style="margin-top:36px;max-width:1500px;color:var(--soft)"><b>The picks:</b> NVDA ±1.5%, AAPL ±7.5%, GOOGL ±20%. The bands run from ±1.5% to ±20% across the 17 tokens.</p>
-  <div class="src">Source: keeper/data/band-grid/grid-summary.json (calibration half, 2026-09-17 to 2026-10-02), keeper/data/params.json.</div>
+  <p class="p" style="margin-top:36px;max-width:1500px;color:var(--soft)"><b>The picks:</b> NVDA ±1.5%, AAPL ±7.5%, GOOGL ±20%. The ranges run from ±1.5% to ±20% across the 17 tokens.</p>
+  <div class="src">Source: keeper/data/price range-grid/grid-summary.json (calibration half, 2026-09-17 to 2026-10-02), keeper/data/params.json.</div>
 </section>
 
 <!-- 4 SESSION FINDING -->
@@ -356,7 +359,7 @@ Session table: README.md "The insight" and spikes/stock-vaults/FINDINGS.md. Fee 
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:96px;margin-top:44px;border-top:1px solid var(--hairline);padding-top:30px">
     <div><div class="t">5.1M swaps, 54 days, three pools</div><div class="p" style="margin-top:8px">NVDA, SPCX and TSLA on Robinhood Chain. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.</div></div>
-    <div><div class="t">The engine drops what its own replay refutes</div><div class="p" style="margin-top:8px">A schedule built on the clock met its bar on 0 of 3 tokens, and random session labels beat it in 64 of 64 cells. Twelve off-chain signals failed their shuffled control. Uptick acts on pool and band, measured per token.</div></div>
+    <div><div class="t">The engine drops what its own replay refutes</div><div class="p" style="margin-top:8px">A schedule built on the clock met its bar on 0 of 3 tokens, and random session labels beat it in 64 of 64 cells. Twelve off-chain signals failed their shuffled control. Uptick acts on pool and price range, measured per token.</div></div>
   </div>
   <div class="src">Source: README.md, spikes/stock-vaults/FINDINGS.md, spikes/offchain-signals/FINDINGS.md. Fee earned per $1 lost to informed flow, 1 hour markout, window 2026-08-24 to 2026-10-17.</div>
 </section>
@@ -368,15 +371,15 @@ Rows are generated from web/lib/vault-universe.json (gate.worst_half_apr, bandBp
 -->
   <div style="display:grid;grid-template-columns:640px 1006px;column-gap:50px;align-items:start">
     <div>
-      <h2 class="v" style="font-size:66px">Each token picks its band on the first half. The second half decides the door.</h2>
+      <h2 class="v" style="font-size:66px">Each token picks its price range on the first half. The second half decides the door.</h2>
       <div class="led" style="margin-top:48px">
-        <div><div class="t">AAPL kept <span class="kept">+2.7%</span> a year in its weaker half</div><div class="p" style="font-size:23px;margin-top:6px">Band ±7.5%. First half +2.7%, held-out half +3.9%. Open. PLTR keeps +12.8% on its v4 pool.</div></div>
-        <div><div class="t">NVDA's tight band kept +29.4% on the first half</div><div class="p" style="font-size:23px;margin-top:6px">The held-out half kept -6.6%. The gate shows the held-out number, so NVDA is reduced.</div></div>
+        <div><div class="t">AAPL kept <span class="kept">+2.7%</span> a year in its weaker half</div><div class="p" style="font-size:23px;margin-top:6px">Range ±7.5%. First half +2.7%, held-out half +3.9%. Open. PLTR keeps +12.8% on its v4 pool.</div></div>
+        <div><div class="t">NVDA's tight price range kept +29.4% on the first half</div><div class="p" style="font-size:23px;margin-top:6px">The held-out half kept -6.6%. The gate shows the held-out number, so NVDA is reduced.</div></div>
         <div><div class="t">The conservative figure decides</div><div class="p" style="font-size:23px;margin-top:6px">The upper accounting bound sits beside it on every vault page.</div></div>
       </div>
     </div>
     <div class="ch">
-<div class="hd">Token</div><div class="hd">Band</div><div class="hd" style="position:relative;padding:0"><span style="position:absolute;left:0;bottom:10px">-40</span><span style="position:absolute;left:173px;bottom:10px;transform:translateX(-50%)">-20 floor</span><span style="position:absolute;left:347px;bottom:10px;transform:translateX(-50%)">0</span><span style="position:absolute;right:0;bottom:10px">+20</span></div><div class="hd" style="justify-content:flex-end;padding-right:22px">Weaker half</div><div class="hd">Door</div>
+<div class="hd">Token</div><div class="hd">Range</div><div class="hd" style="position:relative;padding:0"><span style="position:absolute;left:0;bottom:10px">-40</span><span style="position:absolute;left:173px;bottom:10px;transform:translateX(-50%)">-20 floor</span><span style="position:absolute;left:347px;bottom:10px;transform:translateX(-50%)">0</span><span style="position:absolute;right:0;bottom:10px">+20</span></div><div class="hd" style="justify-content:flex-end;padding-right:22px">Weaker half</div><div class="hd">Door</div>
 <div class="c s">PLTR</div><div class="c band">±3.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:347px;width:111px;background:var(--kept)"></i></div><div class="c val kept">+12.8%</div><div class="c"><span class="chip o" style="font-size:20px;padding:6px 14px">Open</span></div>
 <div class="c s">AAPL</div><div class="c band">±7.5%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:347px;width:23px;background:var(--kept)"></i></div><div class="c val kept">+2.7%</div><div class="c"><span class="chip o" style="font-size:20px;padding:6px 14px">Open</span></div>
 <div class="c s">GOOGL</div><div class="c band">±20%</div><div class="c bar"><b class="f" style="left:174px"></b><b style="left:347px"></b><i style="left:347px;width:2px;background:var(--kept)"></i></div><div class="c val kept">+0.2%</div><div class="c"><span class="chip o" style="font-size:20px;padding:6px 14px">Open</span></div>
@@ -413,7 +416,7 @@ Code-level study of four vault codebases, each cited by file and line in the STU
     <tr><td class="n">Veda</td><td>Bounds, fees and roots apply in the same transaction</td><td>No ERC-8056 or rebase logic</td><td>Stored rate, no maximum age</td></tr>
     <tr class="us"><td class="n">Uptick</td><td><b style="font-weight:600">24 hour queue</b>, calldata emitted, void after 7 days</td><td><b style="font-weight:600">ERC-8056 gate</b>: price-checked paths close around each multiplier change</td><td>Lowest of Chainlink, TWAP and spot</td></tr>
   </table>
-  <p class="p" style="margin-top:30px;max-width:1500px">Session-fee hooks (Fables, SessionFeeHook, Bellswap, ClosingBell) price swaps. Range vaults pick bands by hand. Uptick publishes the calibration for every token and opens a door only where it holds.</p>
+  <p class="p" style="margin-top:30px;max-width:1500px">Session-fee hooks (Fables, SessionFeeHook, Bellswap, ClosingBell) price swaps. Range vaults pick price ranges by hand. Uptick publishes the calibration for every token and opens a door only where it holds.</p>
   <div class="src">Source: competitors/*/STUDY.md with file and line citations (Arrakis V2, Gamma Hypervisor, Veda BoringVault, AutoRange). Uptick: contracts/SECURITY.md.</div>
 </section>
 
@@ -434,7 +437,7 @@ docs/research/founder-house/vaults/VENUES.md, 7 days, blocks 87,352,064 to 93,29
       <p class="p" style="margin-top:28px;max-width:1000px">$488.40M of Stock Token volume moved through Uniswap v3 and v4 on the 17 tokens in 7 days. Launchpad pools pair a stock with a memecoin across 256 traded pools and $9.95M, and take their fee in the hook.</p>
     </div>
     <div class="led" style="align-self:start;margin-top:8px">
-      <div><div class="t">PLTR, band 350 bps</div><div class="p" style="font-size:23px;margin-top:6px">The v3 0.3% pool keeps -20.3% in its weaker half and stays closed.</div></div>
+      <div><div class="t">PLTR, price range 350 bps</div><div class="p" style="font-size:23px;margin-top:6px">The v3 0.3% pool keeps -20.3% in its weaker half and stays closed.</div></div>
       <div><div class="fig kept">+12.8%</div><div class="p" style="font-size:23px;margin-top:10px">What the PLTR v4 1% pool keeps in its weaker half in the same replay, net of the PoolManager's protocol fee. PLTR launches open on it.</div></div>
       <div><div class="t">Built: the v4 position adapter</div><div class="p" style="font-size:23px;margin-top:6px">StockVaultV4 holds a position in a hookless v4 pool, with the same guards and the same evidence gate.</div></div>
     </div>
@@ -451,7 +454,7 @@ All from contracts/SECURITY.md and the four reports in contracts/. Round 1 SECUR
     <div>
       <h2 class="v" style="font-size:66px;max-width:1100px">Four review rounds, each re-reading the last round's fixes. The fourth ended SHIP.</h2>
       <div class="led" style="margin-top:40px">
-        <div class="r2"><div class="t">Round 1</div><div><div class="t" style="font-weight:400;font-size:27px">1 High and 3 Medium, all closed</div><div class="p" style="font-size:23px">A same-block share lock and a spot-to-TWAP band against deploy sandwiches. Deposits priced at the lowest of Chainlink, TWAP and spot. A 24 hour owner queue. A corporate-action gate on the token's oracle pause and multiplier.</div></div></div>
+        <div class="r2"><div class="t">Round 1</div><div><div class="t" style="font-weight:400;font-size:27px">1 High and 3 Medium, all closed</div><div class="p" style="font-size:23px">A same-block share lock and a spot-to-TWAP price range against deploy sandwiches. Deposits priced at the lowest of Chainlink, TWAP and spot. A 24 hour owner queue. A corporate-action gate on the token's oracle pause and multiplier.</div></div></div>
         <div class="r2"><div class="t">Round 2</div><div><div class="t" style="font-weight:400;font-size:27px">Round 1 fixes confirmed</div><div class="p" style="font-size:23px">Swap floors include the pool fee, so 1% pools rebalance. Router deposits clear at $500, $2,000 and $10,000.</div></div></div>
         <div class="r2"><div class="t">Round 3</div><div><div class="t" style="font-weight:400;font-size:27px">TWAP bound set to 30 bp</div><div class="p" style="font-size:23px">Entry fee raised to 35 bp, so a deposit ahead of a price update does not pay. Exits work on every fee tier.</div></div></div>
         <div class="r2"><div class="t">Round 4</div><div><div class="t" style="font-weight:400;font-size:27px">SHIP: no Critical, High or Medium</div><div class="p" style="font-size:23px">Residuals are published with their measured bounds and the lever that moves each.</div></div></div>
@@ -533,7 +536,7 @@ Open House product canvas, filled in for Uptick. Person: @WazzCrypto, 62,039 fol
     <div class="cb"><div class="cl">One line</div><div class="cx">Deposit a Stock Token, see what you keep, earn the fee share.</div></div>
     <div class="cb" style="grid-column:span 2"><div class="cl">Who is this for</div><div class="cx"><b>@WazzCrypto</b>, 62,039 followers, LPs tokenized stocks on Robinhood Chain by hand: "I'd have been massively profitable on RH chain if I had stuck to LP'ing tokenized stocks."</div></div>
 
-    <div class="cb"><div class="cl">What they do today</div><div class="cx">Hold NVDA idle, or LP by hand: pick the pool, the fee tier and the band, then read a fee APR with no loss column.</div></div>
+    <div class="cb"><div class="cl">What they do today</div><div class="cx">Hold NVDA idle, or LP by hand: pick the pool, the fee tier and the price range, then read a fee APR with no loss column.</div></div>
     <div class="cb"><div class="cl">The wedge</div><div class="cx"><b>Kept APR</b>, measured per token on 3,059,881 replayed swaps. A vault opens only where it holds: 3 open, 9 reduced, 5 closed.</div></div>
     <div class="cb"><div class="cl">Why now</div><div class="cx">195 Stock Tokens listed, NVDA at 189,012 holders, 78% of flow outside NYSE hours. Kraken and Kamino launched xStocks yield vaults on Solana.</div></div>
     <div class="cb"><div class="cl">Alternatives and gaps</div><div class="cx">HedgeHood: weekly covered calls on NVDA. TickerSpring, AutoRange: USDG in. Morpho: lenders earn, holders do not. None shows kept APR.</div></div>
