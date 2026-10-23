@@ -2,7 +2,7 @@
 
 Live app: https://uptick-fi.pages.dev. Launch film: https://x.com/uptickfi/status/2112531006792360167.
 
-One line: deposit AAPL, GOOGL, NVDA and 14 more Stock Tokens into a vault and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
+One line: deposit AAPL, GOOGL, NVDA and 9 more Stock Tokens into a vault (12 of 17 vaults take deposits at launch) and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
 
 Setup: one browser window, six tabs in order: `/`, `/vaults`, `/vault/aapl`, `/vault/nvda`, `/docs`, `/research`. No wallet is connected. The Chainlink ticker in the footer runs on every page.
 
@@ -41,7 +41,7 @@ Say: "NVDA kept +29.4% on the first half and -6.6% on the held-out half. The gat
 ## 2:25 to 2:45 Docs, `/docs`
 
 Screen: the Docs overview.
-Say: "A vault is one ERC-4626 contract, one managed position and one published gate." Point at the gate table and the "Vaults today" table: Open AAPL and GOOGL, Reduced the nine others, Closed six.
+Say: "A vault is one ERC-4626 contract, one managed position and one published gate." Point at the gate table and the "Vaults today" table: Open PLTR, AAPL and GOOGL, Reduced nine, Closed five.
 Open Exit in kind: "redeemInKind pays your share of both tokens with no oracle gate and no swap, so an exit works when the feed is stale." Open For agents: "An evidence API and an MCP endpoint with four tools. A closed vault returns its gate reason, so an agent never routes a deposit past the door."
 
 ## 2:45 to 3:00 Research, `/research`

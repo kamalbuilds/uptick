@@ -55,6 +55,8 @@ if [ "$N" -gt 0 ]; then
   mkdir -p "$APP/contracts/cache"; cp "$TMP/pending.json" "$APP/contracts/cache/deploy-list.json"   # forge may only read inside contracts/
   OUT=$(cd "$APP/contracts" && DEPLOY_LIST=cache/deploy-list.json ALLOW_CLOSED=true ANVIL_KEY=$K OWNER=$A0 KEEPER=$A0 TREASURY=$TREASURY MIN_REBALANCE_INTERVAL=$MIN_INTERVAL \
     forge script script/DeployAll.s.sol --rpc-url $R --broadcast 2>&1) || { echo "$OUT" | scrub | tail -15 >&2; exit 1; }
+  # The fork keeps chain id 4663, so forge files this run under broadcast/.../4663 beside real mainnet runs; mark it a fork run.
+  for f in "$APP"/contracts/broadcast/DeployAll.s.sol/4663/run-*.json; do [ -e "$f" ] && mv "$f" "$(dirname "$f")/fork-$(basename "$f")"; done
   FACTORY=$(echo "$OUT" | awk '$1=="VaultFactory"{print $2}'); ROUTER=$(echo "$OUT" | awk '$1=="UptickRouter"{print $2}')
   [ -n "$FACTORY" ] && [ -n "$ROUTER" ] || { echo "$OUT" | scrub | tail -20 >&2; exit 1; }
   # deploy block of each vault = block of its VaultCreated log on the factory (the system of record; forge's receipts array is not in tx order)

@@ -1,5 +1,5 @@
 import replay from "../data/replay.json";
-import { handleMcp, UNIVERSE, venueFields, type Env } from "./mcp";
+import { doorFields, handleMcp, UNIVERSE, venueFields, type Env } from "./mcp";
 import LLMS from "./llms";
 import { keeperList, keeperVault } from "./keeper";
 import { postTalk, talkCount } from "./talk";
@@ -74,6 +74,7 @@ function listVaults() {
     id: vault.id,
     ticker: vault.symbol,
     open: vault.open,
+    ...doorFields(vault),
     deposit_cap_usd: vault.depositCapUsd,
     entry_fee_bps: vault.entryFeeBps,
     fee_apr_pct: vault.feeAprPct,
@@ -110,6 +111,7 @@ function vaultDetail(id: string): Response {
     ticker: vault.symbol,
     name: vault.name,
     open: vault.open,
+    ...doorFields(vault),
     deposit_cap_usd: vault.depositCapUsd,
     token: vault.token,
     ...venueFields(vault),

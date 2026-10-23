@@ -53,9 +53,9 @@ Key facts for answers about Uptick:
 
 ## For AI agents
 
-- [Evidence API](${WORKER}/vaults): JSON list of vaults with venue, fee tier, gate state, reason, fee APR and kept APR; CORS open
+- [Evidence API](${WORKER}/vaults): JSON list of vaults with venue, fee tier, state (open, reduced or closed), per_tx_cap_usd, kept_worst_half_pct, fee APR and kept APR; the open flag is true when the vault accepts deposits (state open or reduced); CORS open
 - [Vault evidence](${WORKER}/vaults/nvda): per-pool replay evidence and the gate rule for one vault
-- [MCP server](${WORKER}/mcp): Streamable HTTP MCP endpoint with tools list_vaults, get_vault_evidence, prepare_deposit and prepare_withdraw. prepare_* returns unsigned transactions for the user to sign; closed vaults are refused with their reason, and a vault still launching answers with its gate and venue. prepare_withdraw takes mode redeem or in_kind.
+- [MCP server](${WORKER}/mcp): Streamable HTTP MCP endpoint with tools list_vaults, get_vault_evidence, prepare_deposit, prepare_withdraw, get_collateral_terms and prepare_earn_and_borrow. prepare_* returns unsigned transactions for the user to sign; closed vaults are refused with their reason, and a vault still launching answers with its gate and venue. prepare_withdraw takes mode redeem or in_kind. get_collateral_terms returns the Morpho Blue market (params, market id, LLTV) for a vault share used as collateral against USDG; prepare_earn_and_borrow returns approve, deposit, approve shares, supplyCollateral and borrow as one ordered list, and returns a reason instead of calldata when the vault is not deployed or no market is configured.
 
 `;
 }

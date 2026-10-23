@@ -1,8 +1,16 @@
 # Uptick
 
+Uptick puts Robinhood Stock Tokens to work: ERC-4626 vaults that provide Uniswap v3 and v4 liquidity against USDG on Robinhood Chain (4663), and vault shares that serve as Morpho Blue collateral.
+
+App https://uptick-fi.pages.dev, evidence API https://uptick-evidence.earn-shield-alerts.workers.dev, code https://github.com/kamalbuilds/uptick. Verify in three commands:
+
+1. `curl -s https://uptick-evidence.earn-shield-alerts.workers.dev/vaults | jq '[.[] | select(.open)] | length'` prints how many of the 17 vaults accept deposits.
+2. `cd contracts && forge test --match-test test_realFeedUnmocked -j 1` reads the live NVDA Chainlink feed and Uniswap pool on a fork of Robinhood Chain, unmocked.
+3. `cast code 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010 --rpc-url https://rpc.mainnet.chain.robinhood.com` prints the bytecode of the Morpho Blue singleton that takes a vault share as collateral.
+
 **Put your stock tokens to work.**
 
-Deposit NVDA, AAPL, GOOGL and 14 more Stock Tokens, and earn a share of every trade's fee. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep after losses to fast traders, and opens a vault only where past trades say it holds up.
+Deposit NVDA, AAPL, GOOGL and 9 more Stock Tokens (12 of 17 vaults take deposits at launch), and earn a share of every trade's fee. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep after losses to fast traders, and opens a vault only where past trades say it holds up.
 
 Every vault page shows fee APR next to what LPs keep.
 
@@ -10,7 +18,7 @@ Robinhood Chain (chain 4663) lists 189,012 NVDA holders and 114,550 SPCX holders
 
 ## The insight
 
-Liquidity economics on a stock token differ by session and by pool and tier. Fees earned per dollar lost to informed traders (1 hour markout), from 5.1M swaps on the chain's own NVDA, SPCX and TSLA pools over 54 days:[^2]
+Liquidity economics on a stock token differ by session and by pool and tier. Fees earned per dollar lost to informed traders (1 hour markout), from 5,113,049 swaps on the chain's own NVDA, SPCX and TSLA pools between 24 August and 17 October 2026:[^2]
 
 | Session | Fee earned per $1 lost to informed flow |
 |---|---|
@@ -26,7 +34,7 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 **1. Evidence engine** (`spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). For every eligible Stock Token (Chainlink feed, deep and busy USDG pool; `keeper/src/universe.ts`) it replays every swap on every USDG pool and fee tier, computes fee per dollar of 1 hour markout by session, and ranks pool and tier on a held-out half of the window.[^2]
 
-**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 46 fork tests run against the real pool, router and tokens, and 14 guards are mutation-tested.[^3]
+**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 383 contract tests cover the vaults, 118 of them in a security suite that runs on a fork of Robinhood Chain, and 14 guards are mutation-tested.[^3]
 
 **3. Keeper and stats API** refresh the evidence and recentre each vault once a day after each NYSE session, from 02:00 UTC with a jittered minute (`keeper/src/calendar.ts`). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 
@@ -80,7 +88,8 @@ Session-fee and oracle-gap hooks (Fables, SessionFeeHook, Bellswap, ClosingBell)
 
 | Claim | Number | Source |
 |---|---|---|
-| Swaps replayed | 5.1M over 54 days on NVDA, SPCX, TSLA pools | `spikes/stock-vaults/FINDINGS.md` |
+| Swaps replayed, weekend study | 5,113,049 on NVDA, SPCX, TSLA pools, 24 August to 17 October 2026 | `spikes/stock-vaults/FINDINGS.md` |
+| Swaps replayed, vault gates | 3,059,881 over 30 days across 17 vaults | `docs/facts.json` from `web/lib/vault-universe.json` |
 | NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 94.4% | evidence API `/vaults`, read 2026-10-21 |
 | Hook share of v4 trades on Robinhood Chain | 74.5% | Bitquery |
 | Hooks labelled malicious by 0x | 80% of 84K | 0x |
