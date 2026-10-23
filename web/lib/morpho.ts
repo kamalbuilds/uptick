@@ -178,6 +178,21 @@ export function supportsAtomicBatch(capabilities: unknown, chainId: number): boo
   return atomic?.status === "supported" || atomic?.status === "ready";
 }
 
+/** True when a `wallet_sendCalls` failure means "this wallet cannot batch here" (method unknown, chain or atomicity unsupported), so the flow falls back to
+ *  one transaction per step. A user rejection (4001) or a revert is not in this set: those stop the flow instead of asking the wallet again. */
+export function isBatchUnsupported(err: unknown): boolean {
+  const seen = new Set<unknown>();
+  let cur: unknown = err;
+  while (cur && typeof cur === "object" && !seen.has(cur)) {
+    seen.add(cur);
+    const { name, code } = cur as { name?: unknown; code?: unknown };
+    if (name === "UnsupportedProviderMethodError" || name === "MethodNotSupportedRpcError") return true;
+    if (code === -32601 || code === 4200 || code === 5710 || code === 5760) return true;
+    cur = (cur as { cause?: unknown }).cause;
+  }
+  return false;
+}
+
 // ---- market config ----------------------------------------------------------------------------------------------------------------
 
 export type MarketEntry = { oracle: Address; irm: Address; lltv: bigint };

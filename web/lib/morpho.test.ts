@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { decodeFunctionData, getAddress, parseUnits, type Address } from "viem";
 import {
   BORROW_CAP_BPS, MORPHO_BLUE, borrowAtBps, borrowRoom, collateralFromQuote, collateralValue, debtAssets, earnAndBorrowSteps, marketId, marketLiquidity,
-  maxBorrowOf, morphoAbi, parseMarkets, positionRisk, sharePriceUsd, supportsAtomicBatch, marketFor, type FlowPlan, type MarketParams,
+  isBatchUnsupported, maxBorrowOf, morphoAbi, parseMarkets, positionRisk, sharePriceUsd, supportsAtomicBatch, marketFor, type FlowPlan, type MarketParams,
 } from "./morpho.ts";
 import { erc20Abi, vaultAbi } from "./abis.ts";
 
@@ -179,4 +179,15 @@ test("atomic batching is read from wallet_getCapabilities for the chain, support
   assert.equal(supportsAtomicBatch({ 1: { atomic: { status: "supported" } } }, 4663), false);
   assert.equal(supportsAtomicBatch({ 4663: {} }, 4663), false);
   assert.equal(supportsAtomicBatch(undefined, 4663), false);
+});
+
+test("a wallet that cannot batch falls back to single transactions; a rejection or a revert does not", () => {
+  const rpc = (name: string, code: number, cause?: unknown) => Object.assign(new Error(name), { name, code, cause });
+  assert.equal(isBatchUnsupported(rpc("UnsupportedProviderMethodError", 4200)), true);
+  assert.equal(isBatchUnsupported(rpc("MethodNotSupportedRpcError", -32601)), true);
+  assert.equal(isBatchUnsupported(rpc("TransactionExecutionError", 0, rpc("RpcRequestError", 5710))), true, "found through the cause chain");
+  assert.equal(isBatchUnsupported(rpc("UserRejectedRequestError", 4001)), false);
+  assert.equal(isBatchUnsupported(rpc("ContractFunctionRevertedError", 3)), false);
+  assert.equal(isBatchUnsupported("boom"), false);
+  assert.equal(isBatchUnsupported(undefined), false);
 });
