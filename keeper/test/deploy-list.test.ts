@@ -9,26 +9,36 @@ const list: { symbol: string; capUsd: number; depositCapTokens: string; [k: stri
   Bun.spawnSync(["bun", script], { stderr: "inherit" }).stdout.toString(),
 );
 
-test("the deploy list carries the universe cap for every token except META, whose on-chain cap is 15% of its pool's depth", () => {
+const params = JSON.parse(readFileSync(new URL("../data/params.json", import.meta.url), "utf8"));
+const liveness = Object.entries<any>(params).filter(([, p]) => p.liveness_share);
+
+test("the deploy list carries the universe cap for every token except those with a liveness_share, which deploy at that share of their pool's depth", () => {
   expect(list.length).toBeGreaterThan(10);
+  expect(liveness.map(([s]) => s).sort()).toEqual(["AAPL", "GOOGL", "META"]);
   for (const row of list) {
     const u = universe.tokens.find((t: any) => t.symbol === row.symbol);
-    if (row.symbol === "META") continue;
+    if (params[row.symbol]?.liveness_share) continue;
     expect(row.capUsd).toBe(u.cap_usd);
   }
-  const meta = list.find((r) => r.symbol === "META")!;
-  const u = universe.tokens.find((t: any) => t.symbol === "META");
-  expect(meta.capUsd).toBe(17_025);
-  expect(meta.capUsd).toBeLessThan(u.cap_usd);
-  expect(vaultShare(u.pool.depth_usd_5pct, meta.capUsd)).toBeLessThanOrEqual(0.15);
-  expect(vaultShare(u.pool.depth_usd_5pct, meta.capUsd + 1)).toBeGreaterThan(0.15 - 1e-4);
+  for (const [symbol, p] of liveness) {
+    const row = list.find((r) => r.symbol === symbol)!;
+    const u = universe.tokens.find((t: any) => t.symbol === symbol);
+    expect(row.capUsd).toBeLessThan(u.cap_usd);
+    expect(vaultShare(u.pool.depth_usd_5pct, row.capUsd)).toBeLessThanOrEqual(p.liveness_share);
+    expect(vaultShare(u.pool.depth_usd_5pct, row.capUsd + 1)).toBeGreaterThan(p.liveness_share - 1e-4);
+  }
+  expect(list.find((r) => r.symbol === "META")!.capUsd).toBe(17_025);
+  expect(list.find((r) => r.symbol === "AAPL")!.capUsd).toBe(29_268);
+  expect(list.find((r) => r.symbol === "GOOGL")!.capUsd).toBe(38_950);
 });
 
-test("META's token cap is its USD cap at the Chainlink price", () => {
-  const meta = list.find((r) => r.symbol === "META")!;
-  const u = universe.tokens.find((t: any) => t.symbol === "META");
-  const usd = (Number(BigInt(meta.depositCapTokens) / 10n ** 12n) / 1e6) * u.feed.usd;
-  expect(Math.abs(usd - meta.capUsd)).toBeLessThan(1);
+test("a liveness token's token cap is its USD cap at the Chainlink price", () => {
+  for (const [symbol] of liveness) {
+    const row = list.find((r) => r.symbol === symbol)!;
+    const u = universe.tokens.find((t: any) => t.symbol === symbol);
+    const usd = (Number(BigInt(row.depositCapTokens) / 10n ** 12n) / 1e6) * u.feed.usd;
+    expect(Math.abs(usd - row.capUsd)).toBeLessThan(1);
+  }
 });
 
 const replay = JSON.parse(readFileSync(new URL("../data/replay.json", import.meta.url), "utf8"));

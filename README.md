@@ -42,8 +42,8 @@ Kept APR is fees earned less losses to informed traders (1 hour markout) and reb
 | Vault | Band | Vault size cap | First half kept | Held-out half kept (conservative to upper) | Status | Reason |
 |---|---|---|---|---|---|---|
 | PLTR | ±3.5% | $24,207 | +181.4% | +12.8% to +33.6% | Open | Both halves at or above break-even |
-| AAPL | ±7.5% | $73,983 | +2.7% | +3.9% to +6.6% | Open | Both halves at or above break-even |
-| GOOGL | ±20% | $100,000 | +0.2% | +2.2% to +2.5% | Open | Both halves at or above break-even |
+| AAPL | ±7.5% | $29,268 | +2.7% | +3.9% to +6.6% | Open | Both halves at or above break-even |
+| GOOGL | ±20% | $38,950 | +0.2% | +2.2% to +2.5% | Open | Both halves at or above break-even |
 | QQQ | ±10% | $66,787 | +0.8% | -1.3% to -1.0% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
 | INTC | ±20% | $19,116 | -2.0% | +3.4% to +7.2% | Reduced | Weaker half between -20% and break-even; up to $19,116 a deposit |
 | AMZN | ±7.5% | $68,501 | +2.4% | -2.9% to -1.0% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |

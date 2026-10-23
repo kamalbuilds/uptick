@@ -516,7 +516,7 @@
       "entryFeeBps": 35,
       "feed": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
       "bandBps": 750,
-      "depositCapUsd": 73983,
+      "depositCapUsd": 29268,
       "refPriceUsd": 342.58737216,
       "open": true,
       "gate": {
@@ -592,7 +592,7 @@
       "entryFeeBps": 35,
       "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
       "bandBps": 2000,
-      "depositCapUsd": 100000,
+      "depositCapUsd": 38950,
       "refPriceUsd": 343.8464424,
       "open": true,
       "gate": {

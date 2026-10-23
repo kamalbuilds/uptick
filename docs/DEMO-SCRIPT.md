@@ -31,7 +31,7 @@ Say: "AAPL kept +2.7% a year in its weaker half." Scroll to "Where a year of fee
 Scroll to "Why it is open": worst half +2.7% on the first 15 days, +3.9% on the last 15, both above break-even, so the door is Open.
 Scroll to "The band follows the price": a plus or minus 7.5% band around the Chainlink price, recentred at 02:00 UTC after each NYSE session.
 Scroll to "Why this pool": the v3 0.05% pool pays 18.8%, the v3 0.3% pool 11.3%, the v4 0.3% pool 23.0%. Fees per $1 lost to informed traders: NYSE hours $1.23, weeknights $1.45, weekends $4.58.
-Say: "The engine picks pool and band on the first half and scores them on the second. The vault is $73,983 in size, which is what the pool can carry at 20% of its in-range liquidity."
+Say: "The engine picks pool and band on the first half and scores them on the second. The vault is $29,268 in size, the largest the pool takes through the vault's own rebalance swap at a cost the Chainlink floor allows."
 
 ## 2:05 to 2:25 The other doors, `/vault/nvda`
 
@@ -51,7 +51,7 @@ Say: "58% of the swaps and half the fees in these pools happen while the NYSE is
 
 <!--
 Sources, read 2026-10-21.
-Sources (repo files regenerated 2026-10-22, vault list and vault pages as served by the web app from them): home figures (12 of 17, 3 open, 9 reduced, 3.1M swaps, 30 days to 2026-10-17, $1.1M fees, 17 tokens), /vaults Kept column and 0.05% filter, /vault/aapl (95,275 swaps, +18.8%, +3.2%, 1.7%, 13.9%, worst half +2.7%, last 15 days +3.9%, band 7.5%, pools 18.8% / 11.3% / 23.0%, $1.23 / $1.45 / $4.58, vault size $73,983), /vault/nvda (814,927 swaps, +29.4%, -6.6%, $25,000, fee APR 94.4%), /vault/spcx (-199.5%, floor -20%), /vault/pltr (open on its Uniswap v4 1% pool, +12.8% in the weaker half, vault size $24,207), /docs (tables, exit in kind, for agents), /research (13.64, 1.16, 22 of 23).
+Sources (repo files regenerated 2026-10-22, vault list and vault pages as served by the web app from them): home figures (12 of 17, 3 open, 9 reduced, 3.1M swaps, 30 days to 2026-10-17, $1.1M fees, 17 tokens), /vaults Kept column and 0.05% filter, /vault/aapl (95,275 swaps, +18.8%, +3.2%, 1.7%, 13.9%, worst half +2.7%, last 15 days +3.9%, band 7.5%, pools 18.8% / 11.3% / 23.0%, $1.23 / $1.45 / $4.58, vault size $29,268), /vault/nvda (814,927 swaps, +29.4%, -6.6%, $25,000, fee APR 94.4%), /vault/spcx (-199.5%, floor -20%), /vault/pltr (open on its Uniswap v4 1% pool, +12.8% in the weaker half, vault size $24,207), /docs (tables, exit in kind, for agents), /research (13.64, 1.16, 22 of 23).
 Launch film text: api.fxtwitter.com/uptickfi/status/2112531006792360167, posted 2026-10-20, 2,705,097 swaps, 17 tokens, 11 take deposits.
 Repo files: web/lib/vault-universe.json (swap total 3,059,881 is the sum of each vault's gate.swaps), web/lib/pool-fees.json (fee total $1,054,235.96), README.md gate table, keeper/data/replay.json (PLTR rerun 2026-10-22 with the v4 session split).
 -->
