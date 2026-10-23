@@ -1,0 +1,66 @@
+# health matrix 20261023T123156Z UTC, commit bd394c7, symbols AAPL,GOOGL,PLTR, warp 0s
+== Logs ==
+  == Uptick health matrix
+  block 95942918
+  utc timestamp 1792758719
+  utc weekday (0=Sun) 5
+  utc hour 12
+  ---- AAPL (StockVault) 0x40E4db6b434D6F18c320F898A528cf9D8Bf425df
+  deposit cap, Stock Token wei 85432220736760970518
+  deposit cap, USD (deploy list) 29268
+  entry fee, pool-fee pips 3500
+  health status Ok
+  feed price, 8 dec 34825202699
+  feed age, seconds 3017
+  TWAP vs oracle, bp 9
+  spot vs oracle, bp 9
+  spot vs TWAP, bp 0
+  1000 USD deposit accepted, shares 2861433452700662484000000
+  redeemInKind (after the 100% deploy) stock out wei 41689801417625820179
+  redeemInKind usdg out (6 dec) 15158056554
+  returned / deposited, bp of value 9974
+  deploy at 10000 bp of cap, sell side / buy side OK / OK
+  deploy at 5000 bp of cap, sell side / buy side OK / OK
+  deploy at 2500 bp of cap, sell side / buy side OK / OK
+  deploy at 1250 bp of cap, sell side / buy side OK / OK
+  ---- GOOGL (StockVault) 0x7c8f498F3FCD1ec4413c1DD31C450C759e6E30d0
+  deposit cap, Stock Token wei 113277309859989989531
+  deposit cap, USD (deploy list) 38950
+  entry fee, pool-fee pips 3500
+  health status Ok
+  feed price, 8 dec 32271356990
+  feed age, seconds 1260
+  TWAP vs oracle, bp 2
+  spot vs oracle, bp 2
+  spot vs TWAP, bp 4
+  1000 USD deposit accepted, shares 3087877588502980393000000
+  redeemInKind (after the 100% deploy) stock out wei 51209072922108688775
+  redeemInKind usdg out (6 dec) 19894733772
+  returned / deposited, bp of value 9962
+  deploy at 10000 bp of cap, sell side / buy side OK / OK
+  deploy at 5000 bp of cap, sell side / buy side OK / OK
+  deploy at 2500 bp of cap, sell side / buy side OK / OK
+  deploy at 1250 bp of cap, sell side / buy side OK / OK
+  ---- PLTR (StockVaultV4) 0x064651102C6d5D92F92c98e48cb9504960088eC6
+  deposit cap, Stock Token wei 124839483252107991026
+  deposit cap, USD (deploy list) 24207
+  entry fee, pool-fee pips 10990
+  health status Ok
+  feed price, 8 dec 19547951399
+  feed age, seconds 26151
+  TWAP vs oracle, bp 64
+  spot vs oracle, bp 63
+  spot vs TWAP, bp 0
+  1000 USD deposit accepted, shares 5059404844083017560000000
+  redeemInKind (after the 100% deploy) stock out wei 47877409474375026475
+  redeemInKind usdg out (6 dec) 14948682211
+  returned / deposited, bp of value 9960
+  deploy at 10000 bp of cap, sell side / buy side OK / OK
+  deploy at 5000 bp of cap, sell side / buy side OK / OK
+  deploy at 2500 bp of cap, sell side / buy side OK / OK
+  deploy at 1250 bp of cap, sell side / buy side OK / OK
+  == VERDICT (sym | venue | health | $1,000 deposit | deploy swap at 100/50/25/12.5% of cap | redeemInKind)
+  AAPL | v3 | Ok | accepted, shares 2861433452700662484000000 | 10000 bp: OK/OK; 5000 bp: OK/OK; 2500 bp: OK/OK; 1250 bp: OK/OK | OK 9974 bp back (stock 41689801417625820179 wei, usdg 15158056554)
+  GOOGL | v3 | Ok | accepted, shares 3087877588502980393000000 | 10000 bp: OK/OK; 5000 bp: OK/OK; 2500 bp: OK/OK; 1250 bp: OK/OK | OK 9962 bp back (stock 51209072922108688775 wei, usdg 19894733772)
+  PLTR | v4 | Ok | accepted, shares 5059404844083017560000000 | 10000 bp: OK/OK; 5000 bp: OK/OK; 2500 bp: OK/OK; 1250 bp: OK/OK | OK 9960 bp back (stock 47877409474375026475 wei, usdg 14948682211)
+  failures 0

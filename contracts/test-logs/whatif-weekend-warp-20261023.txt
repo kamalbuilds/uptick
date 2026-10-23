@@ -1,0 +1,61 @@
+# WHAT-IF health matrix, WARP_SECONDS=108000 over the head fork of 2026-10-23 (real feeds aged 30 h)
+== Logs ==
+  == Uptick health matrix
+  block 95944379
+  utc timestamp 1792758866
+  utc weekday (0=Sun) 5
+  utc hour 12
+  WHAT-IF: warped seconds 108000
+  ---- AAPL (StockVault) 0x40E4db6b434D6F18c320F898A528cf9D8Bf425df
+  deposit cap, Stock Token wei 85432220736760970518
+  deposit cap, USD (deploy list) 29268
+  entry fee, pool-fee pips 3500
+  health status FeedStale
+  feed price, 8 dec 34825202699
+  feed age, seconds 111164
+  TWAP vs oracle, bp 9
+  spot vs oracle, bp 9
+  spot vs TWAP, bp 0
+  1000 USD deposit refused: OracleUnhealthy(FeedStale)
+  deploy at 10000 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 5000 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 2500 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 1250 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  redeemInKind forged OK (forged shares) 10000 bp of the parked stock back
+  ---- GOOGL (StockVault) 0x7c8f498F3FCD1ec4413c1DD31C450C759e6E30d0
+  deposit cap, Stock Token wei 113277309859989989531
+  deposit cap, USD (deploy list) 38950
+  entry fee, pool-fee pips 3500
+  health status FeedStale
+  feed price, 8 dec 32271356990
+  feed age, seconds 109407
+  TWAP vs oracle, bp 3
+  spot vs oracle, bp 3
+  spot vs TWAP, bp 0
+  1000 USD deposit refused: OracleUnhealthy(FeedStale)
+  deploy at 10000 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 5000 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 2500 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 1250 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  redeemInKind forged OK (forged shares) 10000 bp of the parked stock back
+  ---- PLTR (StockVaultV4) 0x064651102C6d5D92F92c98e48cb9504960088eC6
+  deposit cap, Stock Token wei 124839483252107991026
+  deposit cap, USD (deploy list) 24207
+  entry fee, pool-fee pips 10990
+  health status FeedStale
+  feed price, 8 dec 19547951399
+  feed age, seconds 134298
+  TWAP vs oracle, bp 63
+  spot vs oracle, bp 63
+  spot vs TWAP, bp 0
+  1000 USD deposit refused: OracleUnhealthy(FeedStale)
+  deploy at 10000 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 5000 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 2500 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  deploy at 1250 bp of cap, sell side / buy side REFUSED OracleUnhealthy(FeedStale) / REFUSED OracleUnhealthy(FeedStale)
+  redeemInKind forged OK (forged shares) 10000 bp of the parked stock back
+  == VERDICT (sym | venue | health | $1,000 deposit | deploy swap at 100/50/25/12.5% of cap | redeemInKind)
+  AAPL | v3 | FeedStale | refused: OracleUnhealthy(FeedStale) | 10000 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 5000 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 2500 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 1250 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale) | OK (forged shares) 10000 bp of the parked stock back
+  GOOGL | v3 | FeedStale | refused: OracleUnhealthy(FeedStale) | 10000 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 5000 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 2500 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 1250 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale) | OK (forged shares) 10000 bp of the parked stock back
+  PLTR | v4 | FeedStale | refused: OracleUnhealthy(FeedStale) | 10000 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 5000 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 2500 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale); 1250 bp: REFUSED OracleUnhealthy(FeedStale)/REFUSED OracleUnhealthy(FeedStale) | OK (forged shares) 10000 bp of the parked stock back
+  failures 0
