@@ -364,6 +364,30 @@ Session table: README.md "The insight" and spikes/stock-vaults/FINDINGS.md. Fee 
   <div class="src">Source: README.md, spikes/stock-vaults/FINDINGS.md, spikes/offchain-signals/FINDINGS.md. Fee earned per $1 lost to informed flow, 1 hour markout, window 2026-08-24 to 2026-10-17.</div>
 </section>
 
+<!-- 4B ONE REAL SWAP -->
+<section class="slide" data-t="Evidence: one real swap">
+<!-- notes:
+One swap read from the chain, chosen by keeper/scripts/moment.py: of the 20,521 swaps in the PLTR / USDG v4 pool (id 0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623, the pool the PLTR vault is gated on) in the replay window 2026-09-17 to 2026-10-17, 6,255 moved the pool price toward the Chainlink answer from 0.5% or more away; this one cost the pool's liquidity providers the most after one hour. Tx 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36, block 70,152,155, 2026-09-23 02:21:36 UTC (10:21:36 +08:00 on the Blockscout screenshot, 22:21 on 22 September in New York), status success, logIndex 322. The trade was routed through 7 PoolManager swaps; the measured leg sold 95.7986 PLTR for 17,651.41 USDG at a pool price of 186.5087 (swap size 17,847.56 USD by the engine's input-side notional). The pool's 1% tier paid its providers 178.30 USD. The providers' loss is the engine's 1 hour markout: inventory change of the swap valued at the pool price one hour later (183.7504), 241.83 USD. Chainlink PLTR answer 184.6724, published 2026-09-22 17:18:59 UTC at block 69,828,293 and 9.04 hours old at the swap, so the pool sat 99 bps above it before the swap and 77 bps after. Fee per 1 USD lost: 178.30 / 241.83 = 0.74. The closing line is the 17 gate pools over the same window, vault replay: weekends 2.76, weeknights 1.46, NYSE hours 0.98 (web/lib/moment.json). Different sample from the 13.64 and 1.16 on the previous slide: that one is a static price range on NVDA, SPCX and TSLA from 2026-08-24; this one is each vault's own recentred range on its own gate pool, 30 days.
+-->
+  <h2 class="v" style="font-size:68px;max-width:1696px">With Nasdaq shut, one PLTR sale paid its pool $178.30 and cost its liquidity providers $241.83.</h2>
+  <div style="display:grid;grid-template-columns:800px 1fr;column-gap:64px;margin-top:56px;align-items:start">
+    <div class="led">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0"><span class="p">Sold, 10:21 PM New York</span><span class="fig" style="font-size:38px">95.8 PLTR</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0"><span class="p">Pool price, Chainlink price</span><span class="fig" style="font-size:38px">$186.51, $184.67</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0"><span class="p">Pool price an hour later</span><span class="fig" style="font-size:38px">$183.75</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0"><span class="p">Fee the pool earned</span><span class="fig" style="font-size:38px">$178.30</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0"><span class="p">Lost to liquidity providers</span><span class="fig loss" style="font-size:38px">$241.83</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0"><span class="p">Fee per $1 lost</span><span class="fig" style="font-size:38px">$0.74</span></div>
+    </div>
+    <div>
+      <figure class="shot"><img src="img/blockscout-pltr-swap.png" width="832" height="249" alt="The transaction on Blockscout: hash 0x1e8e2188, success, block 70152155, 23 September 2026 10:21:36 at +08:00"></figure>
+      <p class="p" style="font-size:23px;margin-top:18px">The transaction on Blockscout. The page clock reads +08:00; 10:21:36 there is 02:21:36 UTC. One routed trade made 7 pool swaps; this is its PLTR / USDG leg.</p>
+    </div>
+  </div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:30px;line-height:1.3;color:var(--soft)"><b>The replay counts every swap this way.</b> Across the 17 pools the vaults sit in, a weekend earns $2.76 in fees for every $1 lost, NYSE hours $0.98.</p>
+  <div class="src">Source: keeper/scripts/moment.py, keeper/data/replay.json window 2026-09-17 to 2026-10-17. Tx 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36 read with cast tx on rpc.mainnet.chain.robinhood.com. Loss is the 1 hour markout.</div>
+</section>
+
 <!-- 5 BANDS AND GATE -->
 <section class="slide" data-t="Evidence: bands and gate">
 <!-- notes:
