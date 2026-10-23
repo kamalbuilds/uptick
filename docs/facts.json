@@ -8,21 +8,22 @@
     "study": "paper/main.tex"
   },
   "tests": {
-    "total": 383,
-    "security": 118
+    "total": 412,
+    "security": 141
   },
   "reviews": {
     "files": [
       "SECURITY-REVIEW-2026-10-20.md",
       "SECURITY-REVIEW-3-2026-10-20.md",
       "SECURITY-REVIEW-4-2026-10-20.md",
+      "SECURITY-REVIEW-ORACLE-2026-10-23.md",
       "SECURITY-REVIEW-V4-2026-10-22.md"
     ],
-    "count": 4,
+    "count": 5,
     "rereview_files": [
       "SECURITY-REREVIEW-2026-10-20.md"
     ],
-    "reports_total": 5
+    "reports_total": 6
   },
   "doors": {
     "vaults": 17,
@@ -53,8 +54,8 @@
       "CRCL",
       "TSLA"
     ],
-    "v3": 16,
-    "v4": 1,
+    "v3": 14,
+    "v4": 3,
     "replay_days": 30,
     "replay_swaps": 3059881
   },

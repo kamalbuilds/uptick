@@ -39,14 +39,16 @@ async function apiVaults(): Promise<Door[]> {
 const count = (xs: Array<{ state: string }>, s: string) => xs.filter((x) => x.state === s).length;
 
 describe("doors: state, per_tx_cap_usd and kept_worst_half_pct on /vaults", () => {
-  test("3 open, 9 reduced, 5 closed, equal to the README gate table", async () => {
+  test("door counts equal docs/facts.json and the README gate table", async () => {
     const vaults = await apiVaults();
     const readme = readmeDoors();
     expect(readme.size).toBe(17);
     expect(vaults.length).toBe(17);
     const fromReadme = [...readme.values()].map((state) => ({ state }));
-    expect([count(vaults, "open"), count(vaults, "reduced"), count(vaults, "closed")]).toEqual([3, 9, 5]);
-    expect([count(fromReadme, "open"), count(fromReadme, "reduced"), count(fromReadme, "closed")]).toEqual([3, 9, 5]);
+    const doors = JSON.parse(readFileSync(new URL("../../docs/facts.json", import.meta.url), "utf8")).doors as number[];
+    expect(doors.reduce((a, b) => a + b, 0)).toBe(17);
+    expect([count(vaults, "open"), count(vaults, "reduced"), count(vaults, "closed")]).toEqual(doors);
+    expect([count(fromReadme, "open"), count(fromReadme, "reduced"), count(fromReadme, "closed")]).toEqual(doors);
     for (const v of vaults) expect(v.state).toBe(readme.get(v.ticker.toUpperCase()));
   });
 

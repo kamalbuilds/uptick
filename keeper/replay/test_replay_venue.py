@@ -31,7 +31,12 @@ def test_v4_key_ok():
 
 def test_venue_for():
     f = rp.KEEP_FLOOR_APR
-    assert rp.venue_for(f, None) == "v3" and rp.venue_for(f + 5, f + 50) == "v3", "v3 that keeps the floor stays on v3"
+    assert rp.venue_for(f, None) == "v3", "v3 alone at the floor"
+    assert rp.venue_for(f + 5, f + 50) == "v4", "v4 keeps more in its weaker half"
+    assert rp.venue_for(f + 50, f + 5) == "v3", "v3 keeps more"
+    assert rp.venue_for(f + 5, f + 5) == "v3", "tie stays on v3"
+    # PLTR after tick snapping (replay 2026-10-23): v3 weaker half -18.9 clears the floor, v4 keeps +7.9. The old rule picked v3.
+    assert rp.venue_for(-18.9, 7.9) == "v4", "a v3 pool that merely clears the floor never beats a v4 pool that keeps more"
     assert rp.venue_for(f - 0.1, f) == "v4"
     assert rp.venue_for(None, f + 3) == "v4", "no v3 pool, v4 keeps the floor"
     assert rp.venue_for(f - 0.1, f - 0.1) == "v3" and rp.venue_for(f - 0.1, None) == "v3" and rp.venue_for(None, None) == "v3"

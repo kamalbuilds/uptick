@@ -80,9 +80,11 @@ def vault_cap_usd(depth_usd, cap_max, share=MAX_VAULT_SHARE):
 
 def venue_for(v3_worst, v4_worst):
     """The backend a token deploys on. Each argument is the weaker-half edge APR of that backend's chosen pool, None when it has none.
-    v3 while its chosen pool keeps the floor; else v4 when its chosen pool does; else v3 (the vault stays closed)."""
-    if v3_worst is not None and v3_worst >= KEEP_FLOOR_APR: return "v3"
-    if v4_worst is not None and v4_worst >= KEEP_FLOOR_APR: return "v4"
+    The backend whose chosen pool keeps more in its weaker half, among those at or above the floor; v3 on a tie; v3 when neither
+    keeps the floor (the vault stays closed). A v3 pool that merely clears the floor never beats a v4 pool that keeps more."""
+    ok3 = v3_worst is not None and v3_worst >= KEEP_FLOOR_APR
+    ok4 = v4_worst is not None and v4_worst >= KEEP_FLOOR_APR
+    if ok4 and (not ok3 or v4_worst > v3_worst): return "v4"
     return "v3"
 
 def lp_fee_rate(total_fee, lp_fee_pips):

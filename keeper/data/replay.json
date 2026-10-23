@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-23T11:24:53.069027+00:00",
+ "generated_at": "2026-10-23T14:48:10.339223+00:00",
  "engine": "spikes/stock-vaults/scripts/engine.py",
  "capital_usd": 100000.0,
  "default_band_bps": 500,
@@ -1891,7 +1891,27 @@
     "worst_half": 7.866216103373098,
     "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
    },
-   "venue": "v3",
+   "venue": "v4",
+   "sessions_v4": {
+    "nyse_hours": {
+     "vault_fee_usd": 1528.1752838506482,
+     "markout_loss_usd": 601.9133994715118,
+     "pool_volume_usd": 2041205.633369777,
+     "fee_per_dollar_lost": 2.5388623765352407
+    },
+    "weeknight": {
+     "vault_fee_usd": 1512.0103732083494,
+     "markout_loss_usd": 196.21506030147935,
+     "pool_volume_usd": 4387820.198034193,
+     "fee_per_dollar_lost": 7.7058833857359605
+    },
+    "weekend": {
+     "vault_fee_usd": 283.9797016236306,
+     "markout_loss_usd": 8.514576325262563,
+     "pool_volume_usd": 751368.1836761683,
+     "fee_per_dollar_lost": 33.3521822784146
+    }
+   },
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -2356,7 +2376,27 @@
     "worst_half": -0.21319903950246222,
     "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
    },
-   "venue": "v3",
+   "venue": "v4",
+   "sessions_v4": {
+    "nyse_hours": {
+     "vault_fee_usd": 548.3168424673514,
+     "markout_loss_usd": 197.87820487163074,
+     "pool_volume_usd": 10398935.52100797,
+     "fee_per_dollar_lost": 2.770981487441026
+    },
+    "weeknight": {
+     "vault_fee_usd": 410.4013083696159,
+     "markout_loss_usd": 80.00229876189857,
+     "pool_volume_usd": 12528977.837170053,
+     "fee_per_dollar_lost": 5.129868950279104
+    },
+    "weekend": {
+     "vault_fee_usd": 50.314077846874284,
+     "markout_loss_usd": 1.366552832784396,
+     "pool_volume_usd": 1736244.0016530044,
+     "fee_per_dollar_lost": 36.818245617593654
+    }
+   },
    "recentre": {
     "requested": 22,
     "kept": 22,
@@ -2672,7 +2712,27 @@
     "worst_half": -0.874293470907134,
     "rule": "best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure"
    },
-   "venue": "v3",
+   "venue": "v4",
+   "sessions_v4": {
+    "nyse_hours": {
+     "vault_fee_usd": 191.0832917804732,
+     "markout_loss_usd": 217.95074699447662,
+     "pool_volume_usd": 3202521.556271506,
+     "fee_per_dollar_lost": 0.8767269413640307
+    },
+    "weeknight": {
+     "vault_fee_usd": 444.2592872829192,
+     "markout_loss_usd": 249.5281909708186,
+     "pool_volume_usd": 7523661.950374696,
+     "fee_per_dollar_lost": 1.780397178989983
+    },
+    "weekend": {
+     "vault_fee_usd": 67.09007676127382,
+     "markout_loss_usd": 43.08337231694206,
+     "pool_volume_usd": 1069082.699746046,
+     "fee_per_dollar_lost": 1.55721507285286
+    }
+   },
    "recentre": {
     "requested": 22,
     "kept": 22,
