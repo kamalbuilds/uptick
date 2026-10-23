@@ -72,6 +72,11 @@ export const DOCS: DocSection[] = [
         title: "The oracle and pricing",
         summary: "Chainlink freshness, the 10 minute TWAP, the deviation bounds and the prices each path trusts.",
       },
+      {
+        slug: "collateral",
+        title: "Borrow against a share",
+        summary: "Use a vault share as Morpho Blue collateral for USDG: how it is priced, how liquidation exits and what a weekend does.",
+      },
     ],
   },
   {
