@@ -341,6 +341,8 @@ Through a market close the share is priced at the close print, so a borrower at 
 
 max LLTV = 1 - worst adverse close-to-open move - 5 pt
 
+**Recommended LLTV for every Uptick share market: 62.5%.** The table below is the ceiling the price-gap record alone supports. The binding limit is liquidation economics and exit depth: at 62.5% Morpho pays a 12.68% incentive and a borrower at the limit leaves bad debt only after a further 29.6% share fall, while at 77% the incentive is 7.41% and that buffer is 17.3% (`SECURITY-REVIEW-ORACLE-2026-10-23.md`, LLTV section).
+
 | Vault feed | Worst adverse gap (close print to first print) | Longest silence | Max LLTV | Enabled LLTV at or below |
 |---|---|---|---|---|
 | USO | -7.75%, Fri 2026-07-31 22:48 to Mon 08-03 00:00 UTC (49.2 h) | 78.3 h | 87.25% | 86% |
