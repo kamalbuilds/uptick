@@ -928,6 +928,7 @@ PLAN=$(jq -nc --arg v "$VA" --arg t "$AAPL" --arg a "$USER" --arg u "$USDG" --ar
   '{symbol:"AAPL",token:$t,vault:$v,account:$a,market:{loanToken:$u,collateralToken:$v,oracle:$o,irm:$i,lltv:$l},deposit:$d,collateral:$c,borrow:$b,tokenAllowance:"0",shareAllowance:"0"}')
 STEPS=$(PLAN="$PLAN" bun "$APP/scripts/fork-demo-steps.ts") || die "web/lib/morpho.ts earnAndBorrowSteps failed"
 chk "the app's flow is five calls: approve token, deposit, approve shares, supply collateral, borrow" "'$(jq -r 'map(.id) | join(",")' <<<"$STEPS")' == 'approve-token,deposit,approve-shares,supply-collateral,borrow'"
+chk "the app sends them as two batches, the deposit alone in the first (the vault locks fresh shares until the next parent-chain block)" "'$(jq -r 'map(.phase) | join(",")' <<<"$STEPS")' == '0,0,1,1,1'"
 chk "the supply-collateral and borrow calls target the Morpho singleton" "'$(jq -r '[.[3].to, .[4].to] | map(ascii_downcase) | join(",")' <<<"$STEPS")' == '$(echo "$MORPHO,$MORPHO" | tr A-Z a-z)'"
 u0=$(bal "$USDG" "$USER"); a0=$(bal "$AAPL" "$USER")
 for i in 0 1 2 3 4; do

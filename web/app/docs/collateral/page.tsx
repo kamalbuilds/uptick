@@ -44,7 +44,7 @@ export default function CollateralPage() {
         columns={["Step", "Where", "What happens"]}
         rows={[
           ["Deposit", "Uptick vault", "The Stock Token goes in, ERC-4626 shares come out and the position starts earning pool fees."],
-          ["Supply collateral", "Morpho Blue market", "The shares move to Morpho from the block after the deposit; shares minted in a block become transferable in the next one."],
+          ["Supply collateral", "Morpho Blue market", "The shares move to Morpho from the block after the deposit, about 12 seconds later. The vault holds shares minted in a block until the chain's next block, and the app waits for it between the two batches."],
           ["Borrow", "Morpho Blue market", "USDG up to a 62.5% loan-to-value limit, the limit the live NVDA/USDG market uses."],
           ["Repay and withdraw", "Morpho Blue market", "Repay needs no oracle. Withdraw the shares and redeem in the vault."],
         ]}
@@ -94,7 +94,7 @@ export default function CollateralPage() {
         loan to a health factor you choose, 1.6 by default, with the least action. A wallet holding USDG
         repays; a wallet without it takes shares out of Morpho, exits them in kind, repays with the USDG leg
         and receives the stock leg, in as many rounds as Morpho&apos;s health check needs. Wallets that batch
-        send it as one confirmation. Agents get the same two views as the <Code>check_loan_health</Code> and{" "}
+        send it as one confirmation; shares leaving Morpho were minted earlier, so no wait is needed. Agents get the same two views as the <Code>check_loan_health</Code> and{" "}
         <Code>prepare_make_safer</Code> tools, and a webhook subscription at{" "}
         <Code>POST /alerts/subscribe</Code> posts once when the health factor falls below your threshold and
         again only after it has recovered.

@@ -3,7 +3,7 @@ export const REVERTS = [
   { name: "Unhealthy", selector: "0x08a4d6fa", copy: "The price feed is not fresh. Deposits pause until it updates." },
   { name: "InsufficientShares", selector: "0xcb1d8bba", copy: "The price moved past your quote. Try again." },
   { name: "SpotOffTwap", selector: "0xe16ad561", copy: "The pool price is moving. Deposits reopen when it settles, usually within minutes." },
-  { name: "SharesLocked", selector: "0x7a1cb75d", copy: "Shares minted in this block can be withdrawn from the next block." },
+  { name: "SharesLocked", selector: "0x7a1cb75d", copy: "Fresh shares can move from the next block, about 12 seconds after the deposit. Try again in a moment." },
   { name: "ExitBelowMinimum", selector: "0x3b751a36", copy: "The pool cannot fill this exit right now. Exit in kind always works." },
 ] as const;
 

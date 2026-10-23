@@ -14,7 +14,7 @@ One row per interactive element or information unit a direct competitor shows on
 | Row select loads a panel | Y | - | - | - | - | | build on /vaults at 1024px and up; below that rows open the vault page |
 | Chevron or Open button to detail page | Y | Y | - | - | - | | build |
 | Docked panel tabs Supply / Withdraw | Y | - | - | - | - | | have: Deposit / Withdraw, now also in the side panel |
-| Borrow / Repay tabs | Y | - | - | - | - | | have: Earn and borrow on the vault page, one confirmation deposits, posts the shares and borrows USDG against them |
+| Borrow / Repay tabs | Y | - | - | - | - | | have: Earn and borrow on the vault page, one click deposits, then posts the shares and borrows USDG against them a block later |
 | Amount input with token selector | Y | Y | - | - | - | | have: stock / USDG switch |
 | Amount in USD under the input | Y | - | - | - | - | | build |
 | Wallet balance line | Y | Y | - | - | - | | have |

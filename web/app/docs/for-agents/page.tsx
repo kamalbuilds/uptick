@@ -124,7 +124,7 @@ export default function ForAgentsPage() {
           ],
           [
             "prepare_earn_and_borrow",
-            "Unsigned transactions in order: approve, deposit, approve shares, supplyCollateral, borrow. The borrow is checked against the loan-to-value limit and the market's liquidity before any calldata returns; otherwise the tool returns the vault's gate or the market's reason in place of calldata.",
+            "Unsigned transactions as two batches: approve and deposit, then approve shares, supplyCollateral and borrow. The vault holds fresh shares until the chain's next block, so batch two goes out about 12 seconds after batch one confirms, and the response says how to check. The borrow is checked against the loan-to-value limit and the market's liquidity before any calldata returns; otherwise the tool returns the vault's gate or the market's reason in place of calldata.",
           ],
           [
             "check_loan_health",

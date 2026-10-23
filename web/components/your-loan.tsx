@@ -8,7 +8,7 @@ import { CircleNotch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "./ledger";
 import { Skeleton } from "./status";
-import { StepList, useStepRunner } from "./step-runner";
+import { StepList, runLabel, useStepRunner } from "./step-runner";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain } from "@/lib/chain";
 import { collateralMarket } from "@/lib/collateral-markets";
@@ -179,7 +179,7 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
           {plan === undefined ? <Skeleton className="h-24 w-full" /> : <PlanLines plan={plan} symbol={cfg.symbol} stockPrice={stockPrice} />}
         </div>
         <div className="mt-5">
-          {runner.failedAt >= 0 && run?.mode === "sequential" ? (
+          {runner.canRetry && run ? (
             <div className="flex flex-wrap gap-3">
               <Button size="lg" onClick={() => void runner.retry()}>Retry from “{run.steps[runner.failedAt].label}”</Button>
               <Button size="lg" variant="outline" onClick={runner.reset}>Start over</Button>
@@ -187,8 +187,8 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
           ) : runner.failedAt >= 0 ? (
             <Button size="lg" variant="outline" onClick={runner.reset}>Start over</Button>
           ) : (
-            <Button size="lg" className="w-full" disabled={plan?.status !== "ready" || runner.running || runner.finished} onClick={() => plan?.status === "ready" && void runner.start(plan.steps)}>
-              {runner.running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {run?.mode === "batch" ? "Confirm in your wallet" : "Working through the steps"}</> : "Make it safer"}
+            <Button size="lg" className="w-full" disabled={plan?.status !== "ready" || runner.running || runner.finished} onClick={() => plan?.status === "ready" && void runner.start([plan.steps])}>
+              {runner.running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {runLabel(run)}</> : "Make it safer"}
             </Button>
           )}
           {!run && plan?.status === "ready" && (
