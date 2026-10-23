@@ -105,6 +105,7 @@ src/StockVault.sol            the v3 vault
 src/v4/                       StockVaultV4, TickOracleV4, VaultMathV4, StockVaultV4Lens
 src/interfaces/IUniswapV3.sol minimal interfaces for pool, position manager, router, Chainlink
 script/Deploy.s.sol           env-driven deployment (simulates without --broadcast)
+script/HealthMatrix.s.sol     read-only health, deposit, deploy-swap and redeemInKind matrix for the open vaults on the live chain
 test/                         fork tests against the real pool, router, position manager and tokens
 test/v4/                      fork tests against real v4 pools (PLTR and TSLA), oracle ring and liquidity-fit properties, factory and router
 test/security/                review regressions: sandwiches, TWAP drag, entry fee, fee-aware floors on every tier
@@ -143,6 +144,18 @@ forge test --match-path 'test/v4/*'          # the v4 venue
 ```
 
 What is exercised against the real contracts: deposit and withdraw round trips with real NVDA; rebalance after the pool is pushed through the router; fee accrual checked against the pool's own fee growth; the performance-fee share mint checked against its closed form; a 3% pool push that must block deposits (same block, via the spot check; after the TWAP window, via the TWAP check); a stale feed that must block `rebalance`; permissionless `rebalance` at 26 hours; `redeemInKind` with the vault paused and the feed down; a Stock Token transfer that reverts; the first-depositor donation attack; fuzzed deposits and withdrawals with the invariant that the sum of share values never exceeds total assets; a stateful invariant run over deposits, redeems, in-kind redeems and rebalances; and a second vault on the SPCX pool, where the Stock Token is token0, so both token orderings are covered.
+
+## Health matrix
+
+`script/HealthMatrix.s.sol` reads the live chain and records, for the three vaults whose evidence gate is open (AAPL, GOOGL on Uniswap v3, PLTR on Uniswap v4), what a depositor would meet right now. It forks the RPC, deploys each vault through a throwaway `VaultFactory` with the deploy list's cap and band, and runs against the real Chainlink feeds, pools and Stock Tokens with nothing mocked and nothing broadcast. Per vault it prints `health()` (status, feed age, TWAP, spot and oracle gaps in bp), a $1,000 deposit, the deploy swap at 100%, 50%, 25% and 12.5% of the deposit cap in both directions (Stock Token sold to USDG, USDG bought into Stock Token), and `redeemInKind` of the minted shares in the next block. The deploy swap runs the same balance-swap-and-mint a keeper rebalance runs, against the Chainlink floor, so a cap that the pool has outgrown shows as `REFUSED Too little received`. The script exits non-zero when a healthy vault cannot deploy its full cap, or when `redeemInKind` returns under 99% of the deposit's value. A refusal while the oracle is unhealthy (`FeedStale`, `TwapUnavailable`, `CorporateAction`) is a recorded outcome, and `redeemInKind` is then exercised on shares written into storage, which proves the exit reads no oracle.
+
+```
+scripts/health-matrix.sh        # regenerates the open-vault deploy list, runs the script, writes contracts/test-logs/health-<UTC timestamp>.txt
+SYMBOLS=AAPL scripts/health-matrix.sh        # one vault
+WARP_SECONDS=108000 forge script script/HealthMatrix.s.sol --rpc-url robinhood -vv   # what-if: the real feeds aged 30 hours
+```
+
+The matrix runs at the Friday close, on Saturday and on Sunday. The Stock Token feeds publish on weekdays and `maxStaleness` is 25 hours, so the three logs show the hour each vault's deposit gate closes over the weekend and that `redeemInKind` stays open throughout. `test-logs/whatif-weekend-warp-20261023.txt` is the stale branch with the feeds aged 30 hours.
 
 ## Deploy
 

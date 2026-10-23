@@ -1,0 +1,703 @@
+'forge clean' running (wd: /Users/kamal/Desktop/arbitrium/stock-vaults-app/.claude/worktrees/wf_36ec3b9e-6d4-3/contracts)
+'forge config --json' running
+'forge build --build-info --skip ./test/** ./script/** --force' running (wd: /Users/kamal/Desktop/arbitrium/stock-vaults-app/.claude/worktrees/wf_36ec3b9e-6d4-3/contracts)
+
+Detector: weak-prng
+UptickHook.sessionAt(uint256) (src/hook/UptickHook.sol#199-211) uses a weak PRNG: "sod = ts % DAY (src/hook/UptickHook.sol#201)" 
+UptickHook.sessionAt(uint256) (src/hook/UptickHook.sol#199-211) uses a weak PRNG: "dow = (day + 4) % 7 (src/hook/UptickHook.sol#202)" 
+UptickHook._isDst(uint256,uint256) (src/hook/UptickHook.sol#214-221) uses a weak PRNG: "end = (nov1 + (7 - (nov1 + 4) % 7) % 7) * DAY + 21600 (src/hook/UptickHook.sol#219)" 
+UptickHook._isDst(uint256,uint256) (src/hook/UptickHook.sol#214-221) uses a weak PRNG: "start = (mar1 + (7 - (mar1 + 4) % 7) % 7 + 7) * DAY + 25200 (src/hook/UptickHook.sol#218)" 
+TickOracleV4.twap(uint32) (src/v4/TickOracleV4.sol#97-114) uses a weak PRNG: "delta < 0 && delta % w != 0 (src/v4/TickOracleV4.sol#112)" 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#weak-PRNG
+
+Detector: reentrancy-balance
+Reentrancy in StockVaultV4._swap(IERC20,IERC20,uint256,uint256) (src/v4/StockVaultV4.sol#847-852):
+	External call allowing reentrancy:
+	- _unlock(Act(true,(address(tokenIn) == address(stock)) == stockIsToken0,0,0,- int256(amountIn))) (src/v4/StockVaultV4.sol#849)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	Balance read before the call:
+	- before = tokenOut.balanceOf(address(this)) (src/v4/StockVaultV4.sol#848)
+	Possible stale balance used after the call in a condition:
+	- out < minOut (src/v4/StockVaultV4.sol#851)
+		- stale variable `out`
+Reentrancy in StockVault._swap(IERC20,IERC20,uint256,uint256) (src/StockVault.sol#825-835):
+	External call allowing reentrancy:
+	- router.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(tokenIn),address(tokenOut),poolFee,address(this),amountIn,minOut,0)) (src/StockVault.sol#828-832)
+	Balance read before the call:
+	- before = tokenOut.balanceOf(address(this)) (src/StockVault.sol#826)
+	Possible stale balance used after the call in a condition:
+	- out < minOut (src/StockVault.sol#834)
+		- stale variable `out`
+Reentrancy in UptickRouter.depositUsdg(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#119-157):
+	External call allowing reentrancy:
+	- swapRouter.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(usdg),address(stock),vault.poolFee(),address(this),usdgIn,minStock,0)) (src/UptickRouter.sol#142-146)
+	Balance read before the call:
+	- stockBefore = stock.balanceOf(address(this)) (src/UptickRouter.sol#140)
+	Possible stale balance used after the call in a condition:
+	- shares < minShares (src/UptickRouter.sol#156)
+		- stale variable `shares`
+	- stockReceived < minStock (src/UptickRouter.sol#150)
+		- stale variable `stockReceived`
+Reentrancy in UptickRouter.depositUsdg(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#119-157):
+	External call allowing reentrancy:
+	- shares = vault.deposit(stockReceived,receiver) (src/UptickRouter.sol#153)
+	Balance read before the call:
+	- stockBefore = stock.balanceOf(address(this)) (src/UptickRouter.sol#140)
+	Possible stale balance used after the call in a condition:
+	- shares < minShares (src/UptickRouter.sol#156)
+		- stale variable `shares`
+Reentrancy in UptickRouter.depositUsdg(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#119-157):
+	External call allowing reentrancy:
+	- shares = vault.deposit(stockReceived,receiver) (src/UptickRouter.sol#153)
+	Balance read before the call:
+	- stockReceived = stock.balanceOf(address(this)) - stockBefore (src/UptickRouter.sol#149)
+	Possible stale balance used after the call in a condition:
+	- shares < minShares (src/UptickRouter.sol#156)
+		- stale variable `shares`
+Reentrancy in UptickRouter.depositUsdgV4(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#163-196):
+	External call allowing reentrancy:
+	- _swapV4(IStockVaultV4(vaultAddr),vault.poolFee(),usdg,stock,usdgIn) (src/UptickRouter.sol#184)
+		- IPoolManager(pm).unlock(abi.encode(k,! s0,usdgIn)) (src/UptickRouter.sol#209)
+	Balance read before the call:
+	- stockBefore = stock.balanceOf(address(this)) (src/UptickRouter.sol#182)
+	Possible stale balance used after the call in a condition:
+	- shares < minShares (src/UptickRouter.sol#195)
+		- stale variable `shares`
+	- stockReceived < minStock (src/UptickRouter.sol#187)
+		- stale variable `stockReceived`
+Reentrancy in UptickRouter.depositUsdgV4(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#163-196):
+	External call allowing reentrancy:
+	- shares = vault.deposit(stockReceived,receiver) (src/UptickRouter.sol#192)
+	Balance read before the call:
+	- stockReceived = stock.balanceOf(address(this)) - stockBefore (src/UptickRouter.sol#186)
+	Possible stale balance used after the call in a condition:
+	- shares < minShares (src/UptickRouter.sol#195)
+		- stale variable `shares`
+Reentrancy in UptickRouter.depositUsdgV4(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#163-196):
+	External call allowing reentrancy:
+	- shares = vault.deposit(stockReceived,receiver) (src/UptickRouter.sol#192)
+	Balance read before the call:
+	- stockBefore = stock.balanceOf(address(this)) (src/UptickRouter.sol#182)
+	Possible stale balance used after the call in a condition:
+	- shares < minShares (src/UptickRouter.sol#195)
+		- stale variable `shares`
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities
+
+Detector: divide-before-multiply
+StockVault.previewRedeem(uint256) (src/StockVault.sol#501-503) performs a multiplication on the result of a division:
+	- _convertToAssets(shares,Math.Rounding.Floor) * (1e4 - params.exitBufferBps) / 1e4 * (1e6 - poolFee) / 1e6 (src/StockVault.sol#502)
+StockVault._minOut(uint256) (src/StockVault.sol#846-848) performs a multiplication on the result of a division:
+	- oracleValueOut * (1e6 - poolFee) / 1e6 * (1e4 - params.slippageBps) / 1e4 (src/StockVault.sol#847)
+VaultMath.mintMins(uint160,int24,int24,uint256,uint256,uint256) (src/VaultMath.sol#62-73) performs a multiplication on the result of a division:
+	- m0 = u0 * liq / UNIT_LIQUIDITY * (1e4 - slippageBps) / 1e4 (src/VaultMath.sol#71)
+VaultMath.mintMins(uint160,int24,int24,uint256,uint256,uint256) (src/VaultMath.sol#62-73) performs a multiplication on the result of a division:
+	- m1 = u1 * liq / UNIT_LIQUIDITY * (1e4 - slippageBps) / 1e4 (src/VaultMath.sol#72)
+UptickHook._civil(uint256) (src/hook/UptickHook.sol#233-243) performs a multiplication on the result of a division:
+	- era = z / 146097 (src/hook/UptickHook.sol#235)
+	- doe = z - era * 146097 (src/hook/UptickHook.sol#236)
+UptickHook._civil(uint256) (src/hook/UptickHook.sol#233-243) performs a multiplication on the result of a division:
+	- yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365 (src/hook/UptickHook.sol#237)
+	- doy = doe - (365 * yoe + yoe / 4 - yoe / 100) (src/hook/UptickHook.sol#238)
+UptickHook._civil(uint256) (src/hook/UptickHook.sol#233-243) performs a multiplication on the result of a division:
+	- mp = (5 * doy + 2) / 153 (src/hook/UptickHook.sol#239)
+	- d = doy - (153 * mp + 2) / 5 + 1 (src/hook/UptickHook.sol#240)
+UptickHook._civil(uint256) (src/hook/UptickHook.sol#233-243) performs a multiplication on the result of a division:
+	- era = z / 146097 (src/hook/UptickHook.sol#235)
+	- y = yoe + era * 400 + 0 (src/hook/UptickHook.sol#242)
+UptickHook._civil(uint256) (src/hook/UptickHook.sol#233-243) performs a multiplication on the result of a division:
+	- era = z / 146097 (src/hook/UptickHook.sol#235)
+	- y = yoe + era * 400 + 1 (src/hook/UptickHook.sol#242)
+UptickHook._days(uint256,uint256,uint256) (src/hook/UptickHook.sol#245-252) performs a multiplication on the result of a division:
+	- era = y / 400 (src/hook/UptickHook.sol#247)
+	- yoe = y - era * 400 (src/hook/UptickHook.sol#248)
+UptickHook._days(uint256,uint256,uint256) (src/hook/UptickHook.sol#245-252) performs a multiplication on the result of a division:
+	- era = y / 400 (src/hook/UptickHook.sol#247)
+	- era * 146097 + doe - 719468 (src/hook/UptickHook.sol#251)
+StockVaultV4.previewRedeem(uint256) (src/v4/StockVaultV4.sol#514-516) performs a multiplication on the result of a division:
+	- _convertToAssets(shares,Math.Rounding.Floor) * (1e4 - params.exitBufferBps) / 1e4 * (1e6 - swapFee()) / 1e6 (src/v4/StockVaultV4.sol#515)
+StockVaultV4._minOut(uint256) (src/v4/StockVaultV4.sol#858-860) performs a multiplication on the result of a division:
+	- oracleValueOut * (1e6 - swapFee()) / 1e6 * (1e4 - params.slippageBps) / 1e4 (src/v4/StockVaultV4.sol#859)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+
+Detector: incorrect-equality
+StockVault._balanceInventory(int24,int24,StockVault.Snapshot) (src/StockVault.sol#804-823) uses a dangerous strict equality:
+	- zeroForOne == stockIsToken0 (src/StockVault.sol#816)
+StockVault._closePosition() (src/StockVault.sol#744-758) uses a dangerous strict equality:
+	- id == 0 (src/StockVault.sol#746)
+StockVault._deploy(StockVault.Snapshot) (src/StockVault.sol#766-769) uses a dangerous strict equality:
+	- tokenId == 0 (src/StockVault.sol#767)
+StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801) uses a dangerous strict equality:
+	- tokenId == 0 (src/StockVault.sol#785)
+StockVault._exit(address,address,address,uint256,uint256,bool,StockVault.Snapshot) (src/StockVault.sol#666-697) uses a dangerous strict equality:
+	- shares == 0 (src/StockVault.sol#675)
+StockVault._harvest(StockVault.Snapshot) (src/StockVault.sol#722-742) uses a dangerous strict equality:
+	- tokenId == 0 (src/StockVault.sol#723)
+StockVault._harvest(StockVault.Snapshot) (src/StockVault.sol#722-742) uses a dangerous strict equality:
+	- f0 == 0 && f1 == 0 (src/StockVault.sol#727)
+StockVault._release(uint256,uint256) (src/StockVault.sol#701-717) uses a dangerous strict equality:
+	- tokenId == 0 (src/StockVault.sol#704)
+StockVault._release(uint256,uint256) (src/StockVault.sol#701-717) uses a dangerous strict equality:
+	- part == 0 (src/StockVault.sol#707)
+StockVault._release(uint256,uint256) (src/StockVault.sol#701-717) uses a dangerous strict equality:
+	- shares == supply (src/StockVault.sol#706)
+StockVault._uncollectedFees() (src/StockVault.sol#1002-1005) uses a dangerous strict equality:
+	- tokenId == 0 (src/StockVault.sol#1003)
+StockVault._update(address,address,uint256) (src/StockVault.sol#651-661) uses a dangerous strict equality:
+	- fresh = l.blk == block.number (src/StockVault.sol#654)
+StockVault.currentRange() (src/StockVault.sol#457-464) uses a dangerous strict equality:
+	- tokenId == 0 (src/StockVault.sol#460)
+StockVault.maxMint(address) (src/StockVault.sol#489-492) uses a dangerous strict equality:
+	- assets == type()(uint256).max (src/StockVault.sol#491)
+UptickHook._isHoliday(uint256) (src/hook/UptickHook.sol#224-231) uses a dangerous strict equality:
+	- k == 20260101 || k == 20260119 || k == 20260216 || k == 20260403 || k == 20260525 || k == 20260619 || k == 20260703 || k == 20260907 || k == 20261126 || k == 20261225 || k == 20270101 || k == 20270118 || k == 20270215 || k == 20270326 || k == 20270531 || k == 20270618 || k == 20270705 || k == 20270906 || k == 20271125 || k == 20271224 (src/hook/UptickHook.sol#227-230)
+UptickHook.sessionAt(uint256) (src/hook/UptickHook.sol#199-211) uses a dangerous strict equality:
+	- dow == 6 || dow == 0 || (dow == 5 && sod >= close) (src/hook/UptickHook.sol#207)
+StockVaultV4._balanceInventory(int24,int24,StockVaultV4.Snapshot) (src/v4/StockVaultV4.sol#831-845) uses a dangerous strict equality:
+	- zeroForOne == stockIsToken0 (src/v4/StockVaultV4.sol#838)
+StockVaultV4._deployInto(int24,int24,StockVaultV4.Snapshot) (src/v4/StockVaultV4.sol#814-829) uses a dangerous strict equality:
+	- liq == 0 (src/v4/StockVaultV4.sol#822)
+StockVaultV4._exit(address,address,address,uint256,uint256,bool,StockVaultV4.Snapshot) (src/v4/StockVaultV4.sol#707-736) uses a dangerous strict equality:
+	- shares == 0 (src/v4/StockVaultV4.sol#716)
+StockVaultV4._harvest(StockVaultV4.Snapshot) (src/v4/StockVaultV4.sol#761-788) uses a dangerous strict equality:
+	- f0 == 0 && f1 == 0 (src/v4/StockVaultV4.sol#771)
+StockVaultV4._release(uint256,uint256) (src/v4/StockVaultV4.sol#740-757) uses a dangerous strict equality:
+	- part == 0 (src/v4/StockVaultV4.sol#750)
+StockVaultV4._release(uint256,uint256) (src/v4/StockVaultV4.sol#740-757) uses a dangerous strict equality:
+	- shares == supply (src/v4/StockVaultV4.sol#749)
+StockVaultV4._update(address,address,uint256) (src/v4/StockVaultV4.sol#695-705) uses a dangerous strict equality:
+	- fresh = l.blk == block.number (src/v4/StockVaultV4.sol#698)
+StockVaultV4.maxMint(address) (src/v4/StockVaultV4.sol#505-508) uses a dangerous strict equality:
+	- assets == type()(uint256).max (src/v4/StockVaultV4.sol#507)
+TickOracleV4.twap(uint32) (src/v4/TickOracleV4.sol#97-114) uses a dangerous strict equality:
+	- b.ts == 0 || b.ts > target (src/v4/TickOracleV4.sol#106)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+
+Detector: reentrancy-no-eth
+Reentrancy in StockVaultV4._deploy(StockVaultV4.Snapshot) (src/v4/StockVaultV4.sol#805-812):
+	External calls:
+	- _harvest(s) (src/v4/StockVaultV4.sol#809)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- _deployInto(tickLower,tickUpper,s) (src/v4/StockVaultV4.sol#810)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	State variables written after the call(s):
+	- _deployInto(tickLower,tickUpper,s) (src/v4/StockVaultV4.sol#810)
+		- positionOpen = true (src/v4/StockVaultV4.sol#824)
+	StockVaultV4.positionOpen (src/v4/StockVaultV4.sol#184) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.positionOpen (src/v4/StockVaultV4.sol#184)
+	- _deployInto(tickLower,tickUpper,s) (src/v4/StockVaultV4.sol#810)
+		- tickLower = tl (src/v4/StockVaultV4.sol#825)
+	StockVaultV4.tickLower (src/v4/StockVaultV4.sol#185) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.tickLower (src/v4/StockVaultV4.sol#185)
+	- _deployInto(tickLower,tickUpper,s) (src/v4/StockVaultV4.sol#810)
+		- tickUpper = tu (src/v4/StockVaultV4.sol#826)
+	StockVaultV4.tickUpper (src/v4/StockVaultV4.sol#186) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.tickUpper (src/v4/StockVaultV4.sol#186)
+Reentrancy in StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801):
+	External calls:
+	- ! _balanceInventory(tl,tu,s) (src/StockVault.sol#774)
+		- router.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(tokenIn),address(tokenOut),poolFee,address(this),amountIn,minOut,0)) (src/StockVault.sol#828-832)
+	- (id,None,None,None) = positionManager.mint(INonfungiblePositionManager.MintParams(t0,t1,poolFee,tl,tu,a0,a1,m0,m1,address(this),block.timestamp)) (src/StockVault.sol#786-790)
+	State variables written after the call(s):
+	- tokenId = id (src/StockVault.sol#791)
+	StockVault.tokenId (src/StockVault.sol#184) can be used in cross function reentrancies:
+	- StockVault._liquidity() (src/StockVault.sol#1007-1009)
+	- StockVault._uncollectedFees() (src/StockVault.sol#1002-1005)
+	- StockVault._valuationAt(StockVault.Snapshot,uint256) (src/StockVault.sol#947-960)
+	- StockVault.currentRange() (src/StockVault.sol#457-464)
+	- StockVault.positionInfo() (src/StockVault.sol#441-454)
+	- StockVault.tokenId (src/StockVault.sol#184)
+Reentrancy in StockVaultV4._release(uint256,uint256) (src/v4/StockVaultV4.sol#740-757):
+	External calls:
+	- (d0,d1,f0,f1) = _modify(- int256(uint256(part))) (src/v4/StockVaultV4.sol#751)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	State variables written after the call(s):
+	- pendingFee0 += uint128(f0) (src/v4/StockVaultV4.sol#755)
+	StockVaultV4.pendingFee0 (src/v4/StockVaultV4.sol#194) can be used in cross function reentrancies:
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- pendingFee1 += uint128(f1) (src/v4/StockVaultV4.sol#756)
+	StockVaultV4.pendingFee1 (src/v4/StockVaultV4.sol#195) can be used in cross function reentrancies:
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+Reentrancy in StockVault.rebalance() (src/StockVault.sol#625-638):
+	External calls:
+	- (f0,f1) = _harvest(s) (src/StockVault.sol#633)
+		- (f0,f1) = positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#724-726)
+	- _closePosition() (src/StockVault.sol#634)
+		- positionManager.decreaseLiquidity(INonfungiblePositionManager.DecreaseLiquidityParams(id,liq,0,0,block.timestamp)) (src/StockVault.sol#750-752)
+		- positionManager.collect(INonfungiblePositionManager.CollectParams(id,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#754-756)
+		- positionManager.burn(id) (src/StockVault.sol#757)
+	State variables written after the call(s):
+	- _closePosition() (src/StockVault.sol#634)
+		- tokenId = 0 (src/StockVault.sol#748)
+	StockVault.tokenId (src/StockVault.sol#184) can be used in cross function reentrancies:
+	- StockVault._liquidity() (src/StockVault.sol#1007-1009)
+	- StockVault._uncollectedFees() (src/StockVault.sol#1002-1005)
+	- StockVault._valuationAt(StockVault.Snapshot,uint256) (src/StockVault.sol#947-960)
+	- StockVault.currentRange() (src/StockVault.sol#457-464)
+	- StockVault.positionInfo() (src/StockVault.sol#441-454)
+	- StockVault.tokenId (src/StockVault.sol#184)
+Reentrancy in StockVault.rebalance() (src/StockVault.sol#625-638):
+	External calls:
+	- (f0,f1) = _harvest(s) (src/StockVault.sol#633)
+		- (f0,f1) = positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#724-726)
+	- _closePosition() (src/StockVault.sol#634)
+		- positionManager.decreaseLiquidity(INonfungiblePositionManager.DecreaseLiquidityParams(id,liq,0,0,block.timestamp)) (src/StockVault.sol#750-752)
+		- positionManager.collect(INonfungiblePositionManager.CollectParams(id,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#754-756)
+		- positionManager.burn(id) (src/StockVault.sol#757)
+	- _openPosition(s) (src/StockVault.sol#635)
+		- router.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(tokenIn),address(tokenOut),poolFee,address(this),amountIn,minOut,0)) (src/StockVault.sol#828-832)
+		- (id,None,None,None) = positionManager.mint(INonfungiblePositionManager.MintParams(t0,t1,poolFee,tl,tu,a0,a1,m0,m1,address(this),block.timestamp)) (src/StockVault.sol#786-790)
+		- positionManager.increaseLiquidity(INonfungiblePositionManager.IncreaseLiquidityParams(tokenId,a0,a1,m0,m1,block.timestamp)) (src/StockVault.sol#795-797)
+	State variables written after the call(s):
+	- lastRebalance = block.timestamp (src/StockVault.sol#636)
+	StockVault.lastRebalance (src/StockVault.sol#187) can be used in cross function reentrancies:
+	- StockVault.constructor(StockVault.Config,StockVault.Params,string,string) (src/StockVault.sol#245-285)
+	- StockVault.lastRebalance (src/StockVault.sol#187)
+	- _openPosition(s) (src/StockVault.sol#635)
+		- tickLower = tl (src/StockVault.sol#792)
+	StockVault.tickLower (src/StockVault.sol#185) can be used in cross function reentrancies:
+	- StockVault._valuationAt(StockVault.Snapshot,uint256) (src/StockVault.sol#947-960)
+	- StockVault.currentRange() (src/StockVault.sol#457-464)
+	- StockVault.positionInfo() (src/StockVault.sol#441-454)
+	- StockVault.tickLower (src/StockVault.sol#185)
+	- _openPosition(s) (src/StockVault.sol#635)
+		- tickUpper = tu (src/StockVault.sol#793)
+	StockVault.tickUpper (src/StockVault.sol#186) can be used in cross function reentrancies:
+	- StockVault._valuationAt(StockVault.Snapshot,uint256) (src/StockVault.sol#947-960)
+	- StockVault.currentRange() (src/StockVault.sol#457-464)
+	- StockVault.positionInfo() (src/StockVault.sol#441-454)
+	- StockVault.tickUpper (src/StockVault.sol#186)
+	- _openPosition(s) (src/StockVault.sol#635)
+		- tokenId = id (src/StockVault.sol#791)
+	StockVault.tokenId (src/StockVault.sol#184) can be used in cross function reentrancies:
+	- StockVault._liquidity() (src/StockVault.sol#1007-1009)
+	- StockVault._uncollectedFees() (src/StockVault.sol#1002-1005)
+	- StockVault._valuationAt(StockVault.Snapshot,uint256) (src/StockVault.sol#947-960)
+	- StockVault.currentRange() (src/StockVault.sol#457-464)
+	- StockVault.positionInfo() (src/StockVault.sol#441-454)
+	- StockVault.tokenId (src/StockVault.sol#184)
+Reentrancy in StockVaultV4.rebalance() (src/v4/StockVaultV4.sol#626-639):
+	External calls:
+	- (f0,f1) = _harvest(s) (src/v4/StockVaultV4.sol#634)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- _closePosition() (src/v4/StockVaultV4.sol#635)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	State variables written after the call(s):
+	- _closePosition() (src/v4/StockVaultV4.sol#635)
+		- positionOpen = false (src/v4/StockVaultV4.sol#793)
+	StockVaultV4.positionOpen (src/v4/StockVaultV4.sol#184) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.positionOpen (src/v4/StockVaultV4.sol#184)
+Reentrancy in StockVaultV4.rebalance() (src/v4/StockVaultV4.sol#626-639):
+	External calls:
+	- (f0,f1) = _harvest(s) (src/v4/StockVaultV4.sol#634)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- _closePosition() (src/v4/StockVaultV4.sol#635)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- _openPosition(s) (src/v4/StockVaultV4.sol#636)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	State variables written after the call(s):
+	- lastRebalance = block.timestamp (src/v4/StockVaultV4.sol#637)
+	StockVaultV4.lastRebalance (src/v4/StockVaultV4.sol#187) can be used in cross function reentrancies:
+	- StockVaultV4.constructor(StockVaultV4.Config,StockVaultV4.Params,string,string) (src/v4/StockVaultV4.sol#253-303)
+	- StockVaultV4.lastRebalance (src/v4/StockVaultV4.sol#187)
+	- _openPosition(s) (src/v4/StockVaultV4.sol#636)
+		- positionOpen = true (src/v4/StockVaultV4.sol#824)
+	StockVaultV4.positionOpen (src/v4/StockVaultV4.sol#184) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.positionOpen (src/v4/StockVaultV4.sol#184)
+	- _openPosition(s) (src/v4/StockVaultV4.sol#636)
+		- tickLower = tl (src/v4/StockVaultV4.sol#825)
+	StockVaultV4.tickLower (src/v4/StockVaultV4.sol#185) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.tickLower (src/v4/StockVaultV4.sol#185)
+	- _openPosition(s) (src/v4/StockVaultV4.sol#636)
+		- tickUpper = tu (src/v4/StockVaultV4.sol#826)
+	StockVaultV4.tickUpper (src/v4/StockVaultV4.sol#186) can be used in cross function reentrancies:
+	- StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985)
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- StockVaultV4.positionInfo() (src/v4/StockVaultV4.sol#458-472)
+	- StockVaultV4.tickUpper (src/v4/StockVaultV4.sol#186)
+Reentrancy in StockVault.redeemInKind(uint256,address,address) (src/StockVault.sol#575-608):
+	External calls:
+	- _harvest(s) (src/StockVault.sol#585)
+		- (f0,f1) = positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#724-726)
+	- (stockOut,usdgOut) = _release(shares,supply) (src/StockVault.sol#592)
+		- (d0,d1) = positionManager.decreaseLiquidity(INonfungiblePositionManager.DecreaseLiquidityParams(tokenId,part,0,0,block.timestamp)) (src/StockVault.sol#708-710)
+		- positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),uint128(d0),uint128(d1))) (src/StockVault.sol#711-713)
+	- ok = stock.transfer(receiver,stockOut) (src/StockVault.sol#597-601)
+	State variables written after the call(s):
+	- totalStockOwed += credited (src/StockVault.sol#604)
+	StockVault.totalStockOwed (src/StockVault.sol#194) can be used in cross function reentrancies:
+	- StockVault._idleStock() (src/StockVault.sol#1013-1016)
+	- StockVault.totalStockOwed (src/StockVault.sol#194)
+Reentrancy in StockVaultV4.redeemInKind(uint256,address,address) (src/v4/StockVaultV4.sol#580-613):
+	External calls:
+	- _harvest(s) (src/v4/StockVaultV4.sol#590)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- (stockOut,usdgOut) = _release(shares,supply) (src/v4/StockVaultV4.sol#597)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	State variables written after the call(s):
+	- (stockOut,usdgOut) = _release(shares,supply) (src/v4/StockVaultV4.sol#597)
+		- pendingFee0 += uint128(f0) (src/v4/StockVaultV4.sol#755)
+	StockVaultV4.pendingFee0 (src/v4/StockVaultV4.sol#194) can be used in cross function reentrancies:
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+	- (stockOut,usdgOut) = _release(shares,supply) (src/v4/StockVaultV4.sol#597)
+		- pendingFee1 += uint128(f1) (src/v4/StockVaultV4.sol#756)
+	StockVaultV4.pendingFee1 (src/v4/StockVaultV4.sol#195) can be used in cross function reentrancies:
+	- StockVaultV4._valuationAt(StockVaultV4.Snapshot,uint256) (src/v4/StockVaultV4.sol#941-958)
+Reentrancy in StockVaultV4.redeemInKind(uint256,address,address) (src/v4/StockVaultV4.sol#580-613):
+	External calls:
+	- _harvest(s) (src/v4/StockVaultV4.sol#590)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- (stockOut,usdgOut) = _release(shares,supply) (src/v4/StockVaultV4.sol#597)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- ok = stock.transfer(receiver,stockOut) (src/v4/StockVaultV4.sol#602-606)
+	State variables written after the call(s):
+	- totalStockOwed += credited (src/v4/StockVaultV4.sol#609)
+	StockVaultV4.totalStockOwed (src/v4/StockVaultV4.sol#198) can be used in cross function reentrancies:
+	- StockVaultV4._idleStock() (src/v4/StockVaultV4.sol#999-1002)
+	- StockVaultV4.totalStockOwed (src/v4/StockVaultV4.sol#198)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+
+Detector: uninitialized-local
+StockVault._exit(address,address,address,uint256,uint256,bool,StockVault.Snapshot).forfeited (src/StockVault.sol#680) is a local variable never initialized
+TickOracleV4.record(uint160,uint16).last (src/v4/TickOracleV4.sol#68) is a local variable never initialized
+StockVault._harvest(StockVault.Snapshot).minted (src/StockVault.sol#733) is a local variable never initialized
+TickOracleV4.record(uint160,uint16).cum (src/v4/TickOracleV4.sol#78) is a local variable never initialized
+UptickShareOracle.valueInUsdg(uint256,uint160).posUsdg (src/UptickShareOracle.sol#143) is a local variable never initialized
+StockVault.redeemInKind(uint256,address,address).credited (src/StockVault.sol#595) is a local variable never initialized
+TickOracleV4._atOrBefore(uint32,uint16).lo (src/v4/TickOracleV4.sol#133) is a local variable never initialized
+UptickShareOracle.valueInUsdg(uint256,uint160).posStock (src/UptickShareOracle.sol#142) is a local variable never initialized
+StockVaultV4._harvest(StockVaultV4.Snapshot).minted (src/v4/StockVaultV4.sol#779) is a local variable never initialized
+StockVaultV4.unlockCallback(bytes).f (src/v4/StockVaultV4.sol#650) is a local variable never initialized
+StockVaultV4._exit(address,address,address,uint256,uint256,bool,StockVaultV4.Snapshot).forfeited (src/v4/StockVaultV4.sol#721) is a local variable never initialized
+StockVaultV4.redeemInKind(uint256,address,address).credited (src/v4/StockVaultV4.sol#600) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+
+Detector: unused-return
+StockVault._checkParams(StockVault.Params,IUniswapV3Pool) (src/StockVault.sol#398-409) ignores return value by (None,None,None,cardinality,None,None,None) = pool_.slot0() (src/StockVault.sol#406)
+StockVault.positionInfo() (src/StockVault.sol#441-454) ignores return value by (None,tick,None,None,None,None,None) = pool.slot0() (src/StockVault.sol#452)
+StockVault.redeemInKind(uint256,address,address) (src/StockVault.sol#575-608) ignores return value by (st) = this.health() (src/StockVault.sol#582-587)
+StockVault._release(uint256,uint256) (src/StockVault.sol#701-717) ignores return value by positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),uint128(d0),uint128(d1))) (src/StockVault.sol#711-713)
+StockVault._closePosition() (src/StockVault.sol#744-758) ignores return value by positionManager.decreaseLiquidity(INonfungiblePositionManager.DecreaseLiquidityParams(id,liq,0,0,block.timestamp)) (src/StockVault.sol#750-752)
+StockVault._closePosition() (src/StockVault.sol#744-758) ignores return value by positionManager.collect(INonfungiblePositionManager.CollectParams(id,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#754-756)
+StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801) ignores return value by (spotNow,None,None,None,None,None,None) = pool.slot0() (src/StockVault.sol#783)
+StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801) ignores return value by (id,None,None,None) = positionManager.mint(INonfungiblePositionManager.MintParams(t0,t1,poolFee,tl,tu,a0,a1,m0,m1,address(this),block.timestamp)) (src/StockVault.sol#786-790)
+StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801) ignores return value by positionManager.increaseLiquidity(INonfungiblePositionManager.IncreaseLiquidityParams(tokenId,a0,a1,m0,m1,block.timestamp)) (src/StockVault.sol#795-797)
+StockVault._swap(IERC20,IERC20,uint256,uint256) (src/StockVault.sol#825-835) ignores return value by router.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(tokenIn),address(tokenOut),poolFee,address(this),amountIn,minOut,0)) (src/StockVault.sol#828-832)
+StockVault._read() (src/StockVault.sol#891-913) ignores return value by (id,answer,updatedAt,answeredIn) = feed.latestRoundData() (src/StockVault.sol#892-900)
+StockVault._read() (src/StockVault.sol#891-913) ignores return value by (spot,None,None,None,None,None,None) = pool.slot0() (src/StockVault.sol#903)
+StockVault._uncollectedFees() (src/StockVault.sol#1002-1005) ignores return value by vaultMath.uncollectedFees(pool,positionManager,tokenId) (src/StockVault.sol#1004)
+StockVault._liquidity() (src/StockVault.sol#1007-1009) ignores return value by (None,None,None,None,None,None,None,liq,None,None,None,None) = positionManager.positions(tokenId) (src/StockVault.sol#1008)
+UptickRouter.depositUsdg(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#119-157) ignores return value by (status,price,None,None,None,None) = vault.health() (src/UptickRouter.sol#127)
+UptickRouter.depositUsdg(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#119-157) ignores return value by swapRouter.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(usdg),address(stock),vault.poolFee(),address(this),usdgIn,minStock,0)) (src/UptickRouter.sol#142-146)
+UptickRouter.depositUsdgV4(IStockVault,uint256,uint256,address) (src/UptickRouter.sol#163-196) ignores return value by (status,price,None,None,None,None) = vault.health() (src/UptickRouter.sol#171)
+UptickRouter._swapV4(IStockVaultV4,uint24,IERC20,IERC20,uint256) (src/UptickRouter.sol#198-211) ignores return value by IPoolManager(pm).unlock(abi.encode(k,! s0,usdgIn)) (src/UptickRouter.sol#209)
+UptickRouter._settle(IPoolManager,Currency,int128) (src/UptickRouter.sol#231-239) ignores return value by pm.settle() (src/UptickRouter.sol#235)
+UptickShareOracle.price() (src/UptickShareOracle.sol#131-136) ignores return value by (status,px,updatedAt,sqrtOracle,None,None) = vault.health() (src/UptickShareOracle.sol#132)
+UptickShareOracle.valueInUsdg(uint256,uint160) (src/UptickShareOracle.sol#140-161) ignores return value by (None,perfFeeBps,None,None,None,None,None,None) = vault.params() (src/UptickShareOracle.sol#155)
+VaultMath.twapSqrt(IUniswapV3Pool,uint32) (src/VaultMath.sol#111-124) ignores return value by (cum) = pool.observe(ago) (src/VaultMath.sol#114-123)
+VaultMath.uncollectedFees(IUniswapV3Pool,INonfungiblePositionManager,uint256) (src/VaultMath.sol#128-151) ignores return value by (None,None,None,None,None,tl,tu,liq,last0,last1,owed0,owed1) = npm.positions(id) (src/VaultMath.sol#141)
+VaultMath._feeGrowthInside(IUniswapV3Pool,int24,int24) (src/VaultMath.sol#153-167) ignores return value by (None,tick,None,None,None,None,None) = pool.slot0() (src/VaultMath.sol#154)
+VaultMath._feeGrowthInside(IUniswapV3Pool,int24,int24) (src/VaultMath.sol#153-167) ignores return value by (None,None,lo0,lo1,None,None,None,None) = pool.ticks(tl) (src/VaultMath.sol#157)
+VaultMath._feeGrowthInside(IUniswapV3Pool,int24,int24) (src/VaultMath.sol#153-167) ignores return value by (None,None,hi0,hi1,None,None,None,None) = pool.ticks(tu) (src/VaultMath.sol#158)
+UptickHook._quote(PoolId,bool) (src/hook/UptickHook.sol#144-160) ignores return value by (sqrtP,None,None,None) = poolManager.getSlot0(id) (src/hook/UptickHook.sol#150)
+UptickHook._reference() (src/hook/UptickHook.sol#166-181) ignores return value by (answer,updatedAt) = feed.latestRoundData() (src/hook/UptickHook.sol#167-180)
+StockVaultV4.constructor(StockVaultV4.Config,StockVaultV4.Params,string,string) (src/v4/StockVaultV4.sol#253-303) ignores return value by (sqrtP,None,protocolFee,lpFee) = pm.getSlot0(PoolId.wrap(id)) (src/v4/StockVaultV4.sol#273)
+StockVaultV4.redeemInKind(uint256,address,address) (src/v4/StockVaultV4.sol#580-613) ignores return value by (st) = this.health() (src/v4/StockVaultV4.sol#587-592)
+StockVaultV4._settle(Currency,int128) (src/v4/StockVaultV4.sol#668-676) ignores return value by poolManager.settle() (src/v4/StockVaultV4.sol#672)
+StockVaultV4._read() (src/v4/StockVaultV4.sol#891-914) ignores return value by (id,answer,updatedAt,answeredIn) = feed.latestRoundData() (src/v4/StockVaultV4.sol#892-900)
+StockVaultV4._pos() (src/v4/StockVaultV4.sol#982-985) ignores return value by vaultMathV4.position(poolManager,poolId,address(this),tickLower,tickUpper) (src/v4/StockVaultV4.sol#984)
+StockVaultV4._slot0() (src/v4/StockVaultV4.sol#987-989) ignores return value by poolManager.getSlot0(PoolId.wrap(poolId)) (src/v4/StockVaultV4.sol#988)
+StockVaultV4Lens.totalValueInUSDG(StockVaultV4) (src/v4/StockVaultV4Lens.sol#22-27) ignores return value by (st,price,None,None,None,None) = v.health() (src/v4/StockVaultV4Lens.sol#23)
+TickOracleV4.record(uint160,uint16) (src/v4/TickOracleV4.sol#64-93) ignores return value by (None,spotTick,None,None) = poolManager.getSlot0(PoolId.wrap(poolId)) (src/v4/TickOracleV4.sol#74)
+VaultMathV4.info(IPoolManager,bytes32,address,int24,int24,uint160) (src/v4/VaultMathV4.sol#46-73) ignores return value by (None,tick,None,None) = pm.getSlot0(id) (src/v4/VaultMathV4.sol#55)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+
+Detector: missing-zero-check
+StockVault.setKeeper(address).keeper_ (src/StockVault.sol#344) lacks a zero-check on :
+		- keeper = keeper_ (src/StockVault.sol#345)
+StockVaultV4.setKeeper(address).keeper_ (src/v4/StockVaultV4.sol#355) lacks a zero-check on :
+		- keeper = keeper_ (src/v4/StockVaultV4.sol#356)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+
+Detector: reentrancy-benign
+Reentrancy in StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801):
+	External calls:
+	- ! _balanceInventory(tl,tu,s) (src/StockVault.sol#774)
+		- router.exactInputSingle(ISwapRouter02.ExactInputSingleParams(address(tokenIn),address(tokenOut),poolFee,address(this),amountIn,minOut,0)) (src/StockVault.sol#828-832)
+	- (id,None,None,None) = positionManager.mint(INonfungiblePositionManager.MintParams(t0,t1,poolFee,tl,tu,a0,a1,m0,m1,address(this),block.timestamp)) (src/StockVault.sol#786-790)
+	State variables written after the call(s):
+	- tickLower = tl (src/StockVault.sol#792)
+	- tickUpper = tu (src/StockVault.sol#793)
+Reentrancy in StockVaultV4._deployInto(int24,int24,StockVaultV4.Snapshot) (src/v4/StockVaultV4.sol#814-829):
+	External calls:
+	- ! _balanceInventory(tl,tu,s) (src/v4/StockVaultV4.sol#815)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	State variables written after the call(s):
+	- positionOpen = true (src/v4/StockVaultV4.sol#824)
+	- tickLower = tl (src/v4/StockVaultV4.sol#825)
+	- tickUpper = tu (src/v4/StockVaultV4.sol#826)
+Reentrancy in UptickRouter._swapV4(IStockVaultV4,uint24,IERC20,IERC20,uint256) (src/UptickRouter.sol#198-211):
+	External calls:
+	- IPoolManager(pm).unlock(abi.encode(k,! s0,usdgIn)) (src/UptickRouter.sol#209)
+	State variables written after the call(s):
+	- _unlocking = address(0) (src/UptickRouter.sol#210)
+Reentrancy in StockVault.redeemInKind(uint256,address,address) (src/StockVault.sol#575-608):
+	External calls:
+	- _harvest(s) (src/StockVault.sol#585)
+		- (f0,f1) = positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),type()(uint128).max,type()(uint128).max)) (src/StockVault.sol#724-726)
+	- (stockOut,usdgOut) = _release(shares,supply) (src/StockVault.sol#592)
+		- (d0,d1) = positionManager.decreaseLiquidity(INonfungiblePositionManager.DecreaseLiquidityParams(tokenId,part,0,0,block.timestamp)) (src/StockVault.sol#708-710)
+		- positionManager.collect(INonfungiblePositionManager.CollectParams(tokenId,address(this),uint128(d0),uint128(d1))) (src/StockVault.sol#711-713)
+	- ok = stock.transfer(receiver,stockOut) (src/StockVault.sol#597-601)
+	State variables written after the call(s):
+	- stockOwed[receiver] += credited (src/StockVault.sol#603)
+Reentrancy in StockVaultV4.redeemInKind(uint256,address,address) (src/v4/StockVaultV4.sol#580-613):
+	External calls:
+	- _harvest(s) (src/v4/StockVaultV4.sol#590)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- (stockOut,usdgOut) = _release(shares,supply) (src/v4/StockVaultV4.sol#597)
+		- (d,f) = abi.decode(poolManager.unlock(abi.encode(a)),(BalanceDelta,BalanceDelta)) (src/v4/StockVaultV4.sol#679)
+	- ok = stock.transfer(receiver,stockOut) (src/v4/StockVaultV4.sol#602-606)
+	State variables written after the call(s):
+	- stockOwed[receiver] += credited (src/v4/StockVaultV4.sol#608)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+
+Detector: reentrancy-events
+Reentrancy in StockVault.executeChange(bytes) (src/StockVault.sol#316-330):
+	External calls:
+	- (ok,ret) = address(this).call(data) (src/StockVault.sol#323)
+	Event emitted after the call(s):
+	- ChangeExecuted(id) (src/StockVault.sol#329)
+Reentrancy in StockVaultV4.executeChange(bytes) (src/v4/StockVaultV4.sol#327-341):
+	External calls:
+	- (ok,ret) = address(this).call(data) (src/v4/StockVaultV4.sol#334)
+	Event emitted after the call(s):
+	- ChangeExecuted(id) (src/v4/StockVaultV4.sol#340)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-4
+
+Detector: timestamp
+StockVault.queueChange(bytes) (src/StockVault.sol#301-314) uses timestamp for comparisons
+	Dangerous comparisons:
+	- queued != 0 && block.timestamp <= queued + CHANGE_GRACE (src/StockVault.sol#310)
+StockVault.executeChange(bytes) (src/StockVault.sol#316-330) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < eta (src/StockVault.sol#320)
+	- block.timestamp > eta + CHANGE_GRACE (src/StockVault.sol#321)
+StockVault.positionInfo() (src/StockVault.sol#441-454) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#444)
+StockVault.currentRange() (src/StockVault.sol#457-464) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#460)
+StockVault.maxDeposit(address) (src/StockVault.sol#481-487) uses timestamp for comparisons
+	Dangerous comparisons:
+	- cap > ta (src/StockVault.sol#486)
+StockVault.maxMint(address) (src/StockVault.sol#489-492) uses timestamp for comparisons
+	Dangerous comparisons:
+	- assets == type()(uint256).max (src/StockVault.sol#491)
+StockVault.withdraw(uint256,address,address) (src/StockVault.sol#545-555) uses timestamp for comparisons
+	Dangerous comparisons:
+	- assets > maxWithdraw(owner_) (src/StockVault.sol#553)
+StockVault.redeem(uint256,address,address) (src/StockVault.sol#560-570) uses timestamp for comparisons
+	Dangerous comparisons:
+	- shares > balanceOf(owner_) (src/StockVault.sol#568)
+StockVault.redeemInKind(uint256,address,address) (src/StockVault.sol#575-608) uses timestamp for comparisons
+	Dangerous comparisons:
+	- shares > balanceOf(owner_) (src/StockVault.sol#581)
+	- usdgOut > 0 (src/StockVault.sol#594)
+	- stockOut > 0 (src/StockVault.sol#596)
+	- credited > 0 (src/StockVault.sol#602)
+StockVault.rebalance() (src/StockVault.sol#625-638) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < lastRebalance + params.minRebalanceInterval (src/StockVault.sol#627)
+	- block.timestamp < lastRebalance + PERMISSIONLESS_DELAY (src/StockVault.sol#628)
+StockVault._update(address,address,uint256) (src/StockVault.sol#651-661) uses timestamp for comparisons
+	Dangerous comparisons:
+	- fresh = l.blk == block.number (src/StockVault.sol#654)
+	- fresh && balanceOf(from) < value + l.amount (src/StockVault.sol#657)
+StockVault._exit(address,address,address,uint256,uint256,bool,StockVault.Snapshot) (src/StockVault.sol#666-697) uses timestamp for comparisons
+	Dangerous comparisons:
+	- shares == 0 (src/StockVault.sol#675)
+	- outStock > delivered (src/StockVault.sol#686)
+	- outStock + 0 < minAssets (src/StockVault.sol#683)
+	- outStock + forfeited < minAssets (src/StockVault.sol#683)
+StockVault._release(uint256,uint256) (src/StockVault.sol#701-717) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#704)
+	- part == 0 (src/StockVault.sol#707)
+	- shares == supply (src/StockVault.sol#706)
+StockVault._harvest(StockVault.Snapshot) (src/StockVault.sol#722-742) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#723)
+	- f0 == 0 && f1 == 0 (src/StockVault.sol#727)
+	- cut > 0 (src/StockVault.sol#734)
+	- gross > cut (src/StockVault.sol#736)
+	- minted > 0 (src/StockVault.sol#738)
+StockVault._closePosition() (src/StockVault.sol#744-758) uses timestamp for comparisons
+	Dangerous comparisons:
+	- id == 0 (src/StockVault.sol#746)
+	- liq > 0 (src/StockVault.sol#749)
+StockVault._deploy(StockVault.Snapshot) (src/StockVault.sol#766-769) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#767)
+StockVault._deployInto(int24,int24,StockVault.Snapshot) (src/StockVault.sol#773-801) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#785)
+StockVault._balanceInventory(int24,int24,StockVault.Snapshot) (src/StockVault.sol#804-823) uses timestamp for comparisons
+	Dangerous comparisons:
+	- idleUsdg + _stockToUsdg(idleStock,s.price) < usdgScale (src/StockVault.sol#807)
+StockVault._swap(IERC20,IERC20,uint256,uint256) (src/StockVault.sol#825-835) uses timestamp for comparisons
+	Dangerous comparisons:
+	- out < minOut (src/StockVault.sol#834)
+StockVault._isDust(uint256) (src/StockVault.sol#839-841) uses timestamp for comparisons
+	Dangerous comparisons:
+	- usdgAmount < usdgScale / 100 (src/StockVault.sol#840)
+StockVault._read() (src/StockVault.sol#891-913) uses timestamp for comparisons
+	Dangerous comparisons:
+	- answer <= 0 || updatedAt == 0 || updatedAt > block.timestamp || answeredIn < id (src/StockVault.sol#893)
+	- block.timestamp - s.updatedAt > p.maxStaleness (src/StockVault.sol#909)
+StockVault._corporateActionWindow(uint32) (src/StockVault.sol#921-931) uses timestamp for comparisons
+	Dangerous comparisons:
+	- now_ < at (src/StockVault.sol#928)
+	- at != 0 && at - now_ <= CORP_ACTION_LEAD (src/StockVault.sol#928)
+	- at != 0 && now_ - at <= CORP_ACTION_LAG + twapWindow (src/StockVault.sol#928)
+StockVault._valuationAt(StockVault.Snapshot,uint256) (src/StockVault.sol#947-960) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId != 0 (src/StockVault.sol#950)
+StockVault._uncollectedFees() (src/StockVault.sol#1002-1005) uses timestamp for comparisons
+	Dangerous comparisons:
+	- tokenId == 0 (src/StockVault.sol#1003)
+StockVault._idleStock() (src/StockVault.sol#1013-1016) uses timestamp for comparisons
+	Dangerous comparisons:
+	- bal > totalStockOwed (src/StockVault.sol#1015)
+UptickShareOracle.price() (src/UptickShareOracle.sol#131-136) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp - updatedAt > MAX_FEED_AGE (src/UptickShareOracle.sol#134)
+CapRegistry.register(uint16) (src/hook/CapRegistry.sol#21-26) uses timestamp for comparisons
+	Dangerous comparisons:
+	- _entries[msg.sender].registeredAt != 0 (src/hook/CapRegistry.sol#22)
+CapRegistry.capOf(address) (src/hook/CapRegistry.sol#28-31) uses timestamp for comparisons
+	Dangerous comparisons:
+	- (e.maxTakeBps,e.registeredAt != 0) (src/hook/CapRegistry.sol#30)
+UptickHook._reference() (src/hook/UptickHook.sol#166-181) uses timestamp for comparisons
+	Dangerous comparisons:
+	- answer <= 0 || updatedAt > block.timestamp || block.timestamp - updatedAt > maxStaleness (src/hook/UptickHook.sol#168)
+UptickHook.sessionAt(uint256) (src/hook/UptickHook.sol#199-211) uses timestamp for comparisons
+	Dangerous comparisons:
+	- dow == 6 || dow == 0 || (dow == 5 && sod >= close) (src/hook/UptickHook.sol#207)
+	- sod >= open && sod < close (src/hook/UptickHook.sol#209)
+UptickHook._isDst(uint256,uint256) (src/hook/UptickHook.sol#214-221) uses timestamp for comparisons
+	Dangerous comparisons:
+	- ts >= start && ts < end (src/hook/UptickHook.sol#220)
+UptickHook._isHoliday(uint256) (src/hook/UptickHook.sol#224-231) uses timestamp for comparisons
+	Dangerous comparisons:
+	- k == 20260101 || k == 20260119 || k == 20260216 || k == 20260403 || k == 20260525 || k == 20260619 || k == 20260703 || k == 20260907 || k == 20261126 || k == 20261225 || k == 20270101 || k == 20270118 || k == 20270215 || k == 20270326 || k == 20270531 || k == 20270618 || k == 20270705 || k == 20270906 || k == 20271125 || k == 20271224 (src/hook/UptickHook.sol#227-230)
+UptickHook._civil(uint256) (src/hook/UptickHook.sol#233-243) uses timestamp for comparisons
+	Dangerous comparisons:
+	- mp < 10 (src/hook/UptickHook.sol#241)
+	- m <= 2 (src/hook/UptickHook.sol#242)
+StockVaultV4.queueChange(bytes) (src/v4/StockVaultV4.sol#312-325) uses timestamp for comparisons
+	Dangerous comparisons:
+	- queued != 0 && block.timestamp <= queued + CHANGE_GRACE (src/v4/StockVaultV4.sol#321)
+StockVaultV4.executeChange(bytes) (src/v4/StockVaultV4.sol#327-341) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < eta (src/v4/StockVaultV4.sol#331)
+	- block.timestamp > eta + CHANGE_GRACE (src/v4/StockVaultV4.sol#332)
+StockVaultV4.poke() (src/v4/StockVaultV4.sol#489-493) uses timestamp for comparisons
+	Dangerous comparisons:
+	- st == Status.FeedInvalid || block.timestamp - s.updatedAt > params.maxStaleness (src/v4/StockVaultV4.sol#491)
+StockVaultV4.rebalance() (src/v4/StockVaultV4.sol#626-639) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < lastRebalance + params.minRebalanceInterval (src/v4/StockVaultV4.sol#628)
+	- block.timestamp < lastRebalance + PERMISSIONLESS_DELAY (src/v4/StockVaultV4.sol#629)
+StockVaultV4._read() (src/v4/StockVaultV4.sol#891-914) uses timestamp for comparisons
+	Dangerous comparisons:
+	- answer <= 0 || updatedAt == 0 || updatedAt > block.timestamp || answeredIn < id (src/v4/StockVaultV4.sol#893)
+	- block.timestamp - s.updatedAt > p.maxStaleness (src/v4/StockVaultV4.sol#910)
+StockVaultV4._corporateActionWindow(uint32) (src/v4/StockVaultV4.sol#916-926) uses timestamp for comparisons
+	Dangerous comparisons:
+	- now_ < at (src/v4/StockVaultV4.sol#923)
+	- at != 0 && at - now_ <= CORP_ACTION_LEAD (src/v4/StockVaultV4.sol#923)
+	- at != 0 && now_ - at <= CORP_ACTION_LAG + twapWindow (src/v4/StockVaultV4.sol#923)
+TickOracleV4.record(uint160,uint16) (src/v4/TickOracleV4.sol#64-93) uses timestamp for comparisons
+	Dangerous comparisons:
+	- nowT - last.ts < MIN_GAP (src/v4/TickOracleV4.sol#72)
+	- dt <= MAX_GAP (src/v4/TickOracleV4.sol#84)
+TickOracleV4.twap(uint32) (src/v4/TickOracleV4.sol#97-114) uses timestamp for comparisons
+	Dangerous comparisons:
+	- nowT - last.ts > MAX_GAP (src/v4/TickOracleV4.sol#102)
+	- nowT < window || continuousSince > nowT - window (src/v4/TickOracleV4.sol#103)
+	- b.ts == 0 || b.ts > target (src/v4/TickOracleV4.sol#106)
+	- delta < 0 && delta % w != 0 (src/v4/TickOracleV4.sol#112)
+TickOracleV4._atOrBefore(uint32,uint16) (src/v4/TickOracleV4.sol#131-144) uses timestamp for comparisons
+	Dangerous comparisons:
+	- m.ts <= target (src/v4/TickOracleV4.sol#139)
+TickOracleV4._clamp(int24,int24,int24) (src/v4/TickOracleV4.sol#146-148) uses timestamp for comparisons
+	Dangerous comparisons:
+	- v < lo (src/v4/TickOracleV4.sol#147)
+	- v > hi (src/v4/TickOracleV4.sol#147)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+
+Detector: assembly
+StockVault.executeChange(bytes) (src/StockVault.sol#316-330) uses assembly
+	- INLINE ASM (src/StockVault.sol#325-327)
+VaultFactory.createVault(bytes,address,address,address,uint256) (src/VaultFactory.sol#135-188) uses assembly
+	- INLINE ASM (src/VaultFactory.sol#168-179)
+VaultFactory.createVaultV4(bytes,address,uint24,int24,address,address,uint256) (src/VaultFactory.sol#195-265) uses assembly
+	- INLINE ASM (src/VaultFactory.sol#245-255)
+CappedTakeHook.beforeSwap(address,PoolKey,IPoolManager.SwapParams,bytes) (src/hook/CappedTakeHook.sol#71-89) uses assembly
+	- INLINE ASM (src/hook/CappedTakeHook.sol#84-87)
+CappedTakeHook._enforce(PoolId,address,PoolKey,IPoolManager.SwapParams,BalanceDelta,int128,uint24) (src/hook/CappedTakeHook.sol#119-171) uses assembly
+	- INLINE ASM (src/hook/CappedTakeHook.sol#132-135)
+StockVaultV4.executeChange(bytes) (src/v4/StockVaultV4.sol#327-341) uses assembly
+	- INLINE ASM (src/v4/StockVaultV4.sol#336-338)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+
+Detector: cyclomatic-complexity
+StockVault.redeemInKind(uint256,address,address) (src/StockVault.sol#575-608) has a high cyclomatic complexity (13).
+CappedTakeHook._enforce(PoolId,address,PoolKey,IPoolManager.SwapParams,BalanceDelta,int128,uint24) (src/hook/CappedTakeHook.sol#119-171) has a high cyclomatic complexity (12).
+StockVaultV4.redeemInKind(uint256,address,address) (src/v4/StockVaultV4.sol#580-613) has a high cyclomatic complexity (13).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+
+Detector: low-level-calls
+Low level call in StockVault.executeChange(bytes) (src/StockVault.sol#316-330):
+	- (ok,ret) = address(this).call(data) (src/StockVault.sol#323)
+Low level call in StockVaultV4.executeChange(bytes) (src/v4/StockVaultV4.sol#327-341):
+	- (ok,ret) = address(this).call(data) (src/v4/StockVaultV4.sol#334)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+
+Detector: too-many-digits
+StockVaultV4.constructor(StockVaultV4.Config,StockVaultV4.Params,string,string) (src/v4/StockVaultV4.sol#253-303) uses literals with too many digits:
+	- c.fee & 0x800000 != 0 (src/v4/StockVaultV4.sol#259)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#too-many-digits
+
+Detector: unindexed-event-address
+Event StockVault.KeeperUpdated(address) (src/StockVault.sol#211) has address parameters but no indexed parameters
+Event StockVault.TreasuryUpdated(address) (src/StockVault.sol#212) has address parameters but no indexed parameters
+Event VaultFactory.DefaultsSet(address,address,address) (src/VaultFactory.sol#84) has address parameters but no indexed parameters
+Event StockVaultV4.KeeperUpdated(address) (src/v4/StockVaultV4.sol#215) has address parameters but no indexed parameters
+Event StockVaultV4.TreasuryUpdated(address) (src/v4/StockVaultV4.sol#216) has address parameters but no indexed parameters
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unindexed-event-address-parameters
+
+Detector: unused-state
+StockVault.Q128 (src/StockVault.sol#135) is never used in StockVault (src/StockVault.sol#35-1039)
+StockVault.UNIT_LIQUIDITY (src/StockVault.sol#136) is never used in StockVault (src/StockVault.sol#35-1039)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-state-variable
+. analyzed (77 contracts with 101 detectors), 181 result(s) found

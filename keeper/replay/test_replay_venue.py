@@ -1,4 +1,5 @@
 """Plain-assert test: which v4 pools a vault may target, and which backend a token deploys on. Run: /opt/homebrew/bin/python3.14 replay/test_replay_venue.py"""
+import json
 import os
 import sys
 
@@ -31,10 +32,24 @@ def test_v4_key_ok():
 
 def test_venue_for():
     f = rp.KEEP_FLOOR_APR
-    assert rp.venue_for(f, None) == "v3" and rp.venue_for(f + 5, f + 50) == "v3", "v3 that keeps the floor stays on v3"
+    assert rp.venue_for(f, None) == "v3", "v3 alone at the floor"
+    assert rp.venue_for(f + 5, f + 50) == "v4", "v4 keeps more in its weaker half"
+    assert rp.venue_for(f + 50, f + 5) == "v3", "v3 keeps more"
+    assert rp.venue_for(f + 5, f + 5) == "v3", "tie stays on v3"
+    # PLTR after tick snapping (replay 2026-10-23): v3 weaker half -18.9 clears the floor, v4 keeps +7.9. The old rule picked v3.
+    assert rp.venue_for(-18.9, 7.9) == "v4", "a v3 pool that merely clears the floor never beats a v4 pool that keeps more"
     assert rp.venue_for(f - 0.1, f) == "v4"
     assert rp.venue_for(None, f + 3) == "v4", "no v3 pool, v4 keeps the floor"
     assert rp.venue_for(f - 0.1, f - 0.1) == "v3" and rp.venue_for(f - 0.1, None) == "v3" and rp.venue_for(None, None) == "v3"
+
+
+def test_venue_cases_shared_with_keeper():
+    """keeper/test/deploy-list.test.ts runs the same table through its TS copy of the rule: neither side can drift alone."""
+    t = json.load(open(os.path.join(HERE, "..", "test", "fixtures", "venue-cases.json")))
+    assert t["floor_apr"] == rp.KEEP_FLOOR_APR and len(t["cases"]) >= 10
+    for c in t["cases"]:
+        assert rp.venue_for(c["v3"], c["v4"]) == c["venue"], c
+    assert {c["venue"] for c in t["cases"]} == {"v3", "v4"}
 
 
 def test_vault_cap_usd():
@@ -48,5 +63,5 @@ def test_allowlist_file():
 
 
 if __name__ == "__main__":
-    test_v4_key_ok(); test_venue_for(); test_vault_cap_usd(); test_allowlist_file()
-    print("4 tests passed")
+    test_v4_key_ok(); test_venue_for(); test_venue_cases_shared_with_keeper(); test_vault_cap_usd(); test_allowlist_file()
+    print("5 tests passed")

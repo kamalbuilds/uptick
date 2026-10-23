@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { BandChart, BandReadout } from "./band-chart";
 import { DepositPanel } from "./deposit-panel";
 import { EarnBorrow } from "./earn-borrow";
+import { YourLoans } from "./your-loan";
 import { ExitPreview } from "./exit-preview";
 import { GateFigure } from "./gate-scale";
 import { LeakFigure } from "./leak-bar";
@@ -95,6 +96,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
           <LeakFigure cfg={cfg} />
           <GateFigure cfg={cfg} />
           <ExitPreview vault={cfg.vault} symbol={cfg.symbol} user={address} />
+          <YourLoans cfgs={[cfg]} />
           <EarnBorrow cfg={cfg} />
 
           {!(q.data && !q.data.chart) && <section aria-labelledby="band">

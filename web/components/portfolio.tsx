@@ -7,6 +7,7 @@ import { useAccount, useReadContracts } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Kept, StateChip } from "./ledger";
 import { WalletButton } from "./wallet-button";
+import { YourLoans } from "./your-loan";
 import { Skeleton } from "./status";
 import { vaultAbi } from "@/lib/abis";
 import { addressUrl, robinhoodChain } from "@/lib/chain";
@@ -93,6 +94,7 @@ export function Portfolio() {
         <>
           <p className="figure mt-2 text-mute">{shortAddress(address)}</p>
           {live.length > 0 && <ul className="mt-8 border-t border-hairline">{live.map((v) => <PositionRow key={v.id} cfg={v} owner={address} />)}</ul>}
+          <YourLoans cfgs={live} className="mt-12" />
           {opening.length > 0 && (
             <section className="mt-12" aria-labelledby="opening">
               <h2 id="opening" className="border-b border-hairline pb-3 text-2xl font-semibold leading-8 tracking-[-0.2px]">Opening</h2>

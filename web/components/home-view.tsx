@@ -1,6 +1,8 @@
 "use client";
 
 import { CaretRight } from "@phosphor-icons/react";
+import Link from "next/link";
+import { CheckForm } from "./check-form";
 import { SectionTitle, StateChip } from "./ledger";
 import { SummaryRow } from "./summary-row";
 import { RowHeader, VaultRow } from "./vault-row";
@@ -16,7 +18,7 @@ import moment from "@/lib/moment.json";
 /** Left column below the verdict: the connect call to action, then what the connected wallet holds across the 17 tokens. */
 function Mine({ holdings }: { holdings: Holdings }) {
   if (holdings.status === "disconnected") {
-    return <WalletButton size="lg" label="Connect wallet to find yours" className="mt-8 w-full sm:w-auto" />;
+    return <WalletButton size="lg" variant="outline" label="Or connect a wallet" className="mt-4 w-full sm:w-auto" />;
   }
   if (holdings.status === "loading") return <Skeleton className="mt-8 h-24 w-full max-w-sm" />;
   if (holdings.status === "error") {
@@ -42,6 +44,7 @@ function Mine({ holdings }: { holdings: Holdings }) {
           </li>
         ))}
       </ul>
+      <Link href={`/check?address=${holdings.address}`} className="press mt-3 inline-flex min-h-11 items-center text-fg underline underline-offset-4">See what you would keep</Link>
     </div>
   );
 }
@@ -60,6 +63,10 @@ export function HomeView() {
           {Math.round(moment.offHours.swapsPct)}% of the swaps in these pools, and {Math.round(moment.offHours.feesPct)}% of the fees they pay liquidity providers, happen while the NYSE is shut, over the {REPLAY_WINDOW.days} days to {isoDay(REPLAY_WINDOW.end)}.
           Uptick is launching vaults that pay Stock Token holders while Nasdaq sleeps, and shows what each one keeps after losses to fast traders.
         </p>
+        <div className="mt-8 max-w-sm border-t border-hairline pt-5">
+          <h2 className="text-[17px] font-semibold leading-6">Find your idle Stock Tokens</h2>
+          <CheckForm stacked className="mt-3" />
+        </div>
         <Mine holdings={holdings} />
       </div>
 

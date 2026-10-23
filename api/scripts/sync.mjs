@@ -13,12 +13,22 @@ const sources = [
     to: resolve(dataDir, "vault-universe.json"),
   },
   {
+    from: resolve(repoRoot, "web/lib/collateral-markets.json"),
+    to: resolve(dataDir, "collateral-markets.json"),
+  },
+  {
     from: resolve(repoRoot, "keeper/data/replay.json"),
     to: resolve(dataDir, "replay.json"),
   },
+  // The wallet scan and the math under it are written once in web/lib; test/shared-sync.test.ts fails when these copies drift.
+  ...["scan.ts", "price-math.ts", "morpho.ts", "loan.ts", "abis.ts"].map((f) => ({
+    from: resolve(repoRoot, "web/lib", f),
+    to: resolve(apiRoot, "src/shared", f),
+  })),
 ];
 
 await mkdir(dataDir, { recursive: true });
+await mkdir(resolve(apiRoot, "src/shared"), { recursive: true });
 
 for (const { from, to } of sources) {
   await copyFile(from, to);

@@ -1,25 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatUnits, parseUnits, type Hash } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAccount, useCapabilities, usePublicClient, useReadContract, useReadContracts, useSendCalls, useSendTransaction, useWaitForCallsStatus } from "wagmi";
-import { ArrowSquareOut, CheckCircle, Circle, CircleNotch, WarningCircle } from "@phosphor-icons/react";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { CircleNotch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { SectionTitle, toneClass } from "./ledger";
 import { Term } from "./term";
+import { StepList, useStepRunner } from "./step-runner";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
-import { robinhoodChain, txUrl } from "@/lib/chain";
+import { robinhoodChain } from "@/lib/chain";
 import { collateralMarket } from "@/lib/collateral-markets";
 import { depositRoom, num, perDepositLimitUsd, pct, shareOfBalance, signed, usd } from "@/lib/format";
 import { usePrices } from "@/lib/prices";
 import { knownRevert } from "@/lib/revert";
-import { errMessage, waitForReceipt } from "@/lib/tx";
 import { cn } from "@/lib/utils";
 import {
-  BORROW_CAP_BPS, COLLATERAL_MARGIN_BPS, MORPHO_BLUE, aprPct, borrowAtBps, borrowRoom, collateralFromQuote, debtAssets, earnAndBorrowSteps, irmAbi, isBatchUnsupported,
-  marketId, marketLiquidity, morphoAbi, oracleAbi, positionRisk, sharePriceUsd, supportsAtomicBatch, type MarketParams, type Step,
+  BORROW_CAP_BPS, COLLATERAL_MARGIN_BPS, MORPHO_BLUE, aprPct, borrowAtBps, borrowRoom, collateralFromQuote, debtAssets, earnAndBorrowSteps, irmAbi,
+  marketId, marketLiquidity, morphoAbi, oracleAbi, positionRisk, sharePriceUsd, type MarketParams,
 } from "@/lib/morpho";
 import { SHARE_DECIMALS, type VaultConfig } from "@/lib/vaults";
 
@@ -41,10 +41,6 @@ function parse(v: string): bigint | null {
 }
 
 const usdg = (n: bigint) => num(Number(formatUnits(n, USDG_DECIMALS)), 2);
-const txError = (err: unknown): string => knownRevert(err)?.copy ?? errMessage(err);
-
-type StepState = "waiting" | "signing" | "pending" | "confirmed" | "failed";
-type Run = { mode: "batch" | "sequential"; steps: Step[]; states: StepState[]; hashes: (Hash | undefined)[]; batchId?: string; error?: string };
 
 /** Earn and borrow on a vault page: deposit the Stock Token, post the shares to Morpho Blue and borrow USDG, as one wallet confirmation when the wallet batches.
  *  The numbers and the ticket render for a vault whose Morpho market is in web/lib/collateral-markets.json and exists on-chain; every other open vault shows what the loan will be and that it opens with the market. */
@@ -84,11 +80,10 @@ function Opening({ cfg }: { cfg: VaultConfig }) {
 
 function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; market: MarketParams }) {
   const { address, isConnected, chainId } = useAccount();
-  const client = usePublicClient({ chainId: robinhoodChain.id });
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
   const [sliderPos, setSliderPos] = useState(SLIDER_REST);
-  const [run, setRun] = useState<Run | null>(null);
+  const { run, running, finished, failedAt, batchOk, start: startSteps, retry, reset } = useStepRunner();
 
   const id = marketId(market);
   const onChain = Boolean(address && chainId === robinhoodChain.id);
@@ -130,9 +125,6 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
   });
   const quote = preview.data;
 
-  const caps = useCapabilities({ account: address, query: { enabled: onChain } });
-  const batchOk = supportsAtomicBatch(caps.data, robinhoodChain.id);
-
   const price = oracle.data;
   const heldCollateral = position?.[2] ?? 0n;
   const debt = borrowShares !== undefined && borrowAssets !== undefined && position ? debtAssets(position[1], borrowAssets, borrowShares) : 0n;
@@ -150,26 +142,6 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
   const overCap = reducedLimit !== null && amountUsd > reducedLimit;
   const vaultRoom = depositRoom(parsed, maxDeposit, cfg.depositCapUsd, stockPrice);
   const overRoom = vaultRoom?.over ?? false;
-  const running = run !== null && (run.states.some((s) => s === "signing" || s === "pending") || (run.error === undefined && run.states.some((s) => s === "waiting")));
-  const finished = run !== null && run.states.every((s) => s === "confirmed");
-
-  const { sendCallsAsync } = useSendCalls();
-  const { sendTransactionAsync } = useSendTransaction();
-  const batch = useWaitForCallsStatus({ id: run?.batchId ?? "", timeout: 180_000, pollingInterval: 2_000, query: { enabled: Boolean(run?.batchId) } });
-
-  // A batch is one id on the wallet side: it confirms or fails every step together.
-  useEffect(() => {
-    if (!run?.batchId || run.mode !== "batch") return;
-    const status = batch.data?.status;
-    if (status === "success") {
-      const hash = batch.data?.receipts?.at(-1)?.transactionHash;
-      setRun((r) => (r && r.batchId === run.batchId ? { ...r, states: r.states.map(() => "confirmed"), hashes: r.hashes.map(() => hash) } : r));
-    } else if (status === "failure" || batch.isError) {
-      const error = batch.isError ? `The wallet did not report the batch as confirmed within three minutes. Check it before trying again. ${errMessage(batch.error)}` : "The batch reverted on-chain. Nothing was deposited or borrowed.";
-      setRun((r) => (r && r.batchId === run.batchId ? { ...r, states: r.states.map(() => "failed"), error } : r));
-    }
-  }, [batch.data?.status, batch.isError, batch.error, batch.data?.receipts, run?.batchId, run?.mode]);
-
   useEffect(() => {
     if (!finished) return;
     setAmount("");
@@ -180,52 +152,14 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 
-  function patch(i: number, state: StepState, hash?: Hash, error?: string) {
-    setRun((r) => (r ? { ...r, states: r.states.map((s, j) => (j === i ? state : s)), hashes: r.hashes.map((h, j) => (j === i && hash ? hash : h)), error } : r));
-  }
-
-  async function sequence(steps: Step[], from: number) {
-    if (!client) return;
-    for (let i = from; i < steps.length; i++) {
-      patch(i, "signing");
-      let hash: Hash | undefined;
-      try {
-        hash = await sendTransactionAsync({ to: steps[i].call.to, data: steps[i].call.data, chainId: robinhoodChain.id });
-        patch(i, "pending", hash);
-        const receipt = await waitForReceipt(client, hash);
-        if (receipt.status !== "success") throw new Error("The transaction reverted on-chain.");
-        patch(i, "confirmed", hash);
-      } catch (err) {
-        patch(i, "failed", hash, txError(err));
-        return;
-      }
-    }
-  }
-
   async function start() {
     if (!address || !parsed || quote === undefined || tokenAllowance === undefined || shareAllowance === undefined) return;
     const steps = earnAndBorrowSteps({
       symbol: cfg.symbol, token: cfg.token, vault, market, account: address, deposit: parsed, collateral: posted, borrow, tokenAllowance, shareAllowance,
     });
-    const blank = (mode: Run["mode"]): Run => ({ mode, steps, states: steps.map(() => "waiting"), hashes: steps.map(() => undefined) });
-    if (batchOk) {
-      setRun({ ...blank("batch"), states: steps.map(() => "signing") });
-      try {
-        const sent = await sendCallsAsync({ calls: steps.map((s) => s.call), chainId: robinhoodChain.id, forceAtomic: true });
-        setRun((r) => (r ? { ...r, batchId: sent.id, states: r.states.map(() => "pending") } : r));
-        return;
-      } catch (err) {
-        if (!isBatchUnsupported(err)) {
-          setRun((r) => (r ? { ...r, states: r.states.map(() => "failed"), error: txError(err) } : r));
-          return;
-        }
-      }
-    }
-    setRun(blank("sequential"));
-    await sequence(steps, 0);
+    await startSteps(steps);
   }
 
-  const failedAt = run?.states.findIndex((s) => s === "failed") ?? -1;
   const lltvPct = Number(market.lltv) / 1e16;
   const shown = quote !== undefined ? num(Number(formatUnits(quote, SHARE_DECIMALS)), 6) : null;
   const kept = cfg.gate.worstHalfApr;
@@ -273,7 +207,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
             placeholder="0.0"
             value={amount}
             disabled={running}
-            onChange={(e) => { setAmount(e.target.value.trim()); if (run && !running) setRun(null); }}
+            onChange={(e) => { setAmount(e.target.value.trim()); if (run && !running) reset(); }}
             className="figure h-full min-w-0 flex-1 bg-transparent px-3 text-[24px] outline-none placeholder:text-mute disabled:opacity-60"
             aria-invalid={unreadable || overBalance || overCap || overRoom}
           />
@@ -330,11 +264,11 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
             <WalletButton size="lg" label={!isConnected ? "Connect wallet" : undefined} className="w-full" />
           ) : failedAt >= 0 && run?.mode === "sequential" ? (
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={() => sequence(run.steps, failedAt)}>Retry from “{run.steps[failedAt].label}”</Button>
-              <Button size="lg" variant="outline" onClick={() => setRun(null)}>Start over</Button>
+              <Button size="lg" onClick={retry}>Retry from “{run.steps[failedAt].label}”</Button>
+              <Button size="lg" variant="outline" onClick={reset}>Start over</Button>
             </div>
           ) : failedAt >= 0 ? (
-            <Button size="lg" variant="outline" onClick={() => setRun(null)}>Start over</Button>
+            <Button size="lg" variant="outline" onClick={reset}>Start over</Button>
           ) : (
             <Button size="lg" className="w-full" disabled={blocker !== null || running || finished} onClick={start}>
               {running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {run?.mode === "batch" ? "Confirm in your wallet" : "Working through the steps"}</> : borrow > 0n ? `Deposit ${cfg.symbol} and borrow ${usdg(borrow)} USDG` : `Deposit ${cfg.symbol}`}
@@ -349,7 +283,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
           {finished && run && (
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
               <p role="status" className="text-[13px] leading-5 text-kept">Done. {run.steps.some((s) => s.id === "borrow") ? "The shares are collateral on Morpho and the USDG is in your wallet." : `Your ${cfg.symbol} is in the vault.`}</p>
-              <Button size="sm" variant="outline" onClick={() => setRun(null)}>Close</Button>
+              <Button size="sm" variant="outline" onClick={reset}>Close</Button>
             </div>
           )}
         </div>
@@ -395,33 +329,5 @@ function Row({ k, children, last }: { k: React.ReactNode; children: React.ReactN
       <dt className="shrink-0 text-mute">{k}</dt>
       <dd className="min-w-0 text-right">{children}</dd>
     </div>
-  );
-}
-
-const STATE_TEXT: Record<StepState, string> = { waiting: "Next", signing: "Confirm in wallet", pending: "Waiting for the chain", confirmed: "Confirmed", failed: "Failed" };
-
-function StepList({ run }: { run: Run }) {
-  return (
-    <ol className="mt-5 border-t border-hairline" aria-label="Steps">
-      {run.steps.map((s, i) => {
-        const st = run.states[i];
-        const hash = run.hashes[i];
-        return (
-          <li key={s.id} className="flex items-center gap-3 border-b border-hairline py-3 text-[15px]">
-            {st === "confirmed" ? <CheckCircle size={20} weight="fill" className="shrink-0 text-kept" aria-hidden />
-              : st === "failed" ? <WarningCircle size={20} weight="fill" className="shrink-0 text-loss" aria-hidden />
-              : st === "signing" || st === "pending" ? <CircleNotch size={20} className="shrink-0 animate-spin motion-reduce:animate-none" aria-hidden />
-              : <Circle size={20} className="shrink-0 text-mute" aria-hidden />}
-            <span className="min-w-0 flex-1">{s.label}</span>
-            <span className="text-[13px] text-mute">{STATE_TEXT[st]}</span>
-            {hash && (
-              <a className="figure inline-flex items-center gap-1 text-[13px] underline underline-offset-4" href={txUrl(hash)} target="_blank" rel="noreferrer">
-                {hash.slice(0, 8)}...{hash.slice(-4)} <ArrowSquareOut size={14} aria-hidden />
-              </a>
-            )}
-          </li>
-        );
-      })}
-    </ol>
   );
 }

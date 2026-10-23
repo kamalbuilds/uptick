@@ -10,6 +10,9 @@ export const morphoAbi = parseAbi([
   "struct MarketParams { address loanToken; address collateralToken; address oracle; address irm; uint256 lltv; }",
   "function supplyCollateral(MarketParams marketParams, uint256 assets, address onBehalf, bytes data)",
   "function borrow(MarketParams marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver) returns (uint256 assetsBorrowed, uint256 sharesBorrowed)",
+  "function repay(MarketParams marketParams, uint256 assets, uint256 shares, address onBehalf, bytes data) returns (uint256 assetsRepaid, uint256 sharesRepaid)",
+  "function withdrawCollateral(MarketParams marketParams, uint256 assets, address onBehalf, address receiver)",
+  "function accrueInterest(MarketParams marketParams)",
   "function market(bytes32 id) view returns (uint128 totalSupplyAssets, uint128 totalSupplyShares, uint128 totalBorrowAssets, uint128 totalBorrowShares, uint128 lastUpdate, uint128 fee)",
   "function position(bytes32 id, address user) view returns (uint256 supplyShares, uint128 borrowShares, uint128 collateral)",
 ]);
@@ -29,8 +32,8 @@ export const WAD = 10n ** 18n;
 /** Morpho prices collateral in loan units scaled by 1e36 (`Morpho.ORACLE_PRICE_SCALE`). */
 export const ORACLE_PRICE_SCALE = 10n ** 36n;
 /** Virtual offsets Morpho adds when it converts borrow shares to assets (`SharesMathLib`). */
-const VIRTUAL_SHARES = 10n ** 6n;
-const VIRTUAL_ASSETS = 1n;
+export const VIRTUAL_SHARES = 10n ** 6n;
+export const VIRTUAL_ASSETS = 1n;
 const BPS = 10_000n;
 
 /** The slider tops out at this share of the borrow limit, so the position starts at a health factor of at least 1.33. */
@@ -126,7 +129,7 @@ export const aprPct = (ratePerSecond: bigint): number => (Number(ratePerSecond) 
 // ---- the batch --------------------------------------------------------------------------------------------------------------------
 
 export type Call = { to: Address; data: Hex };
-export type StepId = "approve-token" | "deposit" | "approve-shares" | "supply-collateral" | "borrow";
+export type StepId = "approve-token" | "deposit" | "approve-shares" | "supply-collateral" | "borrow" | "withdraw-collateral" | "redeem-in-kind" | "approve-usdg" | "repay";
 export type Step = { id: StepId; label: string; call: Call };
 
 const erc20Approve = parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]);

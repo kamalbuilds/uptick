@@ -1,0 +1,19 @@
+{
+  "floor_apr": -20,
+  "about": "Weaker-half edge APR of each backend's chosen pool (null: no such pool) and the venue keeper/replay/replay.py venue_for returns. keeper/replay/test_replay_venue.py and keeper/test/deploy-list.test.ts both check their copy of the rule against this table, so the two cannot drift apart.",
+  "cases": [
+    { "v3": -20, "v4": null, "venue": "v3", "why": "v3 alone, exactly at the floor" },
+    { "v3": -15, "v4": -10, "venue": "v4", "why": "both clear the floor, v4 keeps more" },
+    { "v3": -10, "v4": -15, "venue": "v3", "why": "both clear the floor, v3 keeps more" },
+    { "v3": -15, "v4": -15, "venue": "v3", "why": "tie stays on v3" },
+    { "v3": -18.9, "v4": 7.9, "venue": "v4", "why": "PLTR: a v3 pool that merely clears the floor never beats a v4 pool that keeps more" },
+    { "v3": 3, "v4": 8, "venue": "v4", "why": "both open, v4 keeps more" },
+    { "v3": 8, "v4": 3, "venue": "v3", "why": "both open, v3 keeps more" },
+    { "v3": -20.1, "v4": -20, "venue": "v4", "why": "v3 under the floor, v4 exactly at it" },
+    { "v3": null, "v4": -3, "venue": "v4", "why": "no v3 pool, v4 clears the floor" },
+    { "v3": -20.1, "v4": -20.1, "venue": "v3", "why": "neither clears the floor: the vault stays closed on v3" },
+    { "v3": -20.1, "v4": null, "venue": "v3", "why": "v3 under the floor, no v4 pool" },
+    { "v3": null, "v4": -25, "venue": "v3", "why": "no v3 pool, v4 under the floor" },
+    { "v3": null, "v4": null, "venue": "v3", "why": "no pool at all" }
+  ]
+}

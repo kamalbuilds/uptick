@@ -34,7 +34,7 @@ export function eligibleTickers(universe: any, replay: any, params: Record<strin
       feed: t.feed.address as Address, capUsd: t.cap_usd, rangeBps: params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS, stockIsToken0: BigInt(t.token) < BigInt(universe.usdg),
     };
     if (rt?.venue === "v4" && rt.chosen_v4) {
-      out.push({ ...base, venue: "v4", poolId: rt.chosen_v4.id as Hex, feeTier: rt.chosen_v4.fee_tier });
+      out.push({ ...base, capUsd: rt.chosen_v4.cap_usd, venue: "v4", poolId: rt.chosen_v4.id as Hex, feeTier: rt.chosen_v4.fee_tier }); // a v4 vault is sized to its own pool
       continue;
     }
     const pool = rt?.chosen ? { address: rt.chosen.id, fee_tier: rt.chosen.fee_tier } : t.pool;

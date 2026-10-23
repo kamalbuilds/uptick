@@ -22,7 +22,7 @@ interface TickerBase {
   feed: Address; // Chainlink AggregatorV3 proxy
   stockIsToken0: boolean; // both venues order by address; verified against the pool (v3) or the vault (v4) at startup
   rangeBps: number; // half-width of the vault's band in bps (data/params.json range_bps, 500 where the token has no entry)
-  capUsd: number; // vault size in USD (data/universe.json cap_usd): the deposit cap the vault is created with
+  capUsd: number; // vault size in USD: the deposit cap the vault is created with (data/universe.json cap_usd; for a v4 vault, its pool's cap_usd in data/replay.json chosen_v4)
   vault?: Address;
   deployBlock?: bigint;
 }

@@ -12,7 +12,7 @@ Scope: `src/StockVault.sol` and the stateless `src/VaultMath.sol` it deploys for
 | Stock Token issuer | Beacon-proxy ERC-8056 token with pause and a blocklist. If the issuer blocklists the vault, the position manager or the pool, transfers revert and no contract-side remedy exists. The vault reads the token's own `oraclePaused()` and `effectiveAt()` (both confirmed by `eth_call` on the deployed NVDA token) and closes every price-checked path while the oracle is paused and from one hour before until one hour plus `twapWindow` after a multiplier change takes effect. A multiplier or split that moves pool and feed apart by more than `maxDeviationBps` closes the gate as well. Every multiplier step, ordinary dividend accruals included, closes the price-checked paths for one hour before until one hour plus `twapWindow` after `effectiveAt()` (2 h 10 min at the default window); `redeemInKind` stays open throughout. The window is deliberately not narrowed. |
 | Owner | A multisig behind a two-step ownership transfer. Risk parameters, the keeper, `instantDeploy`, both price bands and the entry fee change only through a 24-hour queue (see Roles); the powers are bounded and the queue emits the full calldata, so holders have a full day to exit in kind. |
 | Keeper | Can only call `rebalance()`. |
-| Chain | No sequencer-uptime feed is read. |
+| Chain | No sequencer-uptime feed is read, and Robinhood Chain (4663) has none to read: the Chainlink directory for the chain lists 58 feeds and no L2 Sequencer Uptime feed, and none of the nine documented uptime proxies has code on 4663 (see Share oracle: weekend gaps). |
 
 ## Roles
 
@@ -304,7 +304,7 @@ Price: `value(USDG) * 1e36 / (totalSupply + 10^(shareDecimals - stockDecimals))`
 | Guard | On trip |
 |---|---|
 | Chainlink answer invalid (vault `health()` status FeedInvalid: reverted, non-positive, timestamp 0 or in the future, `answeredInRound < roundId`) | Closed: `FeedInvalid()`. Morpho borrow, collateral withdrawal and liquidation revert until the feed answers. |
-| Chainlink older than `MAX_FEED_AGE` = 349,200 s (97 h) | Closed: `FeedTooOld(updatedAt)`. Exactly 349,200 s still prices (`test_priceStaysThroughAWeekendAndRevertsPastTheBound`). The bound is the NVDA market oracle's own base-feed bound; the longest silence measured on the equity feeds is 80.8 h (Labor Day weekend, 32 ticker-weekends), so every market holiday clears it and a feed older than 97 h is a dead feed. |
+| Chainlink older than `MAX_FEED_AGE` = 349,200 s (97 h) | Closed: `FeedTooOld(updatedAt)`. Exactly 349,200 s still prices (`test_priceStaysThroughAWeekendAndRevertsPastTheBound`). The bound is the NVDA market oracle's own base-feed bound. Every round of the 17 vault feeds over 123 days (`keeper/data/weekend-gaps.json`) puts the longest silence at 91.5 h (QQQ, last print Fri 2026-09-04 04:31 UTC, next Mon 2026-09-08 00:00 UTC, Labor Day), then 81.6 h (GOOGL) and 80.8 h (SPY), so every silence on record clears it, QQQ's by 5.5 h, and a feed older than 97 h is a dead feed. |
 | Feed stale inside 97 h, Stock Token oracle paused or inside the corporate-action window (vault status FeedStale, CorporateAction, TwapUnavailable, TwapDeviates, SpotDeviates) | Open: the oracle answers with the last Chainlink print. The vault closes its priced paths in these states, but Morpho needs a price to liquidate, and `redeemInKind` is always open, so the liquidator who seizes shares can always leave with the underlying tokens. `test_liquidationWorksOnAStaleFeedInsideACorporateActionWindow` liquidates a borrower pushed over the limit by interest on a 60 h stale feed with `oraclePaused()` true. |
 | `totalAssets()` cap | Open, down-only: the result never exceeds the vault's own net valuation at the same Chainlink answer. In v4 this is the only path that carries the treasury's cut of fees recorded as pending (private to the vault) into the oracle. |
 | Unregistered vault | Closed at construction: `NotRegisteredVault()`. |
@@ -328,12 +328,67 @@ A share is worth no more than the same basket re-priced at Chainlink: an AMM pos
 
 | Residual | Numbers | Bound and levers |
 |---|---|---|
-| Last print through a weekend or a corporate-action window | The price follows the last Chainlink answer for up to 97 h; the NVDA market's own oracle behaves identically on its base feed | LLTV: the share is a concentrated position (range +-5%), so beyond the range it holds only the Stock Token and its price falls with the stock (a 40% fall of the feed took the share down 37.9% in `test_aChainlinkFallLiquidatesAndTheLiquidatorCanExitInKind`). Set the market's LLTV as for the Stock Token itself; the fork tests use 62.5%. |
+| Last print through a weekend or a corporate-action window | The price follows the last Chainlink answer for up to 97 h; the NVDA market's own oracle behaves identically on its base feed | LLTV: the share is a concentrated position (range +-5%), so beyond the range it holds only the Stock Token and its price falls with the stock (a 40% fall of the feed took the share down 37.9% in `test_aChainlinkFallLiquidatesAndTheLiquidatorCanExitInKind`). Set the market's LLTV as for the Stock Token itself; the fork tests use 62.5%. The measured gaps and the LLTV they allow are in Share oracle: weekend gaps. |
 | Issuer controls | A blocklist on the vault or Morpho, or a paused Stock Token, makes share transfers or `redeemInKind` revert | Same trust as the vault itself (see Trust assumptions) |
 | Same-block share lock | Shares minted in a block cannot be transferred out of that block (`SharesLocked`), so `supplyCollateral` of fresh shares needs the next block | Structural, from the vault's `_update` |
 | Gas | about 323K per `price()` call (three reads of the vault, each with a pool observation) | Orbit gas is cheap; the alternative is a stored price, which is stale by construction |
 | v4 pending-fee cut | Reaches the oracle only through the `totalAssets()` cap | `test_v4SweepingFeesIntoIdleDoesNotRaiseThePrice`: sweeping a position's fees into idle balances (cut 13 bp of the price at the pinned volume) leaves the price unchanged |
 | Donation | Tokens sent to the vault raise its value for every holder | Costs the donor the full amount; the 1e6 virtual shares keep an empty vault from jumping |
+
+## Share oracle: weekend gaps and the LLTV they allow
+
+Through a market close the share is priced at the close print, so a borrower at the limit carries the whole close-to-open step until the first print after the silence, and Morpho can only liquidate at that print. `keeper/collateral/weekend_gaps.py` reads every round each vault's Chainlink proxy serves on 4663 (`getRoundData` over every phase, batched on the public RPC; 43,198 rounds from 2026-06-22 00:00 UTC to 2026-10-23 11:21 UTC, 122.8 to 123.5 days per feed), finds every silence of 12 h or more (the feeds print minutes apart while the market trades) and the move across it, and writes `keeper/data/weekend-gaps.json`. The feeds answered 1e8 too large (price times 1e16 against `decimals()` 8) until about 13:51 UTC on 2026-06-23; the script divides those bring-up rounds back and lists them per feed. `--offline` re-derives from the cached rounds, `--selftest` checks the maths and goes red when the rescale, the 5 pt buffer or the 12 h filter is removed.
+
+max LLTV = 1 - worst adverse close-to-open move - 5 pt
+
+| Vault feed | Worst adverse gap (close print to first print) | Longest silence | Max LLTV | Enabled LLTV at or below |
+|---|---|---|---|---|
+| USO | -7.75%, Fri 2026-07-31 22:48 to Mon 08-03 00:00 UTC (49.2 h) | 78.3 h | 87.25% | 86% |
+| INTC | -3.95%, Fri 2026-09-11 19:02 to Mon 09-14 00:00 | 76.2 h | 91.05% | 86% |
+| MU | -3.88%, Fri 2026-09-11 16:59 to Mon 09-14 00:00 | 76.1 h | 91.12% | 86% |
+| AMD | -2.83%, Fri 2026-09-11 19:08 to Mon 09-14 00:00 | 76.1 h | 92.17% | 91.5% |
+| PLTR | -1.18%, Fri 2026-09-11 18:33 to Mon 09-14 00:00 | 76.9 h | 93.82% | 91.5% |
+| AMZN | -1.18%, Fri 2026-09-11 17:34 to Mon 09-14 00:00 | 77.1 h | 93.82% | 91.5% |
+| QQQ | -1.18%, Fri 2026-09-11 12:49 to Mon 09-14 00:00 | 91.5 h | 93.82% | 91.5% |
+| NVDA | -1.12%, Fri 2026-09-11 20:03 to Mon 09-14 00:00 (51.9 h, rounds 1025 to 1026) | 78.2 h | 93.88% | 91.5% |
+| META | -0.94%, Fri 2026-09-11 19:50 to Mon 09-14 00:00 | 76.8 h | 94.06% | 91.5% |
+| GOOGL | -0.70%, Mon 2026-08-31 00:00 to 13:30 | 81.6 h | 94.30% | 91.5% |
+| AAPL | -0.68%, Mon 2026-08-24 13:37 to Tue 08-25 03:12 | 79.7 h | 94.32% | 91.5% |
+| SPY | -0.68%, Fri 2026-09-11 12:56 to Mon 09-14 00:00 | 80.8 h | 94.32% | 91.5% |
+
+The twelve are the vaults the gate leaves open or reduced. Enabled LLTVs on the singleton, read with `isLltvEnabled`: 38.5, 62.5, 77, 86, 91.5, 94.5, 96.5 and 98% (50, 80 and 90% are not). The record is one 123-day stretch with no adverse gap past 7.75%, so the column is the ceiling that record supports: a market on a share is listed at an enabled LLTV at or below it, and the 62.5% the fork tests and the live NVDA/USDG market use sits 25 to 32 pt under every row.
+
+The share moves less than the feed. Inside the +-5% range it is about half USDG; past the range it is all Stock Token and the USDG it received on the way down stays. Measured on the fork by replaying each gap as a ratio on the live NVDA vault:
+
+| Feed move | Share move | Source |
+|---|---|---|
+| -1.12% (NVDA's worst gap) | -0.59% | `test_worstNvdaWeekendAtTheDerivedLltvLeavesNoBadDebt` |
+| -7.75% (USO's worst gap) | -6.32% | `test_worstLaunchingWeekendAtItsDerivedLltvLeavesNoBadDebt` |
+| -40% | -37.9% | `test_aChainlinkFallLiquidatesAndTheLiquidatorCanExitInKind` |
+
+Morpho pays the liquidator `1 / (1 - 0.3 * (1 - LLTV))`, so the whole debt comes out of the collateral while `LLTV * that factor <= 1 - share fall`. On the 62.5% markets that is a share fall of up to 29.6% at the first print, a feed fall of about 31% at the -40% elasticity.
+
+`test/WeekendCollateral.t.sol` (fork of 4663, live Morpho Blue singleton and IRM, a factory NVDA vault, the production `UptickShareOracle`; the owner enables an LLTV the singleton lacks, as it would for a listing). The borrower borrows to the limit at the close print, the clock runs through the real silence while the oracle keeps answering the close print, the first print lands, and a liquidator takes the whole position:
+
+| Test | LLTV | Write-off |
+|---|---|---|
+| `test_worstNvdaWeekendAtTheDerivedLltvLeavesNoBadDebt` | 93.88% | none: every borrow share repaid, collateral left |
+| `test_worstNvdaWeekendFivePointsAboveIsStillCoveredByTheUsdgLeg` | 98.88% | none: the share fell half as far as the feed, and the edge for this gap is about 99.2% |
+| `test_worstNvdaWeekendPastTheEdgeLeavesBadDebt` | 99.5% | about 105 USDG on a 40K debt |
+| `test_worstLaunchingWeekendAtItsDerivedLltvLeavesNoBadDebt` (USO gap) | 87.24% | none |
+| `test_worstLaunchingWeekendFivePointsAboveLeavesBadDebt` (USO gap) | 92.24% | about 319 USDG on a 40K debt |
+| `test_feedTooOldFreezesLiquidationPast97hAndTheLenderHoldsTheDebt` | 93.88% | none once the print lands |
+
+| Mutation | Result |
+|---|---|
+| NVDA LLTV 93.88% to 99.5% | `test_worstNvdaWeekendAtTheDerivedLltvLeavesNoBadDebt` red: `103720873 != 0` |
+| USO LLTV 87.24% to 92.24% | `test_worstLaunchingWeekendAtItsDerivedLltvLeavesNoBadDebt` red: `301308333 != 0` |
+| USO LLTV 87.24% to 82.24% (so 5 pt over is 87.24%) | `test_worstLaunchingWeekendFivePointsAboveLeavesBadDebt` red: `0 <= 0` |
+| Silence of exactly 97 h instead of 97 h + 1 s | `test_feedTooOldFreezesLiquidationPast97hAndTheLenderHoldsTheDebt` red: the oracle still prices |
+
+Past 97 h without a print, `FeedTooOld` reverts every Morpho path that reads the price: liquidation (by shares and by seized assets), borrowing and collateral withdrawal. In that window the lenders hold the whole outstanding debt (about 40K USDG of a 1M supply in the test) at a price nobody can read, can withdraw only the idle supply (`insufficient liquidity` one wei past it), and the first print after the silence decides the write-off: `max(0, debt - collateral value / incentive)`. At a market's LLTV the collateral covers that up to a share fall of `1 - LLTV * incentive`: 4.4% at 93.88%, 29.6% at 62.5%.
+
+Sequencer: there is no Chainlink L2 Sequencer Uptime feed for Robinhood Chain. The chain's directory (`reference-data-directory.vercel.app/feeds-robinhood-mainnet.json`) lists 58 feeds and none is an uptime or sequencer feed; the same query on Arbitrum One's directory returns its `L2 Sequencer Uptime Status Feed` among 1,093. `eth_getCode` on 4663 for each of the nine uptime proxies on `docs.chain.link/data-feeds/l2-sequencer-feeds` returns 0 bytes; the NVDA proxy returns 9,571 bytes in the same batch. The share oracle therefore has no sequencer gate, like the NVDA/USDG market's own oracle; a sequencer outage reads to it as a silent feed, priced at the last print up to 97 h and closed after. The calls are in `keeper/data/weekend-gaps.json` under `sequencer_uptime_feed`.
 
 ## Share oracle: test and mutation evidence
 

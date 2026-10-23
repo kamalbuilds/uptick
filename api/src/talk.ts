@@ -35,7 +35,7 @@ function reply(body: unknown, status: number, extra: Record<string, string> = {}
   return new Response(JSON.stringify(body), { status, headers: { ...HEADERS, ...extra } });
 }
 
-async function ipKey(request: Request, env: TalkEnv): Promise<string> {
+export async function ipKey(request: Request, env: TalkEnv): Promise<string> {
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
   const bytes = new TextEncoder().encode(`${env.TALK_SALT ?? ""}|${ip}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);

@@ -1,0 +1,4 @@
+{
+  "filter_paths": "(lib/|test/|script/)",
+  "json": "static-analysis/slither.json"
+}
