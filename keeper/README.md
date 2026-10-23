@@ -75,7 +75,7 @@ v4 pools are replayed for the eligible tokens (below). A token's venue is v3 whi
 
 ## Pool choice (replay)
 
-`replay/pull.py` pulls 30 days of swaps (bounded 400,000-block pages, public RPC) for every v3 USDG pool of an eligible token and every v4 USDG pool without a fee-taking hook (hook address bits for swap and liquidity return deltas), plus the Chainlink rounds. `replay/replay.py` runs the spike engine (`spikes/stock-vaults/scripts/engine.py`, unchanged) on each pool with the vault's strategy: each token at its own size, a band around Chainlink chosen per token (`data/params.json`, written by `strategist/strategist.py --batch --interval-h 24`), recentred daily at the NYSE open plus 5 minutes.
+`replay/pull.py` pulls 30 days of swaps (bounded 400,000-block pages, public RPC) for every v3 USDG pool of an eligible token and every v4 USDG pool without a fee-taking hook (hook address bits for swap and liquidity return deltas), plus the Chainlink rounds. `replay/replay.py` runs the spike engine (`spikes/stock-vaults/scripts/engine.py`, unchanged) on each pool with the vault's strategy: each token at its own size, a band around Chainlink chosen per token (`data/params.json`, written by `strategist/strategist.py --batch --interval-h 24`), recentred daily at the NYSE open plus 5 minutes. `replay/diy_baseline.py` runs the same engine, windows, halves and cost model on three positions a holder opens once and never moves (the vault's pool and width, the widest pool at +-10%, full-range v3) and writes them beside the vault's result per token, with the share of the window each stayed in range; `replay/test_diy_baseline.py` fails if a variant equals the vault result. `STOCK_VAULTS_SPIKE` points the replay scripts at `spikes/stock-vaults` when the repo is not checked out beside it.
 
 The window is 2026-09-17 to 2026-10-17. The first 15 days select, the last 15 days check. The vault's target is the pool of its venue that did best on the first half among pools carrying at least USD 1M of volume (`chosen` for v3, `chosen_v4` for v4; a v4 pool's fee income is the pool key's LP fee, not the swap fee the PoolManager's protocol fee raises); `confirmed_in_test` records whether it also led the second half, whose fee APR is reported as the out-of-sample figure.
 
@@ -92,6 +92,7 @@ python3 replay/pull.py NVDA SPCX CRCL GOOGL     # swaps and Chainlink rounds int
 python3 replay/replay.py NVDA SPCX CRCL GOOGL   # writes data/replay.json (merges per token)
 bun scripts/build-history.ts                    # hourly price series for the charts
 bun scripts/export-web.ts                       # writes ../web/lib/vault-universe.json
+python3 replay/diy_baseline.py                  # writes data/diy-baseline.json and ../web/lib/diy-baseline.json
 ```
 
 ## Registry
