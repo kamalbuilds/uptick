@@ -12,7 +12,6 @@ import { Term } from "./term";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, routerAbi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain, txUrl } from "@/lib/chain";
-import { useEvidence } from "@/lib/evidence";
 import { depositRoom, entryFeePct, netOfEntryFee, num, shareOfBalance, perDepositLimitUsd, signed, usd, usdWhole } from "@/lib/format";
 import { useVaultStats } from "@/lib/hooks";
 import { usePrices } from "@/lib/prices";
@@ -68,7 +67,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   const parsedUsdg = parse(amount, USDG_DECIMALS);
   const parsedShares = parse(amount, SHARE_DECIMALS);
   const parsedAmount = usdgMode ? parsedUsdg : inKind ? parsedShares : parsed;
-  const gate = useEvidence(cfg.id).data?.gate ?? cfg.gate;
+  const gate = cfg.gate;
   // The stats API quotes the chart price; the live Chainlink read stands in while it has none, so the cap and the USDG quote never wait on it.
   const livePrice = usePrices().data?.byId.get(cfg.id)?.usd;
   const priceUsd = useVaultStats(cfg.id).data?.chart?.chainlinkUsd ?? livePrice;

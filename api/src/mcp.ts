@@ -233,7 +233,7 @@ function listVaults(): McpToolResult {
       deposit_cap_usd: vault.depositCapUsd,
       entry_fee_bps: vault.entryFeeBps,
       fee_apr_pct: vault.feeAprPct,
-      kept_apr_pct: vault.keptAprPct,
+      kept_apr_pct: gate.worst_half_apr,
       reason: gate.reason,
     };
   });
@@ -272,7 +272,7 @@ function getVaultEvidence(id: string): McpToolResult {
     entry_fee_bps: vault.entryFeeBps,
     feed: vault.feed,
     fee_apr_pct: vault.feeAprPct,
-    kept_apr_pct: vault.keptAprPct,
+    kept_apr_pct: gate.worst_half_apr,
     gate: {
       state: gate.state,
       rule:
