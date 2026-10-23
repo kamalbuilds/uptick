@@ -11,14 +11,17 @@ import {ShareCollateralTest, ShareCollateralV4Test, MarketParams, IMorpho} from 
 import {StockVault} from "../../../src/StockVault.sol";
 import {StockVaultV4} from "../../../src/v4/StockVaultV4.sol";
 import {UptickShareOracle, IUptickVault, IVaultFactory} from "../../../src/UptickShareOracle.sol";
+import {UptickShareOracleFactory} from "../../../src/UptickShareOracleFactory.sol";
 import {ISwapRouter02} from "../../../src/interfaces/IUniswapV3.sol";
 
 /// @dev Security review of UptickShareOracle, 2026-10-23. Run on a fork of 4663:
 ///   forge test --match-path 'test/security/oracle/*' --match-test 'test_poc|test_measure' -j 1 -vv
-/// Each `test_poc_*` asserts the vulnerable behaviour on the code as written: it passes while the issue exists and
-/// goes red once the fix lands. `test_measure_*` print the numbers the LLTV recommendation rests on.
+/// Each `test_poc_*` asserts the behaviour of the code under review. After the fixes of 2026-10-23 (branch
+/// r2-oracle-fix) the O-M1 and O-L1 tests assert the fixed behaviour and go red if the fix is reverted; O-L2 has no
+/// code fix and keeps asserting the integration pattern. `test_measure_*` print the numbers the LLTV recommendation
+/// rests on.
 
-/// @dev Says yes to every vault. Anyone can deploy this and pass it to the oracle's constructor.
+/// @dev Says yes to every vault. Anyone can deploy this and bind an imitation oracle factory to it.
 contract YesFactory {
     function isVault(address) external pure returns (bool) {
         return true;
@@ -112,51 +115,55 @@ contract FlashLiquidator {
 contract OracleReviewV3 is ShareCollateralTest {
     using Math for uint256;
 
-    // ----------------------------------------------------------- M-1 forged registry
+    // ----------------------------------------------------------- M-1 forged registry (fixed by the oracle factory)
 
-    /// @dev The constructor trusts whatever `factory` the deployer passes and stores nothing about it, so the
-    /// `NotRegisteredVault` guard binds nobody: a contract with the oracle's exact source, pointed at a fake vault,
-    /// prices one raw unit of a worthless token at hundreds of thousands of USDG and a lender in that market is drained.
-    function test_poc_forgedFactoryOracleDrainsLender() public {
+    /// @dev What a lender checks before supplying to a market: the oracle is in the published oracle factory's registry,
+    /// names the real VaultFactory, and prices a vault that factory knows.
+    function _lenderAccepts(UptickShareOracle o) internal view returns (bool) {
+        return oracleFactory.isOracle(address(o)) && address(o.factory()) == address(factory)
+            && o.oracleFactory() == address(oracleFactory) && factory.isVault(address(o.vault()));
+    }
+
+    /// @dev The look-alike oracle of the original PoC (same source, a fake vault, a registry that says yes) can no
+    /// longer come out of the oracle factory, and the copy an attacker deploys through an imitation of the factory
+    /// fails every leg of the lender's check. Before the fix the same lender had nothing to check: the oracle stored no
+    /// registry and the guard consulted whatever the deployer passed.
+    function test_poc_forgedFactoryOracleCannotComeFromTheOracleFactory() public {
         address attacker = makeAddr("attacker");
-        address victim = makeAddr("victimLender");
-
         vm.prank(attacker);
         FakeVault fake = new FakeVault(NVDA, USDG, FEED, 1e20); // 1e12 USD per NVDA
         deal(NVDA, address(fake), 1e18); // one NVDA "held"
+        assertFalse(factory.isVault(address(fake)), "the real VaultFactory does not know the fake");
 
-        // The registry the guard is meant to consult rejects the fake ...
-        assertFalse(factory.isVault(address(fake)), "the real factory does not know the fake");
-        vm.expectRevert(UptickShareOracle.NotRegisteredVault.selector);
-        new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(fake)));
-
-        // ... but the deployer chooses the registry.
+        // 1. The oracle factory refuses a vault the VaultFactory did not deploy, for anyone.
         vm.prank(attacker);
-        UptickShareOracle forged =
-            new UptickShareOracle(IVaultFactory(address(new YesFactory())), IUptickVault(address(fake)));
-        assertEq(address(forged).code.length, address(oracle).code.length, "same contract, same runtime size");
-        (bool hasGetter,) = address(forged).staticcall(abi.encodeWithSignature("factory()"));
-        assertFalse(hasGetter, "nothing on-chain says which registry approved the vault");
-        assertGt(forged.price(), 1e45, "one raw unit priced above 1e9 USDG");
+        vm.expectRevert(UptickShareOracleFactory.NotRegisteredVault.selector);
+        oracleFactory.createOracle(IUptickVault(address(fake)));
+        assertEq(oracleFactory.oracleOf(address(fake)), address(0));
 
-        MarketParams memory bad = MarketParams(USDG, address(fake), address(forged), IRM, LLTV);
-        MORPHO.createMarket(bad);
-        deal(USDG, victim, 100_000e6);
-        vm.startPrank(victim);
-        IERC20(USDG).approve(address(MORPHO), type(uint256).max);
-        MORPHO.supply(bad, 100_000e6, 0, victim, "");
-        vm.stopPrank();
+        // 2. Nobody can deploy the oracle bare: its constructor asks the deployer for its parameters.
+        vm.expectRevert();
+        new UptickShareOracle();
+        vm.prank(attacker, attacker);
+        vm.expectRevert();
+        new UptickShareOracle();
 
+        // 3. An imitation of the oracle factory (the same contract, bound to a registry that says yes) still yields a
+        // look-alike with the same runtime code that prices one raw unit above 1e9 USDG ...
         vm.startPrank(attacker);
-        IERC20(address(fake)).approve(address(MORPHO), type(uint256).max);
-        MORPHO.supplyCollateral(bad, 1, attacker, ""); // one raw unit
-        MORPHO.borrow(bad, 100_000e6, 0, attacker, attacker);
+        UptickShareOracleFactory imitation = new UptickShareOracleFactory(IVaultFactory(address(new YesFactory())));
+        UptickShareOracle forged = UptickShareOracle(imitation.createOracle(IUptickVault(address(fake))));
         vm.stopPrank();
+        assertEq(address(forged).code.length, address(oracle).code.length, "same contract, same runtime size");
+        assertGt(forged.price(), 1e45, "the look-alike still prices absurdly");
 
-        assertEq(IERC20(USDG).balanceOf(attacker), 100_000e6, "the attacker walked off with the whole supply");
-        bytes32 badId = keccak256(abi.encode(bad));
-        (uint128 tsa,, uint128 tba,,,) = MORPHO.market(badId);
-        assertEq(tba, tsa, "100% utilised against one raw unit of a worthless token");
+        // ... and the lender's check tells them apart, leg by leg.
+        assertTrue(_lenderAccepts(oracle), "control: the genuine oracle passes");
+        assertFalse(_lenderAccepts(forged), "the look-alike fails");
+        assertFalse(oracleFactory.isOracle(address(forged)), "not in the published registry");
+        assertTrue(address(forged.factory()) != address(factory), "names a different VaultFactory");
+        assertTrue(forged.oracleFactory() != address(oracleFactory), "deployed by a different oracle factory");
+        assertFalse(factory.isVault(address(forged.vault())), "prices a vault the real VaultFactory never deployed");
     }
 
     // ----------------------------------------------------------- L-2 dust lock on the liquidator

@@ -58,6 +58,12 @@ interface IVaultFactory {
     function isVault(address vault) external view returns (bool);
 }
 
+/// @dev What the oracle reads from the contract that deploys it: the Uptick VaultFactory and the vault to price.
+/// `UptickShareOracleFactory` is the one implementation, and the oracle records its deployer as `oracleFactory`.
+interface IOracleDeployer {
+    function deployParams() external view returns (IVaultFactory factory, IUptickVault vault);
+}
+
 /// @title UptickShareOracle
 /// @notice A Morpho Blue oracle that prices one share of an Uptick vault (StockVault v3 or StockVaultV4) in USDG, so
 /// the share can be a market's collateral token and USDG its loan token.
@@ -90,7 +96,11 @@ interface IVaultFactory {
 /// answer itself is unusable (`FeedInvalid`: reverted, non-positive, future-dated or `answeredInRound < roundId`).
 ///
 /// No owner, no setters, no upgrade path. One oracle per vault; the vault must be one the Uptick factory deployed,
-/// which pins its creation code.
+/// which pins its creation code. The constructor takes no argument: it asks its deployer (`msg.sender`, a
+/// `UptickShareOracleFactory`) for the VaultFactory and the vault, requires `factory.isVault(vault)`, and stores all
+/// three as immutables (`factory()`, `vault()`, `oracleFactory()`). An account cannot deploy it; a look-alike deployer
+/// contract can, but its oracle is not in the real oracle factory's `isOracle` registry and `oracleFactory()` names the
+/// look-alike, so a lender checks `UptickShareOracleFactory(<published>).isOracle(oracle)`.
 contract UptickShareOracle is IOracle {
     using Math for uint256;
 
@@ -98,7 +108,11 @@ contract UptickShareOracle is IOracle {
     uint256 public constant MAX_FEED_AGE = 349_200;
     uint8 private constant FEED_INVALID = 1; // Status.FeedInvalid in StockVault and StockVaultV4
 
+    /// @notice The Uptick VaultFactory whose `isVault` approved `vault`.
+    IVaultFactory public immutable factory;
     IUptickVault public immutable vault;
+    /// @notice The contract that deployed this oracle, which asked its own immutable VaultFactory about `vault`.
+    address public immutable oracleFactory;
     IERC20 public immutable stock;
     IERC20 public immutable usdg;
     bool public immutable stockIsToken0;
@@ -113,8 +127,11 @@ contract UptickShareOracle is IOracle {
     error FeedInvalid();
     error FeedTooOld(uint256 updatedAt);
 
-    constructor(IVaultFactory factory, IUptickVault vault_) {
-        if (!factory.isVault(address(vault_))) revert NotRegisteredVault();
+    constructor() {
+        (IVaultFactory factory_, IUptickVault vault_) = IOracleDeployer(msg.sender).deployParams();
+        if (!factory_.isVault(address(vault_))) revert NotRegisteredVault();
+        factory = factory_;
+        oracleFactory = msg.sender;
         vault = vault_;
         IERC20Metadata stock_ = IERC20Metadata(vault_.stock());
         IERC20Metadata usdg_ = IERC20Metadata(vault_.usdg());
