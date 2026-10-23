@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 KEEPER = os.path.normpath(os.path.join(HERE, ".."))
-SPIKE = os.path.normpath(os.path.join(KEEPER, "..", "..", "spikes", "stock-vaults"))
+SPIKE = os.environ.get("STOCK_VAULTS_SPIKE") or os.path.normpath(os.path.join(KEEPER, "..", "..", "spikes", "stock-vaults"))
 ENGINE_DIR = os.path.join(KEEPER, "data", "engine")
 sys.path.insert(0, os.path.join(SPIKE, "scripts"))
 import engine, strategies

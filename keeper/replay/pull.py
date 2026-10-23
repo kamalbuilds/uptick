@@ -10,7 +10,7 @@ import sys, os, json, concurrent.futures as cf
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 KEEPER = os.path.normpath(os.path.join(HERE, ".."))
-SPIKE = os.path.normpath(os.path.join(KEEPER, "..", "..", "spikes", "stock-vaults"))
+SPIKE = os.environ.get("STOCK_VAULTS_SPIKE") or os.path.normpath(os.path.join(KEEPER, "..", "..", "spikes", "stock-vaults"))
 sys.path.insert(0, os.path.join(SPIKE, "scripts"))
 from rpc import logs, call, s  # public-RPC helpers with bisection on range or 10,000-log pages
 
