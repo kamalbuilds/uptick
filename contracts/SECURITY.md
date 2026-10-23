@@ -283,3 +283,65 @@ The mutations ran in four batches of guards with disjoint witness tests (one for
 
 One mutation survives: the step-down in `VaultMathV4.fit` (replace the `n0 <= a0 && n1 <= a1` test with an unconditional return). Across 300,000 fuzzed fits and every fork test the unrounded liquidity never needs more of a leg than is idle, because its own floors absorb the two roundings the PoolManager adds; the loop is defence in depth against a one-wei rounding case that no input has produced, and it is not claimed as a tested guard.
 
+
+# UptickShareOracle security reference
+
+Scope: `src/UptickShareOracle.sol` and `src/interfaces/IOracle.sol`. The oracle prices one share of a StockVault or StockVaultV4 in USDG for a Morpho Blue market whose collateral token is the share and whose loan token is USDG. It holds no funds, no state and no owner; `StockVault` and `StockVaultV4` are untouched (runtime 24,504 and 24,277 bytes, creation-code hashes unchanged). Runtime 3,243 bytes; `price()` costs about 323K gas on the fork with cold slots.
+
+## Share oracle: what it trusts and how it prices
+
+| Item | Value |
+|---|---|
+| Morpho Blue singleton on 4663 | `0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010` (code present; the Morpho Blue API lists 509 markets on it for chain 4663; owner `0x060595638692de6CCd47ca04094F1772D3D39728` read by `eth_call`) |
+| IRM and LLTV a new market may use | IRM `0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1` (506 of the 509 markets use it, the other 3 carry the zero address), LLTV 62.5% (`isLltvEnabled` true; the NVDA/USDG market `0x8b16891f...c3e` with 728,682 USDG supplied uses both, read with `idToMarketParams`; the largest USDG-loan markets for SPCX ($581K), GOOGL ($293K) and AAPL ($221K) are 62.5% too). The fork test asserts the singleton agrees. |
+| Existing NVDA/USDG market oracle | `0xED29D310cfa91778A5850538DA28ed42234Cb78c`: base feed = the NVDA Chainlink proxy, quote feed USDG / USD `0x61b7E565...9AD2`. It reverts when the NVDA feed is older than 349,200 s (97 h) and when the USDG feed is older than 90,000 s; it applies no corporate-action gate. Read by `eth_call` and by warping the fork past each bound. |
+| Vault registry | The constructor requires `VaultFactory.isVault(vault)`: only a vault the factory deployed from its pinned creation code gets an oracle, so the word layout of `health()` and `positionInfo()` that the oracle decodes is the audited one for both vault types. |
+
+Price: `value(USDG) * 1e36 / (totalSupply + 10^(shareDecimals - stockDecimals))`, the same division `convertToAssets` uses (virtual shares 1e6), rounded down. `value` is idle Stock Token (less `totalStockOwed`) plus idle USDG plus the position's two legs plus uncollected fees, with the Stock Token at the Chainlink answer and USDG at 1, minus the treasury's `perfFeeBps` cut of the uncollected fees, then the lower of that and `totalAssets()` valued at the same Chainlink answer. The position's legs are the amounts its liquidity holds when the pool sits at the Chainlink price (`VaultMath.amounts` at the vault's own `sqrtOracle`). Pool spot is never read.
+
+## Share oracle: guards and what they do when they trip
+
+| Guard | On trip |
+|---|---|
+| Chainlink answer invalid (vault `health()` status FeedInvalid: reverted, non-positive, timestamp 0 or in the future, `answeredInRound < roundId`) | Closed: `FeedInvalid()`. Morpho borrow, collateral withdrawal and liquidation revert until the feed answers. |
+| Chainlink older than `MAX_FEED_AGE` = 349,200 s (97 h) | Closed: `FeedTooOld(updatedAt)`. Exactly 349,200 s still prices (`test_priceStaysThroughAWeekendAndRevertsPastTheBound`). The bound is the NVDA market oracle's own base-feed bound; the longest silence measured on the equity feeds is 80.8 h (Labor Day weekend, 32 ticker-weekends), so every market holiday clears it and a feed older than 97 h is a dead feed. |
+| Feed stale inside 97 h, Stock Token oracle paused or inside the corporate-action window (vault status FeedStale, CorporateAction, TwapUnavailable, TwapDeviates, SpotDeviates) | Open: the oracle answers with the last Chainlink print. The vault closes its priced paths in these states, but Morpho needs a price to liquidate, and `redeemInKind` is always open, so the liquidator who seizes shares can always leave with the underlying tokens. `test_liquidationWorksOnAStaleFeedInsideACorporateActionWindow` liquidates a borrower pushed over the limit by interest on a 60 h stale feed with `oraclePaused()` true. |
+| `totalAssets()` cap | Open, down-only: the result never exceeds the vault's own net valuation at the same Chainlink answer. In v4 this is the only path that carries the treasury's cut of fees recorded as pending (private to the vault) into the oracle. |
+| Unregistered vault | Closed at construction: `NotRegisteredVault()`. |
+
+## Share oracle: why spot cannot move it
+
+The vault's liquidity and range are fixed by the vault, so a swap in the pool changes where the pool sits and nothing the oracle reads. The legs are recomputed at the Chainlink price. The one thing a swap does change is the fees the position earns: it pays the pool's fee tier on its volume and the vault's position takes its share of that, which is real income and never exceeds what the swapper paid. The tests remove exactly that income and bound the rest.
+
+Measured on the fork (NVDA 0.05% pool, 200 NVDA deposit with `instantDeploy`; PLTR 1% v4 pool):
+
+| Event | Pool spot | Oracle price |
+|---|---|---|
+| Buy push of 3% (`_pushPrice(300)`) | +2.9999% | +97 ppm (0.97 bp), all of it fee income: price change less the change in uncollected fees (net of cut) under 1 bp, fee income under 3 bp |
+| Sell push of 4% (`_pushPrice(-400)`) | -4.0000% | +135 ppm (1.35 bp), same decomposition |
+| PLTR v4 buy push of 3% then sell push of 7% | several percent each way | movement equals the vault's own uncollected-fee change within 1 bp; the 1% fee makes that income tens of bp of price here |
+| Max borrower, pool crashed 10% in one block | -10% | Morpho refuses the liquidation: `position is healthy` |
+
+A share is worth no more than the same basket re-priced at Chainlink: an AMM position's value is concave in price, so the basket a displaced pool actually holds is worth at least what the oracle reports. The figure is a lower bound of the in-kind redemption value at the feed price (`redeemInKind` pays the pool's actual composition).
+
+## Share oracle: accepted residuals
+
+| Residual | Numbers | Bound and levers |
+|---|---|---|
+| Last print through a weekend or a corporate-action window | The price follows the last Chainlink answer for up to 97 h; the NVDA market's own oracle behaves identically on its base feed | LLTV: the share is a concentrated position (range +-5%), so beyond the range it holds only the Stock Token and its price falls with the stock (a 40% fall of the feed took the share down 37.9% in `test_aChainlinkFallLiquidatesAndTheLiquidatorCanExitInKind`). Set the market's LLTV as for the Stock Token itself; the fork tests use 62.5%. |
+| Issuer controls | A blocklist on the vault or Morpho, or a paused Stock Token, makes share transfers or `redeemInKind` revert | Same trust as the vault itself (see Trust assumptions) |
+| Same-block share lock | Shares minted in a block cannot be transferred out of that block (`SharesLocked`), so `supplyCollateral` of fresh shares needs the next block | Structural, from the vault's `_update` |
+| Gas | about 323K per `price()` call (three reads of the vault, each with a pool observation) | Orbit gas is cheap; the alternative is a stored price, which is stale by construction |
+| v4 pending-fee cut | Reaches the oracle only through the `totalAssets()` cap | `test_v4SweepingFeesIntoIdleDoesNotRaiseThePrice`: sweeping a position's fees into idle balances (cut 13 bp of the price at the pinned volume) leaves the price unchanged |
+| Donation | Tokens sent to the vault raise its value for every holder | Costs the donor the full amount; the 1e6 virtual shares keep an empty vault from jumping |
+
+## Share oracle: test and mutation evidence
+
+`test/ShareCollateral.t.sol` runs on a fork of 4663: a real NVDA vault from `VaultFactory`, the real Morpho Blue singleton, `createMarket(USDG, share, oracle, IRM, 62.5%)`, a lender, a borrower, a liquidator. Fifteen tests: price equals the vault's valuation per raw share (0 ppm), decimals (a 24-decimal share against a 6-decimal USDG prices at ~2e20), borrow to the limit succeeds and one percent past it reverts `insufficient collateral`, collateral cannot be pulled from under the debt, a 3% and a 4% pool push move the price under 1 bp net of fees, a 10% pool crash cannot liquidate a max borrower, a 40% Chainlink fall is liquidated and the liquidator exits in kind, a 60 h stale feed with a paused Stock Token still prices and liquidates, 97 h prices and 97 h + 1 s reverts, a zero answer reverts, an unregistered vault gets no oracle, and the PLTR v4 vault prices and resists a push.
+
+| Mutation | Tests that went red |
+|---|---|
+| Oracle reads pool spot (Stock Token price from the pool, legs at spot, `totalAssets()` cap removed) | `test_poolPushUpDoesNotMoveThePrice` (10,466 ppm, 104 bp), `test_poolPushDownDoesNotMoveThePrice` (27,613 ppm, 276 bp), `test_pushingThePoolDownCannotLiquidateAMaxBorrower` (the max borrower is liquidated), `test_v4PoolPushMovesThePriceOnlyByTheFeesItPays` (8,991 ppm), plus five tests that check price levels |
+| Legs at spot only, cap removed (price still the feed's) | `test_poolPushUpDoesNotMoveThePrice` (3,763 ppm), `test_poolPushDownDoesNotMoveThePrice` (8,745 ppm), `test_v4PoolPushMovesThePriceOnlyByTheFeesItPays` (3,586 ppm), `test_priceIsTheVaultsValuePerShareInRawUnits` |
+| `totalAssets()` cap removed | `test_v4SweepingFeesIntoIdleDoesNotRaiseThePrice` (the price rises 13 bp) |
+| Legs at spot only, cap kept | none: the cap clamps the figure to the TWAP-composition valuation, which a same-block push cannot move. The two lines of defence overlap here by design and each is mutation-tested alone above. |
