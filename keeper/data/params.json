@@ -5,7 +5,9 @@
   "decided_by": "full-replay calibration pick over 150..2000 bps (grid run 2026-10-20)",
   "decision": "change",
   "calibration_apr": 2.71,
-  "heldout_apr": 3.91
+  "heldout_apr": 3.91,
+  "liveness_share": 0.09,
+  "liveness_reason": "the 0.05% pool thins above spot: a USDG buy costs 83 bp at 20K and 1,097 bp at 30K, so the half-cap deploy swap clears the Chainlink floor only below roughly 22K; at 9% of in-range depth the half-cap swap costs about 45 bp (contracts/test/security/ReReviewFloor.t.sol, probe at block 95905898)"
  },
  "AMD": {
   "range_bps": 2000,
@@ -45,7 +47,9 @@
   "decided_by": "full-replay calibration pick over 150..2000 bps (grid run 2026-10-20)",
   "decision": "keep",
   "calibration_apr": 0.2,
-  "heldout_apr": 2.24
+  "heldout_apr": 2.24,
+  "liveness_share": 0.06,
+  "liveness_reason": "the 0.05% pool thinned after the universe build: at the 100K cap a half-cap sale costs 172 bp against the 95 bp the floor leaves, at 20K it costs 60 bp; 6% of in-range depth is a 20K half-cap swap (contracts/test/security/ReReviewFloor.t.sol, probe at block 95912926)"
  },
  "INTC": {
   "range_bps": 2000,

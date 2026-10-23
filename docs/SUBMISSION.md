@@ -1,12 +1,12 @@
 # Uptick: Founder House Singapore submission
 
-Put your stock tokens to work. Deposit AAPL, GOOGL, NVDA and 9 more Stock Tokens (12 of 17 vaults take deposits at launch) and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where past swaps say it holds up.
+Put your stock tokens to work. Deposit AAPL, GOOGL, NVDA and 9 more Stock Tokens (12 of 17 vaults launch first) and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where past swaps say it holds up.
 
 App https://uptick-fi.pages.dev. Launch film https://x.com/uptickfi/status/2112531006792360167. Code https://github.com/kamalbuilds. Deck: `deck/index.html`, 12 slides and an appendix, PDF at `deck/uptick-deck.pdf`.
 
 ## 1. What Uptick does
 
-Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. 12 vaults launch first, 3 open and 9 reduced, at up to $698,124 in total across their caps. The pools behind the 17 vaults paid liquidity providers $979.3K in fees over the same 30 days.
+Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. 12 vaults launch first, 3 open and 9 reduced, at up to $592,359 in total across their caps. The pools behind the 17 vaults paid liquidity providers $979.3K in fees over the same 30 days.
 
 ## 2. The holder and the ask
 
@@ -54,11 +54,11 @@ The app at uptick-fi.pages.dev serves 17 vaults, each with its gate and reason. 
 
 ## 12. Team and raise
 
-Kamal built StockVault, the keeper, the replay engine, the web app and the evidence API. Uptick raises $2M pre-seed for a vault on every Stock Token the day it lists, on v3 and v4 pools, with an external audit and two engineers on the keeper and risk engine. The 12-month target is every launching vault at its cap, $698,124 across 12, with caps rising as pools deepen toward $50M of Stock Tokens earning in Uptick vaults, and vault shares accepted as collateral by Robinhood Chain lenders: a set-once Uniswap position cannot be posted as Morpho collateral; an Uptick share can. From Founder House: holders who will size a first deposit, and the range vaults, lenders and wallets that carry the kept APR.
+Kamal built StockVault, the keeper, the replay engine, the web app and the evidence API. Uptick raises $2M pre-seed for a vault on every Stock Token the day it lists, on v3 and v4 pools, with an external audit and two engineers on the keeper and risk engine. The 12-month target is every launching vault at its cap, $592,359 across 12, with caps rising as pools deepen toward $50M of Stock Tokens earning in Uptick vaults, and vault shares accepted as collateral by Robinhood Chain lenders: a set-once Uniswap position cannot be posted as Morpho collateral; an Uptick share can. From Founder House: holders who will size a first deposit, and the range vaults, lenders and wallets that carry the kept APR.
 
 <!--
 Sources, read 2026-10-23. Every section mirrors the same-numbered slide of deck/index.html (12 slides and the appendix).
-Vault list figures (web/lib/vault-universe.json and web/lib/pool-fees.json, regenerated 2026-10-23): 12 of 17, 3 open, 9 reduced, 3.1M swaps, $979.3K, 17 tokens, door membership per vault, depositCapUsd of the 12 launching vaults summing to $698,124.
+Vault list figures (web/lib/vault-universe.json and web/lib/pool-fees.json, regenerated 2026-10-23): 12 of 17, 3 open, 9 reduced, 3.1M swaps, $979.3K, 17 tokens, door membership per vault, depositCapUsd of the 12 launching vaults summing to $592,359.
 web/lib/vault-universe.json: sum of gate.swaps = 3,059,881; bands and weaker halves; range bounds snapped outward to each pool's tick spacing (keeper/replay/replay.py snap_range); PLTR, SPY and USO gated on their Uniswap v4 pools (venue is the backend whose chosen pool keeps more in its weaker half, keeper/replay/replay.py venue_for); PLTR open at +7.9%.
 Slide 2: gtm/uptick/DEMAND.md (verbatim quotes), Blockscout holder counts 2026-10-16 (docs/research/founder-house/PLATFORM-TRUTH.md).
 Slide 4: README.md, spikes/stock-vaults/FINDINGS.md, spikes/offchain-signals/FINDINGS.md.
