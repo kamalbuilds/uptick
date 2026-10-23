@@ -1,52 +1,41 @@
-# Uptick: 3 minute Founder House demo
+# Uptick: 90 second Founder House demo
 
 Live app: https://uptick-fi.pages.dev.
 
-One line: deposit AAPL, GOOGL, NVDA or 9 more Stock Tokens into a vault, earn a share of every trade's fee, borrow USDG against the share, and exit in kind. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
+One line: deposit a Stock Token, earn the fees that survive, borrow USDG against the same vault share, exit in kind. Uptick shows what you keep after losses to fast traders, and opens a vault only where 3,059,881 replayed swaps say it holds up.
 
-Setup: one browser window, six tabs in order: the PLTR swap on Blockscout (https://robinhoodchain.blockscout.com/tx/0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36), `/`, `/vault/nvda`, `/docs/collateral`, `/docs/exit-in-kind`, `/research`. No wallet is connected for the opening; connect the demo wallet before the deposit. The Chainlink ticker in the footer runs on every page.
+Setup: one browser window, four tabs in order: `/check`, `/vault/pltr`, `/docs/collateral`, `/docs/exit-in-kind`, and a terminal with the output of `scripts/fork-demo.sh` already on screen (the run writes `docs/FORK-DEMO.md`). No wallet is connected. The address to paste is a real holder of AAPL, GOOGL and PLTR on Robinhood Chain, 0x92d4...F765 (full address in the sources note at the end); the demo wallet stays off screen.
 
-## 0:00 to 0:25 The real swap
+## 0:00 to 0:20 Paste a real holder address, `/check`
 
-Screen: the Blockscout page for transaction 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36, block 70,152,155, status Success.
-Say: "This is a real trade on Robinhood Chain. Nasdaq was shut, it was 10:21 at night in New York, and someone sold 95.8 PLTR into the PLTR and USDG pool at $186.51 while Chainlink read $184.67. The pool earned $178.30 in fees. An hour later its price stood at $183.75, and the people providing the liquidity were $241.83 worse off. Fees alone said 74 cents earned for every dollar lost. That is the number a pool page leaves out, and the number Uptick measures for every token."
+Screen: the page "Find your idle Stock Tokens". Paste the holder address and press Find idle tokens. The headline reads "0x92d4...F765 holds $102,325 of Stock Tokens doing nothing. Uptick would put $86,791 of it to work."
+Say: "On 22 October Robinhood made Stock Tokens collateral on Morpho and said any app can tap into those markets. Paste any wallet. This one holds a hundred thousand dollars of Stock Tokens that earn nothing. Uptick reads the balances from the chain, prices them with Chainlink, and shows which of the 17 can earn. Twelve can. Five are closed, and the page says why."
 
-## 0:25 to 0:50 The doors, `/`
+## 0:20 to 0:40 The PLTR vault page
 
-Screen: the headline "Which of your stock tokens can earn, and how much you would keep."
-Point at the four figures: Vaults at launch 12 (3 open, 9 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $979.3K on the 17 vault pools, Stock Tokens tracked 17.
-Say: "We replayed every swap on 17 tokens. Every vault sits behind one of three doors. Open takes any amount. Reduced takes up to $25,000 a deposit. Closed takes none. The door comes from the replay, not from us."
+Screen: `/vault/pltr`, state chip Open, the "Where a year of fees goes" strip and "Why it is open".
+Say: "PLTR kept 7.9% a year in its weaker half on its Uniswap v4 pool. The pool paid 127% in fees. Fees are not yield. We replayed 3,059,881 swaps to see what an LP keeps, and we open a vault only where that number is above break-even."
 
-## 0:50 to 1:25 Deposit, `/vault/nvda`
+## 0:40 to 1:00 Earn and borrow
 
-Screen: the NVDA vault, state chip Reduced, "Replay to 2026-10-17, 814,927 swaps".
-Say: "NVDA kept +29.0% a year on the first 15 days and -6.8% on the last 15. The gate reads the weaker half, so the door is Reduced and a deposit is up to $25,000."
-Connect the demo wallet, enter an amount under the limit, deposit NVDA. The panel shows the shares minted and the 0.35% entry fee that stays in the vault for the holders who stay.
-Say: "I deposit the Stock Token itself, not USDG and not a pair. The vault holds roughly half NVDA and half USDG inside a band around the Chainlink price and recentres it every night after the NYSE session. The share rises as fees accrue."
+Screen: scroll to the Earn and borrow panel: "Earn the pool fees on your PLTR, and borrow USDG against the same position."
+Say: "One confirmation deposits the token, posts the share to Morpho Blue and sends USDG to the wallet. The share keeps earning while it is collateral. Borrowing USDG against AAPL on Morpho costs 24.7% a year today. An Uptick AAPL share earns 2.7% to 3.9% on top, which pays back 5.4 to 7.8 points of that at a 50% loan to value. That is an estimate from one read, and it moves with the rate."
 
-## 1:25 to 2:05 Borrow against the share, `/docs/collateral`
+## 1:00 to 1:10 Your loan
 
-Screen: the table "Deposit, supply, borrow" on the Borrow against a vault share page.
-Say: "The share is collateral. Morpho Blue on Robinhood Chain, singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010, lends USDG against NVDA already. An Uptick share is a second kind of collateral for the same loan: the Stock Token, plus the fees its position earns while you borrow."
-Point down the four rows: Deposit in the vault, supply the share to Morpho, borrow USDG up to the 62.5% limit the NVDA market uses, repay and withdraw.
-Say: "UptickShareOracle prices the share from Chainlink alone, so a swap in the pool never moves the liquidation price. A set-once Uniswap position cannot be posted as Morpho collateral. An Uptick share can."
+Screen: `/docs/collateral`, the Your loan and Make it safer paragraph.
+Say: "Once there is a loan, Your loan shows collateral, debt, health factor and the liquidation price in stock terms, and Make it safer repays or exits in kind in one batch. The next screen is that loan being built, pushed and broken."
 
-## 2:05 to 2:30 Exit in kind, `/docs/exit-in-kind`
+## 1:10 to 1:30 The fork run
 
-Screen: the exit preview on the NVDA vault, then the Exit in kind page.
-Say: "Repay, withdraw the share, and redeemInKind pays out my slice of both tokens with no oracle gate and no swap, so the exit works when the feed is stale. A liquidator exits the same way."
-
-## 2:30 to 3:00 Why it holds, `/research`
-
-Screen: three notes, newest first.
-Say: "58% of the swaps and half the fees in these pools happen while the NYSE is shut. Weekends pay $2.59 in fees for every $1 lost to fast traders, NYSE hours $0.97. The replay refreshes and each vault opens or closes on its new halves. Uptick shows which of your Stock Tokens earn, and lets the deposit keep working."
+Screen: the terminal with the `scripts/fork-demo.sh` output: the PASS lines for steps 16, 17 and 19.
+Say: "This is one command on a fork of Robinhood Chain against the real Morpho Blue. The borrower deposits 42.6 AAPL and borrows 8,693 USDG at the 62.5% limit. A 3% push on the pool moves the share's price 0.2 basis points, where a spot-priced oracle moved 263. A 12% feed drop liquidates the loan, and the liquidator exits the seized shares in kind for 14.9% more than the USDG it repaid. Uptick shows which of your Stock Tokens earn, and lets the deposit keep working."
 
 <!--
-Sources, repo files regenerated 2026-10-23.
-Opening: web/lib/real-swap.json (tx 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36, block 70152155, 2026-09-23T02:21:36Z, sold 95.7986 PLTR, pool price 186.5087, Chainlink 184.6724, pool price an hour later 183.7504, pool fee 178.30, loss to liquidity providers 241.83, 178.30 / 241.83 = 0.74), written by keeper/scripts/moment.py and read back from the chain over the public RPC.
-Home figures: web/lib/vault-universe.json (12 of 17 launch, 3 open, 9 reduced, 5 closed, swap total 3,059,881 is the sum of each vault's gate.swaps), web/lib/pool-fees.json (fee total $979,345.29, shown as $979.3K).
-NVDA: web/lib/vault-universe.json gate and keep (814,927 swaps, first half +29.03%, held-out half -6.85%, state reduced, $25,000 a deposit), contracts/SECURITY.md Entry fee row (35 bp).
-Borrow: web/app/docs/collateral/page.tsx (four steps, 62.5% limit of the live NVDA/USDG market, share priced from the Chainlink answer alone), Morpho Blue singleton and the NVDA market parameters in web/lib/morpho.ts; the Morpho calls and the borrow limit run against the real singleton on a 4663 fork (keeper, scripts/e2e-fork.sh). Wedge: a set-once Uniswap position cannot be posted as Morpho collateral; an Uptick share can, through UptickShareOracle.
-Exit in kind: contracts/SECURITY.md row redeemInKind (no oracle, no swap, no pause), web/app/docs/exit-in-kind/page.tsx.
-Research: web/lib/moment.json (58.0% of swaps, 49.8% of LP fees outside NYSE hours; weekend $2.59, NYSE hours $0.97 per $1 lost over the vault replay).
+Sources, repo files regenerated 2026-10-23, live reads in .progress/research/win-2026-10-24/LIVE.md.
+/check: web/app/check, web/components/idle-finder.tsx; address 0x92d435c96e63c43e12d6d0ab28f6b0b04072f765 read at block 96099041 on 2026-10-23: $102,325 held across 17 tokens, $86,791 put to work across 12 tokens, $15,533 refused across 5 closed tokens (rpc.mainnet.chain.robinhood.com). The 22 October post: x.com/RobinhoodCrypto/status/2113270580472381515 ("Any eligible wallet can plug in and any app can tap into these markets").
+PLTR: web/lib/vault-universe.json gate and keep, keeper/data/replay.json PLTR pools (v4 1% pool: fees 126.8, weaker half +7.9; 167.1% over the full 30 days); 3,059,881 is the sum of each vault's gate.swaps.
+Borrow cost: blue-api.morpho.org, chain 4663, market 0xdeb4782d012d5fd3b24962538c2f6559049d70bda4dabd2e4212dacb96c28d45, borrowApy 0.24663 at 2026-10-23T16:56:52Z; AAPL kept +2.7% (weaker half) and +3.9% (held-out half), offset = kept / 0.5 = 5.4 and 7.8 points.
+Your loan: web/components/your-loan.tsx, web/lib/loan.ts, web/app/docs/collateral/page.tsx.
+Fork run: scripts/fork-demo.sh and docs/FORK-DEMO.md (fork block 96051421): step 16 42.6 AAPL deposited, 8693.074028 USDG borrowed against a limit of 9150.604241 at LLTV 6250 bp; step 17 the market oracle moved 386,493 of 19,771,327,025 raw (0.2 bp), the spot-reading control 520,913,476 (263 bp); step 19 the share price fell 1150 bp on a 1200 bp feed drop, 5,767.44 USDG repaid, seized shares exited for 6,628.24 USDG (1493 bp over the repayment).
 -->
