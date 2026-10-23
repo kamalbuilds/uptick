@@ -10,6 +10,8 @@ const PAIRS: Array<[string, string]> = [
   ["../../web/lib/scan.ts", "../src/shared/scan.ts"],
   ["../../web/lib/price-math.ts", "../src/shared/price-math.ts"],
   ["../../web/lib/morpho.ts", "../src/shared/morpho.ts"],
+  ["../../web/lib/loan.ts", "../src/shared/loan.ts"],
+  ["../../web/lib/abis.ts", "../src/shared/abis.ts"],
   ["../../web/lib/collateral-markets.json", "../data/collateral-markets.json"],
 ];
 
@@ -18,8 +20,8 @@ const drifted = (pairs: Array<[string, string]>, sourceOf: (p: string) => string
   pairs.filter(([src, copy]) => sourceOf(src) !== read(copy)).map(([src]) => src.split("/").pop() as string);
 
 describe("the Worker's copies of web/lib match their source", () => {
-  test("scan, price-math, morpho and the collateral markets are byte for byte the web files", () => {
-    expect(PAIRS.length).toBe(4);
+  test("scan, price-math, morpho, loan, abis and the collateral markets are byte for byte the web files", () => {
+    expect(PAIRS.length).toBe(6);
     expect(drifted(PAIRS)).toEqual([]);
   });
 

@@ -88,17 +88,19 @@ describe("MCP initialize", () => {
 });
 
 describe("MCP tools/list", () => {
-  test("returns the evidence, wallet scan, prepare and collateral tools", async () => {
+  test("returns the evidence, wallet scan, prepare, collateral and loan tools", async () => {
     const res = await post({ jsonrpc: "2.0", id: 2, method: "tools/list" });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { result: { tools: Array<{ name: string }> } };
-    expect(body.result.tools.length).toBe(7);
+    expect(body.result.tools.length).toBe(9);
     expect(body.result.tools.map((t) => t.name).sort()).toEqual([
+      "check_loan_health",
       "get_collateral_terms",
       "get_vault_evidence",
       "list_vaults",
       "prepare_deposit",
       "prepare_earn_and_borrow",
+      "prepare_make_safer",
       "prepare_withdraw",
       "scan_wallet",
     ]);

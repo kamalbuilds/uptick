@@ -16,8 +16,10 @@ import collateralMarkets from "../data/collateral-markets.json";
 import { parseMarkets } from "./shared/morpho.ts";
 import { RHC_RPCS, parseOwner, scanWallet, type ScanClient, type ScanLltv, type ScanRow, type ScanVault, type WalletScan } from "./shared/scan.ts";
 import type { TalkEnv } from "./talk";
+import type { AlertsEnv } from "./alerts";
+import { checkLoanHealth, prepareMakeSafer, type LoanToolDeps, type LoanToolResult } from "./loan-tools";
 
-export interface Env extends TalkEnv {
+export interface Env extends TalkEnv, AlertsEnv {
   VAULTS?: string;
   ROUTER?: string;
   NETWORK?: string;
@@ -862,6 +864,20 @@ const TOOLS: McpTool[] = [
     },
   },
   {
+    name: "check_loan_health",
+    description:
+      "Read a wallet's Morpho Blue loan against an Uptick vault share, live from the chain: collateral shares and their value, the debt with interest accrued to the latest block, health factor, the share price at which the loan liquidates and how far the share can fall first. A vault with no Morpho market, or a wallet with no position, answers with has_market or has_position false and the reason.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: { type: "string", description: "0x address of the borrower." },
+        vault: { type: "string", description: "Vault id, for example nvda." },
+      },
+      required: ["address", "vault"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "prepare_earn_and_borrow",
     description:
       "Build the unsigned transactions to deposit a stock token into an open vault, supply the shares as Morpho Blue collateral and borrow USDG, in order: approve, deposit, approve shares, supplyCollateral, borrow. The collateral amount is the previewed share mint minus 0.1%, and the borrow is refused above what the LLTV allows or the market holds. No deployed vault, no configured market or no RPC means no calldata and a reason. The receiver must sign every transaction. The user signs and sends.",
@@ -874,6 +890,21 @@ const TOOLS: McpTool[] = [
         receiver: { type: "string", description: "0x address that owns the shares, the collateral and the loan, and receives the USDG." },
       },
       required: ["id", "amount", "borrow_usdg", "receiver"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "prepare_make_safer",
+    description:
+      "Build the unsigned calls that take a Morpho Blue loan on an Uptick vault share to a target health factor (default 1.6) with the least action. If the wallet holds the USDG: approve and repay. If it does not: rounds of withdrawCollateral, vault redeemInKind and repay with the USDG leg, the stock leg returning to the wallet. Sized on the debt ten minutes ahead. With no market, no position, a loan already at the target or a target out of reach, transactions is empty and reason says why. The user signs and sends the calls in order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: { type: "string", description: "0x address of the borrower." },
+        vault: { type: "string", description: "Vault id, for example nvda." },
+        target_health: { type: "number", minimum: 1.05, maximum: 5, default: 1.6, description: "Health factor to reach." },
+      },
+      required: ["address", "vault"],
       additionalProperties: false,
     },
   },
@@ -898,6 +929,13 @@ function rpcError(
   return json({ jsonrpc: "2.0", id, error: { code, message } });
 }
 
+function loanTool(env: Env, args: Record<string, unknown>, deps: LoanToolDeps, run: (vaultId: string, deps: LoanToolDeps) => Promise<LoanToolResult>): Promise<McpToolResult> | McpToolResult {
+  const id = typeof args.vault === "string" ? args.vault : "";
+  if (!findVault(id)) return errorResult(`no vault with id "${id}"`);
+  return run(id, deps).then(({ payload, steps, isError }) =>
+    textResult(steps.length ? { ...payload, network: env.NETWORK ?? null, transactions: steps.map((s) => tx(s.call.to, s.call.data, s.label)) } : payload, isError));
+}
+
 async function callTool(
   env: Env,
   name: unknown,
@@ -919,6 +957,10 @@ async function callTool(
       return getCollateralTerms(env, typeof args.id === "string" ? args.id : "");
     case "prepare_earn_and_borrow":
       return prepareEarnAndBorrow(env, args);
+    case "check_loan_health":
+      return loanTool(env, args, deps.loan ?? {}, (id, d) => checkLoanHealth(env, id, args.address, d));
+    case "prepare_make_safer":
+      return loanTool(env, args, deps.loan ?? {}, (id, d) => prepareMakeSafer(env, id, args.address, args.target_health, d));
     default: {
       const result = errorResult(`unknown tool: ${String(name)}`);
       return result;
@@ -929,6 +971,8 @@ async function callTool(
 /** Injection point for tests: a client that answers the scan's RPC calls without a network. */
 export interface McpDeps {
   scanClient?: ScanClient;
+  /** A client and market list for the loan tools; a test stands in for the node with it. */
+  loan?: LoanToolDeps;
 }
 
 export async function handleMcp(request: Request, env: Env, deps: McpDeps = {}): Promise<Response> {

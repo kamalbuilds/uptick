@@ -17,7 +17,7 @@ The endpoint speaks MCP over Streamable HTTP: JSON-RPC 2.0 over POST, `Accept: a
 
 | Seconds | Beat | Say |
 |---|---|---|
-| 0 to 10 | tools/list | "Six tools. Two read, two prepare transactions the holder signs, two put a vault share to work as collateral." |
+| 0 to 10 | tools/list | "Nine tools. Five read, four prepare transactions the holder signs, including borrowing against a vault share and making a loan safer." |
 | 10 to 22 | list_vaults | "17 vaults, 3 open, 9 reduced, 5 closed. PLTR is open, on Uniswap v4." |
 | 22 to 35 | get_vault_evidence pltr | "Venue v4, the pool id, the PoolManager, and the gate reason in the replay's own words." |
 | 35 to 50 | prepare_deposit pltr | "The agent asks for a deposit. It gets the gate and the transactions to sign." |

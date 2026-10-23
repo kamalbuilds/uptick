@@ -3,6 +3,7 @@ import { doorFields, handleMcp, UNIVERSE, venueFields, type Env } from "./mcp";
 import LLMS from "./llms";
 import { keeperList, keeperVault } from "./keeper";
 import { postTalk, talkCount } from "./talk";
+import { runAlerts, subscribe, unsubscribe } from "./alerts";
 
 interface HalfStats {
   fee_apr_pct: number | null;
@@ -170,6 +171,11 @@ function handleRequest(
     return json({ error: "method_not_allowed", method: request.method }, 405);
   }
 
+  if (path === "/alerts/subscribe" || path === "/alerts/unsubscribe") {
+    if (request.method !== "POST") return json({ error: "method_not_allowed", method: request.method }, 405);
+    return path === "/alerts/subscribe" ? subscribe(request, env) : unsubscribe(request, env);
+  }
+
   if (path === "/talk") {
     if (request.method === "POST") return postTalk(request, env);
     return json({ error: "method_not_allowed", method: request.method }, 405);
@@ -204,4 +210,10 @@ function handleRequest(
   return json({ error: "not_found", path }, 404);
 }
 
-export default { fetch: handleRequest } satisfies ExportedHandler<Env>;
+export default {
+  fetch: handleRequest,
+  // The cron trigger in wrangler.toml: read every watched loan and send the webhooks that are due.
+  scheduled: (_controller, env, ctx) => {
+    ctx.waitUntil(runAlerts(env));
+  },
+} satisfies ExportedHandler<Env>;
