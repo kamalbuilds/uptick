@@ -52,12 +52,12 @@ Gas. `price()` costs about 323K with cold slots (`contracts/SECURITY.md`).
 
 ## 7. How a curator verifies an oracle is genuine
 
-Every Uptick share oracle is deployed by `UptickShareOracleFactory`, and only for a vault registered in the production `VaultFactory`. The oracle factory records each oracle it deploys, one per vault, and each oracle exposes the factory and the vault it prices as immutables. A curator checks four things on chain before creating a market:
+Every Uptick share oracle is deployed by `UptickShareOracleFactory`, and only for a vault registered in the production `VaultFactory`. The oracle factory records each oracle it deploys, one per vault, and each oracle exposes the factory and the vault it prices as immutables. A curator checks these on chain before creating a market:
 
 1. `oracleFactory.isOracle(oracle)` returns true.
 2. `oracle.factory()` returns the production VaultFactory, and `VaultFactory.isVault(oracle.vault())` returns true.
 3. `oracleFactory.oracleOf(vault)` returns the same oracle address.
-4. The market's collateral token is `oracle.vault()` and its loan token is USDG.
+4. The market's collateral token is `oracle.vault()` and its loan token is `oracle.usdg()`.
 
 A source-identical contract deployed by anyone else fails check 1, so the address of the oracle, not its bytecode, is what a market trusts.
 
