@@ -176,7 +176,7 @@ contract WeekendCollateralTest is Base {
 
     /// @dev Inside the +-5% range the share is about half USDG, so NVDA's -1.12% gap moves it -0.59%. Morpho pays the
     /// liquidator 1 / (1 - 0.3 * (1 - LLTV)), so the whole debt comes out of the collateral while LLTV * that factor
-    /// stays under 1 - 0.59%, which holds up to an LLTV of about 99.17%: five points over the derived LLTV is still
+    /// stays under 1 - 0.59%, which holds up to an LLTV of about 99.2%: five points over the derived LLTV is still
     /// covered on this gap, and the write-off starts past the edge.
     function test_worstNvdaWeekendFivePointsAboveIsStillCoveredByTheUsdgLeg() public {
         uint256 t0 = _open(NVDA_LLTV + 0.05e18);
