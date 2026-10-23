@@ -10,6 +10,7 @@ const links = [
   { href: "/portfolio", label: "Portfolio", match: "/portfolio" },
   { href: "/docs", label: "Docs", match: "/docs" },
   { href: "/research", label: "Research", match: "/research" },
+  { href: "/talk", label: "Talk to us", match: "/talk" },
 ];
 
 export function SiteHeader() {
@@ -18,7 +19,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-20 border-b border-hairline bg-canvas">
       <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-8 px-6 sm:h-16 sm:flex-nowrap">
         <Link href="/" className="py-3.5 text-xl font-semibold tracking-[-0.4px] sm:py-0" aria-label="Uptick home">Uptick</Link>
-        <nav className="order-3 -mb-px flex w-full gap-6 sm:order-none sm:mb-0 sm:w-auto" aria-label="Primary">
+        <nav className="order-3 -mb-px flex w-full gap-6 overflow-x-auto sm:order-none sm:mb-0 sm:w-auto" aria-label="Primary">
           {links.map((l) => {
             const active = path.startsWith(l.match);
             return (
@@ -32,6 +33,7 @@ export function SiteHeader() {
               </Link>
             );
           })}
+          <a href="/deck/" className="press flex h-11 items-center whitespace-nowrap border-b-2 border-transparent text-[15px] text-mute hover:text-fg sm:h-16">Deck</a>
         </nav>
         <div className="ml-auto"><WalletButton size="sm" /></div>
       </div>
