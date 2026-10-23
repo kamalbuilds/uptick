@@ -44,7 +44,7 @@ async function main() {
   const fablesHooks: Record<string, { name: string; authority: Address; absoluteMaxFee: number; runtimeCodeHash: Hex; sourcePaths: string[] }> = {};
   const scanned: Record<string, string> = {};
   for (const h of hooks) {
-    let ttl: bigint, cap: number, authority: Address;
+    let ttl: number, cap: number, authority: Address;
     try {
       ttl = await client.readContract({ address: h, abi: hookAbi, functionName: "MAX_POKE_TTL", blockNumber: block });
       cap = await client.readContract({ address: h, abi: hookAbi, functionName: "ABSOLUTE_MAX_FEE", blockNumber: block });
