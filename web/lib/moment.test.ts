@@ -24,8 +24,13 @@ test("the moment: shares add up and the off-hours figure is the two off-hours se
 test("the real swap belongs to a vault the app lists, inside the replay window, and its fee matches its size", () => {
   const v = universe.vaults.find((x: { symbol: string }) => x.symbol === swap.symbol);
   assert.ok(v, `${swap.symbol} is not in vault-universe.json`);
-  assert.equal(v.pool.toLowerCase(), swap.pool.toLowerCase());
-  assert.equal(v.feeTierPips, swap.poolFeePips);
+  // the swap is read from PLTR's Uniswap v4 1% pool, which the replay prices whichever pool the vault is gated on
+  const replay = load("../../keeper/data/replay.json");
+  const row = replay.tokens[swap.symbol].pools.find((p: { id: string }) => p.id.toLowerCase() === swap.pool.toLowerCase());
+  assert.ok(row, `${swap.pool} is not one of ${swap.symbol}'s replayed pools`);
+  assert.equal(row.kind, swap.venue);
+  assert.equal(row.fee_tier, swap.poolFeePips);
+  assert.equal(swap.vault.capUsd, row.cap_usd);
   assert.match(swap.tx, /^0x[0-9a-f]{64}$/);
   const t = Date.parse(swap.time);
   assert.ok(t >= Date.parse(universe.window.start) && t < Date.parse(universe.window.end));

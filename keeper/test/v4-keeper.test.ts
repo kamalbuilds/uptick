@@ -6,10 +6,10 @@ import { pokeDue, simulatePoke } from "../src/simulate.ts";
 
 const universe = readUniverse(), params = readParams();
 const PLTR_POOL = "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623";
-const OTHER_POOL = "0x1d6b86ca25e01a320aa392d6b64e68c364245c2071a7315e80e3e0ccb7e87cc3";
+const OTHER_POOL = "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1";
 const VAULT = "0x74156A1F9736307b7AD34e3691f3A5B54A0B3Eb8" as const;
 
-/** The real replay with PLTR on v4 (as shipped) and NVDA flipped to v4 using its own chosen_v4, so both directions are exercised on real rows. */
+/** The real replay with the venues overridden: a token flipped to v4 takes its own chosen_v4 row, so both directions are exercised on real rows. The shipped replay has every token on v3. */
 function replayWith(venues: Record<string, "v3" | "v4">) {
   const r = structuredClone(readReplay());
   for (const [sym, v] of Object.entries(venues)) r.tokens[sym].venue = v;
@@ -18,8 +18,13 @@ function replayWith(venues: Record<string, "v3" | "v4">) {
 const by = (ts: Ticker[], s: string) => ts.find((t) => t.symbol === s)!;
 
 describe("eligibleTickers venue", () => {
-  const real = eligibleTickers(universe, readReplay(), params);
-  test("the shipped replay yields PLTR as a v4 ticker on its pool id and everything else as v3", () => {
+  const real = eligibleTickers(universe, replayWith({ PLTR: "v4" }), params);
+  test("the shipped replay yields every token as a v3 ticker on its chosen pool", () => {
+    const shipped = eligibleTickers(universe, readReplay(), params);
+    expect(shipped.length).toBeGreaterThanOrEqual(10);
+    for (const t of shipped) { expect(t.venue).toBe("v3"); expect(t.pool).toMatch(/^0x[0-9a-fA-F]{40}$/); expect(t.poolId).toBeUndefined(); }
+  });
+  test("a replay whose PLTR venue is v4 yields PLTR as a v4 ticker on its pool id and everything else as v3", () => {
     const pltr = by(real, "PLTR") as TickerV4;
     expect(pltr.venue).toBe("v4");
     expect(pltr.poolId).toBe(PLTR_POOL);
@@ -51,7 +56,7 @@ describe("eligibleTickers venue", () => {
 });
 
 describe("factory registry", () => {
-  const ticks = eligibleTickers(universe, readReplay(), params);
+  const ticks = eligibleTickers(universe, replayWith({ PLTR: "v4" }), params);
   const pltr = by(ticks, "PLTR") as TickerV4, nvda = by(ticks, "NVDA") as TickerV3;
   test("a VaultCreatedV4 matches a v4 ticker on (stock, poolId), case-insensitively", () => {
     const made = { stock: pltr.stock.toLowerCase(), poolId: PLTR_POOL.toUpperCase().replace("0X", "0x"), vault: VAULT, block: 7n };

@@ -1,6 +1,6 @@
 {
   "source": "keeper/data/replay.json tokens[SYMBOL].pools[id == vault pool].pool_fees_usd, one entry per vault in vault-universe.json (keeper/scripts/export-web.ts)",
-  "replayGeneratedAt": "2026-10-21T23:28:00.059181+00:00",
+  "replayGeneratedAt": "2026-10-23T11:24:53.069027+00:00",
   "window": {
     "start": "2026-09-17T00:00:00+00:00",
     "end": "2026-10-17T00:00:00+00:00",
@@ -10,8 +10,8 @@
   "feesUsdByPool": {
     "0xe9713f453adb9245b19559790c96f470a18f2fdf": 93281.85,
     "0x17578c0e0d15da44f31677263114f71ae76653ea": 54178.01,
-    "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623": 71732.14,
     "0xc61284332117c3fb23a2a56cceffd07f7af60029": 118159.96,
+    "0x851680416a4f4e1c463d45171d61acddbc8554c0": 14117.23,
     "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3": 174357.7,
     "0x2e5a92f5013a64661a49312111be2e8abd33f56a": 16367.48,
     "0x654e4143e82a5824445ade0824351c2a9acd95a8": 156512.66,

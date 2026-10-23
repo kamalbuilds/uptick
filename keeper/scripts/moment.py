@@ -4,8 +4,8 @@ Prints, per window:
   1. share of swaps, LP fees and clock time outside NYSE regular hours, over the pool each vault is gated on;
   2. fee earned per $1 lost to informed traders (1 hour markout) by session, pooled over those pools: the vault replay (replay.json
      sessions) and the pool as a whole (engine arrays, same markout);
-  3. the PLTR v4 swap that cost its LPs the most while moving the pool toward a Chainlink price already published,
-     and writes it to web/lib/real-swap.json for the vault page and the deck appendix.
+  3. the PLTR v4 swap that cost its LPs the most while moving the pool toward a Chainlink price already published (the PLTR / USDG v4 1% pool,
+     read from replay.json whichever pool PLTR's vault is gated on), and writes it to web/lib/real-swap.json for the vault page and the deck appendix.
 Markout is the engine's: LPs' inventory change valued at the pool price one hour later (engine.Pool.M1h)."""
 import sys, os, json, glob, urllib.request, datetime as dt
 import numpy as np
@@ -46,8 +46,9 @@ def pool_loss(pl):
     xa, ya = pos_xy(pl.P, lo, hi, lv); xb, yb = pos_xy(pl.Pp, lo, hi, lv)
     return -((xa - xb) * pl.M1h + (ya - yb))
 
-def load(sym, tok, ut, t0, t1, cls=Pool):
-    kind, c = gate_pool(tok)
+def load(sym, tok, ut, t0, t1, cls=Pool, pool=None):
+    """The engine pool of `pool` = (kind, row) when given, else of the pool the token is gated on."""
+    kind, c = pool or gate_pool(tok)
     if kind == "v4":
         live = next(p for p in json.load(open(os.path.join(KEEPER, "data", "swaps", f"v4-live-{sym}.json"))) if p["id"] == c["id"])
         import gzip
@@ -78,7 +79,7 @@ def main():
     swap_pick = None
     for sym, tok in rp["tokens"].items():
         if sym not in vaults or "sessions" not in tok: continue
-        kind, c, pl, rows, cap = load(sym, tok, uni[sym], t0, t1, cls=Spy if sym == SWAP_SYMBOL else Pool)
+        kind, c, pl, rows, cap = load(sym, tok, uni[sym], t0, t1)
         m = (pl.t >= t0) & (pl.t < t1)
         k = np.minimum(((pl.t - t0) // HALF).astype(int), len(slots) - 1); lab = slots[k]
         loss = pool_loss(pl)
@@ -88,10 +89,13 @@ def main():
             a = acc[nm]; a["swaps"] += int(s.sum()); a["fee"] += float(pl.fee_usd[s].sum()); a["vol"] += float(pl.vol[s].sum()); a["loss"] += float(loss[s].sum())
             a["vfee"] += ses[nm]["vault_fee_usd"]; a["vloss"] += ses[nm]["markout_loss_usd"]
             assert abs(float(pl.vol[s].sum()) - ses[nm]["pool_volume_usd"]) < 1e-6 * max(1, ses[nm]["pool_volume_usd"]), f"{sym} {nm}: pool volume differs from replay.json"
-        if sym == SWAP_SYMBOL:
-            assert c["id"] == SWAP_POOL, f"{sym} gate pool is {c['id']}"
-            swap_pick = pick_swap(sym, tok, kind, c, pl, rows, cap, t0, t1, slots, lab, m, loss)
-    tot = {k: sum(a[k] for a in acc.values()) for k in ("swaps", "fee", "vol")}
+    tok = rp["tokens"][SWAP_SYMBOL]
+    row = next(p for p in tok["pools"] if p["id"] == SWAP_POOL and p["kind"] == "v4")
+    kind, c, pl, rows, cap = load(SWAP_SYMBOL, tok, uni[SWAP_SYMBOL], t0, t1, cls=Spy, pool=("v4", row))
+    m = (pl.t >= t0) & (pl.t < t1)
+    lab = slots[np.minimum(((pl.t - t0) // HALF).astype(int), len(slots) - 1)]
+    swap_pick = pick_swap(SWAP_SYMBOL, c, pl, rows, cap, t0, t1, slots, lab, m, pool_loss(pl))
+    tot ={k: sum(a[k] for a in acc.values()) for k in ("swaps", "fee", "vol")}
     print(f"\n{'session':10s} {'swaps':>9s} {'swap%':>6s} {'LP fees $':>10s} {'fee%':>6s} {'volume $M':>10s} | pool fee/$lost | vault fee $ / loss $ = per $1 lost")
     for nm, a in acc.items():
         print(f"{nm:10s} {a['swaps']:9d} {100 * a['swaps'] / tot['swaps']:6.1f} {a['fee']:10.0f} {100 * a['fee'] / tot['fee']:6.1f} {a['vol'] / 1e6:10.2f} | {a['fee'] / a['loss']:14.2f} | {a['vfee']:9.0f} / {a['vloss']:7.0f} = {a['vfee'] / a['vloss']:.2f}")
@@ -125,7 +129,7 @@ def on_chain(row, pool):
     assert mine["topics"][1].lower() == pool.lower() and w == [row[4], row[5]], "Swap log differs from the replay row"
     return int(rpc("eth_getBlockByNumber", [hex(row[0]), False])["timestamp"], 16), len(swaps)
 
-def pick_swap(sym, tok, kind, c, pl, rows, cap, t0, t1, slots, lab, m, loss):
+def pick_swap(sym, c, pl, rows, cap, t0, t1, slots, lab, m, loss):
     """Largest 1 hour LP loss among swaps that moved the pool toward the Chainlink answer already on chain: pool price before the swap was off it by 0.5% or more,
     the swap moved it the right way, and left it closer. Sized to the pool: the loss is the whole pool's LPs, the vault's own share is in `vault`."""
     ref = Ref(sym)
@@ -142,12 +146,12 @@ def pick_swap(sym, tok, kind, c, pl, rows, cap, t0, t1, slots, lab, m, loss):
     # the vault's own take of this swap, from the replay path (same simulate call as replay.session_split)
     params = json.load(open(R.PARAMS_PATH)); bps = R.band_bps_for(sym, params)
     chk, _ = R.recentre_slots(ref, t0, t1)
-    plan = R.FeasibleStatic(ref, bps / 10000.0, chk)
+    live = next(p for p in json.load(open(os.path.join(KEEPER, "data", "swaps", f"v4-live-{sym}.json"))) if p["id"] == c["id"])
+    plan = R.FeasibleStatic(ref, bps / 10000.0, chk, live["tick_spacing"], not live["usdg_is_currency0"])
     engine.SHARE = "mixed"
     rec = simulate(pl, cap, t0, t1, plan, record=True)["arr"]
-    ss = R.session_split(pl, ref, t0, t1, plan, cap)
-    for nm in SESS.values():
-        assert abs(ss[nm]["vault_fee_usd"] - tok["sessions_v4"][nm]["vault_fee_usd"]) < 1e-6, "session_split no longer reproduces replay.json"
+    got = R.run_metrics(pl, ref, t0, t1, plan, cap)["edge_apr_pct"]   # the replay's own figure for this pool, reproduced by the same plan
+    assert abs(got - c["full"]["edge_apr_pct"]) < 1e-9, f"edge {got} no longer reproduces replay.json {c['full']['edge_apr_pct']}"
     block_ts, legs = on_chain(row, c["id"])
     assert abs(block_ts - float(pl.t[i])) < 60, "grid time and block time disagree"
     return dict(

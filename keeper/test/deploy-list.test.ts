@@ -47,8 +47,8 @@ test("every entry names its venue, and the venue is the replay's", () => {
 test("the replay's venue is the floor rule: v3 while its pool keeps the floor, else v4 when the v4 pool does", () => {
   const toks = Object.entries<any>(replay.tokens).filter(([, t]) => t.venue !== undefined);
   expect(toks.length).toBeGreaterThan(10);
-  expect(toks.filter(([, t]) => t.venue === "v4").length).toBeGreaterThan(0);
   expect(toks.filter(([, t]) => t.venue === "v3").length).toBeGreaterThan(5);
+  expect(toks.filter(([, t]) => t.chosen && worstHalf(t.pools.find((p: any) => p.id === t.chosen.id)) < KEEP_FLOOR_APR).length).toBeGreaterThan(0); // the rule is exercised: some v3 pools are under the floor
   for (const [sym, t] of toks) {
     const w3 = t.chosen ? worstHalf(t.pools.find((p: any) => p.id === t.chosen.id)) : null;
     const w4 = t.chosen_v4 ? t.chosen_v4.worst_half : null;
@@ -57,12 +57,22 @@ test("the replay's venue is the floor rule: v3 while its pool keeps the floor, e
   }
 });
 
-test("a token whose replay venue is v4 has a v4 entry: pool id, tick spacing, no v3 pool field, deployable", () => {
+// The shipped replay has every token on v3 (the v3 pool of each keeps the floor or no v4 pool does), so the v4 entry shape is read from the same replay run with venue_for forced to v4 for PLTR.
+const v4FixturePath = new URL("./fixtures/replay-pltr-v4-venue.json", import.meta.url).pathname;
+const v4Fixture = JSON.parse(readFileSync(v4FixturePath, "utf8"));
+const fixtureList: any[] = JSON.parse(Bun.spawnSync(["bun", script], { stderr: "inherit", env: { ...process.env, DEPLOY_REPLAY: v4FixturePath } }).stdout.toString());
+
+test("the shipped replay's v4-venue tokens are exactly the list's v4 entries", () => {
   const v4Tokens = Object.entries<any>(replay.tokens).filter(([, t]) => t.venue === "v4").map(([s]) => s);
-  expect(v4Tokens.length).toBeGreaterThan(0);
   expect(v4Entries.map((r) => r.symbol).sort()).toEqual(v4Tokens.sort());
-  for (const r of v4Entries) {
-    const c = replay.tokens[r.symbol].chosen_v4;
+});
+
+test("a token whose replay venue is v4 has a v4 entry: pool id, tick spacing, no v3 pool field, deployable", () => {
+  const entries = fixtureList.filter((r) => r.venue === "v4");
+  expect(entries.map((r) => r.symbol)).toEqual(["PLTR"]);
+  expect(fixtureList.filter((r) => r.venue === "v3").length).toBeGreaterThan(10); // the other tokens fall back to v3
+  for (const r of entries) {
+    const c = v4Fixture.tokens[r.symbol].chosen_v4;
     expect(r.poolId).toHaveLength(66);
     expect(r.poolId).toBe(c.id);
     expect(r.tickSpacing).toBe(c.tick_spacing);
@@ -95,6 +105,5 @@ test("--v4-report lists every replayed token and marks exactly the tokens the li
   const rows = out.slice(2).map((l) => l.split("|").map((c) => c.trim()));
   expect(rows.map((r) => r[0]).sort()).toEqual(Object.keys(replay.tokens).sort());
   const yes = rows.filter((r) => r[r.length - 1] === "YES").map((r) => r[0]).sort();
-  expect(yes.length).toBeGreaterThan(0);
   expect(yes).toEqual(v4Entries.map((r) => r.symbol).sort());
 });
