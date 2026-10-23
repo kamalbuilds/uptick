@@ -14,7 +14,7 @@ id = "49cc51a2f53b4ec080a24c415612a4d7"
 # and its id replaces the placeholder below; until then the endpoints answer 503 alerts_unavailable and the scheduled run does nothing.
 [[kv_namespaces]]
 binding = "ALERTS"
-id = "00000000000000000000000000000000" # placeholder: replace with the id printed by `wrangler kv namespace create ALERTS`
+id = "4b386bf58f8245609ae158eaad1d7370"
 
 [triggers]
 crons = ["*/10 * * * *"]
