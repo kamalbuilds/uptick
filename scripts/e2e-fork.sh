@@ -15,6 +15,7 @@ FORK_JSON="$HOME/.cache/uptick-fork/fork.json"
 TMP=$(mktemp -d)
 STEP=00-preflight
 SNAP=""
+ONLY=${E2E_ONLY:-all}           # all: every user path on the NVDA vault, then the Morpho demo; demo: only the Morpho demo (needs no fork.json, any anvil fork of 4663)
 JSALT=e2e-fork-jitter-salt   # the keeper's local jitter salt for this run; the slot the script waits for is computed from the same one
 
 NVDA=0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC
@@ -126,11 +127,12 @@ swap() { # FROM tokenIn tokenOut amountIn -> receipt (fee 500 pool, recipient = 
 }
 
 # ---------------------------------------------------------------- 00 preflight
+cast chain-id -r "$R" >"$TMP/cid" 2>&1 || die "no RPC at $R: $(cat "$TMP/cid")"
+chk "fork chain id" "$(cat "$TMP/cid") == 4663"
+if [ "$ONLY" != demo ]; then
 [ -f "$FORK_JSON" ] || die "no $FORK_JSON, start scripts/fork-up.sh"
 V=$(jq -r '.vaults.NVDA.address // empty' "$FORK_JSON"); ROUTER=$(jq -r '.router // empty' "$FORK_JSON"); FACTORY=$(jq -r '.factory // empty' "$FORK_JSON")
 [ -n "$V" ] && [ -n "$ROUTER" ] && [ -n "$FACTORY" ] || die "fork.json lacks vaults.NVDA, router or factory: run scripts/fork-up.sh on the current bytecode"
-cast chain-id -r "$R" >"$TMP/cid" 2>&1 || die "no RPC at $R: $(cat "$TMP/cid")"
-chk "fork chain id" "$(cat "$TMP/cid") == 4663"
 [ "$(cast code "$V" -r "$R" | wc -c)" -gt 100 ] || die "no vault code at $V"
 chk "vault share decimals are 24" "$(call "$V" 'decimals()(uint8)') == 24"
 chk "NVDA vault is registered in the factory" "'$(call "$FACTORY" 'isVault(address)(bool)' "$V")' == 'true'"
@@ -141,18 +143,23 @@ chk "NVDA depositCap is the deploy-list cap" "$(call "$V" 'depositCap()(uint256)
 chk "entry fee defaults to max(pool fee tier, 35 bp): 3500 pips on the 5 bp NVDA pool" "$(call "$V" 'entryFee()(uint24)') == 3500 and $(call "$V" 'poolFee()(uint24)') == 500"
 chk "rebalance TWAP-to-Chainlink bound defaults to 30 bp" "$(call "$V" 'maxTwapOracleBps()(uint16)') == 30"
 chk "vault is keyed to anvil account 0" "'$(cast call "$V" 'keeper()(address)' -r "$R" | tr A-Z a-z)' == '$(echo $A0 | tr A-Z a-z)'"
+fi
 ANVIL0_KEY=$(cast wallet private-key "test test test test test test test test test test test junk") # public Foundry test mnemonic, account 0
 SNAP=$(cast rpc evm_snapshot -r "$R" | tr -d '"')
 START_BLOCK=$(cast block-number -r "$R")
-START_SUPPLY=$(call "$V" 'totalSupply()(uint256)')
 T0=$(ts)
 warp $((T0 + 1))   # anvil's wall clock can sit behind the head after a restart: pin the chain clock at the head first
 chk "chain clock moves forward" "$(ts) == $((T0 + 1))"
+if [ "$ONLY" != demo ]; then
+START_SUPPLY=$(call "$V" 'totalSupply()(uint256)')
 echo "  info: spot is $(off_twap_bps) bp from the TWAP at start; instantDeploy=$(call "$V" 'instantDeploy()(bool)'), depositCap=$(call "$V" 'depositCap()(uint256)')" >&3
 if [ "$(off_twap_bps)" -gt 5 ]; then settle; fi
 chk "spot is within the 10 bp band of the TWAP before the first deposit" "$(off_twap_bps) <= 5"
+fi
+PRE=$(cast rpc evm_snapshot -r "$R" | tr -d '"')   # the demo starts from here: a fork that no earlier step has touched
 pass
 
+if [ "$ONLY" != demo ]; then
 # ---------------------------------------------------------------- 01 fund the fresh user
 step 01-fund-fresh-user
 chk "user starts with no vault shares" "$(bal "$V" "$USER") == 0"
@@ -669,14 +676,156 @@ rd=$(revdata "$USER" "$ROUTER" 'depositUsdg(address,uint256,uint256,address)(uin
 chk "router deposit reverts Unhealthy(FeedStale)" "'${rd:0:10}' == '$(cast sig 'Unhealthy(uint8)')' and int('${rd:10:64}',16) == 2"
 chk "control: exits are not oracle-gated (redeemInKind eth_call succeeds on the stale feed)" "'$(cast call --from "$A0" "$V" 'redeemInKind(uint256,address,address)(uint256,uint256)' 1000000000000000000000 "$A0" "$A0" -r "$R" | sed -n 1p | num)' != ''"
 pass
+fi
+
+# ---------------------------------------------------------------- DEMO
+# The Morpho demo. One run, one fork: a fresh factory and router, PLTR (Uniswap v4) and AAPL (Uniswap v3) vaults, an UptickShareOracle
+# on the AAPL share, a market on the real Morpho Blue singleton, a lender, a borrower using the web app's own call encoding, a 3% pool
+# push, a stale feed, a feed drop and a liquidation. Every transaction is logged with its hash and block to $TXLOG (label, hash, block).
+MORPHO=0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010
+MIRM=0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1
+LENDER=0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc      # anvil account 5
+LIQUIDATOR=0x976EA74026E726554dB657fA54763abd0C3a0aa9  # anvil account 6
+AAPL_CEIL_BPS=9432   # AAPL max LLTV 94.32% (keeper/data/weekend-gaps.json max_lltv_pct: 1 - worst adverse weekend gap 0.68% - 5 pt)
+TXLOG="$TMP/fork-txs.tsv"; : >"$TXLOG"
+logtx() { printf '%s\t%s\t%s\n' "$1" "$2" "$(cast receipt "$2" blockNumber -r "$R")" >>"$TXLOG"; }
+dsend() { local label=$1 rc; shift; rc=$(send "$@"); logtx "$label" "$(jq -r .transactionHash <<<"$rc")"; printf '%s' "$rc"; }
+dsend_reverts() { local label=$1 from=$2 out; shift 2
+  out=$(cast send --unlocked --from "$from" --gas-limit 3000000 --json -r "$R" "$@" 2>&1) || true
+  [ "$(jq -r .status <<<"$out" 2>/dev/null)" = 0x0 ] || die "expected a mined revert for $label, got: $(printf '%s' "$out" | tail -2)"
+  logtx "$label (reverts)" "$(jq -r .transactionHash <<<"$out")"; }
+fund_tok() { cast rpc anvil_setStorageAt "$1" "$(cast index address "$2" $NVDA_NS)" "$(cast to-uint256 "$3")" -r "$R" >/dev/null; }   # every Stock Token shares the ERC-7201 balance base
+d_health() { cast call "$1" 'health()(uint8,uint256,uint256,uint160,uint160,uint160)' -r "$R" | sed -n "${2}p" | num; }   # 1 status 2 price 3 updatedAt 4 oracle 5 twap 6 spot
+d_off_twap_bps() { python3 -c "import sys;t,s=map(int,sys.argv[1:]);print(abs(s*s-t*t)*10000//(t*t))" "$(d_health "$1" 5)" "$(d_health "$1" 6)"; }
+d_off_feed_bps() { python3 -c "import sys;o,x=map(int,sys.argv[1:]);print(abs(x*x-o*o)*10000//(o*o))" "$(d_health "$1" 4)" "$(d_health "$1" "$2")"; }
+d_liq() { cast call "$1" 'positionInfo()((uint256,int24,int24,uint128,uint256,uint256,uint256,uint256,bool))' -r "$R" | tr -d '()' | awk -F', ' '{print $4}' | num; }
+d_settle() { warp $(( $(ts) + 700 )); }
+
+# Trades move a pool the way a trader does: through the v3 SwapRouter, or the v4 PoolManager through a minimal swapper.
+# d_gap VAULT -> "bp side": distance of pool spot from the Chainlink-implied price, and "buy" when the pool prices the stock below the feed
+# (a buyer of the stock, who pays USDG, closes it) or "sell" when above.
+d_gap() { python3 -c "
+import sys
+o,x,t0=map(int,sys.argv[1:4])
+bp=abs(x*x-o*o)*10000//(o*o)
+over=(x>o)==(t0==1)
+print(bp, 'sell' if over else 'buy')" "$(d_health "$1" 4)" "$(d_health "$1" 6)" "$([ "$(call "$1" 'stockIsToken0()(bool)')" = true ] && echo 1 || echo 0)"; }
+# d_trade VENUE VAULT STOCK buy|sell USDG_VALUE_RAW: a trade worth that much USDG at the Chainlink price. v4 needs $SWAPPER and $V4KEY.
+d_trade() {
+  local venue=$1 vlt=$2 tok=$3 dir=$4 usdg_raw=$5 px amt z
+  px=$(d_health "$vlt" 2)
+  if [ "$dir" = buy ]; then
+    if [ "$venue" = v3 ]; then swap "$TRADER" "$USDG" "$tok" "$usdg_raw"; else
+      z=$([ "$(py "1 if int('$USDG',16) < int('$tok',16) else 0")" = 1 ] && echo true || echo false)
+      send "$TRADER" "$SWAPPER" --gas-limit 3000000 'swap((address,address,uint24,int24,address),bool,uint256)(uint256)' "$V4KEY" "$z" "$usdg_raw" >/dev/null; fi
+  else
+    amt=$(py "$usdg_raw * 10**20 // $px")
+    if [ "$venue" = v3 ]; then swap "$TRADER" "$tok" "$USDG" "$amt"; else
+      z=$([ "$(py "1 if int('$tok',16) < int('$USDG',16) else 0")" = 1 ] && echo true || echo false)
+      send "$TRADER" "$SWAPPER" --gas-limit 3000000 'swap((address,address,uint24,int24,address),bool,uint256)(uint256)' "$V4KEY" "$z" "$amt" >/dev/null; fi
+  fi
+}
+# d_align VENUE VAULT STOCK: trade until spot is within 4 bp of the Chainlink price; the size of each trade is learned from the move of the last.
+d_align() {
+  local venue=$1 vlt=$2 tok=$3 it=0 rate=30000000 g0 g1 side0 side1 usd moved
+  read -r g0 side0 < <(d_gap "$vlt")
+  while [ "$g0" -gt 4 ] && [ $it -lt 16 ]; do
+    usd=$(py "max(1000000, int($rate * ($g0 - 1) * 9 // 10))")
+    d_trade "$venue" "$vlt" "$tok" "$side0" "$usd"
+    read -r g1 side1 < <(d_gap "$vlt")
+    moved=$(py "abs($g0 - $g1) if '$side0' == '$side1' else $g0 + $g1")
+    [ "$moved" -gt 0 ] && rate=$(py "int($usd / $moved)")
+    g0=$g1; side0=$side1; it=$((it + 1))
+  done
+  [ "$g0" -le 4 ] || die "could not walk the pool onto the feed: $g0 bp after $it trades"
+  echo "  info: $venue pool walked onto the feed in $it trades ($(py "$rate / 10**6") USD per bp)" >&3
+}
+
+# ---------------------------------------------------------------- 10 deploy the factory, the router and both vaults
+step 10-deploy-factory-router-and-two-vaults
+FORK_BLOCK_N=$(cast rpc anvil_nodeInfo -r "$R" | jq -r '.forkConfig.forkBlockNumber')
+chk "the fork has a recorded fork block" "$FORK_BLOCK_N > 0"
+node "$APP/scripts/deploy-list.mjs" 2>/dev/null | jq '[.[] | select(.symbol=="PLTR" or .symbol=="AAPL")]' >"$TMP/demo-list.json"
+chk "the deploy list holds exactly AAPL (v3) and PLTR (v4)" "$(jq length "$TMP/demo-list.json") == 2 and '$(jq -r 'map(.symbol + ":" + .venue) | sort | join(",")' "$TMP/demo-list.json")' == 'AAPL:v3,PLTR:v4'"
+AAPL=$(jq -r '.[] | select(.symbol=="AAPL") | .token' "$TMP/demo-list.json"); PLTR=$(jq -r '.[] | select(.symbol=="PLTR") | .token' "$TMP/demo-list.json")
+AAPL_POOL=$(jq -r '.[] | select(.symbol=="AAPL") | .pool' "$TMP/demo-list.json"); AAPL_FEED=$(jq -r '.[] | select(.symbol=="AAPL") | .feed' "$TMP/demo-list.json")
+mkdir -p "$APP/contracts/cache"; cp "$TMP/demo-list.json" "$APP/contracts/cache/demo-deploy-list.json"
+OUT=$(cd "$APP/contracts" && DEPLOY_LIST=cache/demo-deploy-list.json ANVIL_KEY=$ANVIL0_KEY OWNER=$A0 KEEPER=$A0 TREASURY=$TREASURY MIN_REBALANCE_INTERVAL=3600 \
+  forge script script/DeployAll.s.sol --rpc-url "$R" --broadcast 2>&1) || die "DeployAll failed: $(printf '%s' "$OUT" | tail -8)"
+DFACTORY=$(echo "$OUT" | awk '$1=="VaultFactory"{print $2}'); DROUTER=$(echo "$OUT" | awk '$1=="UptickRouter"{print $2}')
+VA=$(echo "$OUT" | awk '$1=="StockVault" && $2=="AAPL"{print $3}'); VP=$(echo "$OUT" | awk '$1=="StockVaultV4" && $2=="PLTR"{print $3}')
+[ -n "$DFACTORY" ] && [ -n "$DROUTER" ] && [ -n "$VA" ] && [ -n "$VP" ] || die "could not parse DeployAll output: $(printf '%s' "$OUT" | tail -8)"
+BCAST="$APP/contracts/broadcast/DeployAll.s.sol/4663/run-latest.json"
+jq -r '.transactions[] | [(.contractName // .function // "call"), .hash] | @tsv' "$BCAST" | while IFS=$'\t' read -r nm h; do logtx "deploy: $nm" "$h"; done
+chk "DeployAll logged its deployments, vault creations and settings" "$(wc -l <"$TXLOG") >= 5"
+chk "the demo factory has code" "$(cast code "$DFACTORY" -r "$R" | wc -c) > 100"
+chk "AAPL vault is registered in the new factory" "'$(call "$DFACTORY" 'isVault(address)(bool)' "$VA")' == 'true'"
+chk "PLTR vault is registered in the new factory" "'$(call "$DFACTORY" 'isVault(address)(bool)' "$VP")' == 'true'"
+chk "router is bound to the new factory" "'$(call "$DROUTER" 'registry()(address)' | tr A-Z a-z)' == '$(echo "$DFACTORY" | tr A-Z a-z)'"
+chk "AAPL vault holds AAPL, PLTR vault holds PLTR" "'$(call "$VA" 'asset()(address)' | tr A-Z a-z)' == '$(echo "$AAPL" | tr A-Z a-z)' and '$(call "$VP" 'asset()(address)' | tr A-Z a-z)' == '$(echo "$PLTR" | tr A-Z a-z)'"
+chk "both share tokens have 24 decimals" "$(call "$VA" 'decimals()(uint8)') == 24 and $(call "$VP" 'decimals()(uint8)') == 24"
+PLTR_FEE=$(jq -r '.[] | select(.symbol=="PLTR") | .feeTier' "$TMP/demo-list.json"); PLTR_TS=$(jq -r '.[] | select(.symbol=="PLTR") | .tickSpacing' "$TMP/demo-list.json"); PLTR_HOOKS=$(jq -r '.[] | select(.symbol=="PLTR") | .hooks' "$TMP/demo-list.json")
+if [ "$(py "1 if int('$USDG',16) < int('$PLTR',16) else 0")" = 1 ]; then V4KEY="($USDG,$PLTR,$PLTR_FEE,$PLTR_TS,$PLTR_HOOKS)"; else V4KEY="($PLTR,$USDG,$PLTR_FEE,$PLTR_TS,$PLTR_HOOKS)"; fi
+out=$(cd "$APP/contracts" && forge create test/fixtures/V4Swapper.sol:V4Swapper --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args 0x8366a39CC670B4001A1121B8F6A443A643e40951 2>&1) || die "forge create V4Swapper failed: $(printf '%s' "$out" | tail -3)"
+SWAPPER=$(jq -r .deployedTo <<<"$out"); logtx "deploy: V4Swapper (trader helper for the PLTR v4 pool)" "$(jq -r .transactionHash <<<"$out")"
+fund_usdg "$TRADER" 20000000000000; fund_tok "$AAPL" "$TRADER" 100000000000000000000000; fund_tok "$PLTR" "$TRADER" 100000000000000000000000
+send "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPROUTER" 20000000000000 >/dev/null; send "$TRADER" "$AAPL" 'approve(address,uint256)' "$SWAPROUTER" 100000000000000000000000 >/dev/null
+send "$TRADER" "$USDG" 'approve(address,uint256)' "$SWAPPER" 20000000000000 >/dev/null; send "$TRADER" "$PLTR" 'approve(address,uint256)' "$SWAPPER" 100000000000000000000000 >/dev/null
+echo "  info: forked at block $FORK_BLOCK_N; factory $DFACTORY router $DROUTER AAPL vault $VA PLTR vault $VP" >&3
+pass
+
+# ---------------------------------------------------------------- 11 seed and rebalance both vaults
+step 11-seed-and-rebalance
+# A vault may rebalance 3,600 s after it is created. A v4 pool keeps no price history, so the PLTR vault builds its TWAP from the
+# observations its keeper writes with poke() every minute: eleven of them span the 600 s window and open its gate.
+need=$(py "max($(call "$VA" 'lastRebalance()(uint256)'), $(call "$VP" 'lastRebalance()(uint256)')) + 3600 + 1 - $(ts)")
+[ "$need" -le 0 ] || warp $(( $(ts) + need ))
+# The pools are the real market's and sit off Chainlink by whatever the market did since the last print. The vault rebalances only with
+# the TWAP within 30 bp of the feed, so a trader walks each pool onto the feed first (a v3 TWAP needs one quiet window to follow).
+read -r ga sa < <(d_gap "$VA"); read -r gp sp < <(d_gap "$VP")
+echo "  info: at the fork AAPL spot is $ga bp ($sa side) from Chainlink and PLTR $gp bp ($sp side)" >&3
+d_align v3 "$VA" "$AAPL"
+warp $(( $(ts) + 700 ))
+chk "AAPL TWAP caught up with the aligned pool (within 10 bp of the feed)" "$(d_off_feed_bps "$VA" 5) <= 10"
+d_align v4 "$VP" "$PLTR"
+chk "PLTR gate is closed before its keeper has observed the pool (TwapUnavailable, status 3)" "$(d_health "$VP" 1) == 3"
+VPO=$(call "$VP" 'oracle()(address)')
+for i in $(seq 11); do
+  warp $(( $(ts) + 60 ))
+  chk "poke $i would write an observation" "'$(cast call --from "$A0" "$VP" 'poke()(bool)' -r "$R")' == 'true'"
+  dsend "PLTR: keeper poke $i of 11 (TWAP observation)" "$A0" "$VP" 'poke()(bool)' >/dev/null
+done
+chk "the ring holds eleven observations" "$(call "$VPO" 'count()(uint16)') == 11"
+chk "PLTR gate is Ok after eleven minutes of observations (status 0)" "$(d_health "$VP" 1) == 0"
+for pair in "AAPL $VA $AAPL" "PLTR $VP $PLTR"; do
+  set -- $pair; sym=$1; vlt=$2; tok=$3
+  chk "$sym vault gate is Ok (status 0)" "$(d_health "$vlt" 1) == 0"
+  chk "$sym spot is within the 10 bp band of its TWAP ($(d_off_twap_bps "$vlt") bp)" "$(d_off_twap_bps "$vlt") <= 8"
+  px=$(d_health "$vlt" 2); amt=$(py "5000 * 10**26 // $px")
+  fund_tok "$tok" "$A0" $(py "$amt + 10**19")
+  dsend "$sym: approve seed" "$A0" "$tok" 'approve(address,uint256)' "$vlt" $amt >/dev/null
+  dsend "$sym: seed deposit (5,000 USD of $sym)" "$A0" "$vlt" 'deposit(uint256,address)(uint256)' $amt "$A0" >/dev/null
+  chk "$sym seed minted shares" "$(bal "$vlt" "$A0") > 0"
+done
+for pair in "AAPL $VA" "PLTR $VP"; do
+  set -- $pair; sym=$1; vlt=$2
+  if ! cast call --from "$A0" "$vlt" 'rebalance()' -r "$R" >/dev/null 2>"$TMP/rb.err"; then die "$sym rebalance does not simulate: $(tr '\n' ' ' <"$TMP/rb.err" | cut -c1-300)"; fi
+  dsend "$sym: keeper rebalance (mints the position)" "$A0" "$vlt" 'rebalance()' >/dev/null
+  chk "$sym position holds liquidity after the rebalance" "$(d_liq "$vlt") > 0"
+done
+echo "  info: after the rebalance AAPL spot is $(d_off_feed_bps "$VA" 6) bp from Chainlink, PLTR $(d_off_feed_bps "$VP" 6) bp" >&3
+pass
 
 # ---------------------------------------------------------------- 09 leave the fork as found
 step 09-fork-restored
 cast rpc evm_revert "$SNAP" -r "$R" >/dev/null || die "evm_revert failed"
 SNAP=""
 chk "head block is back at the start block" "$(cast block-number -r "$R") == $START_BLOCK"
+if [ "$ONLY" != demo ]; then
 chk "vault supply is back to its start value" "$(call "$V" 'totalSupply()(uint256)') == $START_SUPPLY"
 chk "fresh user holds no USDG again" "$(bal "$USDG" "$USER") == 0"
 chk "the hand-deployed vault is gone" "$(cast code "$ROGUE" -r "$R" | wc -c) <= 3"
 chk "the factory router is still deployed" "$(cast code "$ROUTER" -r "$R" | wc -c) > 100"
+fi
+chk "the demo's factory is gone" "$(cast code "$DFACTORY" -r "$R" | wc -c) <= 3"
 pass
