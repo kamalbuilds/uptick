@@ -1,0 +1,322 @@
+{
+ "block": 95919274,
+ "accessManager": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+ "accessManagerDeployBlock": 37250998,
+ "minSetbackS": 432000,
+ "targets": {
+  "0x66622f77b797d506e5376f7798b67ab288966080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x8aebf0c1": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  },
+  "0x5eb87f69be00df39981622fd60a8de4b7837e080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 86400,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pausePool 0x016b937e": 4,
+    "pokeFee 0x3f740010": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x05e517e7": 0,
+    "setClaimFeeBps 0x017a31b8": 9,
+    "setDayOverrides 0xb206aea0": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0x00cc05a6": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolAsymmetry 0x4cee6193": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setPoolPaused 0xb56cc687": 0,
+    "setSessionHours 0xc51198c6": 2
+   }
+  },
+  "0xa0e8fbff13e24af2b5e61a72800e08a161bde080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x8aebf0c1": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  },
+  "0x70a9a88402989226847ec122043ce5e7ff462080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x8aebf0c1": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  },
+  "0x08e52564bad99e05a694b4809f397edca417a080": {
+   "name": "FablesRamp",
+   "closed": false,
+   "adminDelayS": 86400,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pausePool 0x016b937e": 4,
+    "pokeFee 0x3f740010": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x05e517e7": 0,
+    "setClaimFeeBps 0x017a31b8": 9,
+    "setDistributor 0xd0ba2baa": 0,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolAsymmetry 0x4cee6193": 0,
+    "setPoolConfig 0x4dc4b5c9": 0,
+    "setPoolPaused 0xb56cc687": 0
+   }
+  },
+  "0x8af95932ec4484fb10c641a4cbcf19a798cb2080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x3f740010": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolAsymmetry 0x4cee6193": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  },
+  "0x67d86050d22d574df046f3d90f722045f714e080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x8aebf0c1": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  }
+ },
+ "roleMeta": {
+  "0": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "1": {
+   "admin": 5,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "2": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "3": {
+   "admin": 12,
+   "guardian": 11,
+   "grantDelayS": 0
+  },
+  "4": {
+   "admin": 6,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "5": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "6": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "7": {
+   "admin": 8,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "8": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "9": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "10": {
+   "admin": 12,
+   "guardian": 11,
+   "grantDelayS": 0
+  },
+  "11": {
+   "admin": 12,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "12": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "13": {
+   "admin": 12,
+   "guardian": 0,
+   "grantDelayS": 0
+  }
+ },
+ "members": [
+  {
+   "roleId": 0,
+   "account": "0x359856655934338d798F9ccE1f181486301D36a5",
+   "executionDelayS": 0,
+   "kind": "EOA with EIP-7702 delegation",
+   "delegate": "0x5A7FC11397E9a8AD41BF10bf13F22B0a63f96f6d"
+  },
+  {
+   "roleId": 1,
+   "account": "0xb9e8Db60e88F8949ce0b91d451B269d0108c03D9",
+   "executionDelayS": 0,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 1,
+   "account": "0x1B6a8808E1D26dba66bA11E52997803C43CAd429",
+   "executionDelayS": 0,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 1,
+   "account": "0x014f37FA6f0608C71a7BBC3adf3b587CC24a2163",
+   "executionDelayS": 0,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 2,
+   "account": "0xb9e8Db60e88F8949ce0b91d451B269d0108c03D9",
+   "executionDelayS": 3600,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 3,
+   "account": "0x77c7634a4F90Afd44b7bF96B9F719D8D60CF5513",
+   "executionDelayS": 86400,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 4,
+   "account": "0x5cDa43Da9631fB84D390D91e750F549B7ada721c",
+   "executionDelayS": 0,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 5,
+   "account": "0x359856655934338d798F9ccE1f181486301D36a5",
+   "executionDelayS": 0,
+   "kind": "EOA with EIP-7702 delegation",
+   "delegate": "0x5A7FC11397E9a8AD41BF10bf13F22B0a63f96f6d"
+  },
+  {
+   "roleId": 6,
+   "account": "0x359856655934338d798F9ccE1f181486301D36a5",
+   "executionDelayS": 0,
+   "kind": "EOA with EIP-7702 delegation",
+   "delegate": "0x5A7FC11397E9a8AD41BF10bf13F22B0a63f96f6d"
+  },
+  {
+   "roleId": 7,
+   "account": "0x77c7634a4F90Afd44b7bF96B9F719D8D60CF5513",
+   "executionDelayS": 0,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 8,
+   "account": "0x359856655934338d798F9ccE1f181486301D36a5",
+   "executionDelayS": 0,
+   "kind": "EOA with EIP-7702 delegation",
+   "delegate": "0x5A7FC11397E9a8AD41BF10bf13F22B0a63f96f6d"
+  },
+  {
+   "roleId": 10,
+   "account": "0x8Df9D3142400EEFFc40D70577AFb76132AA273BB",
+   "executionDelayS": 7200,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 11,
+   "account": "0x67d7E5CDA537AC044993b30ebA33bC390CDb4236",
+   "executionDelayS": 0,
+   "kind": "EOA"
+  },
+  {
+   "roleId": 12,
+   "account": "0x359856655934338d798F9ccE1f181486301D36a5",
+   "executionDelayS": 0,
+   "kind": "EOA with EIP-7702 delegation",
+   "delegate": "0x5A7FC11397E9a8AD41BF10bf13F22B0a63f96f6d"
+  },
+  {
+   "roleId": 13,
+   "account": "0x215F159881964f1E924DBfE40E9e64181b0D4b73",
+   "executionDelayS": 86400,
+   "kind": "Safe",
+   "owners": [
+    "0x386C16292649d05e4c130971B80072cF5b3444b8",
+    "0x240B7e8FcfdB38C94c0b8733A4A50F28A4C99fa8",
+    "0xa75d898aa76fB7337f2ee35eC79d3c93735F395b"
+   ],
+   "threshold": 2
+  }
+ ]
+}
