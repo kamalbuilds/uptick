@@ -874,17 +874,13 @@ step 14-morpho-market
 chk "Morpho Blue has code on the fork" "$(cast code "$MORPHO" -r "$R" | wc -c) > 1000"
 chk "the singleton's IRM is enabled" "'$(call "$MORPHO" 'isIrmEnabled(address)(bool)' "$MIRM")' == 'true'"
 CEIL=$AAPL_CEIL_BPS
-if [ -f "$APP/keeper/data/weekend-gaps.json" ]; then
-  file_ceil=$(jq -r '[.tokens[] | select(.symbol == "AAPL") | .max_lltv_pct * 100 | round][0]' "$APP/keeper/data/weekend-gaps.json")
-  chk "the ceiling pinned here equals the derived one in keeper/data/weekend-gaps.json" "$file_ceil == $CEIL"
-fi
-LLTV_BPS=""
-for l in 9800 9650 9450 9150 8600 7700 6250 3850; do
-  if [ "$l" -le "$CEIL" ] && [ "$(call "$MORPHO" 'isLltvEnabled(uint256)(bool)' "${l}00000000000000")" = true ]; then LLTV_BPS=$l; break; fi
-done
-[ -n "$LLTV_BPS" ] || die "no enabled LLTV at or below $CEIL bp"
-LLTV="${LLTV_BPS}00000000000000"
-chk "the market LLTV is the largest enabled one at or below the 94.32% ceiling (Morpho enables 94.5% and 91.5% around it)" "$LLTV_BPS == 9150 and $LLTV_BPS <= $CEIL and '$(call "$MORPHO" 'isLltvEnabled(uint256)(bool)' 945000000000000000)' == 'true'"
+file_ceil=$(jq -r '[.tokens[] | select(.symbol == "AAPL") | .max_lltv_pct * 100 | round][0]' "$APP/keeper/data/weekend-gaps.json")
+chk "the price-gap ceiling pinned here equals the one derived in keeper/data/weekend-gaps.json" "$file_ceil == $CEIL"
+# 62.5% is the market's LLTV (contracts/SECURITY-REVIEW-ORACLE-2026-10-23.md): the gap ceiling bounds the price only, Morpho's liquidation
+# incentive at 62.5% is 12.68% and a position borrowed to the limit leaves bad debt only after a further 29.6% fall of the share.
+LLTV_BPS=6250
+LLTV=625000000000000000
+chk "the market LLTV is 62.5%, enabled on the singleton and under the 94.32% price-gap ceiling" "$LLTV_BPS == 6250 and $LLTV_BPS <= $CEIL and '$(call "$MORPHO" 'isLltvEnabled(uint256)(bool)' "$LLTV")' == 'true'"
 MKT="($USDG,$VA,$ORA,$MIRM,$LLTV)"
 mplan() { jq -nc --arg v "$VA" --arg u "$USDG" --arg o "$ORA" --arg i "$MIRM" --arg l "$LLTV" '{market:{loanToken:$u,collateralToken:$v,oracle:$o,irm:$i,lltv:$l}}'; }
 MID=$(MODE=id PLAN="$(mplan)" bun "$APP/scripts/fork-demo-steps.ts")
@@ -892,7 +888,7 @@ chk "market id has the shape of a bytes32" "'${MID:0:2}' == '0x' and ${#MID} == 
 chk "the market does not exist yet (lastUpdate 0)" "$(cast call "$MORPHO" 'market(bytes32)(uint128,uint128,uint128,uint128,uint128,uint128)' "$MID" -r "$R" | sed -n 5p | num) == 0"
 rd=$(revdata "$A0" "$MORPHO" 'createMarket((address,address,address,address,uint256))' "($USDG,$VA,$ORA,$MIRM,900000000000000000)")
 chk "an LLTV Morpho has not enabled (90%) is refused with an Error(string)" "'${rd:0:10}' == '0x08c379a0'"
-dsend "Morpho: createMarket USDG / AAPL share, UptickShareOracle, LLTV 91.5%" "$A0" "$MORPHO" 'createMarket((address,address,address,address,uint256))' "$MKT" >/dev/null
+dsend "Morpho: createMarket USDG / AAPL share, UptickShareOracle, LLTV 62.5%" "$A0" "$MORPHO" 'createMarket((address,address,address,address,uint256))' "$MKT" >/dev/null
 chk "the market now exists (lastUpdate set)" "$(cast call "$MORPHO" 'market(bytes32)(uint128,uint128,uint128,uint128,uint128,uint128)' "$MID" -r "$R" | sed -n 5p | num) > 0"
 mp=$(cast call "$MORPHO" 'idToMarketParams(bytes32)(address,address,address,address,uint256)' "$MID" -r "$R" | num | tr '\n' ' ' | sed 's/ $//')
 chk "Morpho stores the five parameters under the id the app derives" "'$(echo "$mp" | tr A-Z a-z)' == '$(echo "$USDG $VA $ORA $MIRM $LLTV" | tr A-Z a-z)'"
@@ -918,8 +914,10 @@ step 16-borrower-earn-and-borrow
 warp $(( $(ts) + 700 ))   # the rebalance swapped in the pool: let the TWAP catch up before a deposit
 chk "AAPL vault gate is Ok (status 0)" "$(d_health "$VA" 1) == 0"
 chk "spot is within the 10 bp band of the TWAP" "$(d_off_twap_bps "$VA") <= 8"
-AP_IN=100000000000000000000   # 100 AAPL
-fund_tok "$AAPL" "$USER" 150000000000000000000
+# the vault's deposit cap (the deploy list sizes it from the pool's depth) bounds what a single user can put in: deposit 60% of what it still accepts
+AP_IN=$(py "$(call "$VA" 'maxDeposit(address)(uint256)' "$USER") * 60 // 100 // 10**17 * 10**17")
+chk "the borrower deposits a non-trivial amount under the cap (at least 10 AAPL)" "$AP_IN >= 10 * 10**18"
+fund_tok "$AAPL" "$USER" $(py "$AP_IN + 10**19")
 quote=$(call "$VA" 'previewDeposit(uint256)(uint256)' $AP_IN)
 collateral=$(py "$quote * 9950 // 10000")   # web/lib/morpho.ts collateralFromQuote: the quote less 50 bp
 oprice=$(call "$ORA" 'price()(uint256)')
@@ -943,7 +941,7 @@ chk "the user received the borrowed USDG" "$(bal "$USDG" "$USER") == $u0 + $BORR
 debt=$(py "($(pos "$USER" 2) * ($(mk 3) + 1) + ($(mk 4) + 10**6) - 1) // ($(mk 4) + 10**6)")
 chk "the position owes the borrow (rounded up by Morpho's virtual shares) and holds the collateral" "$debt >= $BORROW and $debt <= $BORROW + 2"
 chk "control: borrowing 6% of the limit more (101% in all) is refused (Error(string): insufficient collateral)" "'$(revdata "$USER" "$MORPHO" 'borrow((address,address,address,address,uint256),uint256,uint256,address,address)' "$MKT" $(py "$maxb * 6 // 100") 0 "$USER" "$USER" | cut -c1-10)' == '0x08c379a0'"
-info "100 AAPL deposited, $collateral share units posted, $(py "$BORROW / 10**6") USDG borrowed against a limit of $(py "$maxb / 10**6") at LLTV $LLTV_BPS bp"
+info "$(py "$AP_IN / 10**18") AAPL deposited, $collateral share units posted, $(py "$BORROW / 10**6") USDG borrowed against a limit of $(py "$maxb / 10**6") at LLTV $LLTV_BPS bp"
 pass
 
 # ---------------------------------------------------------------- 17 a 3% push of the AAPL pool leaves the oracle where it was
@@ -1020,7 +1018,7 @@ P_DROP=$(call "$ORA" 'price()(uint256)')
 dsend "Morpho: accrueInterest" "$A0" "$MORPHO" 'accrueInterest((address,address,address,address,uint256))' "$MKT" >/dev/null   # the stored totals include the 25 h of interest
 debt=$(py "($(pos "$USER" 2) * ($(mk 3) + 1) + ($(mk 4) + 10**6) - 1) // ($(mk 4) + 10**6)")
 cval=$(py "$(pos "$USER" 3) * $P_DROP // 10**36")
-info "share price fell $(py "round((1 - $P_DROP / $P_FRESH) * 10000)") bp on a $FEEDDROP_BPS bp feed drop; debt $debt against collateral worth $cval at LLTV $LLTV_BPS bp (LTV $(py "round($debt * 10000 / $cval)") bp)"
+info "share price fell $(py "round((1 - $P_DROP / $P_FRESH) * 10000)") bp on a $FEEDDROP_BPS bp feed drop; debt $debt against collateral worth $cval at LLTV $LLTV_BPS bp (LTV $(py "round($debt * 10000 / $cval)") bp after the drop, $(py "round($BORROW * 10000 / ($(pos "$USER" 3) * $P_FRESH // 10**36))") bp when borrowed; liquidation threshold $LLTV_BPS bp)"
 chk "the position is now over its LLTV" "$debt * 10**18 > $cval * $LLTV"
 chk "and the collateral still covers the debt, so there is no bad debt to write off" "$cval > $debt"
 c0=$(pos "$USER" 3); b0=$(pos "$USER" 2); lq_u0=$(bal "$USDG" "$LIQUIDATOR")
@@ -1029,13 +1027,13 @@ repaid=$(py "$lq_u0 - $(bal "$USDG" "$LIQUIDATOR")")
 chk "the liquidator received exactly the seized shares and the borrower's collateral fell by them" "$(bal "$VA" "$LIQUIDATOR") == $SEIZE and $(pos "$USER" 3) == $c0 - $SEIZE"
 chk "the borrower's debt shares fell and the liquidator paid USDG" "$(pos "$USER" 2) < $b0 and $repaid > 0"
 bonus_bp=$(py "round(($SEIZE * $P_DROP // 10**36) * 10000 / $repaid) - 10000")
-chk "the liquidator's incentive is Morpho's LIF at this LLTV (1.0262): between 200 and 300 bp over the repayment" "$bonus_bp >= 200 and $bonus_bp <= 300"
+chk "the liquidator's incentive is Morpho's LIF at 62.5% (1 / (1 - 0.3 * 0.375) = 1.1268): between 1,200 and 1,300 bp over the repayment" "$bonus_bp >= 1200 and $bonus_bp <= 1300"
 sh_l=$(bal "$VA" "$LIQUIDATOR"); n_l=$(bal "$AAPL" "$LIQUIDATOR"); u_l=$(bal "$USDG" "$LIQUIDATOR")
 rc=$(dsend "AAPL: liquidator exits the seized shares with redeemInKind" "$LIQUIDATOR" "$VA" 'redeemInKind(uint256,address,address)(uint256,uint256)' "$SEIZE" "$LIQUIDATOR" "$LIQUIDATOR")
 out_val=$(py "($(bal "$AAPL" "$LIQUIDATOR") - $n_l) * $NEWANS // 10**20 + ($(bal "$USDG" "$LIQUIDATOR") - $u_l)")
 chk "the liquidator holds no shares after the exit and both legs came back" "$(bal "$VA" "$LIQUIDATOR") == 0 and $(bal "$AAPL" "$LIQUIDATOR") > $n_l and $(bal "$USDG" "$LIQUIDATOR") > $u_l"
 info "repaid $(py "$repaid / 10**6") USDG, seized shares exit for $(py "$out_val / 10**6") USDG at the new Chainlink price ($(py "round($out_val * 10000 / $repaid) - 10000") bp over the repayment)"
-chk "the exit is worth at least the repayment at the new Chainlink price (the incentive covers the exit)" "$out_val >= $repaid"
+chk "the seized shares exit for more than the USDG repaid at the new Chainlink price (the incentive covers the exit)" "$out_val > $repaid"
 pass
 
 # ---------------------------------------------------------------- 20 past 97 hours the oracle refuses and Morpho freezes
