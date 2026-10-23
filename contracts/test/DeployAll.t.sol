@@ -69,6 +69,21 @@ contract DeployAllTest is Test {
         assertEq(gme.entryFee(), 10_000, "a 1% pool keeps its own tier as the entry fee");
     }
 
+    /// Vaults launch with no performance fee, so the published kept APR is what a depositor keeps. PERF_FEE_BPS overrides it.
+    function test_perfFeeDefaultsToZeroAndEnvOverrides() public {
+        _env("test/fixtures/deploy-list-open.json", false);
+        vm.setEnv("PERF_FEE_BPS", "0");
+        (VaultFactory f,) = script.run();
+        (, uint16 perf,,,,,,) = StockVault(f.entryAt(0).vault).params();
+        assertEq(perf, 0, "launch default: no performance fee");
+
+        vm.setEnv("PERF_FEE_BPS", "1000");
+        (f,) = script.run();
+        (, perf,,,,,,) = StockVault(f.entryAt(0).vault).params();
+        assertEq(perf, 1000, "PERF_FEE_BPS sets the share");
+        vm.setEnv("PERF_FEE_BPS", "0");
+    }
+
     function test_allowClosedRefusedOnARealChain() public {
         assertEq(block.chainid, 4663);
         // through a local anvil fork the node answers anvil_nodeInfo, so the script rightly allows the flag

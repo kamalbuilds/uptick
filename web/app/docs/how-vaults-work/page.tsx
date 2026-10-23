@@ -256,8 +256,9 @@ export default function HowVaultsWorkPage() {
 
       <H2>Fees, shares and the treasury cut</H2>
       <P>
-        The performance fee is 10% of uncollected fees. A harvest collects those fees, values them,
-        and mints the treasury its cut as shares. The mint is priced against assets net of the cut,
+        Vaults launch with no performance fee, so the kept figure on every vault page is what a depositor keeps.
+        The owner can switch on a share of up to 20% per vault through the 24-hour queue. When it is on, a harvest collects
+        uncollected fees, values them, and mints the treasury its cut as shares. The mint is priced against assets net of the cut,
         so the share price is the same one second before and one second after a harvest.
       </P>
       <P>

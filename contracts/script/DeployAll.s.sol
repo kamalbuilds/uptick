@@ -86,7 +86,7 @@ contract DeployAll is Script {
             treasury: vm.envAddress("TREASURY"),
             params: StockVault.Params({
                 rangeBps: DEFAULT_RANGE_BPS,
-                perfFeeBps: 1000,
+                perfFeeBps: uint16(vm.envOr("PERF_FEE_BPS", uint256(0))), // launch at 0%: published kept APR is what depositors keep
                 maxDeviationBps: 100,
                 slippageBps: 100,
                 exitBufferBps: 30,
