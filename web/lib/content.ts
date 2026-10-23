@@ -126,7 +126,7 @@ export const POSTS: ResearchEntry[] = [
     date: "2026-10-17",
     author: "Uptick Research",
     summary:
-      "Fees earned per dollar lost to informed traders, split by NYSE hours, weeknights and weekends, from 5.1 million swaps over 54 days across the NVDA, SPCX and TSLA pools. Weekends paid 13.64 against 1.16 in NYSE hours, and the weekend ratio led in 22 of 23 pool-weeks.",
+      "Fees earned per dollar lost to informed traders, split by NYSE hours, weeknights and weekends, from 5.1 million swaps on the NVDA, SPCX and TSLA pools in a fixed range, 24 August to 17 October 2026. Weekends paid 13.64 against 1.16 in NYSE hours, and the weekend ratio led in 22 of 23 pool-weeks.",
   },
 ];
 

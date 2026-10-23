@@ -105,3 +105,26 @@ describe("doors: state, per_tx_cap_usd and kept_worst_half_pct on /vaults", () =
     }
   });
 });
+
+describe("one kept figure: every API kept field equals web/lib/vault-universe.json gate.worst_half_apr", () => {
+  const call = async (path: string) => {
+    const res = await worker.fetch(new Request(`https://uptick-evidence.test${path}`), {} as Record<string, unknown>, {} as ExecutionContext);
+    expect(res.status).toBe(200);
+    return (await res.json()) as any;
+  };
+
+  test("/vaults kept_apr_pct and kept_worst_half_pct, /vaults/:id kept_apr_pct, /keeper/vaults evidence.gate", async () => {
+    const list = await apiVaults();
+    const keeper = await call("/keeper/vaults");
+    expect(webUniverse.vaults.length).toBe(17);
+    expect(keeper.vaults.length).toBe(17);
+    for (const w of webUniverse.vaults) {
+      const want = w.gate.worst_half_apr;
+      const row = list.find((x) => x.id === w.id)!;
+      expect(row.kept_apr_pct).toBe(want);
+      expect(row.kept_worst_half_pct).toBe(want);
+      expect((await call(`/vaults/${w.id}`)).kept_apr_pct).toBe(want);
+      expect(keeper.vaults.find((x: any) => x.id === w.id).evidence.gate.worst_half_apr).toBe(want);
+    }
+  });
+});

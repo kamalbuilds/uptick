@@ -9,16 +9,15 @@ import { Term } from "./term";
 import { TokenLogo } from "./token-logo";
 import { Button } from "@/components/ui/button";
 import { EXPLORER } from "@/lib/chain";
-import { num, perDepositLimitUsd, shortAddress, signed, usd, usdWhole } from "@/lib/format";
+import { num, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
 import { usdSigned } from "@/lib/leak";
 import { priceLabel } from "@/lib/price-math";
 import { parseOwner, type ScanRow, type WalletScan } from "@/lib/scan";
 import { useWalletScan } from "@/lib/use-scan";
+import { TERMS } from "@/lib/terms";
+import { money, verdict } from "@/lib/verdict";
 import { REPLAY_WINDOW, VAULTS, isoDay } from "@/lib/vaults";
 import { cn } from "@/lib/utils";
-
-/** Whole dollars from a thousand up, cents below. */
-const money = (n: number): string => (n === 0 ? "$0" : n >= 1000 ? usdWhole(n) : usd(n, { compact: false }));
 
 const COLS = "lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_96px_minmax(0,1fr)_minmax(0,1.3fr)_128px]";
 const ROW = `row grid grid-cols-2 items-center gap-x-4 gap-y-2 border-b border-hairline px-3 py-4 ${COLS}`;
@@ -46,7 +45,7 @@ function TokenCell({ r }: { r: ScanRow }) {
       <TokenLogo symbol={r.symbol} size={28} />
       <div className="min-w-0">
         <p className="font-semibold leading-5">{r.symbol}</p>
-        <p className="figure truncate text-[13px] leading-4 text-mute">{num(Number(r.balance), 4)} {r.symbol}</p>
+        <p className="figure truncate text-[13px] leading-4 text-mute">{tokenBalance(Number(r.balance))} {r.symbol}</p>
       </div>
     </div>
   );
@@ -73,10 +72,10 @@ function WorkRow({ r }: { r: ScanRow }) {
         {b.kind === "room" ? (
           <>
             <p className="figure text-[17px] font-medium leading-6">up to {money(b.usd)}</p>
-            <p className="text-[13px] leading-4 text-mute">at the market&rsquo;s {num(b.lltv, 1)}% limit</p>
+            <p className="text-[13px] leading-4 text-mute">at the market&rsquo;s {num(b.lltv, 1)}% <Term id="lltv">limit</Term></p>
           </>
         ) : (
-          <p className="text-[13px] leading-5 text-mute">Borrowing opens with the market</p>
+          <p className="text-[13px] leading-5 text-mute">A loan opens with the vault&rsquo;s <Term id="morpho">Morpho Blue</Term> market</p>
         )}
       </div>
       <div className="col-span-2 lg:col-span-1 lg:justify-self-end">
@@ -114,13 +113,6 @@ function Fact({ label, value, note }: { label: string; value: string; note: stri
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
-function verdict(who: string, s: WalletScan): string {
-  const { idleUsd, putToWork, refused, unpriced } = s.totals;
-  if (idleUsd === 0 && unpriced.length > 0) return `${who} holds Stock Tokens whose Chainlink feeds gave no usable price in this read.`;
-  if (putToWork.tokens > 0) return `${who} holds ${money(idleUsd)} of Stock Tokens doing nothing. Uptick would put ${money(putToWork.usd)} of it to work.`;
-  return `${who} holds ${money(idleUsd)} of Stock Tokens, ${refused.tokens === 1 ? "and its vault is" : "and every vault is"} closed. Uptick puts none of it to work.`;
-}
 
 function Results({ s }: { s: WalletScan }) {
   const who = shortAddress(s.owner);
@@ -171,8 +163,8 @@ function Results({ s }: { s: WalletScan }) {
               {t.putToWork.borrowRoomUsd !== null ? <> and open up to <span className="figure text-fg">{money(t.putToWork.borrowRoomUsd)}</span> of borrowing</> : null}
             </p>
           </div>
-          <div className={`hidden px-3 pb-1 pt-3 text-[13px] leading-5 text-mute lg:grid lg:items-center lg:gap-x-4 ${COLS}`} aria-hidden>
-            <span>Token</span><span>Holding</span><span>State</span><span>Kept a year</span><span>Borrow room</span><span />
+          <div className={`hidden px-3 pb-1 pt-3 text-[13px] leading-5 text-mute lg:grid lg:items-center lg:gap-x-4 ${COLS}`}>
+            <span>Token</span><span>Holding</span><span>State</span><span><Term id="kept">Kept a year</Term></span><span><Term id="borrowRoom">Borrow room</Term></span><span />
           </div>
           <ul>{work.map((r) => <WorkRow key={r.id} r={r} />)}</ul>
         </section>
@@ -182,7 +174,7 @@ function Results({ s }: { s: WalletScan }) {
         <section aria-labelledby="refused" className="mt-10">
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-hairline pb-3">
             <h2 id="refused" className="text-2xl font-semibold leading-8 tracking-[-0.2px]">Uptick refuses <span className="ml-1 text-[17px] font-normal text-mute">{refused.length}</span></h2>
-            <p className="text-[13px] text-mute">A closed vault takes no deposits. Exit in kind is never closed.</p>
+            <p className="text-[13px] text-mute">A closed vault takes no deposits. <Term id="inKind">Exit in kind</Term> is never closed.</p>
           </div>
           <ul>{refused.map((r) => <RefusedRow key={r.id} r={r} />)}</ul>
         </section>
@@ -214,6 +206,24 @@ function Loading() {
   );
 }
 
+/** The empty page tells a stranger what the result will say: each token held lands in one of three vault states. */
+function StateKey() {
+  return (
+    <section aria-labelledby="state-key" className="mt-12 max-w-[690px] border-t border-hairline pt-6">
+      <h2 id="state-key" className="text-2xl font-semibold leading-8 tracking-[-0.2px]">What a result tells you</h2>
+      <p className="mt-2 text-mute">Each token the wallet holds lands in one of three states. The replay of the vault&rsquo;s pool splits 30 days into two halves of 15, and the worse half decides.</p>
+      <dl className="mt-4 border-t border-hairline">
+        {(["open", "reduced", "closed"] as const).map((state) => (
+          <div key={state} className="flex flex-col gap-2 border-b border-hairline py-4 sm:flex-row sm:items-baseline sm:gap-6">
+            <dt className="w-24 shrink-0"><StateChip state={state} /></dt>
+            <dd className="text-mute">{TERMS[state].text}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
 /** /check: paste a wallet, see which Stock Tokens sit idle, what each vault would keep, and where a loan opens. The address lives in the URL so a result can be shared. */
 export function IdleFinder() {
   const raw = useSearchParams().get("address") ?? "";
@@ -224,14 +234,16 @@ export function IdleFinder() {
     <div className="mx-auto max-w-[1280px] px-6 pb-8 pt-10 lg:pt-14">
       <h1 className="text-[32px] font-medium leading-10 tracking-[-0.33px]">Find your idle Stock Tokens</h1>
       <p className="mt-2 max-w-[690px] text-mute">
-        Paste any wallet address. Uptick reads its balances of the {VAULTS.length} tracked Stock Tokens straight from Robinhood Chain, prices them with Chainlink, and shows what each vault would keep and where a loan opens. No wallet connection.
+        Paste any wallet address. Uptick reads which of the {VAULTS.length} Stock Tokens it holds from Robinhood Chain, prices them with Chainlink, and shows what each vault would keep on them and where a loan against them opens. Nothing to connect or sign.
       </p>
       <CheckForm key={raw} initial={raw} className="mt-6 max-w-[640px]" />
       {raw !== "" && owner === null ? (
         <p role="alert" className="mt-4 max-w-[640px] text-loss">The address in the link is not a wallet address. Paste the 42-character 0x address above.</p>
       ) : null}
 
-      {owner === null ? null : q.isError ? (
+      {owner === null ? (
+        raw === "" ? <StateKey /> : null
+      ) : q.isError ? (
         <div role="alert" className="mt-10 max-w-[640px] border-t border-hairline pt-4">
           <p className="font-semibold">The chain did not answer for this wallet.</p>
           <p className="mt-1 text-[13px] text-mute">Every figure here is read live from Robinhood Chain. Retry asks again.</p>

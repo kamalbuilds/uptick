@@ -81,9 +81,12 @@ export function Portfolio() {
         <Skeleton className="mt-8 h-40 w-full" />
       ) : !isConnected || !address ? (
         <div className="mt-8 max-w-lg border-t border-hairline pt-6">
-          <p className="serif text-[26px] leading-8">Connect a wallet to see the vault shares it holds.</p>
+          <p className="serif text-[26px] leading-8">Connect a wallet to see its vault shares and loans.</p>
           <p className="mt-3 text-mute">Balances are read straight from Robinhood Chain. Nothing is stored on a server.</p>
-          <div className="mt-6"><WalletButton size="lg" /></div>
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <WalletButton size="lg" />
+            <Link href="/check" className="text-[15px] font-semibold underline underline-offset-4">Or check any address</Link>
+          </div>
         </div>
       ) : chainId !== robinhoodChain.id ? (
         <div className="mt-8 max-w-lg border-t border-hairline pt-6">

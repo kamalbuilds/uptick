@@ -8,9 +8,13 @@ App https://uptick-fi.pages.dev, evidence API https://uptick-evidence.earn-shiel
 2. `cd contracts && forge test --match-test test_realFeedUnmocked -j 1` reads the live NVDA Chainlink feed and Uniswap pool on a fork of Robinhood Chain, unmocked.
 3. `cast code 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010 --rpc-url https://rpc.mainnet.chain.robinhood.com` prints the bytecode of the Morpho Blue singleton that takes a vault share as collateral.
 
-**Put your stock tokens to work.**
+**Put your Stock Tokens to work.**
 
-Deposit NVDA, AAPL, GOOGL and 9 more Stock Tokens (12 of 17 vaults take deposits at launch), and earn a share of every trade's fee. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep after losses to fast traders, and opens a vault only where past trades say it holds up.
+On 22 October 2026 Robinhood made Stock Tokens collateral on Morpho: "Any eligible wallet can plug in and any app can tap into these markets" ([@RobinhoodCrypto](https://x.com/RobinhoodCrypto/status/2113270580472381515), 55,663 views by 2026-10-23 16:55 UTC). Morpho Blue holds $609.5M of Robinhood Chain's $1.14B in TVL, and a Stock Token posted there earns nothing while the loan accrues interest. Uptick is what gets built on top: deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults launch first), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep, and opens a vault only where past trades say it holds up.
+
+Borrowing USDG against AAPL on Morpho cost 24.7% a year at the 2026-10-23 16:56 UTC read (market at a 62.5% loan to value limit, $221,409 supplied). An Uptick AAPL share earns its kept APR while posted, +2.7% to +3.9% a year across the two replay halves, which at a 50% loan to value pays back 5.4 to 7.8 points of that rate. That is an estimate from one read; the rate is variable and fee income varies.
+
+Try it: paste any wallet address into `/check` to see which of its Stock Tokens can earn and where a loan opens, open a vault page for the Earn and borrow panel, and run `scripts/fork-demo.sh` for the whole loop on a fork of Robinhood Chain against the real Morpho Blue (deposit, borrow at 62.5%, a 3% push on the pool, a stale feed, a liquidation; every transaction in [docs/FORK-DEMO.md](docs/FORK-DEMO.md)). Nine MCP tools give agents the same reads and unsigned transactions.
 
 Every vault page shows fee APR next to what LPs keep.
 

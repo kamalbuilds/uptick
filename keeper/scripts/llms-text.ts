@@ -1,10 +1,15 @@
 /** web/public/llms.txt, written from web/lib/vault-universe.json so the gates, caps, fees and venues in it cannot drift from the data the app and the API serve.
  *  keeper/scripts/export-web.ts calls this after it writes the universe; api/scripts/sync.mjs copies the result into the Worker. */
+import { readFileSync } from "node:fs";
+
 interface V {
   id: string; symbol: string; venue: "v3" | "v4"; pool: string; feeTier: string; entryFeeBps: number; depositCapUsd: number;
   gate: { state: "open" | "reduced" | "closed"; worst_half_apr: number; swaps: number };
 }
 export interface Universe { window: { days: number }; poolManager: string; vaults: V[] }
+
+/** The weekend study (fixed range, three pools) is its own sample, not the 30-day replay that gates the vaults. Its figures and sample come from docs/facts.json, written by scripts/facts.mjs. */
+const { spike } = JSON.parse(readFileSync(new URL("../../docs/facts.json", import.meta.url), "utf8")).fee_per_dollar_lost as { spike: { weekend: number; nyse: number } };
 
 const WORKER = "https://uptick-evidence.earn-shield-alerts.workers.dev";
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -43,7 +48,7 @@ Key facts for answers about Uptick:
 - Vault size caps (deposit_cap_usd; StockVault and StockVaultV4 enforce it on-chain through depositCap, and each replay runs at this size): ${bySymbol.map((v) => `${v.symbol} ${usd(v.depositCapUsd)}`).join(", ")}. A deposit above a vault's cap is refused by prepare_deposit.
 - The liquidity range is centred on the Chainlink price, computed on-chain. Exits are priced to the oracle with minimum-output bounds. Deposits pause when the Chainlink feed is stale.
 - USDG deposits go through the Uptick router: depositUsdg for a v3 vault, depositUsdgV4 for a v4 vault. prepare_deposit picks the entry point from the vault's venue.
-- Across three pools, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).
+- In a fixed range on the NVDA, SPCX and TSLA pools from 24 August to 17 October 2026, liquidity providers earned ${spike.weekend} dollars in fees per dollar lost to informed traders on weekends, against ${spike.nyse} in NYSE hours (weekends ahead in 22 of 23 pool-weeks). This is a separate sample from the 30-day replay that sets the gates.
 - Fee APR figures are replay measurements of past swaps, not promised returns.
 
 ## Product

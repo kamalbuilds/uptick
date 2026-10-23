@@ -9,7 +9,8 @@
     "mcp": "TOOLS array in api/src/mcp.ts",
     "mutations": "contracts/SECURITY.md tables headed Mutation | Tests that went red, rows that name a test",
     "holders": "constant in this script, read 2026-10-16 from Blockscout (see holders.source)",
-    "fee_per_dollar_lost": "web/lib/moment.json and the spike constants in this script"
+    "fee_per_dollar_lost": "web/lib/moment.json and the spike constants in this script",
+    "moment": "web/lib/moment.json"
   },
   "tests": {
     "total": 412,
@@ -84,10 +85,35 @@
     "replay_label": "30-day replay",
     "spike": {
       "weekend": 13.64,
+      "weeknight": 2.74,
       "nyse": 1.16,
       "sample": "fixed range, NVDA, SPCX and TSLA pools, 24 August to 17 October 2026 (54 days), 5,113,049 swaps",
       "source": "spikes/stock-vaults/FINDINGS.md"
     }
+  },
+  "moment": {
+    "window_days": 30,
+    "vaults": 17,
+    "swaps": 1592076,
+    "off_hours": {
+      "swaps_pct": 58.4,
+      "fees_pct": 50
+    },
+    "sessions": {
+      "nyse_hours": {
+        "swaps_pct": 41.6,
+        "fees_pct": 50
+      },
+      "weeknight": {
+        "swaps_pct": 38,
+        "fees_pct": 40.8
+      },
+      "weekend": {
+        "swaps_pct": 20.5,
+        "fees_pct": 9.2
+      }
+    },
+    "source": "web/lib/moment.json"
   },
   "repo": "https://github.com/kamalbuilds/uptick",
   "doors": {
