@@ -1,121 +1,138 @@
 {
  "AAPL": {
   "range_bps": 750,
-  "calibration": 2.71,
-  "heldout": 3.91,
-  "worst": 2.71,
+  "best_calibration_bps": 750,
+  "calibration": 2.74,
+  "heldout": 3.95,
+  "worst": 2.74,
   "gate": "open"
  },
  "AMD": {
   "range_bps": 2000,
-  "calibration": -1.28,
-  "heldout": -4.66,
-  "worst": -4.66,
+  "best_calibration_bps": 2000,
+  "calibration": -1.19,
+  "heldout": -4.7,
+  "worst": -4.7,
   "gate": "reduced"
  },
  "AMZN": {
   "range_bps": 750,
-  "calibration": 2.44,
-  "heldout": -2.89,
-  "worst": -2.89,
+  "best_calibration_bps": 500,
+  "calibration": 2.37,
+  "heldout": -1.89,
+  "worst": -1.89,
   "gate": "reduced"
  },
  "CRCL": {
   "range_bps": 2000,
-  "calibration": -0.12,
-  "heldout": -28.42,
-  "worst": -28.42,
+  "best_calibration_bps": 2000,
+  "calibration": 0.06,
+  "heldout": -27.81,
+  "worst": -27.81,
   "gate": "closed"
  },
  "GME": {
   "range_bps": 250,
-  "calibration": 101.87,
-  "heldout": -144.19,
-  "worst": -144.19,
+  "best_calibration_bps": 250,
+  "calibration": 105.33,
+  "heldout": -93.53,
+  "worst": -93.53,
   "gate": "closed"
  },
  "GOOGL": {
   "range_bps": 2000,
-  "calibration": 0.2,
-  "heldout": 2.24,
-  "worst": 0.2,
+  "best_calibration_bps": 2000,
+  "calibration": 0.21,
+  "heldout": 2.23,
+  "worst": 0.21,
   "gate": "open"
  },
  "INTC": {
   "range_bps": 2000,
-  "calibration": -2.01,
-  "heldout": 3.36,
-  "worst": -2.01,
+  "best_calibration_bps": 2000,
+  "calibration": -2.22,
+  "heldout": 3.28,
+  "worst": -2.22,
   "gate": "reduced"
  },
  "META": {
   "range_bps": 1500,
-  "calibration": 4.84,
-  "heldout": -10.77,
-  "worst": -10.77,
+  "best_calibration_bps": 2000,
+  "calibration": 4.58,
+  "heldout": -10.54,
+  "worst": -10.54,
   "gate": "reduced"
  },
  "MSTR": {
   "range_bps": 350,
-  "calibration": 18.46,
-  "heldout": -37.05,
-  "worst": -37.05,
+  "best_calibration_bps": 150,
+  "calibration": -8.25,
+  "heldout": -43.01,
+  "worst": -43.01,
   "gate": "closed"
  },
  "MU": {
   "range_bps": 1500,
-  "calibration": 7.31,
-  "heldout": -14.49,
-  "worst": -14.49,
+  "best_calibration_bps": 1500,
+  "calibration": 7.24,
+  "heldout": -13.94,
+  "worst": -13.94,
   "gate": "reduced"
  },
  "NVDA": {
   "range_bps": 150,
-  "calibration": 29.38,
-  "heldout": -6.57,
-  "worst": -6.57,
+  "best_calibration_bps": 150,
+  "calibration": 29.03,
+  "heldout": -6.85,
+  "worst": -6.85,
   "gate": "reduced"
  },
  "PLTR": {
   "range_bps": 350,
-  "calibration": 65.86,
-  "heldout": -20.34,
-  "worst": -20.34,
-  "gate": "closed"
+  "best_calibration_bps": 350,
+  "calibration": 69.49,
+  "heldout": -18.86,
+  "worst": -18.86,
+  "gate": "reduced"
  },
  "QQQ": {
   "range_bps": 1000,
-  "calibration": 0.81,
-  "heldout": -1.29,
-  "worst": -1.29,
+  "best_calibration_bps": 1000,
+  "calibration": 0.8,
+  "heldout": -1.31,
+  "worst": -1.31,
   "gate": "reduced"
  },
  "SPCX": {
   "range_bps": 150,
-  "calibration": 80.6,
-  "heldout": -199.49,
-  "worst": -199.49,
+  "best_calibration_bps": 150,
+  "calibration": 80.95,
+  "heldout": -195.35,
+  "worst": -195.35,
   "gate": "closed"
  },
  "SPY": {
   "range_bps": 250,
-  "calibration": 4.14,
-  "heldout": -4.0,
-  "worst": -4.0,
+  "best_calibration_bps": 250,
+  "calibration": 3.99,
+  "heldout": -3.92,
+  "worst": -3.92,
   "gate": "reduced"
  },
  "TSLA": {
   "range_bps": 750,
-  "calibration": 12.52,
-  "heldout": -27.36,
-  "worst": -27.36,
+  "best_calibration_bps": 500,
+  "calibration": 12.34,
+  "heldout": -25.76,
+  "worst": -25.76,
   "gate": "closed"
  },
  "USO": {
   "range_bps": 2000,
-  "calibration": -3.94,
-  "heldout": -4.51,
-  "worst": -4.51,
+  "best_calibration_bps": 2000,
+  "calibration": -3.82,
+  "heldout": -4.39,
+  "worst": -4.39,
   "gate": "reduced"
  }
 }

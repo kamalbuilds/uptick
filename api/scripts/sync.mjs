@@ -13,12 +13,12 @@ const sources = [
     to: resolve(dataDir, "vault-universe.json"),
   },
   {
-    from: resolve(repoRoot, "keeper/data/replay.json"),
-    to: resolve(dataDir, "replay.json"),
-  },
-  {
     from: resolve(repoRoot, "web/lib/collateral-markets.json"),
     to: resolve(dataDir, "collateral-markets.json"),
+  },
+  {
+    from: resolve(repoRoot, "keeper/data/replay.json"),
+    to: resolve(dataDir, "replay.json"),
   },
   // The wallet scan and the math under it are written once in web/lib; test/shared-sync.test.ts fails when these copies drift.
   ...["scan.ts", "price-math.ts", "morpho.ts"].map((f) => ({

@@ -1,4 +1,15 @@
-import { createPublicClient, encodeFunctionData, fallback, http, isAddress, parseAbi, parseUnits } from "viem";
+import {
+  createPublicClient,
+  encodeAbiParameters,
+  encodeFunctionData,
+  fallback,
+  formatUnits,
+  http,
+  isAddress,
+  keccak256,
+  parseAbi,
+  parseUnits,
+} from "viem";
 import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
 import collateralMarkets from "../data/collateral-markets.json";
@@ -14,6 +25,10 @@ export interface Env extends TalkEnv {
   CHAIN_RPC_URL?: string;
   /** StockVaultV4Lens address: the only way to read a v4 vault's value in USDG. Unset, a v4 vault's tvl_usd is null. */
   VAULT_LENS?: string;
+  /** JSON {vaultId: MarketParams}; overrides data/collateral-markets.json per vault. */
+  COLLATERAL_MARKETS?: string;
+  /** JSON-RPC endpoint used to preview shares, read the oracle price and the market liquidity. */
+  RPC_URL?: string;
 }
 
 interface HalfStats {
@@ -117,6 +132,19 @@ export const ROUTER_ABI = parseAbi([
   "function depositUsdgV4(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256 shares)",
 ]);
 
+// Morpho Blue singleton on Robinhood Chain; code at this address read with eth_getCode on chain 4663.
+const MORPHO_BLUE = "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010";
+// supplyCollateral gets this much less than the previewed shares so a small price move between preview and mining cannot revert it.
+const SHARE_HAIRCUT_BPS = 10n;
+const MARKET_PARAMS = "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv)";
+const MORPHO_ABI = parseAbi([
+  `function supplyCollateral(${MARKET_PARAMS} marketParams, uint256 assets, address onBehalf, bytes data)`,
+  `function borrow(${MARKET_PARAMS} marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver) returns (uint256, uint256)`,
+  "function market(bytes32 id) view returns (uint128 totalSupplyAssets, uint128 totalSupplyShares, uint128 totalBorrowAssets, uint128 totalBorrowShares, uint128 lastUpdate, uint128 fee)",
+]);
+const VAULT_READ_ABI = parseAbi(["function previewDeposit(uint256 assets) view returns (uint256)"]);
+const ORACLE_ABI = parseAbi(["function price() view returns (uint256)"]);
+
 const CORS_HEADERS: Record<string, string> = {
   "access-control-allow-origin": "*",
 };
@@ -197,6 +225,7 @@ function listVaults(): McpToolResult {
       id: vault.id,
       ticker: vault.symbol,
       gate_state: gate.state,
+      ...doorFields(vault),
       open: vault.open,
       ...venueFields(vault),
       deposit_cap_usd: vault.depositCapUsd,
@@ -281,6 +310,17 @@ export function depositLimitUsd(vault: Vault, gate: Gate): { usd: number; why: s
     return { usd: perTx, why: `the reduced gate caps a deposit at $${perTx.toLocaleString("en-US")} per transaction` };
   }
   return { usd: vault.depositCapUsd, why: `the ${vault.id} vault is sized to its pool at $${vault.depositCapUsd.toLocaleString("en-US")}` };
+}
+
+/** The door a vault shows: state (open | reduced | closed), the most one transaction may deposit (0 when closed) and what the weaker replay half kept, in percent a year.
+ *  `open: true` elsewhere in the API means the vault accepts deposits, which is state open or reduced. */
+export function doorFields(vault: Vault): { state: Gate["state"]; per_tx_cap_usd: number; kept_worst_half_pct: number } {
+  const gate = gateOf(vault);
+  return {
+    state: gate.state,
+    per_tx_cap_usd: gate.state === "closed" ? 0 : depositLimitUsd(vault, gate).usd,
+    kept_worst_half_pct: gate.worst_half_apr,
+  };
 }
 
 function parseAmount(raw: unknown, decimals: number, label: string): bigint | string {
@@ -569,6 +609,174 @@ async function scanWalletTool(env: Env, args: Record<string, unknown>, client?: 
   return textResult(scanPayload(env, scan));
 }
 
+interface MarketParams {
+  loanToken: string;
+  collateralToken: string;
+  oracle: string;
+  irm: string;
+  lltv: string;
+}
+
+const WAD = 10n ** 18n;
+
+/** The Morpho market configured for a vault, or the reason there is none. Never returns a half-valid market. */
+function marketFor(env: Env, id: string, vaultAddress: string | undefined): MarketParams | string {
+  let overrides: Record<string, unknown> = {};
+  if (env.COLLATERAL_MARKETS) {
+    try {
+      overrides = JSON.parse(env.COLLATERAL_MARKETS) as Record<string, unknown>;
+    } catch {
+      return "COLLATERAL_MARKETS is not valid JSON";
+    }
+  }
+  // web/lib/collateral-markets.json holds {oracle, irm, lltv} per vault under "markets"; the loan token is USDG and the collateral token is the deployed vault share.
+  const configured = (collateralMarkets as { markets: Record<string, Record<string, unknown>> }).markets[id];
+  const fromConfig = configured && vaultAddress ? { loanToken: USDG_ADDRESS, collateralToken: vaultAddress, ...configured } : undefined;
+  const raw = (overrides[id] ?? fromConfig) as Record<string, unknown> | undefined;
+  if (!raw) return configured ? `${id} has a configured Morpho market but no deployed vault share to use as collateral` : `no Morpho market configured for ${id}`;
+
+  for (const field of ["loanToken", "collateralToken", "oracle", "irm"] as const) {
+    if (typeof raw[field] !== "string" || !isAddress(raw[field] as string)) {
+      return `collateral market for ${id} has an invalid ${field}`;
+    }
+  }
+  if (typeof raw.lltv !== "string" || !/^\d+$/.test(raw.lltv) || BigInt(raw.lltv) <= 0n || BigInt(raw.lltv) >= WAD) {
+    return `collateral market for ${id} has an invalid lltv (wad string between 0 and 1e18)`;
+  }
+  const market = raw as unknown as MarketParams;
+  if (market.loanToken.toLowerCase() !== USDG_ADDRESS.toLowerCase()) {
+    return `collateral market for ${id} does not lend USDG`;
+  }
+  if (vaultAddress && market.collateralToken.toLowerCase() !== vaultAddress.toLowerCase()) {
+    return `collateral market for ${id} is not collateralised by the deployed ${id} vault share`;
+  }
+  return market;
+}
+
+function marketTuple(m: MarketParams) {
+  return {
+    loanToken: m.loanToken as `0x${string}`,
+    collateralToken: m.collateralToken as `0x${string}`,
+    oracle: m.oracle as `0x${string}`,
+    irm: m.irm as `0x${string}`,
+    lltv: BigInt(m.lltv),
+  };
+}
+
+function marketId(m: MarketParams): `0x${string}` {
+  const t = marketTuple(m);
+  return keccak256(
+    encodeAbiParameters(
+      [{ type: "address" }, { type: "address" }, { type: "address" }, { type: "address" }, { type: "uint256" }],
+      [t.loanToken, t.collateralToken, t.oracle, t.irm, t.lltv],
+    ),
+  );
+}
+
+function getCollateralTerms(env: Env, id: string): McpToolResult {
+  const vault = findVault(id);
+  if (!vault) return errorResult(`no vault with id "${id}"`);
+  const vaultAddress = parseVaults(env.VAULTS)[id];
+  const market = marketFor(env, id, vaultAddress);
+  if (typeof market === "string") return errorResult(market);
+  return textResult({
+    network: env.NETWORK ?? null,
+    vault: id,
+    vault_address: vaultAddress ?? null,
+    morpho: MORPHO_BLUE,
+    market_id: marketId(market),
+    market_params: market,
+    lltv_wad: market.lltv,
+    lltv_pct: Number(formatUnits(BigInt(market.lltv), 16)),
+    collateral: "Uptick vault share (24 decimals)",
+    loan: "USDG (6 decimals)",
+  });
+}
+
+async function prepareEarnAndBorrow(env: Env, args: Record<string, unknown>): Promise<McpToolResult> {
+  const id = typeof args.id === "string" ? args.id : "";
+  // Reuse the deposit rules: unknown or closed vault, bad receiver or amount, no deployed vault, reduced-gate cap.
+  const deposit = prepareDeposit(env, { ...args, asset: "stock" });
+  if (deposit.isError) return deposit;
+
+  const vaultAddress = parseVaults(env.VAULTS)[id] as `0x${string}`;
+  const market = marketFor(env, id, vaultAddress);
+  if (typeof market === "string") return errorResult(market);
+
+  const borrow = parseAmount(args.borrow_usdg, USDG_DECIMALS, "borrow_usdg");
+  if (typeof borrow === "string") return errorResult(borrow);
+  if (!env.RPC_URL) {
+    return errorResult("no RPC configured to preview the vault shares, so no collateral amount can be computed");
+  }
+
+  const amount = parseUnits((args.amount as string).trim(), STOCK_DECIMALS);
+  const receiver = args.receiver as `0x${string}`;
+  const client = createPublicClient({ transport: http(env.RPC_URL) });
+  let previewShares: bigint;
+  let price: bigint;
+  let liquidity: bigint;
+  try {
+    [previewShares, price, liquidity] = await Promise.all([
+      client.readContract({ address: vaultAddress, abi: VAULT_READ_ABI, functionName: "previewDeposit", args: [amount] }),
+      client.readContract({ address: market.oracle as `0x${string}`, abi: ORACLE_ABI, functionName: "price" }),
+      client
+        .readContract({ address: MORPHO_BLUE, abi: MORPHO_ABI, functionName: "market", args: [marketId(market)] })
+        .then(([supplied, , borrowed]) => supplied - borrowed),
+    ]);
+  } catch (error) {
+    return errorResult(`on-chain read failed, no calldata returned: ${(error as Error).message.split("\n")[0]}`);
+  }
+
+  const collateral = previewShares - (previewShares * SHARE_HAIRCUT_BPS) / 10000n;
+  if (collateral <= 0n) return errorResult("the deposit mints no shares, no calldata returned");
+  // Morpho health: collateral * price / 1e36 * lltv / 1e18, rounded down.
+  const maxBorrow = (((collateral * price) / 10n ** 36n) * BigInt(market.lltv)) / WAD;
+  if (borrow > maxBorrow) {
+    return errorResult(
+      `borrow_usdg ${args.borrow_usdg} exceeds the ${formatUnits(maxBorrow, USDG_DECIMALS)} USDG this deposit supports at the ${formatUnits(BigInt(market.lltv), 16)}% LLTV`,
+    );
+  }
+  if (borrow > liquidity) {
+    return errorResult(
+      `borrow_usdg ${args.borrow_usdg} exceeds the ${formatUnits(liquidity, USDG_DECIMALS)} USDG available to borrow in the market`,
+    );
+  }
+
+  const params = marketTuple(market);
+  const transactions: Tx[] = [
+    ...(deposit.structuredContent.transactions as Tx[]),
+    tx(
+      vaultAddress,
+      encodeFunctionData({ abi: ERC20_ABI, functionName: "approve", args: [MORPHO_BLUE, collateral] }),
+      `Approve ${formatUnits(collateral, SHARES_DECIMALS)} ${id} vault shares to Morpho Blue`,
+    ),
+    tx(
+      MORPHO_BLUE,
+      encodeFunctionData({ abi: MORPHO_ABI, functionName: "supplyCollateral", args: [params, collateral, receiver, "0x"] }),
+      `Supply ${formatUnits(collateral, SHARES_DECIMALS)} ${id} vault shares as collateral on Morpho Blue`,
+    ),
+    tx(
+      MORPHO_BLUE,
+      encodeFunctionData({ abi: MORPHO_ABI, functionName: "borrow", args: [params, borrow, 0n, receiver, receiver] }),
+      `Borrow ${args.borrow_usdg} USDG against the ${id} vault shares, sent to ${receiver}`,
+    ),
+  ];
+
+  const payload: Record<string, unknown> = {
+    ...deposit.structuredContent,
+    transactions,
+    sender_must_be: receiver,
+    shares_preview: formatUnits(previewShares, SHARES_DECIMALS),
+    collateral_shares: formatUnits(collateral, SHARES_DECIMALS),
+    borrow_usdg: String(args.borrow_usdg),
+    max_borrow_usdg: formatUnits(maxBorrow, USDG_DECIMALS),
+    market_id: marketId(market),
+    lltv_pct: Number(formatUnits(BigInt(market.lltv), 16)),
+  };
+  delete payload.asset;
+  return textResult(payload);
+}
+
 interface McpTool {
   name: string;
   description: string;
@@ -642,6 +850,33 @@ const TOOLS: McpTool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "get_collateral_terms",
+    description:
+      "Morpho Blue market for using a vault share as collateral against USDG: market params, market id and LLTV. Errors with the reason when no market is configured for the vault.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string", description: "Vault id, for example nvda." } },
+      required: ["id"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "prepare_earn_and_borrow",
+    description:
+      "Build the unsigned transactions to deposit a stock token into an open vault, supply the shares as Morpho Blue collateral and borrow USDG, in order: approve, deposit, approve shares, supplyCollateral, borrow. The collateral amount is the previewed share mint minus 0.1%, and the borrow is refused above what the LLTV allows or the market holds. No deployed vault, no configured market or no RPC means no calldata and a reason. The receiver must sign every transaction. The user signs and sends.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Vault id, for example nvda." },
+        amount: { type: "string", description: "Decimal amount of the stock token to deposit." },
+        borrow_usdg: { type: "string", description: "Decimal USDG amount to borrow." },
+        receiver: { type: "string", description: "0x address that owns the shares, the collateral and the loan, and receives the USDG." },
+      },
+      required: ["id", "amount", "borrow_usdg", "receiver"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 interface JsonRpcMessage {
@@ -680,6 +915,10 @@ async function callTool(
       return prepareDeposit(env, args);
     case "prepare_withdraw":
       return prepareWithdraw(env, args);
+    case "get_collateral_terms":
+      return getCollateralTerms(env, typeof args.id === "string" ? args.id : "");
+    case "prepare_earn_and_borrow":
+      return prepareEarnAndBorrow(env, args);
     default: {
       const result = errorResult(`unknown tool: ${String(name)}`);
       return result;

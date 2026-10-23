@@ -29,7 +29,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const data = (f) => JSON.parse(readFileSync(new URL(`../keeper/data/${f}`, import.meta.url), "utf8"));
 const universe = data("universe.json");
-const replay = data("replay.json");
+const replay = process.env.DEPLOY_REPLAY ? JSON.parse(readFileSync(process.env.DEPLOY_REPLAY, "utf8")) : data("replay.json"); // DEPLOY_REPLAY: a replay file to read instead of keeper/data/replay.json (tests use it for a v4-venue token)
 const params = data("params.json");
 const v4Depths = (() => { try { return data("v4-pools.json").pools; } catch { return {}; } })();
 const DEFAULT_RANGE_BPS = 500;

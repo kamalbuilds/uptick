@@ -28,7 +28,7 @@ export default function ForAgentsPage() {
       <TLDR>
         <ul>
           <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
-          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with five tools.</li>
+          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with seven tools.</li>
           <li>scan_wallet reads any wallet address and returns its Stock Token holdings in USD with each vault's gate. It is read-only.</li>
           <li>prepare_deposit and prepare_withdraw return unsigned transactions. The user signs and sends.</li>
         </ul>
@@ -91,7 +91,7 @@ export default function ForAgentsPage() {
       <P>
         <Code>POST /mcp</Code> speaks JSON-RPC 2.0 over Streamable HTTP. <Code>initialize</Code> returns
         protocolVersion 2025-06-18, the tools capability, serverInfo, and instructions for how to report a
-        vault. <Code>tools/list</Code> returns the five tools. <Code>tools/call</Code> runs one. A
+        vault. <Code>tools/list</Code> returns the seven tools. <Code>tools/call</Code> runs one. A
         notification, a message with no id, returns 204. A malformed body returns -32700 and an unknown
         method returns -32601.
       </P>
@@ -117,6 +117,14 @@ export default function ForAgentsPage() {
           [
             "prepare_withdraw",
             "The unsigned exit for a vault on either venue: ERC-4626 redeem, or redeemInKind with mode in_kind. Shares are 24 decimals, 18 plus the vault offset of 6.",
+          ],
+          [
+            "get_collateral_terms",
+            "The Morpho Blue market for a vault share used as collateral against USDG: market params, market id and loan-to-value limit.",
+          ],
+          [
+            "prepare_earn_and_borrow",
+            "Unsigned transactions in order: approve, deposit, approve shares, supplyCollateral, borrow. The borrow is refused above what the loan-to-value limit allows or the market holds, and a vault or market that is not live answers with a reason and no calldata.",
           ],
         ]}
         caption="The vault contract also enforces its deposit cap on-chain against its total, so the cap check in prepare_deposit is an early refusal, not the only one."
@@ -171,7 +179,7 @@ export default function ForAgentsPage() {
           The /vaults, /vaults/:id, /llms.txt and /health routes.
         </SourceRef>
         <SourceRef path="api/src/mcp.ts">
-          The JSON-RPC dispatch, the four tools, the cap checks and the refusals.
+          The JSON-RPC dispatch, the seven tools, the cap checks and the refusals.
         </SourceRef>
         <SourceRef path="web/public/llms.txt">
           The canonical gate states, caps and endpoint list.

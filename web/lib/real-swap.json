@@ -23,8 +23,8 @@
   "gapAfterBps": 76.8,
   "vault": {
     "capUsd": 24207.0,
-    "feeUsd": 7.6341,
-    "markoutLossUsd": 10.8173
+    "feeUsd": 5.4549,
+    "markoutLossUsd": 7.632
   },
   "source": "keeper/scripts/moment.py: keeper/data/replay.json window, PoolManager Swap logs, Chainlink answer at the swap block; markout is engine.Pool.M1h",
   "window": {
