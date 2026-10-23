@@ -173,3 +173,81 @@ the incentive is 1.0741 and the bad-debt gap falls to 17.3%, inside the range of
 - The builder's -37.9% and 323K gas figures were not re-measured; the NVDA market oracle's 349,200 s bound was taken
   from the builder's warp, only its live `price()` was read here.
 - ERC-8056 behaviour of the Chainlink feed across a real split was reasoned, not observed.
+
+## Fix verification (branch `r2-oracle-fix`, 2026-10-23)
+
+Fixes in `git log integration..r2-oracle-fix`: O-M1 `649b89a`, O-L1 `e4d5b2c`, O-L2 `01c4c8c`. `git diff integration...HEAD --stat` restricted to
+`src/StockVault.sol`, `src/v4` and `src/VaultFactory.sol` is empty: StockVault runtime 24,504 / initcode 36,068, StockVaultV4 24,277 /
+43,911, VaultFactory 8,597 / 9,850, all unchanged (`forge build --sizes`). New sizes: `UptickShareOracle` runtime 5,047
+(was 3,243), initcode 6,588; `UptickShareOracleFactory` runtime 7,678, initcode 7,818. Gas of `price()` first call / warm:
+v3 323,285 / 183,646 before, 325,561 / 185,922 after (+2,276); v4 204,748 / 118,609 before, 207,312 / 121,173 after (+2,564).
+Suites, one forge process (`-j 1`) on the public RPC at head: `--match-contract 'OracleReview|ShareCollateral|DeployAll'`
+75 of 75 pass (a first run had one red, the O-M1 PoC dividing by zero because its `FakeVault` reported a zero TWAP to the
+new rebuild; the fake now reports 1.0; that revert exists only for a forged vault).
+
+| Finding | Fix | Evidence it can fail |
+|---|---|---|
+| O-M1 | `UptickShareOracleFactory` (immutable VaultFactory, `isVault` required, CREATE2 per vault, `isOracle`, `oracleOf`, `OracleCreated`); oracle constructor takes no argument, reads the factory and vault from its deployer, stores `factory()`, `vault()`, `oracleFactory()`; `DeployAll` deploys the factory by default | With the `isVault` checks removed from the factory and the oracle and `isOracle` never recorded: `test_poc_forgedFactoryOracleCannotComeFromTheOracleFactory`, `test_onlyFactoryVaultsGetAnOracle`, `test_aLenderCanVerifyTheOracleAgainstTheOracleFactory`, `test_createOracleEmitsAndLandsOnThePredictedAddress` red; restored, green. `DEPLOY_ORACLE_FACTORY` default flipped to false: `test_oracleFactoryIsDeployedByDefaultAndBoundToTheVaultFactory` red; restored, green |
+| O-L1 | `cut += _pendingCutUsdg(...)`: gross rebuilt at `min(Chainlink, TWAP)` from `positionInfo()` and idle balances, minus the uncollected cut, minus `totalAssets()` | Subtraction removed: Chainlink 60 bp above the pool, price change across the sweep +1,263 ppm (the whole cut); restored: -3 ppm (95 bp: -5 ppm; Chainlink at the pool: 0 ppm). Both pool orientations: TSLA (Stock Token currency0) cut 424 ppm, change -1 ppm |
+| O-L2 | Documented in `SECURITY.md` residuals with the PoC references | Sweep liquidator reverts `SharesLocked`, exact liquidator passes in the same block (`test_poc_dustMintToLiquidatorRevertsLiquidation`), control green. The `web/app/docs/collateral/page.tsx` paragraph was not written: the UI skill guard hook blocked the edit (no Hallmark/ui-craft/DESIGN.md read in this lane) and was not overridden |
+
+Deviation from the brief, measured: the O-L1 PoC lands within 1 ppm on the upside (the price does not rise) but sits 3 ppm
+below the pre-sweep price at 60 bp, not within 1 ppm. The vault does not say which leg its pending fees are in, so the
+rebuild takes the dearer reading (all stock, valued at Chainlink) and over-deducts the USDG part of the cut by
+`(Chainlink / TWAP - 1)`, at most 1% of the cut under the deviation gate (bound asserted in the test). It is the lender-safe
+side and the only alternative that is exact for one split is wrong by the same amount for the other.
+
+### Fresh-eyes re-review of the diff to `contracts/src` and `contracts/script` (`git diff integration...HEAD`)
+
+No Critical, High, Medium or Low finding. Verdict: **SHIP**, with the conditions at the end.
+
+- **CREATE2 squatting.** The deployer in the CREATE2 formula is the oracle factory itself, so no one else can occupy a
+  vault's oracle address; a rival factory computes a different address (`test_createOracleEmitsAndLandsOnThePredictedAddress`).
+  Pre-funding the predicted address changes nothing: the oracle holds no funds and no balance is read from it.
+- **Deploying an oracle before the vault's owner.** `createOracle` is permissionless but takes no parameter beyond a vault
+  the VaultFactory registered, and a second call returns the existing oracle without reverting
+  (`test_createOracleIsIdempotentAndPermissionless`), so the first caller gets exactly the oracle the owner would, and a
+  front-run cannot make the owner's transaction fail. No script in the repo calls `createOracle`, so no deploy can be
+  blocked by an earlier one.
+- **Griefing the constructor.** Its inputs are the VaultFactory (immutable), a registered vault's immutables and the token
+  decimals; a caller controls none of them, so if `createOracle` can revert for a vault it reverts for everyone and the
+  cause is in the vault, not in the caller.
+- **Reentrancy and `isOracle`.** The oracle constructor makes external calls (vault, tokens; the Stock Token is an issuer
+  upgradeable proxy). A hostile token could re-enter `createOracle` for another vault and clobber `_deploying`, but the
+  constructor read its parameters before any such call, and `isOracle` and `oracleOf` are written only after `new`
+  returns, only for the address `new` returned. No path writes `isOracle[x]` for an address the factory did not create.
+- **Spoofing by imitation.** A contract that copies the factory and binds it to a yes-registry yields an oracle with the
+  same runtime code; it is not in the real factory's `isOracle`, `oracleFactory()` and `factory()` name the imitation, and
+  `test_poc_forgedFactoryOracleCannotComeFromTheOracleFactory` shows the genuine oracle passes all four checks while the
+  look-alike fails each. This is detection, not prevention: nothing on chain can tie the oracle factory to the VaultFactory
+  without changing VaultFactory, and an oracle factory that is bound to the real VaultFactory but has different code looks
+  identical through `factory()`. The root of trust is the published oracle factory address (and its verified source),
+  exactly as the VaultFactory address already is.
+- **Underflow in the pending-cut subtraction.** Every subtraction is guarded (`gross > uncollectedCut + ta`,
+  `value > cut`), the sum cannot overflow at realistic balances, and `value` saturates at zero. When the vault's own `net`
+  saturates to zero, `totalAssets()` is 0, the cap is 0 and the price is 0 whatever the subtraction does.
+- **Double count with the cap.** The cap is not reduced by the pending cut: the result is `min(value - cut - pending,
+  ta x px)`. A double count would drop the price by the whole cut; the measured change is 0 ppm with the cap binding
+  (Chainlink at the pool) and -1 to -5 ppm when it does not, and the test's lower bound (`offset x cut + 1` ppm) fails on a
+  double count. On v3 the rebuilt pending cut is exactly 0 after pushes, accrued fees and a 50 bp Chainlink offset
+  (`test_pendingCutIsZeroOnV3`); on v4 it is 0 before the sweep.
+- **Mismatch attribution.** The rebuild attributes any difference between its gross and the vault's to the pending cut.
+  The inputs are the vault's own: `positionInfo()` reads the same `_readLenient` snapshot as `totalAssets()` and `health()`
+  (same TWAP, same fee reads), the formulas are copied with the vault's rounding, and the measured residual with nothing
+  pending is under one USDG unit. A future vault version that changed `_valuationAt` would shift this silently: the oracle
+  is bound to the audited creation codes through `isVault`, which is what keeps this closed.
+- **New revert surface.** `_sqrtToUsd` and the nav division can divide by zero only where the vault's own `totalAssets()`
+  does, and `totalAssets()` is called before them; no new revert path for a registered vault.
+- **Gas.** +2.3K (v3) and +2.6K (v4) on a 207K to 326K call, about 1%. `valueInUsdg` gained a third argument; nothing in
+  the repo besides the oracle and its tests calls it.
+
+Conditions on SHIP: publish the oracle factory address next to the VaultFactory, and have the market-creation flow check
+`oracleFactory.isOracle(oracle)`, `oracle.factory()`, `collateralToken == oracle.vault()` and `loanToken == oracle.usdg()`
+(all four are asserted in `test_aLenderCanVerifyTheOracleAgainstTheOracleFactory` and the O-M1 PoC).
+
+Blind spots: head-of-chain public RPC fork, not the pinned block, so pool depth and cut sizes (1,263 ppm PLTR, 424 ppm TSLA)
+drift; v3 vaults were tested with the NVDA pool only and v4 with PLTR and TSLA, no hooked v4 pool; a Stock Token that
+reenters from its transfer hooks was reasoned, not run; the 3 ppm drift was measured on two pools, its bound is analytic;
+the `collateral` docs page paragraph for O-L2 is not written (hook-blocked); no mainnet deploy was run, `DeployAll` was
+exercised in its simulated fork form only; `backstage gate --fail-on HIGH` fails on five existing findings in
+`docs/research/FABLES.md` and none in files this branch changes.
