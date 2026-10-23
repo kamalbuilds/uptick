@@ -1,6 +1,5 @@
-import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
-import { handleMcp, type Env } from "./mcp";
+import { handleMcp, UNIVERSE, venueFields, type Env } from "./mcp";
 import LLMS from "./llms";
 import { keeperList, keeperVault } from "./keeper";
 import { postTalk, talkCount } from "./talk";
@@ -34,25 +33,6 @@ interface TokenReplay {
   swaps_replayed: number;
 }
 
-interface Vault {
-  id: string;
-  symbol: string;
-  name: string;
-  token: string;
-  pool: string;
-  feeTierPips: number;
-  feeTier: string;
-  /** Fee the vault keeps on deposit and mint, in bps: max(pool fee tier, 35). */
-  entryFeeBps: number;
-  feed: string;
-  /** Vault size in USD: the deposit cap the vault is created with, sized to its pool depth. */
-  depositCapUsd: number;
-  open: boolean;
-  feeAprPct: number;
-  keptAprPct: number;
-  gate?: { state: string; reason: string; floor_apr: number; worst_half_apr: number; swaps: number; days: number };
-}
-
 interface ReplayWindow {
   start: string;
   end: string;
@@ -68,7 +48,6 @@ interface Replay {
   window: ReplayWindow;
 }
 
-const UNIVERSE = vaultUniverse as { vaults: Vault[] };
 const REPLAY = replay as unknown as Replay;
 
 const CORS_HEADERS: Record<string, string> = {
@@ -99,7 +78,7 @@ function listVaults() {
     entry_fee_bps: vault.entryFeeBps,
     fee_apr_pct: vault.feeAprPct,
     kept_apr_pct: vault.keptAprPct,
-    pool: vault.pool,
+    ...venueFields(vault),
     window_days: REPLAY.window.days,
   }));
 }
@@ -133,9 +112,7 @@ function vaultDetail(id: string): Response {
     open: vault.open,
     deposit_cap_usd: vault.depositCapUsd,
     token: vault.token,
-    pool: vault.pool,
-    fee_tier_pips: vault.feeTierPips,
-    fee_tier: vault.feeTier,
+    ...venueFields(vault),
     entry_fee_bps: vault.entryFeeBps,
     feed: vault.feed,
     fee_apr_pct: vault.feeAprPct,

@@ -48,14 +48,14 @@ describe("GET /vaults", () => {
     expect(body.every((v) => v.window_days === replay.window.days)).toBe(true);
   });
 
-  test("seventeen vaults: aapl, amd, amzn, googl, intc, meta, mu, nvda, qqq, spy and uso take deposits, the other six are closed", async () => {
+  test("seventeen vaults: pltr, aapl, amd, amzn, googl, intc, meta, mu, nvda, qqq, spy and uso take deposits, the other five are closed", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const byId = Object.fromEntries(body.map((v) => [v.id, v.open]));
 
     expect(body.length).toBe(17);
     expect(byId).toEqual({
-      nvda: true, aapl: true, googl: true, amzn: true, meta: true, mu: true, qqq: true, spy: true, amd: true, intc: true, uso: true,
-      crcl: false, gme: false, pltr: false, mstr: false, spcx: false, tsla: false,
+      nvda: true, aapl: true, googl: true, amzn: true, meta: true, mu: true, qqq: true, spy: true, amd: true, intc: true, uso: true, pltr: true,
+      crcl: false, gme: false, mstr: false, spcx: false, tsla: false,
     });
   });
 
@@ -73,12 +73,16 @@ describe("GET /vaults", () => {
     expect(detail.deposit_cap_usd).toBe(cap.aapl);
   });
 
-  test("entry_fee_bps is the larger of the pool fee tier and 35 bp: 35 on nvda, 100 on the 1% GME pool, on the list and the detail", async () => {
+  test("entry_fee_bps is the larger of the pool swap fee and 35 bp: 35 on nvda, 100 on the 1% GME v3 pool, 109.9 on the 1% PLTR v4 pool (LP fee plus protocol fee), on the list and the detail", async () => {
     const body = (await (await get("/vaults")).json()) as Array<VaultSummary & { entry_fee_bps: number }>;
     const fee = Object.fromEntries(body.map((v) => [v.id, v.entry_fee_bps]));
     expect(fee.nvda).toBe(35);
     expect(fee.gme).toBe(100);
-    for (const u of vaultUniverse.vaults) expect(fee[u.id]).toBe(Math.max(u.feeTierPips, 3500) / 100);
+    for (const u of vaultUniverse.vaults) {
+      if (u.venue === "v4") expect(fee[u.id]).toBeGreaterThanOrEqual(u.feeTierPips / 100); // the v4 swap fee adds the PoolManager's protocol fee to the LP fee
+      else expect(fee[u.id]).toBe(Math.max(u.feeTierPips, 3500) / 100);
+    }
+    expect(fee.pltr).toBe(109.9);
     const detail = (await (await get("/vaults/gme")).json()) as { entry_fee_bps: number };
     expect(detail.entry_fee_bps).toBe(100);
   });
@@ -86,8 +90,8 @@ describe("GET /vaults", () => {
   test("every vault carries a gate state and a written reason", async () => {
     const body = (await (await get("/vaults")).json()) as VaultSummary[];
     const want: Record<string, string> = {
-      aapl: "open", googl: "open", nvda: "reduced", amzn: "reduced", spy: "reduced", meta: "reduced", mu: "reduced", qqq: "reduced", amd: "reduced", intc: "reduced", uso: "reduced",
-      spcx: "closed", crcl: "closed", gme: "closed", pltr: "closed", mstr: "closed", tsla: "closed",
+      aapl: "open", googl: "open", pltr: "open", nvda: "reduced", amzn: "reduced", spy: "reduced", meta: "reduced", mu: "reduced", qqq: "reduced", amd: "reduced", intc: "reduced", uso: "reduced",
+      spcx: "closed", crcl: "closed", gme: "closed", mstr: "closed", tsla: "closed",
     };
     expect(body.length).toBeGreaterThan(0);
     for (const v of body) {

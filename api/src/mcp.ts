@@ -9,6 +9,8 @@ export interface Env extends TalkEnv {
   NETWORK?: string;
   /** JSON-RPC endpoint of the chain the VAULTS addresses live on. Unset, /keeper/vaults/:id serves replay figures only. */
   CHAIN_RPC_URL?: string;
+  /** StockVaultV4Lens address: the only way to read a v4 vault's value in USDG. Unset, a v4 vault's tvl_usd is null. */
+  VAULT_LENS?: string;
 }
 
 interface HalfStats {
@@ -42,16 +44,19 @@ interface Gate {
   days: number;
 }
 
-interface Vault {
+export interface Vault {
   id: string;
   symbol: string;
   name: string;
   token: string;
+  /** The v3 pool address, or for a v4 vault the pool id (32 bytes, lowercase). */
   pool: string;
   feeTierPips: number;
   feeTier: string;
   /** Fee the vault keeps on deposit and mint, in bps: max(pool fee tier, 35). */
   entryFeeBps: number;
+  /** The backend the vault holds its position in: a Uniswap v3 pool (StockVault) or a Uniswap v4 pool (StockVaultV4). */
+  venue: "v3" | "v4";
   feed: string;
   /** Vault size in USD, sized to the pool depth; the vault is created with this deposit cap. */
   depositCapUsd: number;
@@ -75,7 +80,8 @@ interface Replay {
   window: { start: string; end: string; days: number; calibration_end: string };
 }
 
-const UNIVERSE = vaultUniverse as { vaults: Vault[] };
+/** keeper/scripts/export-web.ts writes poolManager (the Uniswap v4 PoolManager every StockVaultV4 holds its position in) beside the vault list. */
+export const UNIVERSE = vaultUniverse as { poolManager: string; vaults: Vault[] };
 const REPLAY = replay as unknown as Replay;
 
 export const PROTOCOL_VERSION = "2025-06-18";
@@ -94,15 +100,18 @@ const STOCK_DECIMALS = 18;
 const USDG_DECIMALS = 6;
 const SHARES_DECIMALS = 24;
 
-const ERC20_ABI = parseAbi([
+// Signatures match web/lib/abis.ts (erc20Abi, vaultAbi, routerAbi) and the compiled contracts; test/abi-sync.test.ts fails on drift.
+export const ERC20_ABI = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",
 ]);
-const ERC4626_ABI = parseAbi([
+export const ERC4626_ABI = parseAbi([
   "function deposit(uint256 assets, address receiver) returns (uint256)",
   "function redeem(uint256 shares, address receiver, address owner) returns (uint256)",
+  "function redeemInKind(uint256 shares, address receiver, address owner) returns (uint256 stockOut, uint256 usdgOut)",
 ]);
-const ROUTER_ABI = parseAbi([
-  "function depositUsdg(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256)",
+export const ROUTER_ABI = parseAbi([
+  "function depositUsdg(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256 shares)",
+  "function depositUsdgV4(address vault, uint256 usdgIn, uint256 minShares, address receiver) returns (uint256 shares)",
 ]);
 
 const CORS_HEADERS: Record<string, string> = {
@@ -150,6 +159,22 @@ export function parseVaults(raw: string | undefined): Record<string, string> {
   }
 }
 
+/** Where the vault's position lives, for every tool that describes a vault. A v4 vault has a pool id inside the PoolManager singleton, not a pool address. */
+export function venueFields(vault: Vault): Record<string, unknown> {
+  return {
+    venue: vault.venue,
+    fee_tier_pips: vault.feeTierPips,
+    fee_tier: vault.feeTier,
+    pool: vault.pool,
+    ...(vault.venue === "v4" ? { pool_id: vault.pool, pool_manager: UNIVERSE.poolManager } : {}),
+  };
+}
+
+/** A configured address, or undefined when it is missing or malformed: a bad VAULTS or ROUTER entry reads as "not live", never as calldata to a wrong address. */
+function liveAddress(raw: string | undefined): `0x${string}` | undefined {
+  return raw && isAddress(raw) ? (raw as `0x${string}`) : undefined;
+}
+
 function textResult(payload: Record<string, unknown>, isError = false): McpToolResult {
   return {
     content: [{ type: "text", text: JSON.stringify(payload) }],
@@ -170,6 +195,7 @@ function listVaults(): McpToolResult {
       ticker: vault.symbol,
       gate_state: gate.state,
       open: vault.open,
+      ...venueFields(vault),
       deposit_cap_usd: vault.depositCapUsd,
       entry_fee_bps: vault.entryFeeBps,
       fee_apr_pct: vault.feeAprPct,
@@ -208,9 +234,7 @@ function getVaultEvidence(id: string): McpToolResult {
     open: vault.open,
     deposit_cap_usd: vault.depositCapUsd,
     token: vault.token,
-    pool: vault.pool,
-    fee_tier_pips: vault.feeTierPips,
-    fee_tier: vault.feeTier,
+    ...venueFields(vault),
     entry_fee_bps: vault.entryFeeBps,
     feed: vault.feed,
     fee_apr_pct: vault.feeAprPct,
@@ -289,6 +313,20 @@ function tx(to: string, data: string, description: string): Tx {
   return { chainId: CHAIN_ID, to, data, value: "0", description };
 }
 
+/** The refusal for a vault whose address is not in VAULTS: the gate and venue ride along so the caller sees why and where, and no transaction is built. */
+function notLive(vault: Vault, gate: Gate): McpToolResult {
+  return textResult(
+    {
+      error: `no deployed vault for ${vault.id} on this network`,
+      address_live: false,
+      vault: vault.id,
+      venue: vault.venue,
+      gate: { state: gate.state, reason: gate.reason },
+    },
+    true,
+  );
+}
+
 /** Refusal text when `usd` of deposit exceeds the vault's limit, else null. Stock amounts are valued at the universe's Chainlink read. */
 function overLimit(vault: Vault, gate: Gate, usd: number, unit: string): string | null {
   const limit = depositLimitUsd(vault, gate);
@@ -313,16 +351,15 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
 
   const asset = args.asset === "usdg" ? "usdg" : "stock";
 
-  const vaultAddress = parseVaults(env.VAULTS)[id];
-  if (!vaultAddress) {
-    return errorResult(`no deployed vault for ${id} on this network`);
-  }
+  const vaultAddress = liveAddress(parseVaults(env.VAULTS)[id]);
+  if (!vaultAddress) return notLive(vault, gate);
 
   const transactions: Tx[] = [];
   const extra: Record<string, unknown> = {};
 
   if (asset === "usdg") {
-    if (!env.ROUTER) return errorResult("USDG zap router not deployed yet");
+    const router = liveAddress(env.ROUTER);
+    if (!router) return errorResult("USDG zap router not deployed yet");
     const amount = parseAmount(args.amount, USDG_DECIMALS, "amount");
     if (typeof amount === "string") return errorResult(amount);
     const over = overLimit(vault, gate, Number(args.amount), "USDG");
@@ -331,18 +368,20 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
     const approveData = encodeFunctionData({
       abi: ERC20_ABI,
       functionName: "approve",
-      args: [env.ROUTER as `0x${string}`, amount],
+      args: [router, amount],
     });
     const zapData = encodeFunctionData({
       abi: ROUTER_ABI,
-      functionName: "depositUsdg",
-      args: [vaultAddress as `0x${string}`, amount, 0n, receiver as `0x${string}`],
+      // a StockVaultV4 swaps in its Uniswap v4 pool, so it has its own router entry point (web/components/deposit-panel.tsx picks the same one)
+      functionName: vault.venue === "v4" ? "depositUsdgV4" : "depositUsdg",
+      args: [vaultAddress, amount, 0n, receiver as `0x${string}`],
     });
     transactions.push(
       tx(USDG_ADDRESS, approveData, `Approve ${args.amount} USDG to the Uptick router`),
-      tx(env.ROUTER, zapData, `Zap ${args.amount} USDG into vault ${id} for ${receiver}`),
+      tx(router, zapData, `Zap ${args.amount} USDG into vault ${id} for ${receiver}`),
     );
     extra.usdg_in = String(args.amount);
+    extra.router_function = vault.venue === "v4" ? "depositUsdgV4" : "depositUsdg";
   } else {
     const amount = parseAmount(args.amount, STOCK_DECIMALS, "amount");
     if (typeof amount === "string") return errorResult(amount);
@@ -352,7 +391,7 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
     const approveData = encodeFunctionData({
       abi: ERC20_ABI,
       functionName: "approve",
-      args: [vaultAddress as `0x${string}`, amount],
+      args: [vaultAddress, amount],
     });
     const depositData = encodeFunctionData({
       abi: ERC4626_ABI,
@@ -369,6 +408,7 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
   const payload: Record<string, unknown> = {
     network: env.NETWORK ?? null,
     vault: id,
+    venue: vault.venue,
     asset,
     receiver,
     entry_fee_bps: vault.entryFeeBps,
@@ -395,24 +435,36 @@ function prepareWithdraw(env: Env, args: Record<string, unknown>): McpToolResult
   const shares = parseAmount(args.shares, SHARES_DECIMALS, "shares");
   if (typeof shares === "string") return errorResult(shares);
 
-  const vaultAddress = parseVaults(env.VAULTS)[id];
-  if (!vaultAddress) {
-    return errorResult(`no deployed vault for ${id} on this network`);
-  }
+  const mode = args.mode === undefined ? "redeem" : args.mode;
+  if (mode !== "redeem" && mode !== "in_kind") return errorResult('mode must be "redeem" or "in_kind"');
 
-  const redeemData = encodeFunctionData({
+  const vaultAddress = liveAddress(parseVaults(env.VAULTS)[id]);
+  if (!vaultAddress) return notLive(vault, gateOf(vault));
+
+  // StockVault and StockVaultV4 share both exit signatures. redeemInKind reads no oracle and swaps nothing, so it stays open when redeem is gated.
+  const owner = receiver as `0x${string}`;
+  const inKind = mode === "in_kind";
+  const data = encodeFunctionData({
     abi: ERC4626_ABI,
-    functionName: "redeem",
-    args: [shares, receiver as `0x${string}`, receiver as `0x${string}`],
+    functionName: inKind ? "redeemInKind" : "redeem",
+    args: [shares, owner, owner],
   });
 
   return textResult({
     network: env.NETWORK ?? null,
     vault: id,
+    venue: vault.venue,
+    mode,
     shares: String(args.shares),
     receiver,
     transactions: [
-      tx(vaultAddress, redeemData, `Redeem ${args.shares} vault shares from ${id} to ${receiver}`),
+      tx(
+        vaultAddress,
+        data,
+        inKind
+          ? `Redeem ${args.shares} vault shares from ${id} in kind (both tokens, pro rata) to ${receiver}`
+          : `Redeem ${args.shares} vault shares from ${id} to ${receiver}`,
+      ),
     ],
   });
 }
@@ -450,7 +502,7 @@ const TOOLS: McpTool[] = [
   {
     name: "prepare_deposit",
     description:
-      "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Refuses an amount above the vault's deposit_cap_usd (its size, set from the pool's depth) or, for a reduced vault, above its per-transaction cap, whichever is lower; the vault contract also enforces the cap on-chain against its total. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router). The vault keeps an entry fee (the larger of the pool's fee tier and 0.35%, returned as entry_fee_bps) out of every deposit, for the holders who stay; shares are minted against the amount net of it. The user signs and sends.",
+      "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Refuses an amount above the vault's deposit_cap_usd (its size, set from the pool's depth) or, for a reduced vault, above its per-transaction cap, whichever is lower; the vault contract also enforces the cap on-chain against its total. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router: depositUsdg for a Uniswap v3 vault, depositUsdgV4 for a Uniswap v4 vault, see venue). The vault keeps an entry fee (the larger of the pool's fee tier and 0.35%, returned as entry_fee_bps) out of every deposit, for the holders who stay; shares are minted against the amount net of it. The user signs and sends.",
     inputSchema: {
       type: "object",
       properties: {
@@ -466,13 +518,14 @@ const TOOLS: McpTool[] = [
   {
     name: "prepare_withdraw",
     description:
-      "Build the unsigned ERC4626 redeem transaction for a vault. Share amounts are 24 decimals (18 plus the vault offset of 6). The user signs and sends.",
+      "Build the unsigned exit transaction for a vault on either venue (Uniswap v3 StockVault or Uniswap v4 StockVaultV4): ERC4626 redeem by default, or redeemInKind with mode in_kind. Share amounts are 24 decimals (18 plus the vault offset of 6). The user signs and sends.",
     inputSchema: {
       type: "object",
       properties: {
         id: { type: "string", description: "Vault id, for example nvda." },
         shares: { type: "string", description: "Decimal share amount, 24 decimals." },
-        receiver: { type: "string", description: "0x address that receives the underlying stock token." },
+        receiver: { type: "string", description: "0x address that receives the underlying stock token (redeem) or both tokens (in_kind)." },
+        mode: { type: "string", enum: ["redeem", "in_kind"], default: "redeem", description: "redeem: ERC4626 redeem into the stock token, priced to the oracle. in_kind: your slice of both the stock token and USDG, no oracle read, never gated." },
       },
       required: ["id", "shares", "receiver"],
       additionalProperties: false,
