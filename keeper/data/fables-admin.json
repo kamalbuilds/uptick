@@ -1,10 +1,10 @@
 {
- "block": 95910513,
+ "block": 95919274,
  "accessManager": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
  "accessManagerDeployBlock": 37250998,
  "minSetbackS": 432000,
  "targets": {
-  "0x70a9a88402989226847ec122043ce5e7ff462080": {
+  "0x66622f77b797d506e5376f7798b67ab288966080": {
    "name": "FablesRWA",
    "closed": false,
    "adminDelayS": 3600,
@@ -30,70 +30,20 @@
    "functionRoles": {
     "clearPoke 0x5f4934a8": 4,
     "pause 0x136439dd": 4,
+    "pausePool 0x016b937e": 4,
     "pokeFee 0x3f740010": 1,
     "setBallotGate 0xae4a5785": 0,
     "setClaimFee 0x05e517e7": 0,
+    "setClaimFeeBps 0x017a31b8": 9,
     "setDayOverrides 0xb206aea0": 2,
     "setDistributor 0xd0ba2baa": 0,
     "setDstMode 0x00cc05a6": 2,
     "setFFFeeSink 0x26f5ef52": 0,
     "setPaused 0x51789ea2": 0,
+    "setPoolAsymmetry 0x4cee6193": 0,
     "setPoolConfig 0xe8fe08b8": 0,
+    "setPoolPaused 0xb56cc687": 0,
     "setSessionHours 0xc51198c6": 2
-   }
-  },
-  "0x08e52564bad99e05a694b4809f397edca417a080": {
-   "name": "FablesRamp",
-   "closed": false,
-   "adminDelayS": 86400,
-   "functionRoles": {
-    "clearPoke 0x5f4934a8": 4,
-    "pause 0x136439dd": 4,
-    "pokeFee 0x3f740010": 1,
-    "setBallotGate 0xae4a5785": 0,
-    "setClaimFee 0x05e517e7": 0,
-    "setDistributor 0xd0ba2baa": 0,
-    "setFFFeeSink 0x26f5ef52": 0,
-    "setPaused 0x51789ea2": 0,
-    "setPoolConfig 0x4dc4b5c9": 0
-   }
-  },
-  "0x8af95932ec4484fb10c641a4cbcf19a798cb2080": {
-   "name": "FablesRWA",
-   "closed": false,
-   "adminDelayS": 3600,
-   "functionRoles": {
-    "clearPoke 0x5f4934a8": 4,
-    "pause 0x136439dd": 4,
-    "pokeFee 0x3f740010": 1,
-    "setBallotGate 0xae4a5785": 0,
-    "setClaimFee 0x09974324": 0,
-    "setDayOverrides 0x0a7f7958": 2,
-    "setDistributor 0xd0ba2baa": 0,
-    "setDstMode 0xb6a96e76": 2,
-    "setFFFeeSink 0x26f5ef52": 0,
-    "setPaused 0x51789ea2": 0,
-    "setPoolConfig 0xe8fe08b8": 0,
-    "setSessionHours 0xd2a92a26": 2
-   }
-  },
-  "0x66622f77b797d506e5376f7798b67ab288966080": {
-   "name": "FablesRWA",
-   "closed": false,
-   "adminDelayS": 3600,
-   "functionRoles": {
-    "clearPoke 0x5f4934a8": 4,
-    "pause 0x136439dd": 4,
-    "pokeFee 0x8aebf0c1": 1,
-    "setBallotGate 0xae4a5785": 0,
-    "setClaimFee 0x09974324": 0,
-    "setDayOverrides 0x0a7f7958": 2,
-    "setDistributor 0xd0ba2baa": 0,
-    "setDstMode 0xb6a96e76": 2,
-    "setFFFeeSink 0x26f5ef52": 0,
-    "setPaused 0x51789ea2": 0,
-    "setPoolConfig 0xe8fe08b8": 0,
-    "setSessionHours 0xd2a92a26": 2
    }
   },
   "0xa0e8fbff13e24af2b5e61a72800e08a161bde080": {
@@ -111,6 +61,65 @@
     "setDstMode 0xb6a96e76": 2,
     "setFFFeeSink 0x26f5ef52": 0,
     "setPaused 0x51789ea2": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  },
+  "0x70a9a88402989226847ec122043ce5e7ff462080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x8aebf0c1": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolConfig 0xe8fe08b8": 0,
+    "setSessionHours 0xd2a92a26": 2
+   }
+  },
+  "0x08e52564bad99e05a694b4809f397edca417a080": {
+   "name": "FablesRamp",
+   "closed": false,
+   "adminDelayS": 86400,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pausePool 0x016b937e": 4,
+    "pokeFee 0x3f740010": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x05e517e7": 0,
+    "setClaimFeeBps 0x017a31b8": 9,
+    "setDistributor 0xd0ba2baa": 0,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolAsymmetry 0x4cee6193": 0,
+    "setPoolConfig 0x4dc4b5c9": 0,
+    "setPoolPaused 0xb56cc687": 0
+   }
+  },
+  "0x8af95932ec4484fb10c641a4cbcf19a798cb2080": {
+   "name": "FablesRWA",
+   "closed": false,
+   "adminDelayS": 3600,
+   "functionRoles": {
+    "clearPoke 0x5f4934a8": 4,
+    "pause 0x136439dd": 4,
+    "pokeFee 0x3f740010": 1,
+    "setBallotGate 0xae4a5785": 0,
+    "setClaimFee 0x09974324": 0,
+    "setDayOverrides 0x0a7f7958": 2,
+    "setDistributor 0xd0ba2baa": 0,
+    "setDstMode 0xb6a96e76": 2,
+    "setFFFeeSink 0x26f5ef52": 0,
+    "setPaused 0x51789ea2": 0,
+    "setPoolAsymmetry 0x4cee6193": 0,
     "setPoolConfig 0xe8fe08b8": 0,
     "setSessionHours 0xd2a92a26": 2
    }
@@ -177,6 +186,11 @@
    "grantDelayS": 0
   },
   "8": {
+   "admin": 0,
+   "guardian": 0,
+   "grantDelayS": 0
+  },
+  "9": {
    "admin": 0,
    "guardian": 0,
    "grantDelayS": 0

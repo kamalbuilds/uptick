@@ -26,7 +26,7 @@ const granted = parseAbiItem("event RoleGranted(uint64 indexed roleId, address i
 const revoked = parseAbiItem("event RoleRevoked(uint64 indexed roleId, address indexed account)");
 
 /** Functions the verified sources mark `restricted` (FablesBaseHook, FablesLedger, FablesRWA, FablesRamp, MarketCalendar). Their signatures come from each hook's Sourcify ABI. */
-const RESTRICTED = new Set(["pokeFee", "clearPoke", "setPoolConfig", "setClaimFee", "setFFFeeSink", "setDistributor", "setPaused", "pause", "setBallotGate", "setDayOverrides", "setSessionHours", "setDstMode"]);
+const RESTRICTED = new Set(["pokeFee", "clearPoke", "setPoolConfig", "setClaimFee", "setFFFeeSink", "setDistributor", "setPaused", "pause", "setPoolPaused", "pausePool", "setClaimFeeBps", "setPoolAsymmetry", "setBallotGate", "setDayOverrides", "setSessionHours", "setDstMode"]);
 
 async function restrictedSelectors(hook: Address): Promise<{ sig: string; selector: Hex }[]> {
   const res = await fetch(`https://sourcify.dev/server/v2/contract/4663/${getAddress(hook)}?fields=abi`);
