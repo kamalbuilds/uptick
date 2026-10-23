@@ -1,6 +1,6 @@
 # Uptick: Founder House Singapore submission
 
-Put your stock tokens to work. Deposit AAPL, GOOGL, NVDA and 8 more Stock Tokens and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where past swaps say it holds up.
+Put your stock tokens to work. Deposit AAPL, GOOGL, NVDA and 9 more Stock Tokens (12 of 17 vaults take deposits at launch) and earn a share of every trade's fee. Uptick shows what you keep after losses to fast traders, and opens a vault only where past swaps say it holds up.
 
 App https://uptick-fi.pages.dev. Launch film https://x.com/uptickfi/status/2112531006792360167. Code https://github.com/kamalbuilds. Deck: `deck/index.html`, 12 slides, PDF at `deck/uptick-deck.pdf`.
 
@@ -18,7 +18,7 @@ Open vaults take any amount: AAPL, GOOGL and PLTR (on its Uniswap v4 pool) kept 
 
 ## 4. The finding behind the engine
 
-Fees earned per $1 lost to informed traders, 1 hour markout, from 5.1M swaps over 54 days on the NVDA, SPCX and TSLA pools: NYSE hours $1.03 to $1.35, weeknights $1.30 to $3.90, weekends $3.94 to $33.27. Pooled, a weekend pays $13.64 and NYSE hours $1.16. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
+Fees earned per $1 lost to informed traders, 1 hour markout, from 5,113,049 swaps between 24 August and 17 October 2026 on the NVDA, SPCX and TSLA pools: NYSE hours $1.03 to $1.35, weeknights $1.30 to $3.90, weekends $3.94 to $33.27. Pooled, a weekend pays $13.64 and NYSE hours $1.16. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
 
 The engine drops what its own replay refutes. A schedule built on the clock met its bar on 0 of 3 tokens, random session labels beat it in 64 of 64 cells, and twelve off-chain signals failed their shuffled control. Uptick acts on pool and band, measured per token.
 
@@ -28,11 +28,11 @@ Each token chooses its band on the first 15 days. The last 15 days decide the do
 
 ## 6. Where a year of fees goes
 
-AAPL's pool paid 18.8% a year and depositors kept 3.2%. Of every $100 the pool pays, $17.08 stays with depositors, $9.01 pays for recentring and $73.91 goes to informed traders. The entry fee is 0.35%, kept in the vault for the holders who stay. 10% of collected fees is Uptick's share, minted so the share price never steps at harvest. Exit in kind carries no fee in either token.
+AAPL's pool paid 18.8% a year and depositors kept 3.2%. Of every $100 the pool pays, $17.08 stays with depositors, $9.01 pays for recentring and $73.91 goes to informed traders. The entry fee is 0.35%, kept in the vault for the holders who stay. Uptick's performance fee launches at 0%, so the kept APR shown is what depositors keep; the contract caps it at 20% of collected fees, and a change goes through the 24 hour queue and is minted as shares so the share price never steps at harvest. Exit in kind carries no fee in either token.
 
-## 7. Four security review rounds
+## 7. Five security reviews
 
-Each round re-reads the last round's fixes, and the fourth ends SHIP with no Critical, High or Medium finding. Round 1 closed 1 High and 3 Medium: a same-block share lock, a spot-to-TWAP band against deploy sandwiches, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and a corporate-action gate on the token's oracle pause and multiplier. Round 2 confirmed the fixes and added the pool fee to swap floors. Round 3 set the TWAP bound at 30 bp and the entry fee at 35 bp. Round 4 ends SHIP. 80 of 80 security tests pass on a fork of the real pools, and 50 mutation checks break a guard, see red, restore and see green. Detail in `contracts/SECURITY.md` and the four reports in `contracts/`.
+Five review reports sit in `contracts/`: four rounds on StockVault, each re-reading the last round's fixes, with round four closing at SHIP with no Critical, High or Medium finding, and one on StockVaultV4, which closes at SHIP after its one Medium was fixed. Round 1 closed 1 High and 3 Medium: a same-block share lock, a spot-to-TWAP band against deploy sandwiches, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and a corporate-action gate on the token's oracle pause and multiplier. Round 2 confirmed the fixes and added the pool fee to swap floors. Round 3 set the TWAP bound at 30 bp and the entry fee at 35 bp. Round 4 closes at SHIP. 118 security tests run on a fork of the real pools inside 383 contract tests, and 50 mutation checks break a guard, see red, restore and see green. Detail in `contracts/SECURITY.md` and the five reports in `contracts/`.
 
 ## 8. Agents read the same evidence
 
@@ -48,7 +48,7 @@ Uniswap v3 and v4 moved $488.40M of Stock Token value across the 17 tokens in 7 
 
 ## 11. Shipped
 
-The app at uptick-fi.pages.dev serves 17 vaults, each with its gate and reason. The evidence API serves JSON for every vault with the MCP endpoint and `llms.txt`. The launch film shows the weekend finding and the three doors. Contracts are final with the creation-code hash pinned. Every week the replay refreshes and each vault opens or closes on its new halves.
+The app at uptick-fi.pages.dev serves 17 vaults, each with its gate and reason. The evidence API serves JSON for every vault with the MCP endpoint and `llms.txt`. The launch film shows the weekend finding and the three doors. The factory pins the creation-code hash of StockVault and StockVaultV4, so it registers only the reviewed builds. Every week the replay refreshes and each vault opens or closes on its new halves.
 
 ## 12. Team and raise
 

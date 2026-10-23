@@ -1,0 +1,92 @@
+{
+  "generated_by": "scripts/facts.mjs",
+  "sources": {
+    "tests": "forge test --list --json in contracts/",
+    "reviews": "ls contracts/SECURITY-REVIEW* and contracts/SECURITY-REREVIEW*",
+    "doors": "web/lib/vault-universe.json",
+    "fee": "contracts/script/DeployAll.s.sol PERF_FEE_BPS default, contracts/src/StockVault.sol perfFeeBps bound, web/lib/vault-universe.json entryFeeBps, keeper/data/params.json",
+    "study": "paper/main.tex"
+  },
+  "tests": {
+    "total": 383,
+    "security": 118
+  },
+  "reviews": {
+    "files": [
+      "SECURITY-REVIEW-2026-10-20.md",
+      "SECURITY-REVIEW-3-2026-10-20.md",
+      "SECURITY-REVIEW-4-2026-10-20.md",
+      "SECURITY-REVIEW-V4-2026-10-22.md"
+    ],
+    "count": 4,
+    "rereview_files": [
+      "SECURITY-REREVIEW-2026-10-20.md"
+    ],
+    "reports_total": 5
+  },
+  "doors": {
+    "vaults": 17,
+    "open": 3,
+    "reduced": 9,
+    "closed": 5,
+    "takes_deposits": 12,
+    "open_symbols": [
+      "PLTR",
+      "AAPL",
+      "GOOGL"
+    ],
+    "reduced_symbols": [
+      "NVDA",
+      "INTC",
+      "MU",
+      "AMD",
+      "META",
+      "USO",
+      "AMZN",
+      "SPY",
+      "QQQ"
+    ],
+    "closed_symbols": [
+      "GME",
+      "MSTR",
+      "SPCX",
+      "CRCL",
+      "TSLA"
+    ],
+    "v3": 16,
+    "v4": 1,
+    "replay_days": 30,
+    "replay_swaps": 3059881
+  },
+  "fee": {
+    "perf_fee_bps_at_launch": 0,
+    "perf_fee_bps_max": 2000,
+    "entry_fee_bps_min": 35,
+    "entry_fee_bps_max": 109.9,
+    "range_bps_by_symbol": {
+      "AAPL": 750,
+      "AMD": 2000,
+      "AMZN": 750,
+      "CRCL": 2000,
+      "GME": 250,
+      "GOOGL": 2000,
+      "INTC": 2000,
+      "META": 1500,
+      "MSTR": 350,
+      "MU": 1500,
+      "NVDA": 150,
+      "PLTR": 350,
+      "QQQ": 1000,
+      "SPCX": 150,
+      "SPY": 250,
+      "TSLA": 750,
+      "USO": 2000
+    }
+  },
+  "study": {
+    "swaps": 5113049,
+    "days": 54,
+    "pools": 3,
+    "source": "paper/main.tex abstract"
+  }
+}
