@@ -28,8 +28,8 @@ export default function ForAgentsPage() {
       <TLDR>
         <ul>
           <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
-          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with four tools.</li>
-          <li>prepare_deposit and prepare_withdraw return unsigned transactions. The user signs and sends.</li>
+          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with six tools.</li>
+          <li>prepare_deposit, prepare_withdraw and prepare_make_safer return unsigned transactions. The user signs and sends.</li>
         </ul>
       </TLDR>
 
@@ -90,7 +90,7 @@ export default function ForAgentsPage() {
       <P>
         <Code>POST /mcp</Code> speaks JSON-RPC 2.0 over Streamable HTTP. <Code>initialize</Code> returns
         protocolVersion 2025-06-18, the tools capability, serverInfo, and instructions for how to report a
-        vault. <Code>tools/list</Code> returns the four tools. <Code>tools/call</Code> runs one. A
+        vault. <Code>tools/list</Code> returns the six tools. <Code>tools/call</Code> runs one. A
         notification, a message with no id, returns 204. A malformed body returns -32700 and an unknown
         method returns -32601.
       </P>
@@ -112,6 +112,14 @@ export default function ForAgentsPage() {
           [
             "prepare_withdraw",
             "The unsigned exit for a vault on either venue: ERC-4626 redeem, or redeemInKind with mode in_kind. Shares are 24 decimals, 18 plus the vault offset of 6.",
+          ],
+          [
+            "check_loan_health",
+            "A wallet's Morpho Blue loan against a vault share, read live from the chain: collateral and its value, the debt with interest accrued to the latest block, health factor, the share price at which it liquidates and how far the share can fall first. A vault with no market, or a wallet with no position, answers with the reason.",
+          ],
+          [
+            "prepare_make_safer",
+            "The unsigned calls that take that loan to a target health factor, default 1.6, with the least action: approve and repay when the wallet holds the USDG, otherwise rounds of withdrawCollateral, redeemInKind and repay with the USDG leg while the stock leg returns to the wallet. With no market, no position, a loan already at the target or a target out of reach, transactions is empty and reason says why.",
           ],
         ]}
         caption="The vault contract also enforces its deposit cap on-chain against its total, so the cap check in prepare_deposit is an early refusal, not the only one."
@@ -166,7 +174,7 @@ export default function ForAgentsPage() {
           The /vaults, /vaults/:id, /llms.txt and /health routes.
         </SourceRef>
         <SourceRef path="api/src/mcp.ts">
-          The JSON-RPC dispatch, the four tools, the cap checks and the refusals.
+          The JSON-RPC dispatch, the six tools, the cap checks and the refusals.
         </SourceRef>
         <SourceRef path="web/public/llms.txt">
           The canonical gate states, caps and endpoint list.

@@ -2,8 +2,10 @@ import { encodeFunctionData, isAddress, parseAbi, parseUnits } from "viem";
 import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
 import type { TalkEnv } from "./talk";
+import type { AlertsEnv } from "./alerts";
+import { checkLoanHealth, prepareMakeSafer, type LoanToolDeps, type LoanToolResult } from "./loan-tools";
 
-export interface Env extends TalkEnv {
+export interface Env extends TalkEnv, AlertsEnv {
   VAULTS?: string;
   ROUTER?: string;
   NETWORK?: string;
@@ -531,6 +533,35 @@ const TOOLS: McpTool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "check_loan_health",
+    description:
+      "Read a wallet's Morpho Blue loan against an Uptick vault share, live from the chain: collateral shares and their value, the debt with interest accrued to the latest block, health factor, the share price at which the loan liquidates and how far the share can fall first. A vault with no Morpho market, or a wallet with no position, answers with has_market or has_position false and the reason.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: { type: "string", description: "0x address of the borrower." },
+        vault: { type: "string", description: "Vault id, for example nvda." },
+      },
+      required: ["address", "vault"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "prepare_make_safer",
+    description:
+      "Build the unsigned calls that take a Morpho Blue loan on an Uptick vault share to a target health factor (default 1.6) with the least action. If the wallet holds the USDG: approve and repay. If it does not: rounds of withdrawCollateral, vault redeemInKind and repay with the USDG leg, the stock leg returning to the wallet. Sized on the debt ten minutes ahead. With no market, no position, a loan already at the target or a target out of reach, transactions is empty and reason says why. The user signs and sends the calls in order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: { type: "string", description: "0x address of the borrower." },
+        vault: { type: "string", description: "Vault id, for example nvda." },
+        target_health: { type: "number", minimum: 1.05, maximum: 5, default: 1.6, description: "Health factor to reach." },
+      },
+      required: ["address", "vault"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 interface JsonRpcMessage {
@@ -552,11 +583,24 @@ function rpcError(
   return json({ jsonrpc: "2.0", id, error: { code, message } });
 }
 
+/** The loan tools read the chain, so they are async; `deps` lets a test stand in for the node and the market list. */
+let loanDeps: LoanToolDeps = {};
+export function setLoanToolDeps(deps: LoanToolDeps): void {
+  loanDeps = deps;
+}
+
+function loanTool(env: Env, args: Record<string, unknown>, run: (vaultId: string) => Promise<LoanToolResult>): Promise<McpToolResult> | McpToolResult {
+  const id = typeof args.vault === "string" ? args.vault : "";
+  if (!findVault(id)) return errorResult(`no vault with id "${id}"`);
+  return run(id).then(({ payload, steps, isError }) =>
+    textResult(steps.length ? { ...payload, network: env.NETWORK ?? null, transactions: steps.map((s) => tx(s.call.to, s.call.data, s.label)) } : payload, isError));
+}
+
 function callTool(
   env: Env,
   name: unknown,
   args: Record<string, unknown>,
-): McpToolResult {
+): McpToolResult | Promise<McpToolResult> {
   switch (name) {
     case "list_vaults":
       return listVaults();
@@ -566,6 +610,10 @@ function callTool(
       return prepareDeposit(env, args);
     case "prepare_withdraw":
       return prepareWithdraw(env, args);
+    case "check_loan_health":
+      return loanTool(env, args, (id) => checkLoanHealth(env, id, args.address, loanDeps));
+    case "prepare_make_safer":
+      return loanTool(env, args, (id) => prepareMakeSafer(env, id, args.address, args.target_health, loanDeps));
     default: {
       const result = errorResult(`unknown tool: ${String(name)}`);
       return result;
@@ -611,7 +659,7 @@ export async function handleMcp(request: Request, env: Env): Promise<Response> {
     if (!known) {
       return rpcError(id, -32602, `unknown tool: ${params.name}`);
     }
-    return rpcResult(id, callTool(env, params.name, args));
+    return rpcResult(id, await callTool(env, params.name, args));
   }
 
   return rpcError(id, -32601, `method not found: ${String(message.method)}`);

@@ -42,7 +42,7 @@ Say: "NVDA kept +29.4% on the first half and -6.6% on the held-out half. The gat
 
 Screen: the Docs overview.
 Say: "A vault is one ERC-4626 contract, one managed position and one published gate." Point at the gate table and the "Vaults today" table: Open AAPL and GOOGL, Reduced the nine others, Closed six.
-Open Exit in kind: "redeemInKind pays your share of both tokens with no oracle gate and no swap, so an exit works when the feed is stale." Open For agents: "An evidence API and an MCP endpoint with four tools. A closed vault returns its gate reason, so an agent never routes a deposit past the door."
+Open Exit in kind: "redeemInKind pays your share of both tokens with no oracle gate and no swap, so an exit works when the feed is stale." Open For agents: "An evidence API and an MCP endpoint with six tools. A closed vault returns its gate reason, so an agent never routes a deposit past the door."
 
 ## 2:45 to 3:00 Research, `/research`
 

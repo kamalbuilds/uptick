@@ -13,6 +13,10 @@ const sources = [
     to: resolve(dataDir, "vault-universe.json"),
   },
   {
+    from: resolve(repoRoot, "web/lib/collateral-markets.json"),
+    to: resolve(dataDir, "collateral-markets.json"),
+  },
+  {
     from: resolve(repoRoot, "keeper/data/replay.json"),
     to: resolve(dataDir, "replay.json"),
   },
