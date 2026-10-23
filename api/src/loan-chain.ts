@@ -1,8 +1,8 @@
 import { createPublicClient, getAddress, http, isAddress, type Address, type PublicClient } from "viem";
 import markets from "../data/collateral-markets.json";
-import { erc20Abi, vaultAbi } from "../../web/lib/abis.ts";
-import { loanView, marketStateOf, planSafer, type InKindQuote, type LoanView, type MarketState, type SaferPlan } from "../../web/lib/loan.ts";
-import { MORPHO_BLUE, irmAbi, marketFor, marketId, morphoAbi, oracleAbi, parseMarkets, type MarketEntry, type MarketParams } from "../../web/lib/morpho.ts";
+import { erc20Abi, vaultAbi } from "./shared/abis.ts";
+import { loanView, marketStateOf, planSafer, type InKindQuote, type LoanView, type MarketState, type SaferPlan } from "./shared/loan.ts";
+import { MORPHO_BLUE, irmAbi, marketFor, marketId, morphoAbi, oracleAbi, parseMarkets, type MarketEntry, type MarketParams } from "./shared/morpho.ts";
 
 export const USDG_ADDRESS: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
 /** The same file the web app reads (web/lib/collateral-markets.json), copied by `npm run sync`. A vault with no entry has no loan to watch. */

@@ -14,7 +14,7 @@ import type { PublicClient } from "viem";
 import { MARKETS, describeLoan, makeClient, marketOf, readMarketSide, readPosition, viewOf, type MarketSide } from "./loan-chain";
 import { ipKey } from "./talk";
 import { parseVaults, UNIVERSE } from "./mcp";
-import type { MarketEntry } from "../../web/lib/morpho.ts";
+import type { MarketEntry } from "./shared/morpho.ts";
 
 export interface AlertsEnv {
   ALERTS?: KVNamespace;

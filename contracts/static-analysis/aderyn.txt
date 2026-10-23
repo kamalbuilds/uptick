@@ -1,0 +1,41 @@
+
+----------------------------------------------------------------------------------------------------------
+# Configuration
+----------------------------------------------------------------------------------------------------------
+Root - /Users/kamal/Desktop/arbitrium/stock-vaults-app/.claude/worktrees/wf_36ec3b9e-6d4-3/contracts
+Source - /Users/kamal/Desktop/arbitrium/stock-vaults-app/.claude/worktrees/wf_36ec3b9e-6d4-3/contracts/src
+Remappings - [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+    "v4-core/=lib/v4-core/src/",
+    "forge-std/=lib/forge-std/src/",
+    "@uniswap/v4-core/=lib/v4-core/",
+    "v4-periphery/=lib/v4-periphery/",
+    "solmate/=lib/v4-core/lib/solmate/",
+    "@ensdomains/=lib/v4-core/node_modules/@ensdomains/",
+    "ds-test/=lib/v4-core/lib/forge-std/lib/ds-test/src/",
+    "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+    "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+    "hardhat/=lib/v4-core/node_modules/hardhat/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/",
+]
+EVM version - cancun
+----------------------------------------------------------------------------------------------------------
+# Source Scope
+----------------------------------------------------------------------------------------------------------
+Include Filepaths Containing - No specific criteria.
+Exclude Filepaths Containing - No specific criteria.
+Auto Excluding - No Files.
+----------------------------------------------------------------------------------------------------------
+# Compiling Abstract Syntax Trees
+----------------------------------------------------------------------------------------------------------
+Ingesting 14 compiled files [solc : v0.8.26]
+----------------------------------------------------------------------------------------------------------
+# Scanning Contracts
+----------------------------------------------------------------------------------------------------------
+Running 88 detectors
+Detectors run, printing report.
+Report printed to static-analysis/aderyn-report.md
+
+🐦 Aderyn finds bugs. You write safer code.
+⭐ Star us on GitHub if that sounds fair:
+https://github.com/Cyfrin/aderyn

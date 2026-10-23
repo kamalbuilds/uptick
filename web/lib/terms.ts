@@ -11,7 +11,7 @@ export const TERMS: Record<TermId, { label: string; text: string }> = {
   },
   kept: {
     label: "Kept",
-    text: "What a holder keeps over a year: the pool's fees, less what informed traders take back after their swaps and what each recentre costs. The stock's own price moves come on top and are not counted.",
+    text: "What a holder keeps over a year: the pool's fees, less what informed traders take back after their swaps and what each recentre costs. The vault holds roughly half stock and half USDG while the price is in range, and the stock's price move on that half is not counted.",
   },
   worstHalf: {
     label: "Worst half",

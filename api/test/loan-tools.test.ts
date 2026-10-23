@@ -1,27 +1,29 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { decodeFunctionData, type Address } from "viem";
-import worker from "../src/worker";
-import { setLoanToolDeps } from "../src/mcp";
-import { accrueInterest } from "../../web/lib/loan.ts";
-import { MORPHO_BLUE, debtAssets, maxBorrowOf, morphoAbi } from "../../web/lib/morpho.ts";
-import { erc20Abi, vaultAbi } from "../../web/lib/abis.ts";
+import { handleMcp } from "../src/mcp";
+import type { LoanToolDeps } from "../src/loan-tools";
+import { accrueInterest } from "../src/shared/loan.ts";
+import { MORPHO_BLUE, debtAssets, maxBorrowOf, morphoAbi } from "../src/shared/morpho.ts";
+import { erc20Abi, vaultAbi } from "../src/shared/abis.ts";
 import { BORROWER, ENTRY, LLTV, USDG, VAULT, freshChain, fakeClient, type Chain } from "./fake-chain";
 
 const env = { VAULTS: JSON.stringify({ nvda: VAULT }), NETWORK: "robinhood-chain-fork" } as Record<string, unknown>;
-const ctx = {} as ExecutionContext;
 
 type Result = { structuredContent: Record<string, any>; isError?: boolean };
+/** `loan` stands in for the node and the market list, the way scan-wallet.test.ts injects its client. With none, the tools see the shipped data and no node. */
+let loan: LoanToolDeps = {};
 async function callTool(name: string, args: Record<string, unknown>, e: Record<string, unknown> = env): Promise<Result> {
-  const res = await worker.fetch(
+  const res = await handleMcp(
     new Request("https://uptick.test/mcp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } }) }),
     e as never,
-    ctx,
+    { loan },
   );
   return ((await res.json()) as { result: Result }).result;
 }
 
-const withChain = (chain: Chain) => setLoanToolDeps({ client: fakeClient(chain), markets: { nvda: ENTRY } });
-afterEach(() => setLoanToolDeps({}));
+const withChain = (chain: Chain) => { loan = { client: fakeClient(chain), markets: { nvda: ENTRY } }; };
+const setLoanToolDeps = (deps: LoanToolDeps) => { loan = deps; };
+afterEach(() => { loan = {}; });
 
 /** The health factor a position has after `calls` run in order on the fake node's state, computed here from the decoded calldata and not by the planner. */
 function healthAfter(chain: Chain, calls: { to: string; data: `0x${string}` }[], inKind?: { stock: bigint; usdg: bigint }) {

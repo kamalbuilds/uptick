@@ -50,7 +50,7 @@ describe("evidence built from data/replay.json", () => {
     });
   }
 
-  test("the deposit-taking set is exactly AAPL, AMD, AMZN, GOOGL, INTC, META, MU, NVDA, PLTR (on its v4 pool), QQQ, SPY and USO", () => {
+  test("the deposit-taking set is exactly AAPL, AMD, AMZN, GOOGL, INTC, META, MU, NVDA, PLTR, QQQ, SPY and USO", () => {
     const open = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).open).sort();
     expect(open).toEqual(["AAPL", "AMD", "AMZN", "GOOGL", "INTC", "META", "MU", "NVDA", "PLTR", "QQQ", "SPY", "USO"]);
   });
@@ -145,13 +145,13 @@ describe("evidence built from data/replay.json", () => {
 });
 
 describe("a token that deploys on v4 is gated on its v4 pool", () => {
-  const v4syms = syms.filter((s) => replay.tokens[s].venue === "v4");
-  test("at least one token has venue v4 and carries the session split of its v4 pool", () => {
-    expect(v4syms.length).toBeGreaterThan(0);
-    for (const s of v4syms) expect(replay.tokens[s].sessions_v4).toBeDefined();
+  const v4syms = syms.filter((x) => replay.tokens[x].venue === "v4");
+  test("the shipped replay keeps a v4 pool and a session split on every v4-venue token: PLTR, SPY and USO", () => {
+    expect(v4syms).toEqual(["PLTR", "SPY", "USO"]);
+    for (const s of v4syms) { expect(replay.tokens[s].chosen_v4).toBeDefined(); expect(replay.tokens[s].sessions_v4).toBeDefined(); }
   });
   for (const sym of v4syms) {
-    test(`${sym}: the gate, the chosen pool and the kept figures come from chosen_v4, not from the closed v3 pool`, () => {
+    test(`${sym}: the gate, the chosen pool and the kept figures come from chosen_v4, not from the v3 pool`, () => {
       const tok = replay.tokens[sym], ev: any = buildEvidence(tok, replay);
       const row = tok.pools.find((p: any) => p.id === tok.chosen_v4.id);
       expect(ev.chosen_pool).toBe(tok.chosen_v4.id);

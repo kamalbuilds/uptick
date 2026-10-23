@@ -1,6 +1,6 @@
 import { getAddress, isAddress, type PublicClient } from "viem";
-import { DEFAULT_TARGET_HEALTH, MAX_TARGET_HEALTH, MIN_TARGET_HEALTH, hasLoan } from "../../web/lib/loan.ts";
-import type { MarketEntry, Step } from "../../web/lib/morpho.ts";
+import { DEFAULT_TARGET_HEALTH, MAX_TARGET_HEALTH, MIN_TARGET_HEALTH, hasLoan } from "./shared/loan.ts";
+import type { MarketEntry, Step } from "./shared/morpho.ts";
 import { MARKETS, describeLoan, makeClient, marketOf, planFor, readMarketSide, readPosition, viewOf } from "./loan-chain";
 
 export interface LoanToolEnv {

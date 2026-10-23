@@ -1,6 +1,6 @@
 import { createPublicClient, custom, decodeFunctionData, encodeFunctionResult, getAddress, toHex, type Abi, type PublicClient } from "viem";
-import { erc20Abi, vaultAbi } from "../../web/lib/abis.ts";
-import { MORPHO_BLUE, irmAbi, marketId, morphoAbi, oracleAbi, type MarketEntry, type MarketParams } from "../../web/lib/morpho.ts";
+import { erc20Abi, vaultAbi } from "../src/shared/abis.ts";
+import { MORPHO_BLUE, irmAbi, marketId, morphoAbi, oracleAbi, type MarketEntry, type MarketParams } from "../src/shared/morpho.ts";
 
 export const USDG = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168" as const;
 export const VAULT = getAddress("0x00000000000000000000000000000000000a11c3");

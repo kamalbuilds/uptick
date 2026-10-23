@@ -23,13 +23,14 @@ export default function ForAgentsPage() {
     <Article
       eyebrow="Build on Uptick"
       title="For agents"
-      lede="A public evidence API and an MCP server that prepares unsigned deposit and withdraw transactions for Uptick vaults."
+      lede="A public evidence API and an MCP server that reads a wallet's Stock Tokens and prepares unsigned deposit and withdraw transactions for Uptick vaults."
     >
       <TLDR>
         <ul>
           <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
-          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with six tools.</li>
-          <li>prepare_deposit, prepare_withdraw and prepare_make_safer return unsigned transactions. The user signs and sends.</li>
+          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with nine tools.</li>
+          <li>scan_wallet reads any wallet address and returns its Stock Token holdings in USD with each vault's gate. It is read-only.</li>
+          <li>prepare_deposit, prepare_withdraw, prepare_earn_and_borrow and prepare_make_safer return unsigned transactions. The user signs and sends.</li>
         </ul>
       </TLDR>
 
@@ -90,7 +91,7 @@ export default function ForAgentsPage() {
       <P>
         <Code>POST /mcp</Code> speaks JSON-RPC 2.0 over Streamable HTTP. <Code>initialize</Code> returns
         protocolVersion 2025-06-18, the tools capability, serverInfo, and instructions for how to report a
-        vault. <Code>tools/list</Code> returns the six tools. <Code>tools/call</Code> runs one. A
+        vault. <Code>tools/list</Code> returns the nine tools. <Code>tools/call</Code> runs one. A
         notification, a message with no id, returns 204. A malformed body returns -32700 and an unknown
         method returns -32601.
       </P>
@@ -106,12 +107,24 @@ export default function ForAgentsPage() {
             "Full evidence for one vault: the replay pools, the gate rule and reason, the replay window, the swap count, and a source URL.",
           ],
           [
+            "scan_wallet",
+            "Read-only. Takes a wallet address, reads its balance of every tracked Stock Token from Robinhood Chain in one Multicall3 call at one block, prices each with the vault's Chainlink feed, and returns the holdings in USD with the vault's gate state and reason, what the holding would have kept a year at the weaker-half APR of the replay (a measurement of past swaps), and borrow room at the Morpho market's loan-to-value limit where a market is configured. Totals give idle value, what the open and reduced vaults take, and what the closed vaults refuse. The same read powers the /check page.",
+          ],
+          [
             "prepare_deposit",
             "Unsigned transactions for a deposit. Refuses closed vaults with the gate reason, and refuses an amount above the vault's deposit cap or, for a reduced vault, its per-transaction cap, whichever is lower. Asset stock approves the Stock Token then calls ERC-4626 deposit; asset usdg approves USDG then zaps through the Uptick router, depositUsdg for a Uniswap v3 vault and depositUsdgV4 for a Uniswap v4 vault. A vault whose address is still launching answers with its gate and venue and builds no transaction.",
           ],
           [
             "prepare_withdraw",
             "The unsigned exit for a vault on either venue: ERC-4626 redeem, or redeemInKind with mode in_kind. Shares are 24 decimals, 18 plus the vault offset of 6.",
+          ],
+          [
+            "get_collateral_terms",
+            "The Morpho Blue market for a vault share used as collateral against USDG: market params, market id and loan-to-value limit.",
+          ],
+          [
+            "prepare_earn_and_borrow",
+            "Unsigned transactions in order: approve, deposit, approve shares, supplyCollateral, borrow. The borrow is checked against the loan-to-value limit and the market's liquidity before any calldata returns; otherwise the tool returns the vault's gate or the market's reason in place of calldata.",
           ],
           [
             "check_loan_health",
@@ -174,7 +187,7 @@ export default function ForAgentsPage() {
           The /vaults, /vaults/:id, /llms.txt and /health routes.
         </SourceRef>
         <SourceRef path="api/src/mcp.ts">
-          The JSON-RPC dispatch, the six tools, the cap checks and the refusals.
+          The JSON-RPC dispatch, the nine tools, the cap checks and the refusals.
         </SourceRef>
         <SourceRef path="web/public/llms.txt">
           The canonical gate states, caps and endpoint list.
