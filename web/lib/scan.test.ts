@@ -95,7 +95,7 @@ test("scan reads every balance and feed in one eth_call, pinned to the head less
   assert.equal(row("nvda").holdingUsd, 2000);
   assert.equal(row("nvda").state, "reduced");
   assert.equal(row("nvda").putToWorkUsd, 2000);
-  assert.ok(Math.abs((row("nvda").keptPerYearUsd as number) - keptPerYearUsd(2000, 35, by("nvda").gate.worstHalfApr)) < 1e-9);
+  assert.ok(Math.abs((row("nvda").keptPerYearUsd as number) - (2000 * 0.9965 * by("nvda").gate.worstHalfApr) / 100) < 1e-9, "written out by hand, not through keptPerYearUsd");
   assert.deepEqual(row("nvda").borrow, { kind: "room", usd: borrowRoomUsd(2000, 35, 625_000_000_000_000_000n), lltv: 62.5 });
   assert.equal(row("aapl").holdingUsd, 750);
   assert.deepEqual(row("aapl").borrow, { kind: "opens-with-market" });

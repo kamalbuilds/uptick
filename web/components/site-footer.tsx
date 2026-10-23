@@ -8,6 +8,7 @@ export function SiteFooter() {
         <div className="space-y-4">
           <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1 text-[15px] text-fg">
             <Link href="/vaults" className="inline-block py-2 hover:underline hover:underline-offset-4">Vaults</Link>
+            <Link href="/check" className="inline-block py-2 hover:underline hover:underline-offset-4">Check a wallet</Link>
             <Link href="/portfolio" className="inline-block py-2 hover:underline hover:underline-offset-4">Portfolio</Link>
             <Link href="/docs" className="inline-block py-2 hover:underline hover:underline-offset-4">Docs</Link>
             <Link href="/research" className="inline-block py-2 hover:underline hover:underline-offset-4">Research</Link>
