@@ -16,6 +16,8 @@ Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlin
 
 Open vaults take any amount: AAPL and GOOGL kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY, QQQ and PLTR, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way.
 
+The /check page opens the doors for any wallet address with no connection: it reads the wallet's balances of the 17 Stock Tokens from Robinhood Chain, prices them with the vaults' Chainlink feeds, and shows each holding's gate, what it would have kept a year at the replay's weaker half, and where a loan opens.
+
 ## 4. The finding behind the engine
 
 Fees earned per $1 lost to informed traders, 1 hour markout, from 5,113,049 swaps between 24 August and 17 October 2026 on the NVDA, SPCX and TSLA pools: NYSE hours $1.03 to $1.35, weeknights $1.30 to $3.90, weekends $3.94 to $33.27. Pooled, a weekend pays $13.64 and NYSE hours $1.16. The weekend ratio beats the NYSE ratio in 22 of 23 pool-weeks.
@@ -36,7 +38,7 @@ Five review reports sit in `contracts/`: four rounds on StockVault, each re-read
 
 ## 8. Agents read the same evidence
 
-One MCP endpoint over Streamable HTTP, plus a public evidence API and `llms.txt`. Tools: `list_vaults`, `get_vault_evidence`, `prepare_deposit` and `prepare_withdraw`. The user signs and sends every transaction. A closed vault returns its gate reason, so an agent never routes a deposit past the door: `prepare_deposit` for SPCX answers "Closed: the weaker half kept -195.4% a year, below the -20% floor."
+One MCP endpoint over Streamable HTTP, plus a public evidence API and `llms.txt`. Tools: `list_vaults`, `get_vault_evidence`, `scan_wallet`, `prepare_deposit`, `prepare_withdraw`, `get_collateral_terms` and `prepare_earn_and_borrow`. `scan_wallet` reads any wallet's Stock Token balances from Robinhood Chain and returns each holding in USD with its vault's gate, what it would have kept a year at the weaker half, and borrow room where a market is configured. The user signs and sends every transaction. A closed vault returns its gate reason, so an agent never routes a deposit past the door: `prepare_deposit` for SPCX answers "Closed: the weaker half kept -195.4% a year, below the -20% floor."
 
 ## 9. Settings timelock and stock-split handling
 

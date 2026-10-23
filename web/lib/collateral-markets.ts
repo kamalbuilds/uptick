@@ -12,3 +12,6 @@ export function collateralMarket(id: string, vault: Address | undefined): Market
   const e = entries[id];
   return e && vault ? marketFor(e, USDG, vault) : undefined;
 }
+
+/** The loan-to-value limit of every configured market, by vault id: what the wallet scan turns into borrow room. Empty while no market is configured. */
+export const lltvById: Record<string, bigint> = Object.fromEntries(Object.entries(entries).map(([id, e]) => [id, e.lltv]));

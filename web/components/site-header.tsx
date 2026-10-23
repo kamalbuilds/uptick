@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/vaults", label: "Vaults", match: "/vault" },
+  { href: "/check", label: "Check a wallet", match: "/check" },
   { href: "/portfolio", label: "Portfolio", match: "/portfolio" },
   { href: "/docs", label: "Docs", match: "/docs" },
   { href: "/research", label: "Research", match: "/research" },

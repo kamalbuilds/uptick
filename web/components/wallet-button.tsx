@@ -83,7 +83,7 @@ export function WalletPicker({ open, onClose }: { open: boolean; onClose: () => 
 }
 
 /** `label` is the disconnected call to action; the short form hides "wallet" on a narrow screen only when no label is given. */
-export function WalletButton({ size = "md", label, className }: { size?: "sm" | "md" | "lg"; label?: string; className?: string }) {
+export function WalletButton({ size = "md", label, className, variant }: { size?: "sm" | "md" | "lg"; label?: string; className?: string; /** The disconnected button is the primary pill unless a screen already has one. */ variant?: "primary" | "outline" }) {
   const { address, isConnected, chainId } = useAccount();
   const { disconnect } = useDisconnect();
   const { switchChain, isPending: switching } = useSwitchChain();
@@ -97,7 +97,7 @@ export function WalletButton({ size = "md", label, className }: { size?: "sm" | 
   if (!mounted || !isConnected || !address) {
     return (
       <>
-        <Button size={size} className={className} onClick={() => setPicker(true)}>
+        <Button size={size} variant={variant} className={className} onClick={() => setPicker(true)}>
           {label ?? <><Plugs size={18} weight="bold" aria-hidden className="hidden sm:block" /><span>Connect<span className="hidden sm:inline">{" "}wallet</span></span></>}
         </Button>
         <WalletPicker open={picker} onClose={() => setPicker(false)} />

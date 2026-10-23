@@ -2,6 +2,7 @@ import {
   createPublicClient,
   encodeAbiParameters,
   encodeFunctionData,
+  fallback,
   formatUnits,
   http,
   isAddress,
@@ -10,15 +11,17 @@ import {
   parseUnits,
 } from "viem";
 import vaultUniverse from "../data/vault-universe.json";
-import collateralMarkets from "../data/collateral-markets.json";
 import replay from "../data/replay.json";
+import collateralMarkets from "../data/collateral-markets.json";
+import { parseMarkets } from "./shared/morpho.ts";
+import { RHC_RPCS, parseOwner, scanWallet, type ScanClient, type ScanLltv, type ScanRow, type ScanVault, type WalletScan } from "./shared/scan.ts";
 import type { TalkEnv } from "./talk";
 
 export interface Env extends TalkEnv {
   VAULTS?: string;
   ROUTER?: string;
   NETWORK?: string;
-  /** JSON-RPC endpoint of the chain the VAULTS addresses live on. Unset, /keeper/vaults/:id serves replay figures only. */
+  /** JSON-RPC endpoint of the chain the VAULTS addresses live on. Unset, /keeper/vaults/:id serves replay figures only, and scan_wallet reads through the public Robinhood Chain endpoints. */
   CHAIN_RPC_URL?: string;
   /** StockVaultV4Lens address: the only way to read a v4 vault's value in USDG. Unset, a v4 vault's tvl_usd is null. */
   VAULT_LENS?: string;
@@ -509,6 +512,103 @@ function prepareWithdraw(env: Env, args: Record<string, unknown>): McpToolResult
   });
 }
 
+// ---- scan_wallet ---------------------------------------------------------------------------------------------------------------------
+
+/** Loan-to-value limit of every vault with a configured Morpho market (web/lib/collateral-markets.json, synced to api/data). */
+const LLTV: ScanLltv = Object.fromEntries(Object.entries(parseMarkets(collateralMarkets)).map(([id, m]) => [id, m.lltv]));
+
+/** The tracked Stock Tokens as the scan reads them: address, feed, the gate the replay wrote, and the vault's size. */
+export function scanVaults(): ScanVault[] {
+  return UNIVERSE.vaults.map((v) => {
+    const gate = gateOf(v);
+    return {
+      id: v.id,
+      symbol: v.symbol,
+      name: v.name,
+      token: v.token as `0x${string}`,
+      feed: v.feed as `0x${string}`,
+      entryFeeBps: v.entryFeeBps,
+      depositCapUsd: v.depositCapUsd,
+      gate: { state: gate.state as ScanVault["gate"]["state"], reason: gate.reason, worstHalfApr: gate.worst_half_apr },
+    };
+  });
+}
+
+/** The configured chain RPC when there is one, else the keyless public endpoints for chain 4663 in order, one retry each. */
+function scanClient(env: Env): ScanClient {
+  const transport = env.CHAIN_RPC_URL ? http(env.CHAIN_RPC_URL) : fallback(RHC_RPCS.map((u) => http(u, { retryCount: 1, retryDelay: 500, timeout: 10_000 })));
+  return createPublicClient({ transport });
+}
+
+const cents = (n: number): number => Math.round(n * 100) / 100;
+const orNull = (n: number | null): number | null => (n === null ? null : cents(n));
+
+function scanRow(r: ScanRow): Record<string, unknown> {
+  return {
+    id: r.id,
+    ticker: r.symbol,
+    token: r.token,
+    balance: r.balance,
+    price_usd: r.priceUsd,
+    price_updated_at: r.priceUpdatedAt === null ? null : new Date(r.priceUpdatedAt * 1000).toISOString(),
+    holding_usd: orNull(r.holdingUsd),
+    gate_state: r.state,
+    gate_reason: r.reason,
+    can_deposit: r.state !== "closed",
+    deposit_cap_usd: r.depositCapUsd,
+    put_to_work_usd: orNull(r.putToWorkUsd),
+    worst_half_apr_pct: r.worstHalfApr,
+    kept_per_year_usd: orNull(r.keptPerYearUsd),
+    entry_fee_bps: r.entryFeeBps,
+    borrow:
+      r.borrow.kind === "room"
+        ? { status: "room", max_usd: cents(r.borrow.usd), lltv_pct: r.borrow.lltv }
+        : r.borrow.kind === "none"
+          ? { status: "none", note: "The vault is closed, so no shares exist to post as collateral." }
+          : { status: "opens_with_market", note: "Borrowing opens with the Morpho market for this vault share." },
+  };
+}
+
+export function scanPayload(env: Env, s: WalletScan): Record<string, unknown> {
+  const t = s.totals;
+  return {
+    owner: s.owner,
+    network: env.NETWORK ?? null,
+    chain_id: CHAIN_ID,
+    block: Number(s.block),
+    read_at: new Date(s.readAt).toISOString(),
+    tracked: s.tracked,
+    totals: {
+      idle_usd: cents(t.idleUsd),
+      put_to_work: {
+        tokens: t.putToWork.tokens,
+        usd: cents(t.putToWork.usd),
+        holding_usd: cents(t.putToWork.holdingUsd),
+        kept_per_year_usd: cents(t.putToWork.keptPerYearUsd),
+        borrow_room_usd: orNull(t.putToWork.borrowRoomUsd),
+      },
+      refused: { tokens: t.refused.tokens, usd: cents(t.refused.usd), reasons: t.refused.reasons.map((x) => ({ ticker: x.symbol, reason: x.reason })) },
+      unpriced: t.unpriced,
+    },
+    holdings: s.rows.map(scanRow),
+    kept_basis: `kept_per_year_usd is put_to_work_usd net of the entry fee at worst_half_apr_pct, the weaker 15-day half of the ${REPLAY.window.days}-day replay to ${REPLAY.window.end.slice(0, 10)}. It measures past swaps. It is not a forecast, a target or a promise.`,
+    source: "eth_blockNumber, then one Multicall3 eth_call at that block reading every balanceOf and Chainlink round; read-only",
+    next: "prepare_deposit for a holding with can_deposit true",
+  };
+}
+
+async function scanWalletTool(env: Env, args: Record<string, unknown>, client?: ScanClient): Promise<McpToolResult> {
+  const owner = typeof args.address === "string" ? parseOwner(args.address) : null;
+  if (!owner) return errorResult("address must be a valid 0x wallet address (42 characters; names such as ENS are not resolved)");
+  let scan: WalletScan;
+  try {
+    scan = await scanWallet(client ?? scanClient(env), owner, scanVaults(), LLTV);
+  } catch (e) {
+    return errorResult(`could not read Robinhood Chain: ${String((e as Error).message).split("\n")[0].slice(0, 200)}`);
+  }
+  return textResult(scanPayload(env, scan));
+}
+
 interface MarketParams {
   loanToken: string;
   collateralToken: string;
@@ -708,6 +808,17 @@ const TOOLS: McpTool[] = [
     },
   },
   {
+    name: "scan_wallet",
+    description:
+      "Read-only. For a wallet address, read its balances of all tracked Stock Tokens from Robinhood Chain (one Multicall3 call at one block), price them with the Chainlink feeds the vaults use, and return per token: the holding in USD, the vault's gate state and reason, what the holding would have kept a year at the weaker-half kept APR of the replay (a measurement of past swaps, never a forecast), and borrow room at the Morpho market's loan-to-value limit where a market is configured, otherwise opens_with_market. Totals give idle value, what the open and reduced vaults take (a vault takes at most its size), and what the closed vaults refuse with their reasons. Holdings are only the tokens the wallet holds. Use prepare_deposit for a holding with can_deposit true.",
+    inputSchema: {
+      type: "object",
+      properties: { address: { type: "string", description: "0x wallet address to read. No signature or connection is needed." } },
+      required: ["address"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "prepare_deposit",
     description:
       "Build the unsigned transactions for a deposit into an open vault. Refuses closed vaults and returns the gate reason. Refuses an amount above the vault's deposit_cap_usd (its size, set from the pool's depth) or, for a reduced vault, above its per-transaction cap, whichever is lower; the vault contract also enforces the cap on-chain against its total. Asset is stock (approve the stock token then ERC4626 deposit) or usdg (approve USDG then zap through the Uptick router: depositUsdg for a Uniswap v3 vault, depositUsdgV4 for a Uniswap v4 vault, see venue). The vault keeps an entry fee (the larger of the pool's fee tier and 0.35%, returned as entry_fee_bps) out of every deposit, for the holders who stay; shares are minted against the amount net of it. The user signs and sends.",
@@ -791,12 +902,15 @@ async function callTool(
   env: Env,
   name: unknown,
   args: Record<string, unknown>,
+  deps: McpDeps,
 ): Promise<McpToolResult> {
   switch (name) {
     case "list_vaults":
       return listVaults();
     case "get_vault_evidence":
       return getVaultEvidence(typeof args.id === "string" ? args.id : "");
+    case "scan_wallet":
+      return scanWalletTool(env, args, deps.scanClient);
     case "prepare_deposit":
       return prepareDeposit(env, args);
     case "prepare_withdraw":
@@ -812,7 +926,12 @@ async function callTool(
   }
 }
 
-export async function handleMcp(request: Request, env: Env): Promise<Response> {
+/** Injection point for tests: a client that answers the scan's RPC calls without a network. */
+export interface McpDeps {
+  scanClient?: ScanClient;
+}
+
+export async function handleMcp(request: Request, env: Env, deps: McpDeps = {}): Promise<Response> {
   let message: JsonRpcMessage;
   try {
     message = (await request.json()) as JsonRpcMessage;
@@ -850,7 +969,7 @@ export async function handleMcp(request: Request, env: Env): Promise<Response> {
     if (!known) {
       return rpcError(id, -32602, `unknown tool: ${params.name}`);
     }
-    return rpcResult(id, await callTool(env, params.name, args));
+    return rpcResult(id, await callTool(env, params.name, args, deps));
   }
 
   return rpcError(id, -32601, `method not found: ${String(message.method)}`);
