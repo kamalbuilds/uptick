@@ -1,0 +1,426 @@
+{
+ "block": 95905532,
+ "source": "hook ABI probe + Sourcify + hook and StateView reads at the pinned block; swap counts and volume filled by replay/fables.py",
+ "scanned": {
+  "0x70a9a88402989226847ec122043ce5e7ff462080": "Fables FablesRWA, MAX_POKE_TTL 259200",
+  "0x5eb87f69be00df39981622fd60a8de4b7837e080": "Fables FablesRWA, MAX_POKE_TTL 259200",
+  "0xa4e6f5500e88691fdcb289aa0e99067481434880": "not a FablesBaseHook (ABI probe reverts)",
+  "0x08e52564bad99e05a694b4809f397edca417a080": "Fables FablesRamp, MAX_POKE_TTL 259200",
+  "0x8af95932ec4484fb10c641a4cbcf19a798cb2080": "Fables FablesRWA, MAX_POKE_TTL 259200",
+  "0xa1393e61ee9b9a605103551e1e54b317e2a86080": "not a FablesBaseHook (ABI probe reverts)",
+  "0xe10365af44cb192236994c9af915a06acf382080": "not a FablesBaseHook (ABI probe reverts)",
+  "0x958541c0ce2e1a158309f7d1b141963eda31c880": "not a FablesBaseHook (ABI probe reverts)",
+  "0xa0ce1df0191a66434fb04391161776c7814f8a80": "not a FablesBaseHook (ABI probe reverts)",
+  "0x66622f77b797d506e5376f7798b67ab288966080": "Fables FablesRWA, MAX_POKE_TTL 259200",
+  "0x982cb9077d434d7d9625b2a5a41960601cff9080": "not a FablesBaseHook (ABI probe reverts)",
+  "0xce2c659ce976fd937451ed24486b10f883a3aaa0": "not a FablesBaseHook (ABI probe reverts)",
+  "0x91d8f804112240af8fd900c9285de2eb1f9a6aa0": "not a FablesBaseHook (ABI probe reverts)",
+  "0xe348eec46639d60f5f9dfbedbcb494807bb56aa0": "not a FablesBaseHook (ABI probe reverts)",
+  "0x684cf83c3f526548616507db44f440afc957e080": "not a FablesBaseHook (ABI probe reverts)",
+  "0xc15b155a3094934171a15625d1a80aba267b6080": "not a FablesBaseHook (ABI probe reverts)",
+  "0xa0e8fbff13e24af2b5e61a72800e08a161bde080": "Fables FablesRWA, MAX_POKE_TTL 259200",
+  "0xe35a363963dd10275fc2c6ae503ba65712830880": "not a FablesBaseHook (ABI probe reverts)",
+  "0x67d86050d22d574df046f3d90f722045f714e080": "Fables FablesRWA, MAX_POKE_TTL 259200",
+  "0x628a08decb71ad0c202b408ced6e939993edc0c0": "not a FablesBaseHook (ABI probe reverts)",
+  "0xb472243b0449e8d677339f51e98b1b6163a340c0": "not a FablesBaseHook (ABI probe reverts)"
+ },
+ "hooks": {
+  "0x70a9a88402989226847ec122043ce5e7ff462080": {
+   "name": "FablesRWA",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 15000,
+   "runtimeCodeHash": "0x165ccaced1f37263fd1a36b051c43d1759bab3005c2f7083ab32ee2db3b217e3",
+   "sourcePaths": [
+    "src/FablesRWA.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/LedgerTypes.sol",
+    "src/base/MarketCalendar.sol",
+    "src/libraries/CalendarLib.sol",
+    "src/libraries/LedgerLib.sol",
+    "src/libraries/SessionLib.sol"
+   ]
+  },
+  "0x5eb87f69be00df39981622fd60a8de4b7837e080": {
+   "name": "FablesRWA",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 50000,
+   "runtimeCodeHash": "0x577978ad29223268205cb40a5215c46839f5c27a1218beac7d4a0f7cd0aaa341",
+   "sourcePaths": [
+    "src/FablesRWA.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/MarketCalendar.sol",
+    "src/libraries/SessionLib.sol",
+    "src/base/LedgerTypes.sol",
+    "src/libraries/LedgerLib.sol",
+    "src/libraries/CalendarLib.sol"
+   ]
+  },
+  "0x08e52564bad99e05a694b4809f397edca417a080": {
+   "name": "FablesRamp",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 50000,
+   "runtimeCodeHash": "0xbb52b2dc4a14fc6c3f90d0a268b51680d7adbdaa392b211bc524b6fd9368bb85",
+   "sourcePaths": [
+    "src/FablesRamp.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/LedgerTypes.sol",
+    "src/libraries/LedgerLib.sol"
+   ]
+  },
+  "0x8af95932ec4484fb10c641a4cbcf19a798cb2080": {
+   "name": "FablesRWA",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 15000,
+   "runtimeCodeHash": "0x514b632f9bb987403ca7a3fb35780b2c092726a437c1efbb4479fd612549d25b",
+   "sourcePaths": [
+    "src/FablesRWA.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/LedgerTypes.sol",
+    "src/base/MarketCalendar.sol",
+    "src/libraries/CalendarLib.sol",
+    "src/libraries/LedgerLib.sol",
+    "src/libraries/SessionLib.sol"
+   ]
+  },
+  "0x66622f77b797d506e5376f7798b67ab288966080": {
+   "name": "FablesRWA",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 20000,
+   "runtimeCodeHash": "0xe23b7cfc414c8f3e7405696db74100672a43a707d7156fcf6c4b0ba1a126d36a",
+   "sourcePaths": [
+    "src/FablesRWA.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/MarketCalendar.sol",
+    "src/libraries/SessionLib.sol",
+    "src/base/LedgerTypes.sol",
+    "src/libraries/LedgerLib.sol",
+    "src/libraries/CalendarLib.sol"
+   ]
+  },
+  "0xa0e8fbff13e24af2b5e61a72800e08a161bde080": {
+   "name": "FablesRWA",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 15000,
+   "runtimeCodeHash": "0x336405ef8a51dd6b02b53eb46fccddc87bf15dbd0a16b3d86fccc3e0298eca73",
+   "sourcePaths": [
+    "src/FablesRWA.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/MarketCalendar.sol",
+    "src/libraries/SessionLib.sol",
+    "src/base/LedgerTypes.sol",
+    "src/libraries/LedgerLib.sol",
+    "src/libraries/CalendarLib.sol"
+   ]
+  },
+  "0x67d86050d22d574df046f3d90f722045f714e080": {
+   "name": "FablesRWA",
+   "authority": "0xA362D98B33A7bb5B5E2180a05f995A70FB404f30",
+   "absoluteMaxFee": 20000,
+   "runtimeCodeHash": "0xa40a02521b3a20e56851d833baf5baf0ee258e954c0f4e3f96e1bd30c8681db3",
+   "sourcePaths": [
+    "src/FablesRWA.sol",
+    "src/base/FablesBaseHook.sol",
+    "src/base/FablesLedger.sol",
+    "src/base/LedgerTypes.sol",
+    "src/base/MarketCalendar.sol",
+    "src/libraries/CalendarLib.sol",
+    "src/libraries/LedgerLib.sol",
+    "src/libraries/SessionLib.sol"
+   ]
+  }
+ },
+ "pools": [
+  {
+   "symbol": "AAPL",
+   "poolId": "0xa2347ba69167e5602f74640ffbf737ee7cdd825e4726d3462564fc6533070147",
+   "hook": "0x70a9a88402989226847ec122043ce5e7ff462080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 10,
+   "initBlock": 41258956,
+   "maxFeePips": 8000,
+   "pokeFloorPips": 300,
+   "pokeFeePips": 350,
+   "pokeExpiry": 1792743612,
+   "currentFeePips": {
+    "zeroForOne": 350,
+    "oneForZero": 350
+   },
+   "protocolFee": 0,
+   "tick": 217805,
+   "liquidityRaw": "151342799532403338"
+  },
+  {
+   "symbol": "AMZN",
+   "poolId": "0x5619cb8420678b47997f20925eb01be8750c907d6226a0df5d7eafeff966346f",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x12f190a9f9d7d37a250758b26824b97ce941bf54",
+   "currency1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "usdgIsCurrency0": false,
+   "tickSpacing": 60,
+   "initBlock": 57726551,
+   "maxFeePips": 30000,
+   "pokeFloorPips": 3000,
+   "pokeFeePips": 3150,
+   "pokeExpiry": 3150,
+   "currentFeePips": {
+    "zeroForOne": 3150,
+    "oneForZero": 3150
+   },
+   "protocolFee": 0,
+   "tick": -221092,
+   "liquidityRaw": "106218143999489419"
+  },
+  {
+   "symbol": "CRCL",
+   "poolId": "0xdb9c34002d173981250969293af6f43f42a26f2110f19893bbe2ad373375e9e6",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 60,
+   "initBlock": 66505547,
+   "maxFeePips": 50000,
+   "pokeFloorPips": 800,
+   "pokeFeePips": 0,
+   "pokeExpiry": 0,
+   "currentFeePips": {
+    "zeroForOne": 1500,
+    "oneForZero": 1500
+   },
+   "protocolFee": 0,
+   "tick": 231717,
+   "liquidityRaw": "101362527992814319"
+  },
+  {
+   "symbol": "GME",
+   "poolId": "0xbb15d6b62c893a86912b5d4b14599f9cc72111e5898327dcadefa0352f20ae11",
+   "hook": "0x08e52564bad99e05a694b4809f397edca417a080",
+   "hookName": "FablesRamp",
+   "currency0": "0x1b0e319c6a659f002271b69db8a7df2f911c153e",
+   "currency1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "usdgIsCurrency0": false,
+   "tickSpacing": 10,
+   "initBlock": 57726760,
+   "maxFeePips": 20000,
+   "pokeFloorPips": 300,
+   "pokeFeePips": 500,
+   "pokeExpiry": 500,
+   "currentFeePips": {
+    "zeroForOne": 500,
+    "oneForZero": 500
+   },
+   "protocolFee": 0,
+   "tick": -244013,
+   "liquidityRaw": "177218835248022"
+  },
+  {
+   "symbol": "INTC",
+   "poolId": "0x5e4c353496e4c82a406a38ca1eaad6d2d4cdb8d405d422faff84bcb6f548d97e",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xc72b96e0e48ecd4dc75e1e45396e26300bc39681",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 60,
+   "initBlock": 75963470,
+   "maxFeePips": 50000,
+   "pokeFloorPips": 9000,
+   "pokeFeePips": 15181,
+   "pokeExpiry": 15181,
+   "currentFeePips": {
+    "zeroForOne": 10000,
+    "oneForZero": 10000
+   },
+   "protocolFee": 0,
+   "tick": 231690,
+   "liquidityRaw": "44861388213829265"
+  },
+  {
+   "symbol": "META",
+   "poolId": "0x4ac4259eb99dce57268a856719d087fa1a53569b2fed6f330aabe32d9a4aa4f5",
+   "hook": "0x8af95932ec4484fb10c641a4cbcf19a798cb2080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 10,
+   "initBlock": 44867921,
+   "maxFeePips": 8000,
+   "pokeFloorPips": 450,
+   "pokeFeePips": 600,
+   "pokeExpiry": 600,
+   "currentFeePips": {
+    "zeroForOne": 600,
+    "oneForZero": 600
+   },
+   "protocolFee": 0,
+   "tick": 211621,
+   "liquidityRaw": "5951044310320852"
+  },
+  {
+   "symbol": "MSTR",
+   "poolId": "0xe1c3e133c917674bd51704e47c7dfe7f0d66375c89ceb30b083de95f9a1dc5ea",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xec262a75e413fafd0df80480274532c79d42da09",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 60,
+   "initBlock": 66505571,
+   "maxFeePips": 50000,
+   "pokeFloorPips": 800,
+   "pokeFeePips": 2200,
+   "pokeExpiry": 2200,
+   "currentFeePips": {
+    "zeroForOne": 1500,
+    "oneForZero": 1500
+   },
+   "protocolFee": 0,
+   "tick": 226532,
+   "liquidityRaw": "14668862983347967"
+  },
+  {
+   "symbol": "MU",
+   "poolId": "0x8e36bc9877b9383ae306dd937d40ab0e9df65811e7fdfb6bad25e7102bc398b2",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xff080c8ce2e5feadaca0da81314ae59d232d4afd",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 60,
+   "initBlock": 66505499,
+   "maxFeePips": 50000,
+   "pokeFloorPips": 1000,
+   "pokeFeePips": 0,
+   "pokeExpiry": 0,
+   "currentFeePips": {
+    "zeroForOne": 2000,
+    "oneForZero": 2000
+   },
+   "protocolFee": 0,
+   "tick": 208681,
+   "liquidityRaw": "1503257251544508"
+  },
+  {
+   "symbol": "NVDA",
+   "poolId": "0x7990aad9e8fb048f49a155a7df5603db0366f0657035b78eb4196395cccb3dcd",
+   "hook": "0x66622f77b797d506e5376f7798b67ab288966080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 10,
+   "initBlock": 37260309,
+   "maxFeePips": 8000,
+   "pokeFloorPips": 300,
+   "pokeFeePips": 500,
+   "pokeExpiry": 1792756860,
+   "currentFeePips": {
+    "zeroForOne": 500,
+    "oneForZero": 500
+   },
+   "protocolFee": 0,
+   "tick": 222703,
+   "liquidityRaw": "285063390628773909"
+  },
+  {
+   "symbol": "PLTR",
+   "poolId": "0xbe1a90db81cf52603ea9059a6fde2e5fa893a8750647ff189ee7618c61b4c4f9",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "currency1": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+   "usdgIsCurrency0": true,
+   "tickSpacing": 60,
+   "initBlock": 75963708,
+   "maxFeePips": 50000,
+   "pokeFloorPips": 1400,
+   "pokeFeePips": 0,
+   "pokeExpiry": 0,
+   "currentFeePips": {
+    "zeroForOne": 1700,
+    "oneForZero": 1700
+   },
+   "protocolFee": 0,
+   "tick": 223569,
+   "liquidityRaw": "11227547878735769"
+  },
+  {
+   "symbol": "SPCX",
+   "poolId": "0xb81d873dfb2bb1aaf08804053f8940fd06bb30a2b5a0fafcdbcc7325544452b9",
+   "hook": "0x5eb87f69be00df39981622fd60a8de4b7837e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+   "currency1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "usdgIsCurrency0": false,
+   "tickSpacing": 10,
+   "initBlock": 57726633,
+   "maxFeePips": 30000,
+   "pokeFloorPips": 500,
+   "pokeFeePips": 1000,
+   "pokeExpiry": 1000,
+   "currentFeePips": {
+    "zeroForOne": 500,
+    "oneForZero": 500
+   },
+   "protocolFee": 0,
+   "tick": -226414,
+   "liquidityRaw": "157768641823488153"
+  },
+  {
+   "symbol": "SPY",
+   "poolId": "0x8674c1c5544f3c9563565b5d4bd5916701d90b3559b072acf7cef5b4fc5b8dcd",
+   "hook": "0xa0e8fbff13e24af2b5e61a72800e08a161bde080",
+   "hookName": "FablesRWA",
+   "currency0": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+   "currency1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "usdgIsCurrency0": false,
+   "tickSpacing": 10,
+   "initBlock": 37260325,
+   "maxFeePips": 8000,
+   "pokeFloorPips": 250,
+   "pokeFeePips": 400,
+   "pokeExpiry": 1792526460,
+   "currentFeePips": {
+    "zeroForOne": 500,
+    "oneForZero": 500
+   },
+   "protocolFee": 0,
+   "tick": -209943,
+   "liquidityRaw": "996748342904484135"
+  },
+  {
+   "symbol": "TSLA",
+   "poolId": "0xd5effce87036cd858146c0c15fa825c231a9de1843200ca108e431e431331e8e",
+   "hook": "0x67d86050d22d574df046f3d90f722045f714e080",
+   "hookName": "FablesRWA",
+   "currency0": "0x322f0929c4625ed5bad873c95208d54e1c003b2d",
+   "currency1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+   "usdgIsCurrency0": false,
+   "tickSpacing": 10,
+   "initBlock": 41258986,
+   "maxFeePips": 10000,
+   "pokeFloorPips": 400,
+   "pokeFeePips": 3000,
+   "pokeExpiry": 1792684860,
+   "currentFeePips": {
+    "zeroForOne": 1500,
+    "oneForZero": 1500
+   },
+   "protocolFee": 0,
+   "tick": -217037,
+   "liquidityRaw": "79051782956545501"
+  }
+ ]
+}
