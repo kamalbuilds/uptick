@@ -147,7 +147,7 @@ One prompt: "I hold NVDA. What does a weekend hedge cost?"
 | `shares` | 96.6378 | 96.563 NVDA tokens times the multiplier 1.000775, floored to the market's four size decimals |
 | `notionalUsd` | 20396.37 | shares at the mid of Lighter's book |
 | `slippageBp` | 1.77 | open into the bids plus close from the asks, walked at that size |
-| `fundingBp`, `fundingDirection` | 5.07, earns | the short earned this much over the 65 weekend hours, from the weekend hours of the last 28 days of funding (a history, not a forecast) |
+| `fundingBp`, `fundingDirection` | 5.07, earns | what a short earns over the 65 weekend hours at the mean hourly funding of the weekend hours in the last 28 days (a history, not a forecast) |
 | `marginEligible`, `userCapTokens` | true, 60 | Lighter counts NVDA toward margin, up to 60 tokens an account, read live |
 | `window` | close 2026-10-23T20:00Z, unwind 2026-10-26T13:00Z | the US close and 30 minutes before the Monday open |
 | `handoffUrl` | https://robinhoodchain.lighter.xyz/trade/NVDA | the market on Lighter, where the holder enters the short |
