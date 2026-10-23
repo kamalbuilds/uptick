@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uptick handout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,500&display=swap" rel="stylesheet">
+<style>
+/* web/DESIGN.md (Uptick-ink-and-hairline). A5 portrait, 148mm x 210mm. */
+:root{--canvas:#0a0b0c;--panel:#16181a;--hairline:#2a2e31;--border:#42494d;--text:#f4f5f5;--mute:#919fa6;--kept:#1fd16b;--kept-dim:#0f3d24;--caution:#f2b84b;--caution-dim:#352a12;--closed:#6b747a}
+@page{size:148mm 210mm;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--canvas);color:var(--text);font-family:"Hanken Grotesk",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:148mm;height:210mm;padding:13mm 12mm 11mm;display:flex;flex-direction:column;overflow:hidden;background:var(--canvas)}
+.mark{font-size:11pt;font-weight:600;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:baseline;padding-bottom:3.5mm;border-bottom:1px solid var(--hairline)}
+.mark span{font-weight:400;color:var(--mute);font-size:8.5pt}
+.v{font-family:Literata,Georgia,serif;font-weight:400;font-size:21pt;line-height:1.14;letter-spacing:-.022em;margin:5mm 0 2.5mm}
+.v b{font-weight:400;color:var(--kept)}
+.sub{font-size:9pt;line-height:1.4;color:var(--mute)}
+.doors{display:grid;grid-template-columns:repeat(3,1fr);column-gap:5mm;margin-top:5mm}
+.door{border-top:1px solid var(--hairline);padding-top:3.5mm}
+.door svg{display:block;width:100%;height:21mm}
+.door .n{font-size:24pt;font-weight:500;line-height:1;letter-spacing:-.02em;margin-top:2.5mm}
+.door .s{font-size:9.5pt;font-weight:600;margin-top:1.5mm}
+.door .d{font-size:8pt;line-height:1.35;color:var(--mute);margin-top:1mm}
+.open .s{color:var(--kept)}.reduced .s{color:var(--caution)}.closed .s{color:var(--closed)}
+.always{margin-top:4mm;font-size:8.5pt;line-height:1.4;color:var(--mute);border-top:1px solid var(--hairline);padding-top:3mm}
+.always b{color:var(--text);font-weight:500}
+.cta{margin-top:auto;margin-bottom:0;display:grid;grid-template-columns:34mm 1fr;column-gap:6mm;align-items:center;border-top:1px solid var(--border);padding-top:5mm}
+.qr{background:var(--text);padding:3mm;border-radius:2mm;width:34mm;height:34mm}
+.qr svg{display:block;width:100%;height:100%}
+.cta .q{font-family:Literata,Georgia,serif;font-size:13.5pt;line-height:1.2;letter-spacing:-.012em}
+.cta .q span{display:block;color:var(--mute);font-size:9pt;margin-top:2mm;font-family:"Hanken Grotesk",sans-serif;letter-spacing:0}
+.foot{display:flex;justify-content:space-between;margin-top:5mm;padding-top:3mm;border-top:1px solid var(--hairline);font-size:9.5pt;font-weight:500}
+.foot span{color:var(--mute);font-weight:400}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="mark">Uptick<span>Robinhood Chain</span></div>
+  <h1 class="v">Your Stock Tokens earn a share of every trade's fee, and you see what you <b>keep</b> before you deposit.</h1>
+  <p class="sub">Uptick vaults put a Robinhood Stock Token to work as Uniswap liquidity on Robinhood Chain. We ranked 17 Stock Tokens by replaying 3,059,881 swaps over the 30 days to 2026-10-17.</p>
+
+  <div class="doors">
+    <div class="door open">
+      <svg viewBox="8.2 0 43.6 80" preserveAspectRatio="xMinYMid meet" fill="none" stroke-width="1.5"><rect x="9" y="4" width="42" height="72" stroke="#42494d"/><rect x="11" y="6" width="38" height="68" fill="#0f3d24" stroke="none"/><path d="M11 6 L28 12 L28 70 L11 74Z" fill="#1fd16b" stroke="none"/></svg>
+      <div class="n">3</div><div class="s">Open</div>
+      <div class="d">PLTR on its Uniswap v4 pool, AAPL, GOOGL. Both replay halves kept money.</div>
+    </div>
+    <div class="door reduced">
+      <svg viewBox="8.2 0 43.6 80" preserveAspectRatio="xMinYMid meet" fill="none" stroke-width="1.5"><rect x="9" y="4" width="42" height="72" stroke="#42494d"/><rect x="11" y="6" width="38" height="68" fill="#352a12" stroke="none"/><path d="M11 6 L40 6.5 L40 73.5 L11 74Z" fill="#f2b84b" stroke="none"/></svg>
+      <div class="n">9</div><div class="s">Reduced</div>
+      <div class="d">Deposits capped at $25,000 per transaction when the weaker half is near break-even.</div>
+    </div>
+    <div class="door closed">
+      <svg viewBox="8.2 0 43.6 80" preserveAspectRatio="xMinYMid meet" fill="none" stroke-width="1.5"><rect x="9" y="4" width="42" height="72" stroke="#42494d"/><rect x="11" y="6" width="38" height="68" fill="#6b747a" stroke="none"/></svg>
+      <div class="n">5</div><div class="s">Closed</div>
+      <div class="d">TSLA, CRCL, MSTR, GME, SPCX. Shut, with the written reason on each vault page.</div>
+    </div>
+  </div>
+
+  <p class="always"><b>12 vaults launch first</b>, the 3 open and the 9 reduced. <b>redeemInKind is always open</b>: you can take your slice of both tokens out on any vault.</p>
+
+  <div class="cta">
+    <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" shape-rendering="crispEdges"><path d="M0,0h1v1h-1zM1,0h1v1h-1zM2,0h1v1h-1zM3,0h1v1h-1zM4,0h1v1h-1zM5,0h1v1h-1zM6,0h1v1h-1zM9,0h1v1h-1zM11,0h1v1h-1zM12,0h1v1h-1zM13,0h1v1h-1zM16,0h1v1h-1zM18,0h1v1h-1zM20,0h1v1h-1zM22,0h1v1h-1zM23,0h1v1h-1zM24,0h1v1h-1zM25,0h1v1h-1zM26,0h1v1h-1zM27,0h1v1h-1zM28,0h1v1h-1zM0,1h1v1h-1zM6,1h1v1h-1zM9,1h1v1h-1zM11,1h1v1h-1zM12,1h1v1h-1zM13,1h1v1h-1zM19,1h1v1h-1zM20,1h1v1h-1zM22,1h1v1h-1zM28,1h1v1h-1zM0,2h1v1h-1zM2,2h1v1h-1zM3,2h1v1h-1zM4,2h1v1h-1zM6,2h1v1h-1zM8,2h1v1h-1zM9,2h1v1h-1zM10,2h1v1h-1zM11,2h1v1h-1zM15,2h1v1h-1zM16,2h1v1h-1zM17,2h1v1h-1zM19,2h1v1h-1zM20,2h1v1h-1zM22,2h1v1h-1zM24,2h1v1h-1zM25,2h1v1h-1zM26,2h1v1h-1zM28,2h1v1h-1zM0,3h1v1h-1zM2,3h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM6,3h1v1h-1zM10,3h1v1h-1zM13,3h1v1h-1zM15,3h1v1h-1zM16,3h1v1h-1zM18,3h1v1h-1zM20,3h1v1h-1zM22,3h1v1h-1zM24,3h1v1h-1zM25,3h1v1h-1zM26,3h1v1h-1zM28,3h1v1h-1zM0,4h1v1h-1zM2,4h1v1h-1zM3,4h1v1h-1zM4,4h1v1h-1zM6,4h1v1h-1zM8,4h1v1h-1zM9,4h1v1h-1zM11,4h1v1h-1zM15,4h1v1h-1zM17,4h1v1h-1zM18,4h1v1h-1zM22,4h1v1h-1zM24,4h1v1h-1zM25,4h1v1h-1zM26,4h1v1h-1zM28,4h1v1h-1zM0,5h1v1h-1zM6,5h1v1h-1zM8,5h1v1h-1zM9,5h1v1h-1zM10,5h1v1h-1zM11,5h1v1h-1zM12,5h1v1h-1zM14,5h1v1h-1zM16,5h1v1h-1zM17,5h1v1h-1zM19,5h1v1h-1zM20,5h1v1h-1zM22,5h1v1h-1zM28,5h1v1h-1zM0,6h1v1h-1zM1,6h1v1h-1zM2,6h1v1h-1zM3,6h1v1h-1zM4,6h1v1h-1zM5,6h1v1h-1zM6,6h1v1h-1zM8,6h1v1h-1zM10,6h1v1h-1zM12,6h1v1h-1zM14,6h1v1h-1zM16,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM22,6h1v1h-1zM23,6h1v1h-1zM24,6h1v1h-1zM25,6h1v1h-1zM26,6h1v1h-1zM27,6h1v1h-1zM28,6h1v1h-1zM11,7h1v1h-1zM13,7h1v1h-1zM14,7h1v1h-1zM17,7h1v1h-1zM18,7h1v1h-1zM1,8h1v1h-1zM4,8h1v1h-1zM6,8h1v1h-1zM8,8h1v1h-1zM9,8h1v1h-1zM12,8h1v1h-1zM13,8h1v1h-1zM14,8h1v1h-1zM15,8h1v1h-1zM17,8h1v1h-1zM19,8h1v1h-1zM21,8h1v1h-1zM23,8h1v1h-1zM24,8h1v1h-1zM26,8h1v1h-1zM1,9h1v1h-1zM2,9h1v1h-1zM3,9h1v1h-1zM5,9h1v1h-1zM8,9h1v1h-1zM9,9h1v1h-1zM10,9h1v1h-1zM12,9h1v1h-1zM14,9h1v1h-1zM15,9h1v1h-1zM16,9h1v1h-1zM17,9h1v1h-1zM21,9h1v1h-1zM22,9h1v1h-1zM23,9h1v1h-1zM24,9h1v1h-1zM27,9h1v1h-1zM28,9h1v1h-1zM1,10h1v1h-1zM2,10h1v1h-1zM3,10h1v1h-1zM4,10h1v1h-1zM6,10h1v1h-1zM9,10h1v1h-1zM10,10h1v1h-1zM13,10h1v1h-1zM14,10h1v1h-1zM15,10h1v1h-1zM16,10h1v1h-1zM17,10h1v1h-1zM20,10h1v1h-1zM21,10h1v1h-1zM26,10h1v1h-1zM28,10h1v1h-1zM0,11h1v1h-1zM7,11h1v1h-1zM9,11h1v1h-1zM10,11h1v1h-1zM14,11h1v1h-1zM15,11h1v1h-1zM17,11h1v1h-1zM18,11h1v1h-1zM20,11h1v1h-1zM21,11h1v1h-1zM25,11h1v1h-1zM27,11h1v1h-1zM28,11h1v1h-1zM0,12h1v1h-1zM1,12h1v1h-1zM3,12h1v1h-1zM6,12h1v1h-1zM7,12h1v1h-1zM8,12h1v1h-1zM10,12h1v1h-1zM11,12h1v1h-1zM13,12h1v1h-1zM17,12h1v1h-1zM19,12h1v1h-1zM23,12h1v1h-1zM28,12h1v1h-1zM1,13h1v1h-1zM4,13h1v1h-1zM7,13h1v1h-1zM9,13h1v1h-1zM11,13h1v1h-1zM12,13h1v1h-1zM13,13h1v1h-1zM14,13h1v1h-1zM16,13h1v1h-1zM18,13h1v1h-1zM22,13h1v1h-1zM24,13h1v1h-1zM26,13h1v1h-1zM28,13h1v1h-1zM2,14h1v1h-1zM4,14h1v1h-1zM5,14h1v1h-1zM6,14h1v1h-1zM8,14h1v1h-1zM9,14h1v1h-1zM12,14h1v1h-1zM13,14h1v1h-1zM15,14h1v1h-1zM17,14h1v1h-1zM18,14h1v1h-1zM20,14h1v1h-1zM21,14h1v1h-1zM22,14h1v1h-1zM24,14h1v1h-1zM27,14h1v1h-1zM28,14h1v1h-1zM0,15h1v1h-1zM1,15h1v1h-1zM3,15h1v1h-1zM7,15h1v1h-1zM8,15h1v1h-1zM13,15h1v1h-1zM14,15h1v1h-1zM15,15h1v1h-1zM17,15h1v1h-1zM20,15h1v1h-1zM23,15h1v1h-1zM25,15h1v1h-1zM28,15h1v1h-1zM6,16h1v1h-1zM7,16h1v1h-1zM9,16h1v1h-1zM10,16h1v1h-1zM11,16h1v1h-1zM14,16h1v1h-1zM17,16h1v1h-1zM19,16h1v1h-1zM20,16h1v1h-1zM28,16h1v1h-1zM0,17h1v1h-1zM1,17h1v1h-1zM3,17h1v1h-1zM5,17h1v1h-1zM7,17h1v1h-1zM10,17h1v1h-1zM12,17h1v1h-1zM14,17h1v1h-1zM18,17h1v1h-1zM22,17h1v1h-1zM23,17h1v1h-1zM24,17h1v1h-1zM25,17h1v1h-1zM26,17h1v1h-1zM28,17h1v1h-1zM2,18h1v1h-1zM3,18h1v1h-1zM4,18h1v1h-1zM6,18h1v1h-1zM8,18h1v1h-1zM9,18h1v1h-1zM13,18h1v1h-1zM15,18h1v1h-1zM24,18h1v1h-1zM28,18h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM7,19h1v1h-1zM8,19h1v1h-1zM9,19h1v1h-1zM12,19h1v1h-1zM16,19h1v1h-1zM17,19h1v1h-1zM18,19h1v1h-1zM20,19h1v1h-1zM25,19h1v1h-1zM27,19h1v1h-1zM28,19h1v1h-1zM0,20h1v1h-1zM1,20h1v1h-1zM3,20h1v1h-1zM6,20h1v1h-1zM11,20h1v1h-1zM12,20h1v1h-1zM13,20h1v1h-1zM14,20h1v1h-1zM15,20h1v1h-1zM17,20h1v1h-1zM19,20h1v1h-1zM20,20h1v1h-1zM21,20h1v1h-1zM22,20h1v1h-1zM23,20h1v1h-1zM24,20h1v1h-1zM25,20h1v1h-1zM8,21h1v1h-1zM10,21h1v1h-1zM11,21h1v1h-1zM12,21h1v1h-1zM13,21h1v1h-1zM15,21h1v1h-1zM16,21h1v1h-1zM18,21h1v1h-1zM20,21h1v1h-1zM24,21h1v1h-1zM26,21h1v1h-1zM28,21h1v1h-1zM0,22h1v1h-1zM1,22h1v1h-1zM2,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM5,22h1v1h-1zM6,22h1v1h-1zM11,22h1v1h-1zM14,22h1v1h-1zM15,22h1v1h-1zM17,22h1v1h-1zM19,22h1v1h-1zM20,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM28,22h1v1h-1zM0,23h1v1h-1zM6,23h1v1h-1zM10,23h1v1h-1zM11,23h1v1h-1zM12,23h1v1h-1zM14,23h1v1h-1zM15,23h1v1h-1zM17,23h1v1h-1zM18,23h1v1h-1zM19,23h1v1h-1zM20,23h1v1h-1zM24,23h1v1h-1zM25,23h1v1h-1zM27,23h1v1h-1zM0,24h1v1h-1zM2,24h1v1h-1zM3,24h1v1h-1zM4,24h1v1h-1zM6,24h1v1h-1zM8,24h1v1h-1zM9,24h1v1h-1zM10,24h1v1h-1zM11,24h1v1h-1zM15,24h1v1h-1zM17,24h1v1h-1zM19,24h1v1h-1zM20,24h1v1h-1zM21,24h1v1h-1zM22,24h1v1h-1zM23,24h1v1h-1zM24,24h1v1h-1zM27,24h1v1h-1zM0,25h1v1h-1zM2,25h1v1h-1zM3,25h1v1h-1zM4,25h1v1h-1zM6,25h1v1h-1zM9,25h1v1h-1zM12,25h1v1h-1zM14,25h1v1h-1zM15,25h1v1h-1zM16,25h1v1h-1zM17,25h1v1h-1zM18,25h1v1h-1zM23,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM28,25h1v1h-1zM0,26h1v1h-1zM2,26h1v1h-1zM3,26h1v1h-1zM4,26h1v1h-1zM6,26h1v1h-1zM9,26h1v1h-1zM10,26h1v1h-1zM11,26h1v1h-1zM12,26h1v1h-1zM15,26h1v1h-1zM16,26h1v1h-1zM19,26h1v1h-1zM20,26h1v1h-1zM21,26h1v1h-1zM25,26h1v1h-1zM27,26h1v1h-1zM28,26h1v1h-1zM0,27h1v1h-1zM6,27h1v1h-1zM8,27h1v1h-1zM12,27h1v1h-1zM13,27h1v1h-1zM15,27h1v1h-1zM17,27h1v1h-1zM18,27h1v1h-1zM20,27h1v1h-1zM23,27h1v1h-1zM25,27h1v1h-1zM27,27h1v1h-1zM28,27h1v1h-1zM0,28h1v1h-1zM1,28h1v1h-1zM2,28h1v1h-1zM3,28h1v1h-1zM4,28h1v1h-1zM5,28h1v1h-1zM6,28h1v1h-1zM11,28h1v1h-1zM13,28h1v1h-1zM15,28h1v1h-1zM17,28h1v1h-1zM18,28h1v1h-1zM20,28h1v1h-1zM22,28h1v1h-1zM24,28h1v1h-1zM25,28h1v1h-1zM27,28h1v1h-1z" fill="#0a0b0c"/></svg></div>
+    <div class="q">Five questions, two minutes. Tell us what would make you deposit.<span>Scan, or open uptick-fi.pages.dev/talk</span></div>
+  </div>
+  <div class="foot">uptick-fi.pages.dev<span>@uptickfi</span></div>
+</div>
+</body>
+</html>
