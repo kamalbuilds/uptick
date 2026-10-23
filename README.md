@@ -14,7 +14,7 @@ On 22 October 2026 Robinhood made Stock Tokens collateral on Morpho: "Any eligib
 
 Borrowing USDG against AAPL on Morpho cost 24.7% a year at the 2026-10-23 16:56 UTC read (market at a 62.5% loan to value limit, $221,409 supplied). An Uptick AAPL share earns its kept APR while posted, +2.7% to +3.9% a year across the two replay halves, which at a 50% loan to value pays back 5.4 to 7.8 points of that rate. That is an estimate from one read; the rate is variable and fee income varies.
 
-Try it: paste any wallet address into `/check` to see which of its Stock Tokens can earn and where a loan opens, open a vault page for the Earn and borrow panel, and run `scripts/fork-demo.sh` for the whole loop on a fork of Robinhood Chain against the real Morpho Blue (deposit, borrow at 62.5%, a 3% push on the pool, a stale feed, a liquidation; every transaction in [docs/FORK-DEMO.md](docs/FORK-DEMO.md)). Nine MCP tools give agents the same reads and unsigned transactions.
+Try it: paste any wallet address into `/check` to see which of its Stock Tokens can earn and where a loan opens, open a vault page for the Earn and borrow panel, and run `scripts/fork-demo.sh` for the whole loop on a fork of Robinhood Chain against the real Morpho Blue (deposit, borrow at 62.5%, a 3% push on the pool, a stale feed, a liquidation; every transaction in [docs/FORK-DEMO.md](docs/FORK-DEMO.md)). Ten MCP tools give agents the same reads and unsigned transactions, plus a sized weekend hedge: `plan_weekend_hedge` prices a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from what the wallet holds, with funding, order-book slippage and margin terms read live before you trade.
 
 Every vault page shows fee APR next to what LPs keep.
 
@@ -45,6 +45,8 @@ The spread between pools and tiers is as large as the spread between sessions. T
 **4. Pools under a declared cap.** The cap standard (`CappedTakeHook` + `CapRegistry`) lets a hook declare its maximum take and enforces it inside every swap on every router. The vault targets pools without take-capable hooks, or hooks with a registered cap. On a mainnet fork the cap stops 200 of 200 over-cap swaps, accounting matches to the wei, and the cap holds against a nested self-swap.[^4] `UptickHook` is one reference implementation of the standard.
 
 **5. Web app** shows each token's tier comparison and session evidence, then deposits, redeems and tracks the portfolio.
+
+**6. Weekend hedge** (`web/lib/hedge.ts`, `api/src/hedge-tools.ts`). Earn, borrow, hedge: once the vault share backs a USDG loan, the planner sizes a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from the Stock Tokens a wallet holds, or from the stock leg of its vault shares, using the on-chain ERC-8056 multiplier. It reads Lighter live for funding, order-book slippage at your exact size and margin terms, shows whether the short earns or pays funding over the weekend in basis points and USDG, and covers the 15 of 17 Uptick tokens that trade as Lighter perps. An NVDA weekend hedge costs about 1.6 bp at $10k against a 135 bp unhedged weekend swing (16 weekends of funding, 9 of pool-vs-perp drift).[^7] The default unwind is 30 minutes before the US open because the pool lags the perp at the open (NVDA residual 6.4 bp against 17.8 bp). The same plan is the `plan_weekend_hedge` MCP tool.
 
 ## How vaults open
 
@@ -148,3 +150,4 @@ Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture.h
 [^4]: `spikes/capped-hooks/FINDINGS.md`.
 [^5]: 74.5%: Bitquery. 80% of 84K: 0x. $1.2M in 49 hours: `docs/research/founder-house/OUTREACH-fomo-gmgn.md`.
 [^6]: `docs/research/founder-house/vaults/HOOK-DESIGN.md` section A and `docs/research/founder-house/vaults/COMPETITORS.md`.
+[^7]: `spikes/stock-hedge/FINDINGS.md`, `spikes/stock-hedge/economics/` (funding, basis, order book and close-time scripts with their outputs).

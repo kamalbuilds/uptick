@@ -25,3 +25,4 @@ call "list_vaults" list_vaults '{}' '{vaults: (.vaults | length), by_gate: (.vau
 call "get_vault_evidence pltr" get_vault_evidence '{"id":"pltr"}' '{id, venue, pool_id, pool_manager, entry_fee_bps, swaps, gate: {state: .gate.state, reason: .gate.reason}}'
 call "prepare_deposit pltr (usdg)" prepare_deposit "{\"id\":\"pltr\",\"amount\":\"1000\",\"receiver\":\"$RECEIVER\",\"asset\":\"usdg\"}" '.'
 call "prepare_deposit spcx (closed)" prepare_deposit "{\"id\":\"spcx\",\"amount\":\"1000\",\"receiver\":\"$RECEIVER\"}" '.'
+call "plan_weekend_hedge nvda holder" plan_weekend_hedge '{"address":"0x92d435c96e63c43e12d6d0ab28f6b0b04072f765"}' '{symbol, shares, notionalUsd, slippageBp, fundingBp, fundingDirection, marginEligible, window, handoffUrl, error}'
