@@ -18,16 +18,21 @@ DAYS = {"full": 30, "calibration": 15, "test": 15}
 HAVE_ENGINE_DATA = os.path.exists(os.path.join(rp.ENGINE_DIR, "cl-AAPL.json")) and os.path.isdir(os.path.join(rp.KEEPER, "data", "swaps"))
 
 
-def test_hold_is_the_annualised_price_move_and_every_column_carries_a_weaker_half():
+def test_hold_is_the_annualised_price_move_and_every_column_carries_the_gate_half():
     assert len(COMMITTED["tokens"]) >= 17
     for sym, t in COMMITTED["tokens"].items():
         hold = t["hold"]
         for h in HALVES:
             assert hold[h]["return_apr_pct"] == pytest.approx(hold[h]["price_move_pct"] * 365.0 / DAYS[h], abs=1e-6), f"{sym} {h}"
-        assert hold["weaker_half_return_apr_pct"] == min(hold["calibration"]["return_apr_pct"], hold["test"]["return_apr_pct"])
+        # every column is read in the one half the gate reads: the vault's weaker half by kept
+        g = t["gate_half"]
+        assert g == min(("calibration", "test"), key=lambda h: t["vault"][h]["edge_apr_pct"]), sym
+        assert t["vault"]["weaker_half_edge_apr_pct"] == t["vault"]["gate_half_edge_apr_pct"] == t["vault"][g]["edge_apr_pct"]
+        assert hold["gate_half_return_apr_pct"] == hold[g]["return_apr_pct"]
         for v in ("vault", *db.VARIANTS):
-            assert t[v]["weaker_half_total_return_apr_pct"] == min(t[v]["calibration"]["total_return_apr_pct"], t[v]["test"]["total_return_apr_pct"]), f"{sym} {v}"
-        assert hold["vs_vault_weaker_half_total_return_pts"] == pytest.approx(t["vault"]["weaker_half_total_return_apr_pct"] - hold["weaker_half_return_apr_pct"], abs=1e-9)
+            assert t[v]["gate_half_total_return_apr_pct"] == t[v][g]["total_return_apr_pct"], f"{sym} {v}"
+            assert t[v]["gate_half_edge_apr_pct"] == t[v][g]["edge_apr_pct"], f"{sym} {v}"
+        assert hold["vs_vault_gate_half_total_return_pts"] == pytest.approx(t["vault"]["gate_half_total_return_apr_pct"] - hold["gate_half_return_apr_pct"], abs=1e-9)
         # a position that is not the token cannot reproduce holding it: the vault's total return differs from hold in some window
         assert any(t["vault"][h]["total_return_apr_pct"] != hold[h]["return_apr_pct"] for h in HALVES), sym
 

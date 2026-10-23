@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-23T11:28:02.622836+00:00",
+ "generated_at": "2026-10-23T11:40:31.890705+00:00",
  "source": "keeper/replay/diy_baseline.py over keeper/data/replay.json",
  "window": {
   "start": "2026-09-17T00:00:00+00:00",
@@ -42,20 +42,20 @@
     "median_in_range_share": 1.0
    },
    "total_return": {
-    "note": "weaker-half total return on the deposit, annualised: the stock token deposited, fees plus the position's mark less the deposit, inventory drift included; hold is the token's price move with no position",
+    "note": "total return on the deposit in the half the gate reads (the vault's weaker half), annualised: the stock token deposited, fees plus the position's mark less the deposit, inventory drift included; hold is the token's price move with no position",
     "hold": {
-     "keeps_positive": 2,
-     "median_weaker_half_apr_pct": -66.66799360425479
+     "keeps_positive": 4,
+     "median_weaker_half_apr_pct": -41.706637179309155
     },
     "set_and_forget": {
-     "keeps_positive": 9,
+     "keeps_positive": 11,
      "median_weaker_half_apr_pct": 0.0
     },
     "vault": {
-     "keeps_positive": 1,
-     "median_weaker_half_apr_pct": -44.30730156962726
+     "keeps_positive": 3,
+     "median_weaker_half_apr_pct": -40.43802729535553
     },
-    "vault_ahead_of_hold": 11,
+    "vault_ahead_of_hold": 8,
     "vault_ahead_of_set_and_forget": 1,
     "vault_matches_set_and_forget_within_1pt": 0
    }
@@ -85,20 +85,20 @@
     "median_in_range_share": 1.0
    },
    "total_return": {
-    "note": "weaker-half total return on the deposit, annualised: the stock token deposited, fees plus the position's mark less the deposit, inventory drift included; hold is the token's price move with no position",
+    "note": "total return on the deposit in the half the gate reads (the vault's weaker half), annualised: the stock token deposited, fees plus the position's mark less the deposit, inventory drift included; hold is the token's price move with no position",
     "hold": {
-     "keeps_positive": 1,
-     "median_weaker_half_apr_pct": -85.27763225871297
+     "keeps_positive": 3,
+     "median_weaker_half_apr_pct": -54.18731539178197
     },
     "set_and_forget": {
-     "keeps_positive": 5,
-     "median_weaker_half_apr_pct": -4.0537991782565586
+     "keeps_positive": 7,
+     "median_weaker_half_apr_pct": 0.7603699848210478
     },
     "vault": {
-     "keeps_positive": 0,
-     "median_weaker_half_apr_pct": -51.04017488840789
+     "keeps_positive": 2,
+     "median_weaker_half_apr_pct": -29.345905609129254
     },
-    "vault_ahead_of_hold": 9,
+    "vault_ahead_of_hold": 7,
     "vault_ahead_of_set_and_forget": 0,
     "vault_matches_set_and_forget_within_1pt": 0
    },
@@ -120,6 +120,7 @@
  },
  "tokens": {
   "AAPL": {
+   "gate_half": "calibration",
    "symbol": "AAPL",
    "band_bps": 750,
    "venue": "v3",
@@ -161,7 +162,8 @@
      "total_return_apr_pct": 52.214598423249484
     },
     "weaker_half_edge_apr_pct": 2.740947994320676,
-    "weaker_half_total_return_apr_pct": -3.5671371974073427
+    "gate_half_edge_apr_pct": 2.740947994320676,
+    "gate_half_total_return_apr_pct": -3.5671371974073427
    },
    "hold": {
     "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
@@ -177,9 +179,9 @@
      "return_apr_pct": 90.690202821422,
      "price_move_pct": 3.7269946364967943
     },
-    "weaker_half_return_apr_pct": -19.869720467319798,
+    "gate_half_return_apr_pct": -19.869720467319798,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 16.302583269912454
+    "vs_vault_gate_half_total_return_pts": 16.302583269912454
    },
    "set_and_forget": {
     "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
@@ -221,9 +223,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": 4.339721266729846,
-    "weaker_half_total_return_apr_pct": 9.505360358422358,
+    "gate_half_edge_apr_pct": 4.339721266729846,
+    "gate_half_total_return_apr_pct": 9.505360358422358,
     "vs_vault_weaker_half_pts": -1.5987732724091703,
-    "vs_vault_weaker_half_total_return_pts": -13.0724975558297
+    "vs_vault_gate_half_total_return_pts": -13.0724975558297
    },
    "manual_lp": {
     "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
@@ -265,9 +268,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": 3.513714613341294,
-    "weaker_half_total_return_apr_pct": 5.1753979537299655,
+    "gate_half_edge_apr_pct": 3.513714613341294,
+    "gate_half_total_return_apr_pct": 5.1753979537299655,
     "vs_vault_weaker_half_pts": -0.7727666190206182,
-    "vs_vault_weaker_half_total_return_pts": -8.742535151137307
+    "vs_vault_gate_half_total_return_pts": -8.742535151137307
    },
    "full_range_v3": {
     "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
@@ -306,12 +310,14 @@
      "total_return_apr_pct": 45.69695964621128
     },
     "weaker_half_edge_apr_pct": 0.2116399477919064,
-    "weaker_half_total_return_apr_pct": -9.17633457592343,
+    "gate_half_edge_apr_pct": 0.2116399477919064,
+    "gate_half_total_return_apr_pct": -9.17633457592343,
     "vs_vault_weaker_half_pts": 2.5293080465287696,
-    "vs_vault_weaker_half_total_return_pts": 5.609197378516088
+    "vs_vault_gate_half_total_return_pts": 5.609197378516088
    }
   },
   "AMD": {
+   "gate_half": "test",
    "symbol": "AMD",
    "band_bps": 2000,
    "venue": "v3",
@@ -353,7 +359,8 @@
      "total_return_apr_pct": -190.803765123017
     },
     "weaker_half_edge_apr_pct": -4.701122040125784,
-    "weaker_half_total_return_apr_pct": -190.803765123017
+    "gate_half_edge_apr_pct": -4.701122040125784,
+    "gate_half_total_return_apr_pct": -190.803765123017
    },
    "hold": {
     "pool": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
@@ -369,9 +376,9 @@
      "return_apr_pct": -354.85848150322374,
      "price_move_pct": -14.583225267255774
     },
-    "weaker_half_return_apr_pct": -354.85848150322374,
+    "gate_half_return_apr_pct": -354.85848150322374,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 164.05471638020674
+    "vs_vault_gate_half_total_return_pts": 164.05471638020674
    },
    "set_and_forget": {
     "pool": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
@@ -413,9 +420,10 @@
      "in_range_share": 0.5424074074074074
     },
     "weaker_half_edge_apr_pct": 3.7959103100127773,
-    "weaker_half_total_return_apr_pct": -62.98031336172374,
+    "gate_half_edge_apr_pct": 3.7959103100127773,
+    "gate_half_total_return_apr_pct": -62.98031336172374,
     "vs_vault_weaker_half_pts": -8.49703235013856,
-    "vs_vault_weaker_half_total_return_pts": -127.82345176129326
+    "vs_vault_gate_half_total_return_pts": -127.82345176129326
    },
    "manual_lp": {
     "pool": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
@@ -457,9 +465,10 @@
      "in_range_share": 0.15189814814814814
     },
     "weaker_half_edge_apr_pct": 3.4442396164750524,
-    "weaker_half_total_return_apr_pct": -19.640885402560038,
+    "gate_half_edge_apr_pct": 6.83487418644643,
+    "gate_half_total_return_apr_pct": -19.640885402560038,
     "vs_vault_weaker_half_pts": -8.145361656600837,
-    "vs_vault_weaker_half_total_return_pts": -171.16287972045697
+    "vs_vault_gate_half_total_return_pts": -171.16287972045697
    },
    "full_range_v3": {
     "pool": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
@@ -498,12 +507,14 @@
      "total_return_apr_pct": -181.34946463431575
     },
     "weaker_half_edge_apr_pct": 0.4028932677626419,
-    "weaker_half_total_return_apr_pct": -181.34946463431575,
+    "gate_half_edge_apr_pct": 0.4028932677626419,
+    "gate_half_total_return_apr_pct": -181.34946463431575,
     "vs_vault_weaker_half_pts": -5.104015307888426,
-    "vs_vault_weaker_half_total_return_pts": -9.45430048870125
+    "vs_vault_gate_half_total_return_pts": -9.45430048870125
    }
   },
   "AMZN": {
+   "gate_half": "test",
    "symbol": "AMZN",
    "band_bps": 750,
    "venue": "v3",
@@ -545,7 +556,8 @@
      "total_return_apr_pct": -1.0800294658362215
     },
     "weaker_half_edge_apr_pct": -1.8918552861721547,
-    "weaker_half_total_return_apr_pct": -1.0800294658362215
+    "gate_half_edge_apr_pct": -1.8918552861721547,
+    "gate_half_total_return_apr_pct": -1.0800294658362215
    },
    "hold": {
     "pool": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
@@ -561,9 +573,9 @@
      "return_apr_pct": 9.48088410497568,
      "price_move_pct": 0.38962537417708276
     },
-    "weaker_half_return_apr_pct": 9.48088410497568,
+    "gate_half_return_apr_pct": 9.48088410497568,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": -10.5609135708119
+    "vs_vault_gate_half_total_return_pts": -10.5609135708119
    },
    "set_and_forget": {
     "pool": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
@@ -605,9 +617,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": 5.282570287642177,
-    "weaker_half_total_return_apr_pct": 26.872518894307866,
+    "gate_half_edge_apr_pct": 5.282570287642177,
+    "gate_half_total_return_apr_pct": 26.872518894307866,
     "vs_vault_weaker_half_pts": -7.174425573814332,
-    "vs_vault_weaker_half_total_return_pts": -27.95254836014409
+    "vs_vault_gate_half_total_return_pts": -27.95254836014409
    },
    "manual_lp": {
     "pool": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
@@ -649,9 +662,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": 4.3590498505778,
-    "weaker_half_total_return_apr_pct": 21.795221475110303,
+    "gate_half_edge_apr_pct": 4.3590498505778,
+    "gate_half_total_return_apr_pct": 21.795221475110303,
     "vs_vault_weaker_half_pts": -6.250905136749955,
-    "vs_vault_weaker_half_total_return_pts": -22.875250940946525
+    "vs_vault_gate_half_total_return_pts": -22.875250940946525
    },
    "full_range_v3": {
     "pool": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
@@ -690,12 +704,14 @@
      "total_return_apr_pct": 5.664923938975778
     },
     "weaker_half_edge_apr_pct": 0.26725589841704916,
-    "weaker_half_total_return_apr_pct": 5.664923938975778,
+    "gate_half_edge_apr_pct": 0.26725589841704916,
+    "gate_half_total_return_apr_pct": 5.664923938975778,
     "vs_vault_weaker_half_pts": -2.1591111845892037,
-    "vs_vault_weaker_half_total_return_pts": -6.744953404812
+    "vs_vault_gate_half_total_return_pts": -6.744953404812
    }
   },
   "CRCL": {
+   "gate_half": "test",
    "symbol": "CRCL",
    "band_bps": 2000,
    "venue": "v3",
@@ -737,7 +753,8 @@
      "total_return_apr_pct": -44.30730156962726
     },
     "weaker_half_edge_apr_pct": -27.80918940391453,
-    "weaker_half_total_return_apr_pct": -44.30730156962726
+    "gate_half_edge_apr_pct": -27.80918940391453,
+    "gate_half_total_return_apr_pct": -44.30730156962726
    },
    "hold": {
     "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
@@ -753,9 +770,9 @@
      "return_apr_pct": -27.172371616004064,
      "price_move_pct": -1.1166728061371534
     },
-    "weaker_half_return_apr_pct": -27.172371616004064,
+    "gate_half_return_apr_pct": -27.172371616004064,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": -17.1349299536232
+    "vs_vault_gate_half_total_return_pts": -17.1349299536232
    },
    "set_and_forget": {
     "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
@@ -797,9 +814,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -19.486946483074735,
-    "weaker_half_total_return_apr_pct": 41.13833021449661,
+    "gate_half_edge_apr_pct": -19.486946483074735,
+    "gate_half_total_return_apr_pct": 41.13833021449661,
     "vs_vault_weaker_half_pts": -8.322242920839795,
-    "vs_vault_weaker_half_total_return_pts": -85.44563178412388
+    "vs_vault_gate_half_total_return_pts": -85.44563178412388
    },
    "manual_lp": {
     "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
@@ -841,9 +859,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -41.40866259538815,
-    "weaker_half_total_return_apr_pct": 77.83871264561853,
+    "gate_half_edge_apr_pct": -41.40866259538815,
+    "gate_half_total_return_apr_pct": 87.58796366375539,
     "vs_vault_weaker_half_pts": 13.59947319147362,
-    "vs_vault_weaker_half_total_return_pts": -122.1460142152458
+    "vs_vault_gate_half_total_return_pts": -131.89526523338264
    },
    "full_range_v3": {
     "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
@@ -882,12 +901,14 @@
      "total_return_apr_pct": -8.380881406237576
     },
     "weaker_half_edge_apr_pct": -1.712354406345223,
-    "weaker_half_total_return_apr_pct": -8.380881406237576,
+    "gate_half_edge_apr_pct": -1.712354406345223,
+    "gate_half_total_return_apr_pct": -8.380881406237576,
     "vs_vault_weaker_half_pts": -26.096834997569307,
-    "vs_vault_weaker_half_total_return_pts": -35.926420163389686
+    "vs_vault_gate_half_total_return_pts": -35.926420163389686
    }
   },
   "GME": {
+   "gate_half": "test",
    "symbol": "GME",
    "band_bps": 250,
    "venue": "v3",
@@ -929,7 +950,8 @@
      "total_return_apr_pct": 22.2783039588867
     },
     "weaker_half_edge_apr_pct": -93.53472943489602,
-    "weaker_half_total_return_apr_pct": 22.2783039588867
+    "gate_half_edge_apr_pct": -93.53472943489602,
+    "gate_half_total_return_apr_pct": 22.2783039588867
    },
    "hold": {
     "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
@@ -945,9 +967,9 @@
      "return_apr_pct": 273.00941108789846,
      "price_move_pct": 11.219564839228703
     },
-    "weaker_half_return_apr_pct": 273.00941108789846,
+    "gate_half_return_apr_pct": 273.00941108789846,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": -250.73110712901175
+    "vs_vault_gate_half_total_return_pts": -250.73110712901175
    },
    "set_and_forget": {
     "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
@@ -989,9 +1011,10 @@
      "in_range_share": 0.0
     },
     "weaker_half_edge_apr_pct": 0.0,
-    "weaker_half_total_return_apr_pct": 0.0,
+    "gate_half_edge_apr_pct": 0.0,
+    "gate_half_total_return_apr_pct": 0.0,
     "vs_vault_weaker_half_pts": -93.53472943489602,
-    "vs_vault_weaker_half_total_return_pts": 22.2783039588867
+    "vs_vault_gate_half_total_return_pts": 22.2783039588867
    },
    "manual_lp": {
     "pool": "0xE2b46c905E12Ab8E2f864e4821a4325884C1B126",
@@ -1033,9 +1056,10 @@
      "in_range_share": 0.017361111111111112
     },
     "weaker_half_edge_apr_pct": -1.1403768906248992,
-    "weaker_half_total_return_apr_pct": 0.6299886527119383,
+    "gate_half_edge_apr_pct": -1.1403768906248992,
+    "gate_half_total_return_apr_pct": 0.6299886527119383,
     "vs_vault_weaker_half_pts": -92.39435254427113,
-    "vs_vault_weaker_half_total_return_pts": 21.648315306174762
+    "vs_vault_gate_half_total_return_pts": 21.648315306174762
    },
    "full_range_v3": {
     "pool": "0xE2b46c905E12Ab8E2f864e4821a4325884C1B126",
@@ -1074,12 +1098,14 @@
      "total_return_apr_pct": 135.6145721444636
     },
     "weaker_half_edge_apr_pct": -0.8859122475152831,
-    "weaker_half_total_return_apr_pct": 121.58259620946987,
+    "gate_half_edge_apr_pct": -0.8859122475152831,
+    "gate_half_total_return_apr_pct": 135.6145721444636,
     "vs_vault_weaker_half_pts": -92.64881718738074,
-    "vs_vault_weaker_half_total_return_pts": -99.30429225058317
+    "vs_vault_gate_half_total_return_pts": -113.33626818557691
    }
   },
   "GOOGL": {
+   "gate_half": "calibration",
    "symbol": "GOOGL",
    "band_bps": 2000,
    "venue": "v3",
@@ -1121,7 +1147,8 @@
      "total_return_apr_pct": 0.8492445570309114
     },
     "weaker_half_edge_apr_pct": 0.20520977822498254,
-    "weaker_half_total_return_apr_pct": -18.253783922902972
+    "gate_half_edge_apr_pct": 0.20520977822498254,
+    "gate_half_total_return_apr_pct": -18.253783922902972
    },
    "hold": {
     "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
@@ -1137,9 +1164,9 @@
      "return_apr_pct": -0.27892235852041336,
      "price_move_pct": -0.011462562678921095
     },
-    "weaker_half_return_apr_pct": -41.706637179309155,
+    "gate_half_return_apr_pct": -41.706637179309155,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 23.452853256406183
+    "vs_vault_gate_half_total_return_pts": 23.452853256406183
    },
    "set_and_forget": {
     "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
@@ -1181,9 +1208,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": 0.7991551976033299,
-    "weaker_half_total_return_apr_pct": -6.823523439052213,
+    "gate_half_edge_apr_pct": 0.7991551976033299,
+    "gate_half_total_return_apr_pct": -6.823523439052213,
     "vs_vault_weaker_half_pts": -0.5939454193783473,
-    "vs_vault_weaker_half_total_return_pts": -11.430260483850759
+    "vs_vault_gate_half_total_return_pts": -11.430260483850759
    },
    "manual_lp": {
     "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
@@ -1225,9 +1253,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": 0.9107199675254097,
-    "weaker_half_total_return_apr_pct": 3.1228221625667407,
+    "gate_half_edge_apr_pct": 0.9107199675254097,
+    "gate_half_total_return_apr_pct": 3.1228221625667407,
     "vs_vault_weaker_half_pts": -0.7055101893004272,
-    "vs_vault_weaker_half_total_return_pts": -21.376606085469714
+    "vs_vault_gate_half_total_return_pts": -21.376606085469714
    },
    "full_range_v3": {
     "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
@@ -1266,12 +1295,14 @@
      "total_return_apr_pct": 0.7552355495951051
     },
     "weaker_half_edge_apr_pct": 0.10964515632287197,
-    "weaker_half_total_return_apr_pct": -19.655333038255517,
+    "gate_half_edge_apr_pct": 0.10964515632287197,
+    "gate_half_total_return_apr_pct": -19.655333038255517,
     "vs_vault_weaker_half_pts": 0.09556462190211057,
-    "vs_vault_weaker_half_total_return_pts": 1.4015491153525446
+    "vs_vault_gate_half_total_return_pts": 1.4015491153525446
    }
   },
   "INTC": {
+   "gate_half": "calibration",
    "symbol": "INTC",
    "band_bps": 2000,
    "venue": "v3",
@@ -1313,7 +1344,8 @@
      "total_return_apr_pct": -317.3274716116251
     },
     "weaker_half_edge_apr_pct": -2.2156288347518727,
-    "weaker_half_total_return_apr_pct": -317.3274716116251
+    "gate_half_edge_apr_pct": -2.2156288347518727,
+    "gate_half_total_return_apr_pct": 153.10142987462936
    },
    "hold": {
     "pool": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
@@ -1329,9 +1361,9 @@
      "return_apr_pct": -625.3058328912263,
      "price_move_pct": -25.697499981831218
     },
-    "weaker_half_return_apr_pct": -625.3058328912263,
+    "gate_half_return_apr_pct": 421.62718255732193,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 307.97836127960113
+    "vs_vault_gate_half_total_return_pts": -268.52575268269254
    },
    "set_and_forget": {
     "pool": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
@@ -1373,9 +1405,10 @@
      "in_range_share": 0.9927314814814815
     },
     "weaker_half_edge_apr_pct": 10.439614225105952,
-    "weaker_half_total_return_apr_pct": -241.7927825039281,
+    "gate_half_edge_apr_pct": 10.439614225105952,
+    "gate_half_total_return_apr_pct": 169.82923696751848,
     "vs_vault_weaker_half_pts": -12.655243059857824,
-    "vs_vault_weaker_half_total_return_pts": -75.53468910769703
+    "vs_vault_gate_half_total_return_pts": -16.727807092889122
    },
    "manual_lp": {
     "pool": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
@@ -1417,9 +1450,10 @@
      "in_range_share": 0.5717592592592593
     },
     "weaker_half_edge_apr_pct": 13.706005464793275,
-    "weaker_half_total_return_apr_pct": -242.64086374130395,
+    "gate_half_edge_apr_pct": 19.914417882539535,
+    "gate_half_total_return_apr_pct": 102.31937726496523,
     "vs_vault_weaker_half_pts": -15.921634299545147,
-    "vs_vault_weaker_half_total_return_pts": -74.68660787032118
+    "vs_vault_gate_half_total_return_pts": 50.782052609664134
    },
    "full_range_v3": {
     "pool": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
@@ -1458,12 +1492,14 @@
      "total_return_apr_pct": -331.08462565661137
     },
     "weaker_half_edge_apr_pct": 1.6185299811114309,
-    "weaker_half_total_return_apr_pct": -331.08462565661137,
+    "gate_half_edge_apr_pct": 1.9390496148972907,
+    "gate_half_total_return_apr_pct": 210.6968035936423,
     "vs_vault_weaker_half_pts": -3.8341588158633035,
-    "vs_vault_weaker_half_total_return_pts": 13.757154044986237
+    "vs_vault_gate_half_total_return_pts": -57.59537371901294
    }
   },
   "META": {
+   "gate_half": "test",
    "symbol": "META",
    "band_bps": 1500,
    "venue": "v3",
@@ -1505,7 +1541,8 @@
      "total_return_apr_pct": -40.43802729535553
     },
     "weaker_half_edge_apr_pct": -10.540847326429864,
-    "weaker_half_total_return_apr_pct": -40.43802729535553
+    "gate_half_edge_apr_pct": -10.540847326429864,
+    "gate_half_total_return_apr_pct": -40.43802729535553
    },
    "hold": {
     "pool": "0x107a7Cb40d8665360ba10E59471Af06150A50922",
@@ -1521,9 +1558,9 @@
      "return_apr_pct": -66.66799360425479,
      "price_move_pct": -2.7397805590789637
     },
-    "weaker_half_return_apr_pct": -66.66799360425479,
+    "gate_half_return_apr_pct": -66.66799360425479,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 26.229966308899257
+    "vs_vault_gate_half_total_return_pts": 26.229966308899257
    },
    "set_and_forget": {
     "pool": "0x107a7Cb40d8665360ba10E59471Af06150A50922",
@@ -1565,9 +1602,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -5.780173821723754,
-    "weaker_half_total_return_apr_pct": -1.284074917460904,
+    "gate_half_edge_apr_pct": -5.780173821723754,
+    "gate_half_total_return_apr_pct": -1.284074917460904,
     "vs_vault_weaker_half_pts": -4.7606735047061095,
-    "vs_vault_weaker_half_total_return_pts": -39.153952377894626
+    "vs_vault_gate_half_total_return_pts": -39.153952377894626
    },
    "manual_lp": {
     "pool": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
@@ -1609,9 +1647,10 @@
      "in_range_share": 0.9068981481481482
     },
     "weaker_half_edge_apr_pct": -6.339836648096137,
-    "weaker_half_total_return_apr_pct": 6.197248931379236,
+    "gate_half_edge_apr_pct": -6.339836648096137,
+    "gate_half_total_return_apr_pct": 6.197248931379236,
     "vs_vault_weaker_half_pts": -4.201010678333727,
-    "vs_vault_weaker_half_total_return_pts": -46.63527622673477
+    "vs_vault_gate_half_total_return_pts": -46.63527622673477
    },
    "full_range_v3": {
     "pool": "0x107a7Cb40d8665360ba10E59471Af06150A50922",
@@ -1650,12 +1689,14 @@
      "total_return_apr_pct": -32.17727355247384
     },
     "weaker_half_edge_apr_pct": -0.3757752479117795,
-    "weaker_half_total_return_apr_pct": -32.17727355247384,
+    "gate_half_edge_apr_pct": -0.3757752479117795,
+    "gate_half_total_return_apr_pct": -32.17727355247384,
     "vs_vault_weaker_half_pts": -10.165072078518085,
-    "vs_vault_weaker_half_total_return_pts": -8.26075374288169
+    "vs_vault_gate_half_total_return_pts": -8.26075374288169
    }
   },
   "MSTR": {
+   "gate_half": "test",
    "symbol": "MSTR",
    "band_bps": 350,
    "venue": "v3",
@@ -1697,7 +1738,8 @@
      "total_return_apr_pct": -263.07083954068895
     },
     "weaker_half_edge_apr_pct": -43.005598953088736,
-    "weaker_half_total_return_apr_pct": -263.07083954068895
+    "gate_half_edge_apr_pct": -43.005598953088736,
+    "gate_half_total_return_apr_pct": -263.07083954068895
    },
    "hold": {
     "pool": "0x17578C0e0D15da44f31677263114F71aE76653EA",
@@ -1713,9 +1755,9 @@
      "return_apr_pct": -362.28736369151034,
      "price_move_pct": -14.888521795541521
     },
-    "weaker_half_return_apr_pct": -362.28736369151034,
+    "gate_half_return_apr_pct": -362.28736369151034,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 99.21652415082139
+    "vs_vault_gate_half_total_return_pts": 99.21652415082139
    },
    "set_and_forget": {
     "pool": "0x17578C0e0D15da44f31677263114F71aE76653EA",
@@ -1757,9 +1799,10 @@
      "in_range_share": 0.0
     },
     "weaker_half_edge_apr_pct": 0.0,
-    "weaker_half_total_return_apr_pct": 0.0,
+    "gate_half_edge_apr_pct": 0.0,
+    "gate_half_total_return_apr_pct": 0.0,
     "vs_vault_weaker_half_pts": -43.005598953088736,
-    "vs_vault_weaker_half_total_return_pts": -263.07083954068895
+    "vs_vault_gate_half_total_return_pts": -263.07083954068895
    },
    "manual_lp": {
     "pool": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
@@ -1801,9 +1844,10 @@
      "in_range_share": 0.04009259259259259
     },
     "weaker_half_edge_apr_pct": -8.179405154116099,
-    "weaker_half_total_return_apr_pct": 3.8306846508118144,
+    "gate_half_edge_apr_pct": -7.043214105056404,
+    "gate_half_total_return_apr_pct": 3.8306846508118144,
     "vs_vault_weaker_half_pts": -34.82619379897264,
-    "vs_vault_weaker_half_total_return_pts": -266.90152419150076
+    "vs_vault_gate_half_total_return_pts": -266.90152419150076
    },
    "full_range_v3": {
     "pool": "0x17578C0e0D15da44f31677263114F71aE76653EA",
@@ -1842,12 +1886,14 @@
      "total_return_apr_pct": -182.37533810090702
     },
     "weaker_half_edge_apr_pct": 1.6443319750373524,
-    "weaker_half_total_return_apr_pct": -182.37533810090702,
+    "gate_half_edge_apr_pct": 1.6443319750373524,
+    "gate_half_total_return_apr_pct": -182.37533810090702,
     "vs_vault_weaker_half_pts": -44.64993092812609,
-    "vs_vault_weaker_half_total_return_pts": -80.69550143978194
+    "vs_vault_gate_half_total_return_pts": -80.69550143978194
    }
   },
   "MU": {
+   "gate_half": "test",
    "symbol": "MU",
    "band_bps": 1500,
    "venue": "v3",
@@ -1889,7 +1935,8 @@
      "total_return_apr_pct": -269.4156318988928
     },
     "weaker_half_edge_apr_pct": -13.941662385391815,
-    "weaker_half_total_return_apr_pct": -269.4156318988928
+    "gate_half_edge_apr_pct": -13.941662385391815,
+    "gate_half_total_return_apr_pct": -269.4156318988928
    },
    "hold": {
     "pool": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
@@ -1905,9 +1952,9 @@
      "return_apr_pct": -482.7721701625688,
      "price_move_pct": -19.83995219846173
     },
-    "weaker_half_return_apr_pct": -482.7721701625688,
+    "gate_half_return_apr_pct": -482.7721701625688,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 213.356538263676
+    "vs_vault_gate_half_total_return_pts": 213.356538263676
    },
    "set_and_forget": {
     "pool": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
@@ -1949,9 +1996,10 @@
      "in_range_share": 0.8743518518518518
     },
     "weaker_half_edge_apr_pct": -6.530587460202984,
-    "weaker_half_total_return_apr_pct": -124.49439082945236,
+    "gate_half_edge_apr_pct": -6.530587460202984,
+    "gate_half_total_return_apr_pct": -124.49439082945236,
     "vs_vault_weaker_half_pts": -7.4110749251888315,
-    "vs_vault_weaker_half_total_return_pts": -144.92124106944044
+    "vs_vault_gate_half_total_return_pts": -144.92124106944044
    },
    "manual_lp": {
     "pool": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
@@ -1993,9 +2041,10 @@
      "in_range_share": 0.3778240740740741
     },
     "weaker_half_edge_apr_pct": -5.272999506567758,
-    "weaker_half_total_return_apr_pct": -111.5187055809961,
+    "gate_half_edge_apr_pct": -5.272999506567758,
+    "gate_half_total_return_apr_pct": -111.5187055809961,
     "vs_vault_weaker_half_pts": -8.668662878824058,
-    "vs_vault_weaker_half_total_return_pts": -157.8969263178967
+    "vs_vault_gate_half_total_return_pts": -157.8969263178967
    },
    "full_range_v3": {
     "pool": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
@@ -2034,12 +2083,14 @@
      "total_return_apr_pct": -250.99991105218078
     },
     "weaker_half_edge_apr_pct": 0.14025750979709323,
-    "weaker_half_total_return_apr_pct": -250.99991105218078,
+    "gate_half_edge_apr_pct": 0.14025750979709323,
+    "gate_half_total_return_apr_pct": -250.99991105218078,
     "vs_vault_weaker_half_pts": -14.081919895188909,
-    "vs_vault_weaker_half_total_return_pts": -18.41572084671202
+    "vs_vault_gate_half_total_return_pts": -18.41572084671202
    }
   },
   "NVDA": {
+   "gate_half": "test",
    "symbol": "NVDA",
    "band_bps": 150,
    "venue": "v3",
@@ -2081,7 +2132,8 @@
      "total_return_apr_pct": -168.42200156673465
     },
     "weaker_half_edge_apr_pct": -6.846233999517666,
-    "weaker_half_total_return_apr_pct": -168.42200156673465
+    "gate_half_edge_apr_pct": -6.846233999517666,
+    "gate_half_total_return_apr_pct": -168.42200156673465
    },
    "hold": {
     "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
@@ -2097,9 +2149,9 @@
      "return_apr_pct": -186.26034082346303,
      "price_move_pct": -7.654534554388892
     },
-    "weaker_half_return_apr_pct": -186.26034082346303,
+    "gate_half_return_apr_pct": -186.26034082346303,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 17.838339256728375
+    "vs_vault_gate_half_total_return_pts": 17.838339256728375
    },
    "set_and_forget": {
     "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
@@ -2141,9 +2193,10 @@
      "in_range_share": 0.12518518518518518
     },
     "weaker_half_edge_apr_pct": 0.41448736768930505,
-    "weaker_half_total_return_apr_pct": 9.016719768870967,
+    "gate_half_edge_apr_pct": 14.123136544489952,
+    "gate_half_total_return_apr_pct": 9.016719768870967,
     "vs_vault_weaker_half_pts": -7.260721367206971,
-    "vs_vault_weaker_half_total_return_pts": -177.4387213356056
+    "vs_vault_gate_half_total_return_pts": -177.4387213356056
    },
    "manual_lp": {
     "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
@@ -2185,9 +2238,10 @@
      "in_range_share": 0.8531481481481481
     },
     "weaker_half_edge_apr_pct": 2.221559644347098,
-    "weaker_half_total_return_apr_pct": -44.23879489647681,
+    "gate_half_edge_apr_pct": 2.221559644347098,
+    "gate_half_total_return_apr_pct": -44.23879489647681,
     "vs_vault_weaker_half_pts": -9.067793643864764,
-    "vs_vault_weaker_half_total_return_pts": -124.18320667025785
+    "vs_vault_gate_half_total_return_pts": -124.18320667025785
    },
    "full_range_v3": {
     "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
@@ -2226,12 +2280,14 @@
      "total_return_apr_pct": -93.95052405272656
     },
     "weaker_half_edge_apr_pct": 0.1885542590212465,
-    "weaker_half_total_return_apr_pct": -93.95052405272656,
+    "gate_half_edge_apr_pct": 0.1885542590212465,
+    "gate_half_total_return_apr_pct": -93.95052405272656,
     "vs_vault_weaker_half_pts": -7.034788258538912,
-    "vs_vault_weaker_half_total_return_pts": -74.47147751400809
+    "vs_vault_gate_half_total_return_pts": -74.47147751400809
    }
   },
   "PLTR": {
+   "gate_half": "test",
    "symbol": "PLTR",
    "band_bps": 350,
    "venue": "v3",
@@ -2273,7 +2329,8 @@
      "total_return_apr_pct": -124.29525236114272
     },
     "weaker_half_edge_apr_pct": -18.86291095269092,
-    "weaker_half_total_return_apr_pct": -124.29525236114272
+    "gate_half_edge_apr_pct": -18.86291095269092,
+    "gate_half_total_return_apr_pct": -124.29525236114272
    },
    "hold": {
     "pool": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
@@ -2289,9 +2346,9 @@
      "return_apr_pct": -71.14837622594703,
      "price_move_pct": -2.923905872299193
     },
-    "weaker_half_return_apr_pct": -71.14837622594703,
+    "gate_half_return_apr_pct": -71.14837622594703,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": -53.14687613519568
+    "vs_vault_gate_half_total_return_pts": -53.14687613519568
    },
    "set_and_forget": {
     "pool": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
@@ -2333,9 +2390,10 @@
      "in_range_share": 0.0
     },
     "weaker_half_edge_apr_pct": 0.0,
-    "weaker_half_total_return_apr_pct": 0.0,
+    "gate_half_edge_apr_pct": 0.0,
+    "gate_half_total_return_apr_pct": 0.0,
     "vs_vault_weaker_half_pts": -18.86291095269092,
-    "vs_vault_weaker_half_total_return_pts": -124.29525236114272
+    "vs_vault_gate_half_total_return_pts": -124.29525236114272
    },
    "manual_lp": {
     "pool": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
@@ -2377,9 +2435,10 @@
      "in_range_share": 0.3160648148148148
     },
     "weaker_half_edge_apr_pct": 5.4959620913890825,
-    "weaker_half_total_return_apr_pct": 5.1165662380866035,
+    "gate_half_edge_apr_pct": 5.4959620913890825,
+    "gate_half_total_return_apr_pct": 5.1165662380866035,
     "vs_vault_weaker_half_pts": -24.358873044080003,
-    "vs_vault_weaker_half_total_return_pts": -129.41181859922932
+    "vs_vault_gate_half_total_return_pts": -129.41181859922932
    },
    "full_range_v3": {
     "pool": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
@@ -2418,12 +2477,14 @@
      "total_return_apr_pct": -33.095777400049464
     },
     "weaker_half_edge_apr_pct": 0.7785113820182419,
-    "weaker_half_total_return_apr_pct": -33.095777400049464,
+    "gate_half_edge_apr_pct": 0.7785113820182419,
+    "gate_half_total_return_apr_pct": -33.095777400049464,
     "vs_vault_weaker_half_pts": -19.641422334709162,
-    "vs_vault_weaker_half_total_return_pts": -91.19947496109324
+    "vs_vault_gate_half_total_return_pts": -91.19947496109324
    }
   },
   "QQQ": {
+   "gate_half": "test",
    "symbol": "QQQ",
    "band_bps": 1000,
    "venue": "v3",
@@ -2465,7 +2526,8 @@
      "total_return_apr_pct": -61.64232248146024
     },
     "weaker_half_edge_apr_pct": -1.3079786204766097,
-    "weaker_half_total_return_apr_pct": -61.64232248146024
+    "gate_half_edge_apr_pct": -1.3079786204766097,
+    "gate_half_total_return_apr_pct": -61.64232248146024
    },
    "hold": {
     "pool": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
@@ -2481,9 +2543,9 @@
      "return_apr_pct": -114.22363630361619,
      "price_move_pct": -4.694122039874637
     },
-    "weaker_half_return_apr_pct": -114.22363630361619,
+    "gate_half_return_apr_pct": -114.22363630361619,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 52.58131382215595
+    "vs_vault_gate_half_total_return_pts": 52.58131382215595
    },
    "set_and_forget": {
     "pool": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
@@ -2525,9 +2587,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -0.2865501971469465,
-    "weaker_half_total_return_apr_pct": -36.35702663544402,
+    "gate_half_edge_apr_pct": -0.2865501971469465,
+    "gate_half_total_return_apr_pct": -36.35702663544402,
     "vs_vault_weaker_half_pts": -1.021428423329663,
-    "vs_vault_weaker_half_total_return_pts": -25.28529584601622
+    "vs_vault_gate_half_total_return_pts": -25.28529584601622
    },
    "manual_lp": {
     "pool": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
@@ -2569,9 +2632,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -0.2865501971469465,
-    "weaker_half_total_return_apr_pct": -36.35702663544402,
+    "gate_half_edge_apr_pct": -0.2865501971469465,
+    "gate_half_total_return_apr_pct": -36.35702663544402,
     "vs_vault_weaker_half_pts": -1.021428423329663,
-    "vs_vault_weaker_half_total_return_pts": -25.28529584601622
+    "vs_vault_gate_half_total_return_pts": -25.28529584601622
    },
    "full_range_v3": {
     "pool": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
@@ -2610,12 +2674,14 @@
      "total_return_apr_pct": -57.51170875051653
     },
     "weaker_half_edge_apr_pct": 0.0005003321002062876,
-    "weaker_half_total_return_apr_pct": -57.51170875051653,
+    "gate_half_edge_apr_pct": 0.0005003321002062876,
+    "gate_half_total_return_apr_pct": -57.51170875051653,
     "vs_vault_weaker_half_pts": -1.3084789525768161,
-    "vs_vault_weaker_half_total_return_pts": -4.130613730943708
+    "vs_vault_gate_half_total_return_pts": -4.130613730943708
    }
   },
   "SPCX": {
+   "gate_half": "test",
    "symbol": "SPCX",
    "band_bps": 150,
    "venue": "v3",
@@ -2657,7 +2723,8 @@
      "total_return_apr_pct": -206.87029222095651
     },
     "weaker_half_edge_apr_pct": -195.35188587104193,
-    "weaker_half_total_return_apr_pct": -206.87029222095651
+    "gate_half_edge_apr_pct": -195.35188587104193,
+    "gate_half_total_return_apr_pct": -206.87029222095651
    },
    "hold": {
     "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
@@ -2673,9 +2740,9 @@
      "return_apr_pct": -56.351538298477635,
      "price_move_pct": -2.31581664240319
     },
-    "weaker_half_return_apr_pct": -56.351538298477635,
+    "gate_half_return_apr_pct": -56.351538298477635,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": -150.51875392247888
+    "vs_vault_gate_half_total_return_pts": -150.51875392247888
    },
    "set_and_forget": {
     "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
@@ -2717,9 +2784,10 @@
      "in_range_share": 0.06888888888888889
     },
     "weaker_half_edge_apr_pct": -91.2919871139796,
-    "weaker_half_total_return_apr_pct": -19.634290052218436,
+    "gate_half_edge_apr_pct": -91.2919871139796,
+    "gate_half_total_return_apr_pct": -19.634290052218436,
     "vs_vault_weaker_half_pts": -104.05989875706233,
-    "vs_vault_weaker_half_total_return_pts": -187.23600216873808
+    "vs_vault_gate_half_total_return_pts": -187.23600216873808
    },
    "manual_lp": {
     "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
@@ -2761,9 +2829,10 @@
      "in_range_share": 0.8212962962962963
     },
     "weaker_half_edge_apr_pct": -35.764662094392676,
-    "weaker_half_total_return_apr_pct": 11.941536319112105,
+    "gate_half_edge_apr_pct": -35.764662094392676,
+    "gate_half_total_return_apr_pct": 11.941536319112105,
     "vs_vault_weaker_half_pts": -159.58722377664924,
-    "vs_vault_weaker_half_total_return_pts": -218.81182854006863
+    "vs_vault_gate_half_total_return_pts": -218.81182854006863
    },
    "full_range_v3": {
     "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
@@ -2802,12 +2871,14 @@
      "total_return_apr_pct": -25.122556329051104
     },
     "weaker_half_edge_apr_pct": -1.2896544384182296,
-    "weaker_half_total_return_apr_pct": -25.122556329051104,
+    "gate_half_edge_apr_pct": -1.2896544384182296,
+    "gate_half_total_return_apr_pct": -25.122556329051104,
     "vs_vault_weaker_half_pts": -194.0622314326237,
-    "vs_vault_weaker_half_total_return_pts": -181.74773589190542
+    "vs_vault_gate_half_total_return_pts": -181.74773589190542
    }
   },
   "SPY": {
+   "gate_half": "test",
    "symbol": "SPY",
    "band_bps": 250,
    "venue": "v3",
@@ -2849,7 +2920,8 @@
      "total_return_apr_pct": -12.492174757080434
     },
     "weaker_half_edge_apr_pct": -3.9231009315161063,
-    "weaker_half_total_return_apr_pct": -12.492174757080434
+    "gate_half_edge_apr_pct": -3.9231009315161063,
+    "gate_half_total_return_apr_pct": -12.492174757080434
    },
    "hold": {
     "pool": "0xa7Bb1AC63BBaB0C44316E6c8C455213441689167",
@@ -2865,9 +2937,9 @@
      "return_apr_pct": -11.128752354809295,
      "price_move_pct": -0.4573459871839436
     },
-    "weaker_half_return_apr_pct": -11.128752354809295,
+    "gate_half_return_apr_pct": -11.128752354809295,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": -1.363422402271139
+    "vs_vault_gate_half_total_return_pts": -1.363422402271139
    },
    "set_and_forget": {
     "pool": "0xa7Bb1AC63BBaB0C44316E6c8C455213441689167",
@@ -2909,9 +2981,10 @@
      "in_range_share": 0.4999074074074074
     },
     "weaker_half_edge_apr_pct": -0.45369388304572517,
-    "weaker_half_total_return_apr_pct": 1.5207399696420956,
+    "gate_half_edge_apr_pct": -0.45369388304572517,
+    "gate_half_total_return_apr_pct": 1.5207399696420956,
     "vs_vault_weaker_half_pts": -3.469407048470381,
-    "vs_vault_weaker_half_total_return_pts": -14.01291472672253
+    "vs_vault_gate_half_total_return_pts": -14.01291472672253
    },
    "manual_lp": {
     "pool": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
@@ -2953,9 +3026,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -0.2567722271161888,
-    "weaker_half_total_return_apr_pct": -2.7528449822318017,
+    "gate_half_edge_apr_pct": -0.2567722271161888,
+    "gate_half_total_return_apr_pct": -2.7528449822318017,
     "vs_vault_weaker_half_pts": -3.6663287043999175,
-    "vs_vault_weaker_half_total_return_pts": -9.739329774848633
+    "vs_vault_gate_half_total_return_pts": -9.739329774848633
    },
    "full_range_v3": {
     "pool": "0xa7Bb1AC63BBaB0C44316E6c8C455213441689167",
@@ -2994,12 +3068,14 @@
      "total_return_apr_pct": -5.4278523384627135
     },
     "weaker_half_edge_apr_pct": 0.04314563521211178,
-    "weaker_half_total_return_apr_pct": -5.4278523384627135,
+    "gate_half_edge_apr_pct": 0.04314563521211178,
+    "gate_half_total_return_apr_pct": -5.4278523384627135,
     "vs_vault_weaker_half_pts": -3.966246566728218,
-    "vs_vault_weaker_half_total_return_pts": -7.064322418617721
+    "vs_vault_gate_half_total_return_pts": -7.064322418617721
    }
   },
   "TSLA": {
+   "gate_half": "test",
    "symbol": "TSLA",
    "band_bps": 750,
    "venue": "v3",
@@ -3041,7 +3117,8 @@
      "total_return_apr_pct": -26.115420518367017
     },
     "weaker_half_edge_apr_pct": -25.764915851462376,
-    "weaker_half_total_return_apr_pct": -26.115420518367017
+    "gate_half_edge_apr_pct": -25.764915851462376,
+    "gate_half_total_return_apr_pct": -26.115420518367017
    },
    "hold": {
     "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
@@ -3057,9 +3134,9 @@
      "return_apr_pct": -14.442027557310311,
      "price_move_pct": -0.593507981807273
     },
-    "weaker_half_return_apr_pct": -29.50632410259123,
+    "gate_half_return_apr_pct": -14.442027557310311,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 3.390903584224212
+    "vs_vault_gate_half_total_return_pts": -11.673392961056706
    },
    "set_and_forget": {
     "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
@@ -3101,9 +3178,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -13.179997747626771,
-    "weaker_half_total_return_apr_pct": 27.633897018454906,
+    "gate_half_edge_apr_pct": -13.179997747626771,
+    "gate_half_total_return_apr_pct": 28.608852560498406,
     "vs_vault_weaker_half_pts": -12.584918103835605,
-    "vs_vault_weaker_half_total_return_pts": -53.74931753682192
+    "vs_vault_gate_half_total_return_pts": -54.72427307886542
    },
    "manual_lp": {
     "pool": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
@@ -3145,9 +3223,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -8.816597527257414,
-    "weaker_half_total_return_apr_pct": 18.044324873285564,
+    "gate_half_edge_apr_pct": -8.816597527257414,
+    "gate_half_total_return_apr_pct": 18.92956817770129,
     "vs_vault_weaker_half_pts": -16.948318324204962,
-    "vs_vault_weaker_half_total_return_pts": -44.15974539165258
+    "vs_vault_gate_half_total_return_pts": -45.04498869606831
    },
    "full_range_v3": {
     "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
@@ -3186,12 +3265,14 @@
      "total_return_apr_pct": -5.561287189079649
     },
     "weaker_half_edge_apr_pct": -0.25353299991755995,
-    "weaker_half_total_return_apr_pct": -12.932158931194223,
+    "gate_half_edge_apr_pct": -0.25353299991755995,
+    "gate_half_total_return_apr_pct": -5.561287189079649,
     "vs_vault_weaker_half_pts": -25.511382851544816,
-    "vs_vault_weaker_half_total_return_pts": -13.183261587172794
+    "vs_vault_gate_half_total_return_pts": -20.554133329287367
    }
   },
   "USO": {
+   "gate_half": "test",
    "symbol": "USO",
    "band_bps": 2000,
    "venue": "v3",
@@ -3233,7 +3314,8 @@
      "total_return_apr_pct": 89.69636788983402
     },
     "weaker_half_edge_apr_pct": -4.39340094276722,
-    "weaker_half_total_return_apr_pct": -30.43400448362335
+    "gate_half_edge_apr_pct": -4.39340094276722,
+    "gate_half_total_return_apr_pct": 89.69636788983402
    },
    "hold": {
     "pool": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
@@ -3249,9 +3331,9 @@
      "return_apr_pct": 196.1259960482107,
      "price_move_pct": 8.059972440337425
     },
-    "weaker_half_return_apr_pct": -99.40688829147891,
+    "gate_half_return_apr_pct": 196.1259960482107,
     "rule": "the stock token held with no position: its price move at the vault's pool over each window, annualised; no fees, no cost, inventory drift included",
-    "vs_vault_weaker_half_total_return_pts": 68.97288380785555
+    "vs_vault_gate_half_total_return_pts": -106.42962815837669
    },
    "set_and_forget": {
     "pool": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
@@ -3293,9 +3375,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -1.811093149553504,
-    "weaker_half_total_return_apr_pct": -16.824755773631463,
+    "gate_half_edge_apr_pct": -1.811093149553504,
+    "gate_half_total_return_apr_pct": 105.78661897343318,
     "vs_vault_weaker_half_pts": -2.5823077932137153,
-    "vs_vault_weaker_half_total_return_pts": -13.609248709991888
+    "vs_vault_gate_half_total_return_pts": -16.090251083599156
    },
    "manual_lp": {
     "pool": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
@@ -3337,9 +3420,10 @@
      "in_range_share": 1.0
     },
     "weaker_half_edge_apr_pct": -3.8115806976712365,
-    "weaker_half_total_return_apr_pct": 5.338125453436282,
+    "gate_half_edge_apr_pct": -3.8115806976712365,
+    "gate_half_total_return_apr_pct": 127.03555303324731,
     "vs_vault_weaker_half_pts": -0.5818202450959831,
-    "vs_vault_weaker_half_total_return_pts": -35.77212993705963
+    "vs_vault_gate_half_total_return_pts": -37.33918514341329
    },
    "full_range_v3": {
     "pool": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
@@ -3378,9 +3462,10 @@
      "total_return_apr_pct": 97.8562678749514
     },
     "weaker_half_edge_apr_pct": -0.15638764997424884,
-    "weaker_half_total_return_apr_pct": -46.91424949935867,
+    "gate_half_edge_apr_pct": -0.15638764997424884,
+    "gate_half_total_return_apr_pct": 97.8562678749514,
     "vs_vault_weaker_half_pts": -4.2370132927929705,
-    "vs_vault_weaker_half_total_return_pts": 16.480245015735317
+    "vs_vault_gate_half_total_return_pts": -8.159899985117377
    }
   }
  }
