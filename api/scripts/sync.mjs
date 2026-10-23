@@ -20,8 +20,8 @@ const sources = [
     from: resolve(repoRoot, "keeper/data/replay.json"),
     to: resolve(dataDir, "replay.json"),
   },
-  // The wallet scan and the math under it are written once in web/lib; test/shared-sync.test.ts fails when these copies drift.
-  ...["scan.ts", "price-math.ts", "morpho.ts", "loan.ts", "abis.ts"].map((f) => ({
+  // The wallet scan, the weekend hedge planner and the math under them are written once in web/lib; test/shared-sync.test.ts fails when these copies drift.
+  ...["scan.ts", "price-math.ts", "morpho.ts", "loan.ts", "abis.ts", "lighter.ts", "hedge.ts", "hedge-chain.ts", "in-kind.ts"].map((f) => ({
     from: resolve(repoRoot, "web/lib", f),
     to: resolve(apiRoot, "src/shared", f),
   })),
