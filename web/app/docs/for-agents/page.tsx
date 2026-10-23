@@ -124,7 +124,7 @@ export default function ForAgentsPage() {
           ],
           [
             "prepare_earn_and_borrow",
-            "Unsigned transactions in order: approve, deposit, approve shares, supplyCollateral, borrow. The borrow is refused above what the loan-to-value limit allows or the market holds, and a vault or market that is not live answers with a reason and no calldata.",
+            "Unsigned transactions in order: approve, deposit, approve shares, supplyCollateral, borrow. The borrow is checked against the loan-to-value limit and the market's liquidity before any calldata returns; otherwise the tool returns the vault's gate or the market's reason in place of calldata.",
           ],
         ]}
         caption="The vault contract also enforces its deposit cap on-chain against its total, so the cap check in prepare_deposit is an early refusal, not the only one."
