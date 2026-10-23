@@ -79,7 +79,7 @@ function listVaults() {
     deposit_cap_usd: vault.depositCapUsd,
     entry_fee_bps: vault.entryFeeBps,
     fee_apr_pct: vault.feeAprPct,
-    kept_apr_pct: vault.keptAprPct,
+    kept_apr_pct: doorFields(vault).kept_worst_half_pct,
     ...venueFields(vault),
     window_days: REPLAY.window.days,
   }));
@@ -119,7 +119,7 @@ function vaultDetail(id: string): Response {
     entry_fee_bps: vault.entryFeeBps,
     feed: vault.feed,
     fee_apr_pct: vault.feeAprPct,
-    kept_apr_pct: vault.keptAprPct,
+    kept_apr_pct: doorFields(vault).kept_worst_half_pct,
     window_days: REPLAY.window.days,
     pools,
     gate: { ...GATE, ...(vault.gate ?? {}) },

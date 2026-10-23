@@ -45,7 +45,7 @@ export function CheckForm({ initial = "", className, stacked }: { initial?: stri
           spellCheck={false}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          className={cn("figure h-12 w-full min-w-0 rounded-lg border bg-panel px-4 text-[13px] outline-none placeholder:text-mute focus:border-fg min-[420px]:text-[15px]", !stacked && "sm:w-auto sm:flex-1", error ? "border-loss" : "border-line")}
+          className={cn("figure h-12 w-full min-w-0 rounded-lg border bg-panel px-4 text-[13px] placeholder:text-mute focus:border-fg min-[420px]:text-[15px]", !stacked && "sm:w-auto sm:flex-1", error ? "border-loss" : "border-line")}
         />
         <Button type="submit" size="lg">Find idle tokens</Button>
       </div>

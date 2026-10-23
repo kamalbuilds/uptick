@@ -7,10 +7,13 @@ FILES=(README.md docs/SUBMISSION.md docs/DEMO-SCRIPT.md deck/index.html deck/han
 BANNED=("80 of 80" "46 fork" "5.1M" "54 days" "four review" "fourth ends" "10% of collected" "Live and reviewed" "Closed six" "and 8 more" "and 14 more" "Contracts are final")
 # 366 was the test count before the v4 suite; it is allowed only while facts.json still says 366. Word-bounded so a hex address containing 366 is not a hit.
 [ "$(jq -r .tests.total docs/facts.json)" = "366" ] || BANNED+=('\b366\b')
+# Pitch copy says "launching", never that deposits are open or live. web/public/llms.txt is generated from keeper/scripts/llms-text.ts and keeps its own wording.
+BANNED_PITCH=("take deposits" "takes deposits" "live deposits")
 bad=0
 for f in "${FILES[@]}"; do
   [ -s "$f" ] || { echo "MISSING or empty: $f"; bad=1; continue; }
-  for p in "${BANNED[@]}"; do
+  pats=("${BANNED[@]}"); [ "$f" = web/public/llms.txt ] || pats+=("${BANNED_PITCH[@]}")
+  for p in "${pats[@]}"; do
     if [ "${p#\\b}" != "$p" ]; then hits=$(grep -nEi -- "$p" "$f"); else hits=$(grep -nFi -- "$p" "$f"); fi
     if [ -n "$hits" ]; then echo "$f: banned \"$p\""; echo "$hits" | cut -c1-200; bad=1; fi
   done

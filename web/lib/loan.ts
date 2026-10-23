@@ -239,7 +239,8 @@ export function planSafer(p: SaferInput): SaferPlan {
     return { status: "ready", path: "repay", steps: [...approveUsdg(wallet), repayStep(wallet)], repay: wallet, shares: 0n, stock: 0n, rounds: 0, before, after: landing(p.collateral, wallet), target: p.target };
   }
   if (!p.inKind || p.inKind.shares <= 0n) {
-    return { status: "unreachable", reason: `Repaying takes ${wallet} USDG in raw units and the wallet holds ${p.usdgBalance}. The vault could not be asked for an in-kind exit quote.` };
+    const usdg = (n: bigint) => (Number(n) / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 });
+    return { status: "unreachable", reason: `Repaying takes ${usdg(wallet)} USDG and the wallet holds ${usdg(p.usdgBalance)} USDG. The vault could not be asked for an in-kind exit quote, so add USDG to the wallet and repay.` };
   }
 
   // Route two: take shares out of the collateral, exit them in kind, repay with the USDG leg. Morpho checks health the moment shares leave, so a position well
