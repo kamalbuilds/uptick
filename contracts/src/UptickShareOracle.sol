@@ -106,6 +106,7 @@ contract UptickShareOracle is IOracle {
 
     /// @notice The oldest Chainlink print the oracle accepts, in seconds (97 hours).
     uint256 public constant MAX_FEED_AGE = 349_200;
+    uint256 private constant Q96 = 1 << 96;
     uint8 private constant FEED_INVALID = 1; // Status.FeedInvalid in StockVault and StockVaultV4
 
     /// @notice The Uptick VaultFactory whose `isVault` approved `vault`.
@@ -146,15 +147,16 @@ contract UptickShareOracle is IOracle {
 
     /// @inheritdoc IOracle
     function price() external view returns (uint256) {
-        (uint8 status, uint256 px, uint256 updatedAt, uint160 sqrtOracle,,) = vault.health();
+        (uint8 status, uint256 px, uint256 updatedAt, uint160 sqrtOracle, uint160 sqrtTwap,) = vault.health();
         if (status == FEED_INVALID) revert FeedInvalid();
         if (block.timestamp - updatedAt > MAX_FEED_AGE) revert FeedTooOld(updatedAt);
-        return valueInUsdg(px, sqrtOracle).mulDiv(1e36, vault.totalSupply() + virtualShares);
+        return valueInUsdg(px, sqrtOracle, sqrtTwap).mulDiv(1e36, vault.totalSupply() + virtualShares);
     }
 
     /// @notice The vault's holdings in USDG raw units at the Chainlink answer `px` (feed decimals), the position at
-    /// `sqrtOracle`, less the treasury's cut of the uncollected fees, capped by `totalAssets()` at the same price.
-    function valueInUsdg(uint256 px, uint160 sqrtOracle) public view returns (uint256) {
+    /// `sqrtOracle`, less the treasury's cut of the uncollected fees and of the fees the vault recorded as pending
+    /// (see `_pendingCutUsdg`; `sqrtTwap` is the vault's TWAP from `health()`), capped by `totalAssets()` at the same price.
+    function valueInUsdg(uint256 px, uint160 sqrtOracle, uint160 sqrtTwap) public view returns (uint256) {
         IUptickVault.PositionInfo memory p = vault.positionInfo();
         uint256 posStock;
         uint256 posUsdg;
@@ -164,16 +166,65 @@ contract UptickShareOracle is IOracle {
         }
         uint256 owed = vault.totalStockOwed();
         uint256 idle = stock.balanceOf(address(vault));
-        uint256 stockTotal = (idle > owed ? idle - owed : 0) + posStock + p.uncollectedStock;
-        uint256 usdgTotal = usdg.balanceOf(address(vault)) + posUsdg + p.uncollectedUsdg;
-
+        idle = idle > owed ? idle - owed : 0;
+        uint256 idleUsdg = usdg.balanceOf(address(vault));
         uint256 usdgPerStock = px * usdgScale;
-        uint256 value = stockTotal.mulDiv(usdgPerStock, stockScale) + usdgTotal;
+        uint256 value = (idle + posStock + p.uncollectedStock).mulDiv(usdgPerStock, stockScale) + idleUsdg + posUsdg
+            + p.uncollectedUsdg;
         (, uint16 perfFeeBps,,,,,,) = vault.params();
         uint256 feeValue = p.uncollectedStock.mulDiv(usdgPerStock, stockScale) + p.uncollectedUsdg;
         uint256 cut = feeValue.mulDiv(perfFeeBps, 1e4, Math.Rounding.Ceil);
+        uint256 ta = vault.totalAssets();
+        cut += _pendingCutUsdg(p, idle, idleUsdg, px, sqrtTwap, perfFeeBps, ta);
         value = value > cut ? value - cut : 0;
 
-        return Math.min(value, vault.totalAssets().mulDiv(usdgPerStock, stockScale));
+        return Math.min(value, ta.mulDiv(usdgPerStock, stockScale));
+    }
+
+    /// @notice The treasury's cut of the fees a closed-gate `redeemInKind` moved into the vault's idle balances and
+    /// recorded as pending (v4; always zero on v3), in USDG raw units at the current Chainlink answer.
+    function pendingCutUsdg() external view returns (uint256) {
+        (, uint256 px,,, uint160 sqrtTwap,) = vault.health();
+        IUptickVault.PositionInfo memory p = vault.positionInfo();
+        uint256 owed = vault.totalStockOwed();
+        uint256 idle = stock.balanceOf(address(vault));
+        (, uint16 perfFeeBps,,,,,,) = vault.params();
+        return _pendingCutUsdg(
+            p, idle > owed ? idle - owed : 0, usdg.balanceOf(address(vault)), px, sqrtTwap, perfFeeBps, vault.totalAssets()
+        );
+    }
+
+    /// @dev The vault keeps the pending fees private, but its net valuation `ta` is `gross - cut(uncollected + pending)`
+    /// with every term at `nav = min(Chainlink, TWAP)`, and everything but the pending cut is readable: the idle
+    /// balances, the position's legs at the vault's TWAP and the uncollected fees all come from `positionInfo()`. So
+    /// the pending cut is `gross - cut(uncollected) - ta`, rebuilt here with the vault's own formulas and rounding (it
+    /// is zero on v3, and within a wei or two of zero on v4 when nothing is pending), saturating at zero. The cut is
+    /// returned in stock units at `nav`; multiplying by `px >= nav` values it at the Chainlink price. The vault does not
+    /// say whether the pending fees sit in the stock leg or the USDG leg, so the result is the upper bound of the cut
+    /// at `px` (all stock), at most `px / nav - 1` above it (the vault's deviation gate keeps that under 1%) and always
+    /// toward the lender. Spot never enters.
+    function _pendingCutUsdg(
+        IUptickVault.PositionInfo memory p,
+        uint256 idle,
+        uint256 idleUsdg,
+        uint256 px,
+        uint160 sqrtTwap,
+        uint16 perfFeeBps,
+        uint256 ta
+    ) private view returns (uint256) {
+        uint256 navScale = Math.min(px, _sqrtToUsd(sqrtTwap)) * usdgScale;
+        uint256 gross = idle + p.stockAmount + p.uncollectedStock
+            + (idleUsdg + p.usdgAmount + p.uncollectedUsdg).mulDiv(stockScale, navScale);
+        uint256 uncollectedCut = (p.uncollectedStock + p.uncollectedUsdg.mulDiv(stockScale, navScale)) * perfFeeBps / 1e4;
+        uint256 pending = gross > uncollectedCut + ta ? gross - uncollectedCut - ta : 0;
+        return pending.mulDiv(px * usdgScale, stockScale);
+    }
+
+    /// @dev USD per Stock Token (feed decimals) of a sqrt price, the vault's own `_sqrtToUsd`.
+    function _sqrtToUsd(uint160 sqrtP) private view returns (uint256) {
+        uint256 price96 = Math.mulDiv(sqrtP, sqrtP, Q96);
+        return stockIsToken0
+            ? Math.mulDiv(price96, stockScale, Q96) / usdgScale
+            : Math.mulDiv(stockScale, Q96, price96) / usdgScale;
     }
 }

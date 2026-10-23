@@ -229,6 +229,31 @@ contract OracleReviewV3 is ShareCollateralTest {
     }
 }
 
+/// @dev v3 records no pending fees, so the oracle's rebuilt pending cut (gross - cut(uncollected) - totalAssets, with the
+/// vault's own formulas) must come out zero with fees accrued, the USDG leg valued at a lower TWAP than Chainlink, and
+/// the vault emptied of liquidity: a non-zero value here would be a rounding or composition mismatch.
+contract OracleReviewV3Pending is ShareCollateralTest {
+    /// @dev Before the O-L1 change: 323,285 cold and 183,646 warm.
+    function test_measure_priceGasV3() public {
+        uint256 g = gasleft();
+        oracle.price();
+        emit log_named_uint("v3 price() gas, first call", g - gasleft());
+        g = gasleft();
+        oracle.price();
+        emit log_named_uint("v3 price() gas, warm", g - gasleft());
+    }
+
+    function test_pendingCutIsZeroOnV3() public {
+        assertEq(oracle.pendingCutUsdg(), 0, "fresh position");
+        _pushPrice(300);
+        _pushPrice(-300);
+        assertGt(vault.positionInfo().uncollectedStock + vault.positionInfo().uncollectedUsdg, 0, "fees accrued");
+        assertEq(oracle.pendingCutUsdg(), 0, "uncollected fees are not pending");
+        _setFeed(_poolPrice() * 10_050 / 10_000);
+        assertEq(oracle.pendingCutUsdg(), 0, "Chainlink 50 bp above the TWAP");
+    }
+}
+
 /// @dev The live NVDA/USDG v3 pool with no Uptick liquidity in it: what a liquidator who redeemed in kind meets when
 /// it sells the NVDA leg.
 contract OracleReviewDepth is Base {
@@ -258,17 +283,20 @@ contract OracleReviewV4 is ShareCollateralV4Test {
     using Math for uint256;
 
     /// @dev The builder's own scenario (fees swept into idle by a closed-gate redeemInKind) with one change: the
-    /// Chainlink answer sits `offsetBps` above the pool, inside the vault's 100 bp deviation band. The totalAssets()
-    /// cap is the only thing that carries the treasury's cut of pending fees into the oracle, and the cap has slack
-    /// whenever Chainlink is above the TWAP (the vault values its USDG at min(Chainlink, TWAP)), so the price rises by
-    /// the cut. Returns (cut at stake, price rise), both in ppm of the price.
-    function _sweepWithFeedOffset(uint256 offsetBps) internal returns (uint256 cutPpm, uint256 risePpm) {
+    /// Chainlink answer sits `offsetBps` above the pool, inside the vault's 100 bp deviation band. Before the fix the
+    /// totalAssets() cap was the only thing that carried the treasury's cut of pending fees into the oracle, and the
+    /// cap has slack whenever Chainlink is above the TWAP (the vault values its USDG at min(Chainlink, TWAP)), so the
+    /// price rose by the cut. The oracle now subtracts the pending cut itself.
+    /// Returns the cut at stake (ppm of the price), the signed price change across the sweep (ppm of the price before)
+    /// and the oracle's own reading of the pending cut after the sweep (ppm of the price).
+    function _sweepWithFeedOffset(uint256 offsetBps) internal returns (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) {
         _deposit(bob, UNIT());
         _volume(VOL() * 2, 3);
         _advance(600);
         _settle();
         uint256 feedPx = _poolPrice() * (1e4 + offsetBps) / 1e4;
         _setFeed(feedPx);
+        assertEq(oracle.pendingCutUsdg(), 0, "nothing is pending before the sweep");
         cutPpm = _feeShareValue() * 1e6 / oracle.price() * 1000 / 9000;
         uint256 before = oracle.price();
         uint256 dust = vault.totalSupply() / 1e6;
@@ -285,22 +313,51 @@ contract OracleReviewV4 is ShareCollateralV4Test {
         _setFeed(feedPx);
         assertEq(_feeShareValue(), 0, "the exit swept every uncollected fee into idle");
         uint256 afterP = oracle.price();
-        risePpm = afterP > before ? (afterP - before) * 1e6 / before : 0;
+        changePpm = (int256(afterP) - int256(before)) * 1e6 / int256(before);
+        pendingPpm = oracle.pendingCutUsdg() * 1e36 / (vault.totalSupply() + 1e6) * 1e6 / afterP;
         emit log_named_uint("feed above pool, bp", offsetBps);
         emit log_named_uint("treasury cut at stake, ppm of price", cutPpm);
-        emit log_named_uint("price rise after the sweep, ppm", risePpm);
+        emit log_named_uint("pending cut the oracle derived, ppm of price", pendingPpm);
+        emit log_named_int("price change across the sweep, ppm (signed)", changePpm);
     }
 
-    function test_poc_v4PendingCutLeaksWhenFeedAboveTwap() public {
-        (uint256 cutPpm, uint256 risePpm) = _sweepWithFeedOffset(60);
+    /// @dev Chainlink 60 bp above the pool: before the fix the price rose 1,319 ppm (the whole cut, 1,318 ppm) across
+    /// the sweep. Now it does not rise (at most 1 ppm). It can fall by a hair, never more than `offset x cut`: the vault
+    /// does not say whether the pending fees are stock or USDG, and the oracle takes the dearer reading (all stock), so
+    /// the part of the cut that is USDG is deducted at Chainlink / TWAP times its value. Measured: -3 ppm of a 1,263 ppm
+    /// cut. That is the lender-side error bound of the rebuild, not a double count: a double count would drop the price
+    /// by the whole cut.
+    function test_poc_v4PendingCutDoesNotLeakWhenFeedAboveTwap() public {
+        (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) = _sweepWithFeedOffset(60);
         assertGe(cutPpm, 300, "a cut of at least 3 bp is at stake");
-        assertGe(risePpm, cutPpm * 9 / 10, "the price rose by the treasury's cut: the cap did not bind");
+        assertGe(pendingPpm, cutPpm * 9 / 10, "the oracle sees the pending cut");
+        assertLe(changePpm, 1, "the price did not rise by the treasury's cut");
+        assertGe(changePpm, -int256(cutPpm * 60 / 1e4 + 1), "and fell by no more than offset x cut");
+    }
+
+    /// @dev Before the O-L1 change: 204,748 cold and 118,609 warm.
+    function test_measure_priceGasV4() public {
+        uint256 g = gasleft();
+        oracle.price();
+        emit log_named_uint("v4 price() gas, first call", g - gasleft());
+        g = gasleft();
+        oracle.price();
+        emit log_named_uint("v4 price() gas, warm", g - gasleft());
+    }
+
+    /// @dev The edge of the deviation gate (100 bp): same bounds.
+    function test_poc_v4PendingCutDoesNotLeakAtTheEdgeOfTheGate() public {
+        (uint256 cutPpm, int256 changePpm,) = _sweepWithFeedOffset(95);
+        assertLe(changePpm, 1);
+        assertGe(changePpm, -int256(cutPpm * 95 / 1e4 + 1));
     }
 
     function test_poc_v4PendingCutControlFeedAtPool() public {
-        (uint256 cutPpm, uint256 risePpm) = _sweepWithFeedOffset(0);
+        (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) = _sweepWithFeedOffset(0);
         assertGe(cutPpm, 300);
-        assertLe(risePpm, 2, "with Chainlink at the pool the cap binds, as the builder's test shows");
+        assertGe(pendingPpm, cutPpm * 9 / 10, "the oracle sees the pending cut");
+        assertLe(changePpm, 2, "with Chainlink at the pool the cap binds, as the builder's test shows");
+        assertGe(changePpm, -2);
     }
 
     /// @dev Hypothesis tested and refuted for this pool. v4's TWAP is the keeper-fed ring: once the feed is older than
