@@ -2,10 +2,11 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { TERMS, type TermId } from "@/lib/terms";
+import { TOOLTIP_GUTTER, TOOLTIP_WIDTH, tooltipShift } from "@/lib/tooltip";
 import { cn } from "@/lib/utils";
 
-type Place = { x: "left" | "right"; y: "below" | "above" };
-const WIDTH = 280;
+/** `dx` shifts the tooltip from the left edge of its word so the whole box stays inside the viewport: 0 where it fits, negative near the right edge. */
+type Place = { dx: number; y: "below" | "above" };
 
 /** A domain word with a dotted underline and a plain definition. The definition opens on hover and on keyboard focus, stays open while the
  *  pointer is over it, and closes on Escape. It stays in the DOM, hidden, so aria-describedby on the focusable trigger always resolves. */
@@ -13,7 +14,8 @@ export function Term({ id, children, className }: { id: TermId; children?: React
   const tipId = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
-  const [place, setPlace] = useState<Place>({ x: "left", y: "below" });
+  const wrap = useRef<HTMLSpanElement>(null);
+  const [place, setPlace] = useState<Place>({ dx: 0, y: "below" });
   const def = TERMS[id];
 
   useEffect(() => {
@@ -25,12 +27,16 @@ export function Term({ id, children, className }: { id: TermId; children?: React
 
   function show() {
     const r = trigger.current?.getBoundingClientRect();
-    if (r) setPlace({ x: r.left + WIDTH > window.innerWidth - 12 ? "right" : "left", y: r.bottom + 150 > window.innerHeight - 48 ? "above" : "below" });
+    // The tooltip hangs from the first line box of the word, which is where an absolutely positioned child of a wrapped inline word starts.
+    const anchor = wrap.current?.getClientRects()[0];
+    if (r && anchor) {
+      setPlace({ dx: tooltipShift(anchor.left, window.innerWidth), y: r.bottom + 150 > window.innerHeight - 48 ? "above" : "below" });
+    }
     setOpen(true);
   }
 
   return (
-    <span className="relative" onMouseEnter={show} onMouseLeave={() => setOpen(false)}>
+    <span ref={wrap} className="relative" onMouseEnter={show} onMouseLeave={() => setOpen(false)}>
       <button ref={trigger} type="button" aria-describedby={tipId} onFocus={show} onBlur={() => setOpen(false)} className={cn("term inline cursor-help rounded-sm text-left", className)}>
         {children ?? def.label}
       </button>
@@ -40,10 +46,9 @@ export function Term({ id, children, className }: { id: TermId; children?: React
         className={cn(
           "absolute z-40 rounded-lg border border-line bg-panel px-3 py-2.5 text-left text-[13px] font-normal leading-5 tracking-normal text-fg shadow-[0_8px_24px_rgb(0_0_0/0.5)]",
           open ? "block" : "hidden",
-          place.x === "left" ? "left-0" : "right-0",
           place.y === "below" ? "top-full mt-2" : "bottom-full mb-2",
         )}
-        style={{ width: `min(${WIDTH}px, calc(100vw - 24px))` }}
+        style={{ left: place.dx, width: `min(${TOOLTIP_WIDTH}px, calc(100vw - ${2 * TOOLTIP_GUTTER}px))` }}
       >
         {def.text}
       </span>

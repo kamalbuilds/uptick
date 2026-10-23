@@ -376,7 +376,11 @@ test("an exit that returns too little USDG for the shares it takes cannot raise 
 test("with no USDG and no vault quote the plan says what is missing", () => {
   const plan = planSafer(base());
   assert.equal(plan.status, "unreachable");
-  assert.match(plan.status === "unreachable" ? plan.reason : "", /could not be asked/);
+  const reason = plan.status === "unreachable" ? plan.reason : "";
+  assert.match(reason, /could not be asked/);
+  // Dollars, not raw units: the shortfall reads as a USDG amount a holder can fund, and the wallet's zero as 0.
+  assert.match(reason, /^Repaying takes [\d,]+(\.\d{1,2})? USDG and the wallet holds 0 USDG\./);
+  assert.doesNotMatch(reason, /raw units|\d{8,}/);
 });
 
 test("a position past its limit, or within 3% of it, cannot take shares out first", () => {
