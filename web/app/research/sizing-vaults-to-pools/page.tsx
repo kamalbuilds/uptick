@@ -11,6 +11,10 @@ const usd = (n: number) =>
 
 const gateLabel = (state: string) => state.charAt(0).toUpperCase() + state.slice(1);
 
+const symbolsIn = (state: string) => universe.vaults.filter((v) => v.gate.state === state).map((v) => v.symbol);
+const doors = { open: symbolsIn("open"), reduced: symbolsIn("reduced"), closed: symbolsIn("closed") };
+const join = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
 export const metadata: Metadata = {
   title: "Sizing vaults to pools | Uptick",
   description:
@@ -131,8 +135,9 @@ export default function SizingVaultsToPoolsPage() {
         caption="All 17 eligible Stock Tokens at block 93099228. Caps are depositCapUsd, enforced by StockVault. Gates are from the replay."
       />
       <P>
-        Two vaults are open, five are reduced and ten are closed. NVDA and AAPL are open. PLTR,
-        GOOGL, AMZN, QQQ and SPY are reduced. The remaining ten are closed. The gate and the cap are
+        {doors.open.length} vaults are open, {doors.reduced.length} are reduced and {doors.closed.length} are
+        closed. {join(doors.open)} {doors.open.length === 1 ? "is" : "are"} open. {join(doors.reduced)} are reduced.
+        The remaining {doors.closed.length} are closed. The gate and the cap are
         separate decisions: a vault can have a large cap and still be closed if its replay fails, and
         a closed vault keeps its cap published so the sizing rule can be checked.
       </P>

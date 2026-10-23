@@ -71,7 +71,7 @@ curl -sS "$MCP" "${H[@]}" -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","par
   "swaps": 53897,
   "gate": {
     "state": "open",
-    "reason": "Open: the weaker half of the 30-day replay kept 12.8% a year, at or above break-even, across 53,897 swaps."
+    "reason": "Open: the weaker half of the 30-day replay kept 7.9% a year, at or above break-even, across 53,897 swaps."
   }
 }
 ```
@@ -94,7 +94,7 @@ curl -sS "$MCP" "${H[@]}" -d "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/c
   "venue": "v4",
   "gate": {
     "state": "open",
-    "reason": "Open: the weaker half of the 30-day replay kept 12.8% a year, at or above break-even, across 53,897 swaps."
+    "reason": "Open: the weaker half of the 30-day replay kept 7.9% a year, at or above break-even, across 53,897 swaps."
   }
 }
 ```

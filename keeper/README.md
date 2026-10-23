@@ -36,7 +36,7 @@ A Stock Token gets a vault when all of these hold (thresholds in `src/universe.t
 |---|---|
 | Chainlink Stock Token feed | present in the Chainlink directory for 4663, `description()`, `decimals()` and `latestRoundData()` readable, answer positive |
 | Feed age | at most 4 days (heartbeat plus a long weekend) |
-| USDG pool | the deepest v3 pool by active liquidity across its +-5% band (a v4 pool takes over for a token whose v3 pool is closed, below) |
+| USDG pool | the deepest v3 pool by active liquidity across its +-5% band (a v4 pool takes over for a token whose v4 pool keeps more in its weaker half, below) |
 | Pool volume | at least USD 100,000 per day, 7-day average |
 | Vault size | the vault is sized to its pool: `cap_usd` = min(USD 100,000, the largest `V` with `V / (depth + V)` at most 20%), at least USD 10,000 (below that, gas and rebalance cost dominate). `StockVault` enforces it through `depositCap` |
 | Pool vs feed | within 300 bps at the read block |

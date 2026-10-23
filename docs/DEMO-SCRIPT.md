@@ -14,7 +14,7 @@ Say: "This is a real trade on Robinhood Chain. Nasdaq was shut, it was 10:21 at 
 ## 0:25 to 0:50 The doors, `/`
 
 Screen: the headline "Which of your stock tokens can earn, and how much you would keep."
-Point at the four figures: Vaults at launch 12 (2 open, 10 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $996.6K on the 17 vault pools, Stock Tokens tracked 17.
+Point at the four figures: Vaults at launch 12 (3 open, 9 reduced), Swaps replayed 3.1M over the 30 days to 2026-10-17, Fees paid to liquidity providers $979.3K on the 17 vault pools, Stock Tokens tracked 17.
 Say: "We replayed every swap on 17 tokens. Every vault sits behind one of three doors. Open takes any amount. Reduced takes up to $25,000 a deposit. Closed takes none. The door comes from the replay, not from us."
 
 ## 0:50 to 1:25 Deposit, `/vault/nvda`
@@ -44,7 +44,7 @@ Say: "58% of the swaps and half the fees in these pools happen while the NYSE is
 <!--
 Sources, repo files regenerated 2026-10-23.
 Opening: web/lib/real-swap.json (tx 0x1e8e2188254a7e72dc42b22f286935b0b6b800110a8bfe0ecabb4d6039f9fd36, block 70152155, 2026-09-23T02:21:36Z, sold 95.7986 PLTR, pool price 186.5087, Chainlink 184.6724, pool price an hour later 183.7504, pool fee 178.30, loss to liquidity providers 241.83, 178.30 / 241.83 = 0.74), written by keeper/scripts/moment.py and read back from the chain over the public RPC.
-Home figures: web/lib/vault-universe.json (12 of 17 launch, 2 open, 10 reduced, 5 closed, swap total 3,059,881 is the sum of each vault's gate.swaps), web/lib/pool-fees.json (fee total $996,621.05, shown as $996.6K).
+Home figures: web/lib/vault-universe.json (12 of 17 launch, 3 open, 9 reduced, 5 closed, swap total 3,059,881 is the sum of each vault's gate.swaps), web/lib/pool-fees.json (fee total $979,345.29, shown as $979.3K).
 NVDA: web/lib/vault-universe.json gate and keep (814,927 swaps, first half +29.03%, held-out half -6.85%, state reduced, $25,000 a deposit), contracts/SECURITY.md Entry fee row (35 bp).
 Borrow: web/app/docs/collateral/page.tsx (four steps, 62.5% limit of the live NVDA/USDG market, share priced from the Chainlink answer alone), Morpho Blue singleton and the NVDA market parameters in web/lib/morpho.ts; the Morpho calls and the borrow limit run against the real singleton on a 4663 fork (keeper, scripts/e2e-fork.sh). Wedge: a set-once Uniswap position cannot be posted as Morpho collateral; an Uptick share can, through UptickShareOracle.
 Exit in kind: contracts/SECURITY.md row redeemInKind (no oracle, no swap, no pause), web/app/docs/exit-in-kind/page.tsx.
