@@ -86,6 +86,20 @@ export default function CollateralPage() {
         in every state of the vault, so a liquidation always ends in the underlying tokens.
       </P>
 
+      <H2>Watching the loan</H2>
+      <P>
+        Your loan section on the vault page and on Portfolio shows the collateral and its value, the debt with
+        interest counted to the latest block the way Morpho counts it, the health factor, the
+        liquidation price in stock terms and how far the stock can fall before it. Make it safer takes the
+        loan to a health factor you choose, 1.6 by default, with the least action. A wallet holding USDG
+        repays; a wallet without it takes shares out of Morpho, exits them in kind, repays with the USDG leg
+        and receives the stock leg, in as many rounds as Morpho&apos;s health check needs. Wallets that batch
+        send it as one confirmation. Agents get the same two views as the <Code>check_loan_health</Code> and{" "}
+        <Code>prepare_make_safer</Code> tools, and a webhook subscription at{" "}
+        <Code>POST /alerts/subscribe</Code> posts once when the health factor falls below your threshold and
+        again only after it has recovered.
+      </P>
+
       <H2>Weekends and corporate actions</H2>
       <P>
         Chainlink equity feeds publish on market days. Between the Friday close and the Monday

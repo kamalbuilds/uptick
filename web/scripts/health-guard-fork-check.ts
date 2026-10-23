@@ -110,14 +110,14 @@ async function run(steps: Step[], from: Address, at: bigint): Promise<boolean> {
 }
 
 /** The inputs of planSafer, read from the chain the way the app reads them. */
-async function inputs(m: MarketParams, vault: Address, who: Address, inKind?: InKindQuote) {
+async function inputs(m: MarketParams, vault: Address, who: Address, inKind?: InKindQuote, target = TARGET) {
   const id = marketId(m);
   const [, bs, col] = await readPosition(id, who);
   const market = await readMarket(id);
   const now = (await pub.getBlock()).timestamp;
   return {
     symbol: "STOCK", market: m, vault, account: who, collateral: col, borrowShares: bs, state: market, borrowRate: await rateAt(m, market), now,
-    price: await readPrice(m.oracle), target: TARGET, usdgBalance: await balance(USDG, who),
+    price: await readPrice(m.oracle), target, usdgBalance: await balance(USDG, who),
     usdgAllowance: await pub.readContract({ address: USDG, abi: erc20Abi, functionName: "allowance", args: [who, MORPHO_BLUE] }), inKind,
   };
 }
@@ -296,12 +296,25 @@ async function partB() {
   await ok(borrower, vault, approve(MORPHO_BLUE, shares));
   check("B the borrower posts its shares", await ok(borrower, MORPHO_BLUE, encodeFunctionData({ abi: morphoOps, functionName: "supplyCollateral", args: [tuple(share), shares, borrower, "0x"] })), `${shares} shares`);
   const limit = (((shares * price) / 10n ** 36n) * LLTV) / 10n ** 18n;
-  const borrowed = (limit * 69n) / 100n;
+  // Exiting in kind improves a loan only while the USDG leg of the exit is a larger share of the collateral than the loan is of its value, and that share moves with
+  // where the pool sits in the vault's band. So the loan is sized from the vault's own quote: two points of value under what the leg can repay, at most health 1.45.
+  const probe = await pub.simulateContract({ address: vault, abi: vaultOps, functionName: "redeemInKind", args: [shares, borrower, MORPHO_BLUE], account: MORPHO_BLUE });
+  const value = (shares * price) / 10n ** 36n;
+  const leg = Number(probe.result[1]) / Number(value);
+  const borrowed = BigInt(Math.floor(Number(value) * Math.min(0.625 / 1.45, leg * 0.995 - 0.02)));
+  const openingHealth = Number(limit) / Number(borrowed);
+  const targetB = Math.max(1.6, Math.round((openingHealth + 0.1) * 20) / 20);
   const bo = await send(borrower, MORPHO_BLUE, encodeFunctionData({ abi: morphoAbi, functionName: "borrow", args: [share, borrowed, 0n, borrower, borrower] }));
-  check("B the borrower takes 69% of the limit", bo.status === "success", `limit ${fmt(limit)}, borrowed ${fmt(borrowed)} USDG`);
+  check("B the borrower takes a loan sized to the exit", bo.status === "success", `USDG leg is ${(leg * 100).toFixed(1)}% of the share's value; limit ${fmt(limit)}, borrowed ${fmt(borrowed)} USDG, health ${openingHealth.toFixed(3)}, target ${targetB}`);
   await ok(borrower, USDG, encodeFunctionData({ abi: transferAbi, functionName: "transfer", args: [lender, await balance(USDG, borrower)] }));
   check("B the wallet holds no USDG", (await balance(USDG, borrower)) === 0n, "0 USDG");
   await advance(6n * 3_600n);
+  // SCENE_ONLY=1 stops here and leaves the fork as the app should see it: a vault, its oracle, a market and a wallet holding a loan sized to the vault's exit (health 1.45 or a little more).
+  // Put `scene.market` in web/lib/collateral-markets.json, `scene.vault` in NEXT_PUBLIC_VAULTS, point NEXT_PUBLIC_RPC_URL at the fork and open /portfolio as `scene.borrower`.
+  if (process.env.SCENE_ONLY) {
+    console.log("scene", JSON.stringify({ vault, oracle, irm: IRM, lltv: LLTV.toString(), borrower, symbol: "NVDA", id: "nvda" }));
+    process.exit(process.exitCode ?? 0);
+  }
 
   // what the vault would pay for all the collateral, asked of the vault itself as Morpho would be: no oracle, no signature
   const sim = await pub.simulateContract({ address: vault, abi: vaultOps, functionName: "redeemInKind", args: [shares, borrower, MORPHO_BLUE], account: MORPHO_BLUE });
@@ -309,7 +322,7 @@ async function partB() {
   console.log(`  vault quote for all ${shares} shares: ${quote.stock} NVDA wei and ${fmt(quote.usdg)} USDG`);
 
   let snap = await test.snapshot();
-  const plan = ready(planSafer({ ...(await inputs(share, vault, borrower, quote)), symbol: "NVDA" }));
+  const plan = ready(planSafer({ ...(await inputs(share, vault, borrower, quote, targetB)), symbol: "NVDA" }));
   check("B the plan exits in kind, in rounds", plan.path === "in-kind", `${plan.rounds} rounds, ${fmt(plan.shares, 24)} shares out, ${fmt(plan.repay)} USDG repaid, health ${plan.before.healthFactor?.toFixed(4)} -> ${plan.after.healthFactor?.toFixed(4)}`);
 
   // Morpho itself refuses the one-round version: the shares cannot all leave first
@@ -326,7 +339,7 @@ async function partB() {
     lowest = Math.min(lowest, (await chainHealth(share, borrower)).health);
   }
   const done = await chainHealth(share, borrower);
-  check("B health on the chain is at the target", done.health >= TARGET && done.health < TARGET + 0.05, `health ${done.health} against target ${TARGET}, debt ${fmt(done.debt)} USDG`);
+  check("B health on the chain is at the target", done.health >= targetB && done.health < targetB + 0.05, `health ${done.health} against target ${targetB}, debt ${fmt(done.debt)} USDG`);
   check("B never below the step floor between two transactions", lowest >= 1.03, `lowest ${lowest}`);
   const stockBack = (await balance(token, borrower)) - stockBefore;
   check("B the stock leg is back in the wallet", stockBack > 0n && stockBack >= (plan.stock * 999n) / 1000n, `${stockBack} NVDA wei back, plan said ${plan.stock}`);
@@ -337,7 +350,7 @@ async function partB() {
   const weak: Step[] = plan.steps.map((s) => s.id !== "repay" ? s : { ...s, call: { ...s.call, data: encodeFunctionData({ abi: morphoAbi, functionName: "repay", args: [share, repayAmount(s.call.data) / 2n, 0n, borrower, "0x"] }) } });
   const rans = await run(weak, borrower, (await pub.getBlock()).timestamp + 30n);
   const low = await chainHealth(share, borrower);
-  check("B must-fail: halved repays leave the chain under the target", !(rans && low.health >= TARGET), `batch mined: ${rans}, health ${low.health} against target ${TARGET}`);
+  check("B must-fail: halved repays leave the chain under the target", !(rans && low.health >= targetB), `batch mined: ${rans}, health ${low.health} against target ${targetB}`);
 }
 
 const base = await test.snapshot();
