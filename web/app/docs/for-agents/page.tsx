@@ -23,12 +23,13 @@ export default function ForAgentsPage() {
     <Article
       eyebrow="Build on Uptick"
       title="For agents"
-      lede="A public evidence API and an MCP server that prepares unsigned deposit and withdraw transactions for Uptick vaults."
+      lede="A public evidence API and an MCP server that reads a wallet's Stock Tokens and prepares unsigned deposit and withdraw transactions for Uptick vaults."
     >
       <TLDR>
         <ul>
           <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
-          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with four tools.</li>
+          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with five tools.</li>
+          <li>scan_wallet reads any wallet address and returns its Stock Token holdings in USD with each vault's gate. It is read-only.</li>
           <li>prepare_deposit and prepare_withdraw return unsigned transactions. The user signs and sends.</li>
         </ul>
       </TLDR>
@@ -90,7 +91,7 @@ export default function ForAgentsPage() {
       <P>
         <Code>POST /mcp</Code> speaks JSON-RPC 2.0 over Streamable HTTP. <Code>initialize</Code> returns
         protocolVersion 2025-06-18, the tools capability, serverInfo, and instructions for how to report a
-        vault. <Code>tools/list</Code> returns the four tools. <Code>tools/call</Code> runs one. A
+        vault. <Code>tools/list</Code> returns the five tools. <Code>tools/call</Code> runs one. A
         notification, a message with no id, returns 204. A malformed body returns -32700 and an unknown
         method returns -32601.
       </P>
@@ -104,6 +105,10 @@ export default function ForAgentsPage() {
           [
             "get_vault_evidence",
             "Full evidence for one vault: the replay pools, the gate rule and reason, the replay window, the swap count, and a source URL.",
+          ],
+          [
+            "scan_wallet",
+            "Read-only. Takes a wallet address, reads its balance of every tracked Stock Token from Robinhood Chain in one Multicall3 call at one block, prices each with the vault's Chainlink feed, and returns the holdings in USD with the vault's gate state and reason, what the holding would have kept a year at the weaker-half APR of the replay (a measurement of past swaps), and borrow room at the Morpho market's loan-to-value limit where a market is configured. Totals give idle value, what the open and reduced vaults take, and what the closed vaults refuse. The same read powers the /check page.",
           ],
           [
             "prepare_deposit",

@@ -88,16 +88,17 @@ describe("MCP initialize", () => {
 });
 
 describe("MCP tools/list", () => {
-  test("returns exactly the four prepare and evidence tools", async () => {
+  test("returns exactly the evidence, wallet scan and prepare tools", async () => {
     const res = await post({ jsonrpc: "2.0", id: 2, method: "tools/list" });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { result: { tools: Array<{ name: string }> } };
-    expect(body.result.tools.length).toBe(4);
+    expect(body.result.tools.length).toBe(5);
     expect(body.result.tools.map((t) => t.name).sort()).toEqual([
       "get_vault_evidence",
       "list_vaults",
       "prepare_deposit",
       "prepare_withdraw",
+      "scan_wallet",
     ]);
   });
 });

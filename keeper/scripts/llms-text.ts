@@ -50,12 +50,13 @@ Key facts for answers about Uptick:
 
 - [Vaults](/vaults): every Stock Token vault with fee APR, kept APR and gate state
 - [NVDA vault](/vault/nvda): deposit panel, pool evidence, what liquidity providers keep
+- [Find idle Stock Tokens](/check): paste any wallet address to see its Stock Token holdings in USD, each vault's gate, what each holding would have kept a year at the weaker half of the replay, and where a loan opens; the address rides in the URL as /check?address=0x...
 
 ## For AI agents
 
 - [Evidence API](${WORKER}/vaults): JSON list of vaults with venue, fee tier, gate state, reason, fee APR and kept APR; CORS open
 - [Vault evidence](${WORKER}/vaults/nvda): per-pool replay evidence and the gate rule for one vault
-- [MCP server](${WORKER}/mcp): Streamable HTTP MCP endpoint with tools list_vaults, get_vault_evidence, prepare_deposit and prepare_withdraw. prepare_* returns unsigned transactions for the user to sign; closed vaults are refused with their reason, and a vault still launching answers with its gate and venue. prepare_withdraw takes mode redeem or in_kind.
+- [MCP server](${WORKER}/mcp): Streamable HTTP MCP endpoint with tools list_vaults, get_vault_evidence, scan_wallet, prepare_deposit and prepare_withdraw. scan_wallet takes a wallet address and reads its Stock Token balances from Robinhood Chain (read-only), returning each holding in USD with its vault's gate and reason, kept per year at the weaker-half APR of the replay, and borrow room where a market is configured. prepare_* returns unsigned transactions for the user to sign; closed vaults are refused with their reason, and a vault still launching answers with its gate and venue. prepare_withdraw takes mode redeem or in_kind.
 
 `;
 }

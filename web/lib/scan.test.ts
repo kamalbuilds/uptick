@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { createPublicClient, custom, decodeFunctionData, encodeAbiParameters, encodeFunctionResult, multicall3Abi, parseAbi, type Address, type Hex } from "viem";
-import { MULTICALL3, borrowRoomUsd, parseOwner, holdingUsd, keptPerYearUsd, netOfFee, placeableUsd, scanWallet, type ScanVault } from "./scan.ts";
+import { toHex, type Address } from "viem";
+import { E18, HEAD, mockChain as mock, px } from "./scan-mock.ts";
+import { READ_LAG, borrowRoomUsd, parseOwner, holdingUsd, keptPerYearUsd, netOfFee, placeableUsd, scanWallet, type ScanVault } from "./scan.ts";
 
 // ---- the real 17 vaults, read from the same JSON the app ships ------------------------------------------------------------------------
 
@@ -13,6 +14,7 @@ const VAULTS: ScanVault[] = universe.vaults.map((v) => ({
   gate: { state: v.gate.state, reason: v.gate.reason, worstHalfApr: v.gate.worst_half_apr },
 }));
 const by = (id: string) => VAULTS.find((v) => v.id === id)!;
+const mockChain = (...a: [Record<string, bigint>, Record<string, bigint>, { failBalanceOf?: string }?]) => mock(VAULTS, ...a);
 const OWNER: Address = "0x28C66690Ae101a4f07546b07a2Ac8Eb439b6C245";
 
 // ---- the address a visitor pastes -----------------------------------------------------------------------------------------------------
@@ -59,65 +61,9 @@ test("a vault takes the holding or its size, whichever is smaller", () => {
   assert.equal(placeableUsd(40_000, 100_000), 40_000);
 });
 
-// ---- scanWallet against a mock transport that decodes every call -----------------------------------------------------------------------
+// ---- scanWallet against a mock transport that decodes every call (lib/scan-mock.ts) ----------------------------------------------------
 
-const blockAbi = parseAbi(["function getBlockNumber() view returns (uint256)"]);
-const abi = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-  "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
-  "function decimals() view returns (uint8)",
-]);
-
-type Seen = { to: string; fn: string; args: readonly unknown[] };
-/** A chain that answers Multicall3.aggregate3 by decoding each inner call. `balances` is token address -> base units; `prices` is feed address -> 8-decimal answer (absent: the feed call fails). */
-function mockChain(balances: Record<string, bigint>, prices: Record<string, bigint>, opts: { failBalanceOf?: string } = {}) {
-  const ethCalls: Array<{ to: string; inner: Seen[] }> = [];
-  const tokenAt = new Map(VAULTS.map((v) => [v.token.toLowerCase(), v]));
-  const feedAt = new Map(VAULTS.map((v) => [v.feed.toLowerCase(), v]));
-  const client = createPublicClient({
-    transport: custom({
-      async request({ method, params }: { method: string; params?: unknown }) {
-        if (method !== "eth_call") throw new Error(`unexpected RPC method ${method}`);
-        const [{ to, data }] = params as [{ to: string; data: Hex }];
-        assert.equal(to.toLowerCase(), MULTICALL3.toLowerCase(), "every eth_call goes to Multicall3");
-        const outer = decodeFunctionData({ abi: multicall3Abi, data });
-        assert.equal(outer.functionName, "aggregate3");
-        const calls = (outer.args as [readonly { target: Address; allowFailure: boolean; callData: Hex }[]])[0];
-        const inner: Seen[] = [];
-        const out = calls.map((c) => {
-          const target = c.target.toLowerCase();
-          if (target === MULTICALL3.toLowerCase()) {
-            inner.push({ to: target, fn: "getBlockNumber", args: [] });
-            return { success: true, returnData: encodeFunctionResult({ abi: blockAbi, functionName: "getBlockNumber", result: 95_900_000n }) };
-          }
-          const call = decodeFunctionData({ abi, data: c.callData });
-          inner.push({ to: target, fn: call.functionName, args: call.args ?? [] });
-          if (call.functionName === "balanceOf") {
-            const v = tokenAt.get(target);
-            assert.ok(v, `balanceOf sent to an untracked address ${target}`);
-            if (opts.failBalanceOf === v.symbol) return { success: false, returnData: "0x" as Hex };
-            return { success: true, returnData: encodeFunctionResult({ abi, functionName: "balanceOf", result: balances[v.token.toLowerCase()] ?? 0n }) };
-          }
-          const v = feedAt.get(target);
-          assert.ok(v, `feed call sent to an untracked address ${target}`);
-          const answer = prices[v.feed.toLowerCase()];
-          if (answer === undefined) return { success: false, returnData: "0x" as Hex };
-          return call.functionName === "decimals"
-            ? { success: true, returnData: encodeFunctionResult({ abi, functionName: "decimals", result: 8 }) }
-            : { success: true, returnData: encodeFunctionResult({ abi, functionName: "latestRoundData", result: [1n, answer, 0n, 1_790_000_000n, 1n] }) };
-        });
-        ethCalls.push({ to, inner });
-        return encodeAbiParameters([{ type: "tuple[]", components: [{ type: "bool", name: "success" }, { type: "bytes", name: "returnData" }] }], [out]);
-      },
-    }),
-  });
-  return { client, ethCalls };
-}
-
-const E18 = 10n ** 18n;
-const px = (usd: number) => BigInt(Math.round(usd * 1e8));
-
-test("scan reads every balance and feed in one eth_call and decodes to the right tokens", async () => {
+test("scan reads every balance and feed in one eth_call, pinned to the head less the lag, and decodes to the right tokens", async () => {
   const nvda = by("nvda"), aapl = by("aapl"), tsla = by("tsla");
   const chain = mockChain(
     { [nvda.token.toLowerCase()]: 10n * E18, [aapl.token.toLowerCase()]: 3n * E18, [tsla.token.toLowerCase()]: E18 / 2n },
@@ -125,22 +71,23 @@ test("scan reads every balance and feed in one eth_call and decodes to the right
   );
   const scan = await scanWallet(chain.client, OWNER, VAULTS, { nvda: 625_000_000_000_000_000n });
 
-  // the calls themselves: one eth_call, getBlockNumber, 17 balanceOf for the owner at the 17 token addresses in order, then 17 round + decimals pairs on the 17 feeds
+  // the calls themselves: one eth_blockNumber and one eth_call at head less the lag, holding 17 balanceOf for the owner at the 17 token addresses in order, then 17 round + decimals pairs on the 17 feeds
+  assert.deepEqual(chain.rpc, ["eth_blockNumber", "eth_call"]);
   assert.equal(chain.ethCalls.length, 1);
+  assert.equal(chain.ethCalls[0].at, toHex(HEAD - READ_LAG));
   const inner = chain.ethCalls[0].inner;
-  assert.equal(inner.length, 1 + 17 + 34);
-  assert.equal(inner[0].fn, "getBlockNumber");
-  inner.slice(1, 18).forEach((c, i) => {
+  assert.equal(inner.length, 17 + 34);
+  inner.slice(0, 17).forEach((c, i) => {
     assert.equal(c.fn, "balanceOf");
     assert.equal(c.to, VAULTS[i].token.toLowerCase());
     assert.equal((c.args[0] as string).toLowerCase(), OWNER.toLowerCase());
   });
-  inner.slice(18).forEach((c, i) => {
+  inner.slice(17).forEach((c, i) => {
     assert.equal(c.to, VAULTS[Math.floor(i / 2)].feed.toLowerCase());
     assert.equal(c.fn, i % 2 === 0 ? "latestRoundData" : "decimals");
   });
 
-  assert.equal(scan.block, 95_900_000n);
+  assert.equal(scan.block, HEAD - READ_LAG);
   assert.equal(scan.tracked, 17);
   assert.deepEqual(scan.rows.map((r) => r.symbol), ["NVDA", "AAPL", "TSLA"], "largest holding first");
 
@@ -183,7 +130,7 @@ test("a holding above the vault's size counts only the part the vault takes", as
 
 test("an empty wallet scans to no rows and zero totals", async () => {
   const chain = mockChain({}, Object.fromEntries(VAULTS.map((v) => [v.feed.toLowerCase(), px(100)])));
-  const scan = await scanWallet(chain.client, "0x000000000000000000000000000000000000dEaD", VAULTS);
+  const scan = await scanWallet(chain.client, "0x0000000000000000000000000000000000000000", VAULTS);
   assert.equal(scan.rows.length, 0);
   assert.equal(scan.tracked, 17);
   assert.equal(scan.totals.idleUsd, 0);

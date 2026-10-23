@@ -21,7 +21,6 @@ export const RHC_RPCS = [
   "https://rpc.mainnet.chain.robinhood.com",
 ] as const;
 
-const multicallBlockAbi = parseAbi(["function getBlockNumber() view returns (uint256)"]);
 const erc20BalanceAbi = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
 const feedAbi = parseAbi([
   "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
@@ -105,7 +104,7 @@ export type ScanRow = {
 
 export type WalletScan = {
   owner: Address;
-  /** Block number the Multicall3 call ran at, read by that same call, and the wall-clock ms the answer arrived. */
+  /** The block the Multicall3 call ran at, and the wall-clock ms the answer arrived. */
   block: bigint;
   readAt: number;
   /** Tokens the wallet holds, largest holding first; unpriced ones last. */
@@ -123,38 +122,39 @@ export type WalletScan = {
   };
 };
 
-/** The one method a scan uses. A viem PublicClient satisfies it. */
-export type ScanClient = Pick<PublicClient, "multicall">;
+/** The two methods a scan uses. A viem PublicClient satisfies it. */
+export type ScanClient = Pick<PublicClient, "multicall" | "getBlockNumber">;
+
+/** Robinhood Chain makes about ten blocks a second and the public nodes in the fallback list sit up to ten blocks apart. The scan reads at the head less this many
+ *  blocks, about three seconds back, so whichever node answers has that block, and the block shown is the block read. (Multicall3.getBlockNumber is not used:
+ *  on an Arbitrum chain a contract's block.number is the parent chain's, 26 million here against 95 million for the chain.) */
+export const READ_LAG = 32n;
 
 type Round = readonly [bigint, bigint, bigint, bigint, bigint];
 
-/** One Multicall3 call reads the block number, every tracked token's balance of `owner`, and every Chainlink round and decimals. `batchSize` is raised
- *  so viem sends one `eth_call`, which keeps every figure on one block. A call that fails is a row left unpriced, never defaulted; a balance that
- *  fails is an error, because an unread balance is not a zero. */
+/** One Multicall3 call, pinned to one block, reads every tracked token's balance of `owner` and every Chainlink round and decimals. `batchSize` is raised
+ *  so viem sends one `eth_call`. A call that fails is a row left unpriced, never defaulted; a balance that fails is an error, because an unread balance
+ *  is not a zero. */
 export async function scanWallet(client: ScanClient, owner: Address, vaults: readonly ScanVault[], lltvById: ScanLltv = {}): Promise<WalletScan> {
+  const block = (await client.getBlockNumber()) - READ_LAG;
   const contracts = [
-    { address: MULTICALL3, abi: multicallBlockAbi, functionName: "getBlockNumber" as const },
     ...vaults.map((v) => ({ address: v.token, abi: erc20BalanceAbi, functionName: "balanceOf" as const, args: [owner] as const })),
     ...vaults.flatMap((v) => [
       { address: v.feed, abi: feedAbi, functionName: "latestRoundData" as const },
       { address: v.feed, abi: feedAbi, functionName: "decimals" as const },
     ]),
   ];
-  const res = await client.multicall({ contracts, allowFailure: true, multicallAddress: MULTICALL3, batchSize: 1 << 20 });
-
-  const blockRes = res[0];
-  if (blockRes.status !== "success") throw new Error(`Multicall3 getBlockNumber failed: ${blockRes.error.message.split("\n")[0]}`, { cause: blockRes.error });
-  const block = blockRes.result as bigint;
+  const res = await client.multicall({ contracts, allowFailure: true, multicallAddress: MULTICALL3, batchSize: 1 << 20, blockNumber: block });
 
   const rows: ScanRow[] = [];
   vaults.forEach((v, i) => {
-    const bal = res[1 + i];
+    const bal = res[i];
     if (bal.status !== "success") throw new Error(`balanceOf failed for ${v.symbol}`);
     const balanceRaw = bal.result as bigint;
     if (balanceRaw <= 0n) return;
 
-    const round = res[1 + vaults.length + 2 * i];
-    const dec = res[1 + vaults.length + 2 * i + 1];
+    const round = res[vaults.length + 2 * i];
+    const dec = res[vaults.length + 2 * i + 1];
     let priceUsd: number | null = null;
     let priceUpdatedAt: number | null = null;
     if (round.status === "success" && dec.status === "success") {
