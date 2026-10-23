@@ -47,7 +47,7 @@ Open Exit in kind: "redeemInKind pays your share of both tokens with no oracle g
 ## 2:45 to 3:00 Research, `/research`
 
 Screen: three notes, newest first.
-Say: "Weekends pay $13.64 in fees for every $1 lost to fast traders, NYSE hours $1.16, and the weekend ratio leads in 22 of 23 pool-weeks. The replay refreshes and each vault opens or closes on its new halves. Uptick shows which of your Stock Tokens earn."
+Say: "58% of the swaps and half the fees in these pools happen while the NYSE is shut. Weekends pay $2.76 in fees for every $1 lost to fast traders, NYSE hours $0.98. The replay refreshes and each vault opens or closes on its new halves. Uptick shows which of your Stock Tokens earn."
 
 <!--
 Sources, read 2026-10-21.

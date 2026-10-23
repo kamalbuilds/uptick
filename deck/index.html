@@ -312,7 +312,7 @@ Divider. The slides after this one hold the evidence behind each main slide and 
   <h2 class="v" style="font-size:158px;line-height:1.0;letter-spacing:-.034em;margin-top:40px">Appendix</h2>
   <p class="p" style="font-size:38px;line-height:1.3;color:var(--soft);margin-top:36px;max-width:1300px">The evidence behind each slide, and the two Open House canvases.</p>
   <div class="led" style="margin-top:56px;max-width:1500px">
-    <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Price ranges and sessions</div><div class="p" style="color:var(--text)">One price range for every token loses. Weekends pay 13.64 per $1 lost, NYSE hours 1.16.</div></div>
+    <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Price ranges and sessions</div><div class="p" style="color:var(--text)">One price range for every token loses. In the 30-day replay, weekends pay $2.76 per $1 lost, NYSE hours $0.98.</div></div>
     <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Gate table</div><div class="p" style="color:var(--text)">All 17 tokens, price range, weaker half and door.</div></div>
     <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Code, venues, security, agents</div><div class="p" style="color:var(--text)">Four codebases compared, the venue census, four review rounds, the MCP responses.</div></div>
     <div style="display:grid;grid-template-columns:420px 1fr;align-items:baseline"><div class="t">Open House canvases</div><div class="p" style="color:var(--text)">Go-to-market and product, filled in for Uptick.</div></div>
@@ -342,7 +342,7 @@ keeper/data/band-grid/grid-summary.json, one run of the band grid over 150, 250,
 <!-- notes:
 Session table: README.md "The insight" and spikes/stock-vaults/FINDINGS.md. Fee earned per $1 lost to informed traders (1 hour markout), static band, NVDA, SPCX and TSLA pools, 5.1M swaps, 2026-08-24 to 2026-10-17. Range ends are per-pool: NYSE 1.03 to 1.35, weeknights 1.30 to 3.90, weekends 3.94 to 33.27. Pooled: weekends 13.64, weeknights 2.74, NYSE 1.16; the weekend ratio beats NYSE in 22 of 23 pool-weeks. The engine drops its own ideas: spikes/stock-vaults/FINDINGS.md, the hours-aware strategy met its bar on 0 of 3 tokens and random session labels beat the real schedule in 64 of 64 cells. spikes/offchain-signals/FINDINGS.md, 12 signals (Hyperliquid perp, CoinGlass open interest and funding, price gaps) on NVDA and SPCX, none clears the bar of 40% of loss in the top 20% of hours against the shuffled control.
 -->
-  <h2 class="v" style="font-size:72px;max-width:1560px">A weekend pays $13.64 in fees for every $1 lost to fast traders. NYSE hours pay $1.16.</h2>
+  <h2 class="v" style="font-size:72px;max-width:1560px">In a fixed range on NVDA, SPCX and TSLA over 54 days, a weekend pays $13.64 per $1 lost to fast traders. NYSE hours pay $1.16.</h2>
   <div style="position:relative;margin-top:64px;height:372px">
     <div style="position:absolute;left:0;top:0;width:300px"><div class="t">NYSE hours</div><div class="p" style="font-size:23px">$1.03 to $1.35</div></div>
     <div style="position:absolute;left:0;top:140px;width:300px"><div class="t">Weeknights</div><div class="p" style="font-size:23px">$1.30 to $3.90</div></div>
@@ -562,7 +562,7 @@ Open House product canvas, filled in for Uptick. Person: @WazzCrypto, 62,039 fol
 
     <div class="cb"><div class="cl">What they do today</div><div class="cx">Hold NVDA idle, or LP by hand: pick the pool, the fee tier and the price range, then read a fee APR with no loss column.</div></div>
     <div class="cb"><div class="cl">The wedge</div><div class="cx"><b>Kept APR</b>, measured per token on 3,059,881 replayed swaps. A vault opens only where it holds: 3 open, 9 reduced, 5 closed.</div></div>
-    <div class="cb"><div class="cl">Why now</div><div class="cx">195 Stock Tokens listed, NVDA at 189,012 holders, 78% of flow outside NYSE hours. Kraken and Kamino launched xStocks yield vaults on Solana.</div></div>
+    <div class="cb"><div class="cl">Why now</div><div class="cx">195 Stock Tokens listed, NVDA at 189,012 holders, 58% of swaps and 51% of LP fees outside NYSE hours (30-day replay). Kraken and Kamino launched xStocks yield vaults on Solana.</div></div>
     <div class="cb"><div class="cl">Alternatives and gaps</div><div class="cx">HedgeHood: weekly covered calls on NVDA. TickerSpring, AutoRange: USDG in. Morpho: lenders earn, holders do not. None shows kept APR.</div></div>
 
     <div class="cb"><div class="cl">Why onchain, why Arbitrum</div><div class="cx">Robinhood Chain is an Arbitrum Orbit chain. The Stock Token, its Chainlink feed and the USDG pool share one chain, so valuation and exit need no bridge. Agents read it over MCP.</div></div>
