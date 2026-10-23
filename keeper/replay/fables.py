@@ -45,7 +45,7 @@ def replay_fables_pool(u, fp, band_bps, static_pips=None):
     t0, t1 = start.timestamp(), end.timestamp(); tm = t0 + (t1 - t0) / 2
     ref = Ref(sym)
     checkpoints, _ = rp.recentre_slots(ref, t0, t1)
-    plan = rp.FeasibleStatic(ref, band_bps / 10000.0, checkpoints)
+    plan = rp.FeasibleStatic(ref, band_bps / 10000.0, checkpoints, fp["tickSpacing"], not fp["usdgIsCurrency0"])
     pl, n = rp.v4_pool(f"{sym}-fables", fp["poolId"], fp["usdgIsCurrency0"], rp.DYNAMIC_FEE, fp["tickSpacing"], fp["hook"], t0 - 7200, t1 + 7200)
     m = (pl.t >= t0) & (pl.t < t1)
     if static_pips is not None: set_fee(pl, static_pips / 1e6)
@@ -76,7 +76,7 @@ def replay_fables_pool(u, fp, band_bps, static_pips=None):
 
 def chosen_row(u, band_bps, allow, depths):
     """The pool this token deploys on, re-run under replay.py's code: its venue's chosen pool, at the token's cap."""
-    t0, tm, t1, ref, rows, slots, plan, cap, spacing = rp.replay_token(u, band_bps, allow, depths)
+    t0, tm, t1, ref, rows, slots, cap = rp.replay_token(u, band_bps, allow, depths)
     v3 = [r for r in rows if r["kind"] == "v3" and r["volume_usd"] >= rp.MIN_CHOICE_VOLUME_USD]
     v4 = [r for r in rows if r["kind"] == "v4" and r["vault_capable"]]
     c3 = max(v3, key=lambda r: r["calibration"]["edge_apr_pct"]) if v3 else None
