@@ -389,3 +389,14 @@ test("a position past its limit, or within 3% of it, cannot take shares out firs
   // the same near-limit position can still be repaid from the wallet
   assert.equal(planSafer(base({ borrowShares: 12_000n * 10n ** 12n, usdgBalance: 10n ** 12n })).status, "ready");
 });
+
+test("accrueInterest reproduces what the live Morpho singleton stored ten days on", () => {
+  // Origin: scripts/health-guard-fork-check.ts (PRINT_VECTOR=1) against an Anvil fork of Robinhood Chain 4663, head block 96028164. The USDG/AMZN market
+  // 0xff762c8a...50ca was read with market(id), the IRM's borrowRateView(params, market) was called with the block time set to `at`, and Morpho.accrueInterest was
+  // then mined at `at`; `after` is market(id) read back.
+  const before: MarketState = { totalSupplyAssets: 3_200_000_000n, totalSupplyShares: 3_200_000_000_000_000n, totalBorrowAssets: 2_293_611_499n, totalBorrowShares: 2_293_611_499_000_000n, lastUpdate: 1_792_767_692n, fee: 0n };
+  const after: MarketState = { totalSupplyAssets: 3_200_053_243n, totalSupplyShares: 3_200_000_000_000_000n, totalBorrowAssets: 2_293_664_742n, totalBorrowShares: 2_293_611_499_000_000n, lastUpdate: 1_793_631_692n, fee: 0n };
+  assert.deepEqual(accrueInterest(before, 26_867_536n, 1_793_631_692n), after);
+  assert.notDeepEqual(accrueInterest(before, 26_867_536n + 1_000n, 1_793_631_692n), after, "the vector is sensitive to the rate");
+  assert.notDeepEqual(accrueInterest(before, 26_867_536n, 1_793_631_693n), after, "and to the time");
+});
