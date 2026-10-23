@@ -5,7 +5,7 @@ Window: last 30 days to 2026-10-17 00:00 UTC. First 15 days calibrate, last 15 d
 Choice: among v3 pools (what StockVault holds) the pool with the best calibration-half edge; its test-half result is the out-of-sample figure (`chosen`).
 `chosen_v4` is the same rule over the v4 pools StockVaultV4 can hold: a static fee, and either no hook or a hook on data/v4-hook-allowlist.json whose address permission bits
 include none of the v4 flags that move the vault's funds. A v4 pool replays at the vault size its own depth carries (data/v4-pools.json, scripts/build-v4-pools.ts).
-`venue` is the backend a token deploys on: v3 while its chosen v3 pool keeps the floor, else v4 when chosen_v4 does.
+`venue` is the backend a token deploys on: the one whose chosen pool keeps more in its weaker half, among those at or above the floor (v3 on a tie; v3 when neither clears it). See venue_for.
 Run: python3 replay/pull.py SYMBOL... && bun scripts/build-v4-pools.ts && python3 replay/replay.py SYMBOL...   (needs numpy)
 Output: data/replay.json (REPLAY_OUT overrides, e.g. for threshold calibration)
 """

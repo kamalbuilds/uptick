@@ -45,7 +45,9 @@ describe("doors: state, per_tx_cap_usd and kept_worst_half_pct on /vaults", () =
     expect(readme.size).toBe(17);
     expect(vaults.length).toBe(17);
     const fromReadme = [...readme.values()].map((state) => ({ state }));
-    const doors = JSON.parse(readFileSync(new URL("../../docs/facts.json", import.meta.url), "utf8")).doors as number[];
+    const f = JSON.parse(readFileSync(new URL("../../docs/facts.json", import.meta.url), "utf8")).doors as { vaults: number; open: number; reduced: number; closed: number };
+    const doors = [f.open, f.reduced, f.closed];
+    expect(f.vaults).toBe(17);
     expect(doors.reduce((a, b) => a + b, 0)).toBe(17);
     expect([count(vaults, "open"), count(vaults, "reduced"), count(vaults, "closed")]).toEqual(doors);
     expect([count(fromReadme, "open"), count(fromReadme, "reduced"), count(fromReadme, "closed")]).toEqual(doors);

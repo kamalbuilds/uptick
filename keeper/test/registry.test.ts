@@ -22,12 +22,15 @@ describe("eligible tickers", () => {
   });
   test("each vault was replayed at its own size, the universe's cap_usd, and the ticker carries it", () => {
     expect(tickers.length).toBeGreaterThanOrEqual(10);
+    expect(tickers.some((t) => t.venue === "v4")).toBe(true); // the v4 branch is exercised
     for (const t of tickers) {
-      const row = universe.tokens.find((x: any) => x.symbol === t.symbol);
-      expect(t.capUsd).toBe(row.cap_usd);
-      expect(replay.tokens[t.symbol].capital_usd).toBe(row.cap_usd);
-      expect(buildEvidence(replay.tokens[t.symbol], replay)!.capital_usd).toBe(row.cap_usd);
+      const row = universe.tokens.find((x: any) => x.symbol === t.symbol), rt = replay.tokens[t.symbol];
+      const own = t.venue === "v4" ? rt.chosen_v4.cap_usd : row.cap_usd; // a v4 vault is sized to its own pool, which can be thinner than the token's v3 pool
+      expect(t.capUsd).toBe(own);
+      expect(rt.capital_usd).toBe(row.cap_usd);
+      expect(buildEvidence(rt, replay)!.capital_usd).toBe(own);
     }
+    expect(tickers.filter((t) => t.venue === "v4" && t.capUsd < universe.tokens.find((x: any) => x.symbol === t.symbol).cap_usd).length).toBeGreaterThan(0); // USO: its v4 pool carries less than the universe cap
     expect(tickers.some((t) => t.capUsd < 100_000)).toBe(true); // thin-pool vaults are replayed small
   });
   test("a different replay choice flows through to the ticker", () => {

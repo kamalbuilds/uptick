@@ -71,7 +71,7 @@ Where the numbers come from: the volume floor admits a token to a vault and the 
 
 Of 196 tokens: 35 have a feed, 95 have a USDG v3 pool, 17 are eligible (block 93099228).
 
-v4 pools are replayed for the eligible tokens (below). A token's venue is v3 while its chosen v3 pool keeps the deposit gate open or reduced; when that pool is closed and the best static-fee v4 pool (no hook, or an allow-listed hook with only initialize or donate callbacks) clears the same floor, the token deploys as a `StockVaultV4` on that pool, sized to the v4 pool's own depth. `replay.json` carries `chosen_v4` and `venue`; `node scripts/deploy-list.mjs --v4-report` prints both verdicts for every token. The keeper pokes each v4 vault's observation ring every 45 s alongside its rebalances.
+v4 pools are replayed for the eligible tokens (below). A token's venue is the backend whose chosen pool keeps more in its weaker half, among those at or above the gate floor (-20% a year): the best static-fee v4 pool (no hook, or an allow-listed hook with only initialize or donate callbacks) against the best v3 pool. A v3 pool that merely clears the floor does not beat a v4 pool that keeps more (PLTR: v3 -18.9, v4 +7.9, so v4); a tie stays on v3, and when neither clears the floor the vault stays closed on v3. A token on v4 deploys as a `StockVaultV4` on that pool, sized to the v4 pool's own depth. `replay/replay.py` `venue_for` is the one definition, `keeper/test/fixtures/venue-cases.json` pins it and its TypeScript test copy to the same table. `replay.json` carries `chosen_v4` and `venue`; `node scripts/deploy-list.mjs --v4-report` prints both verdicts for every token. The keeper pokes each v4 vault's observation ring every 45 s alongside its rebalances.
 
 ## Pool choice (replay)
 

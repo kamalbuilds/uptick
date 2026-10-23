@@ -79,7 +79,7 @@ describe("the vault universe the Worker serves carries PLTR on Uniswap v4", () =
       expect(r.fee_tier).toBe(u.feeTier);
       expect(r.fee_tier_pips).toBe(u.feeTierPips);
     }
-    expect(rows.filter((r) => r.venue === "v4").map((r) => r.id)).toEqual(["pltr"]);
+    expect(rows.filter((r) => r.venue === "v4").map((r) => r.id).sort()).toEqual(["pltr", "spy", "uso"]);
     const ev = await callTool("get_vault_evidence", { id: "pltr" }, launching);
     expect(ev.structuredContent).toMatchObject({ venue: "v4", fee_tier: "1%", pool_id: pltr.pool, pool_manager: universeData.poolManager, open: true, deposit_cap_usd: 24207 });
   });

@@ -22,8 +22,9 @@
 // is a v4 entry for StockVaultV4: {symbol, token, venue, poolId, feeTier (pool key fee, pips), tickSpacing, hooks, feed, rangeBps, capUsd, depositCapTokens, deployable}.
 // Its pool is the replay's chosen_v4 and its capUsd is min(universe cap_usd, the largest vault holding at most 20% of that pool's in-range depth in
 // keeper/data/v4-pools.json), which is the cap the replay ran the pool at. deployable comes from the replay's weaker-half edge against KEEP_FLOOR_APR,
-// not from web/lib/vault-universe.json, which gates the v3 pool only.
-// --v4-report prints, for every replayed token, the v3 and v4 verdicts side by side instead of the list.
+// the verdict web/lib/vault-universe.json carries for a v4 vault (the gate reads the venue's own pool).
+// --v4-report prints, for every replayed token, the v3 and v4 verdicts side by side instead of the list; ON V4 is the replay's venue (replay/replay.py venue_for:
+// the backend whose chosen pool keeps more in its weaker half among those at or above KEEP_FLOOR_APR, v3 on a tie). This script never re-derives the venue.
 // Usage: node scripts/deploy-list.mjs [--open-only] [--v4-report] [out.json]   (stdout when no path)
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -57,13 +58,13 @@ const v3Worst = (rt) => {
 
 if (v4Report) {
   const short = (id) => `${id.slice(0, 10)}`;
-  const cols = ["symbol", "v3 worst-half", "v3 gate", "v4 pool (id, fee, hook)", "v4 cal", "v4 test", "v4 worst", "v4 gate", "v4 depth", "cap", "NEWLY QUALIFIES"];
+  const cols = ["symbol", "v3 worst-half", "v3 gate", "v4 pool (id, fee, hook)", "v4 cal", "v4 test", "v4 worst", "v4 gate", "v4 depth", "cap", "ON V4"];
   const rows = Object.entries(replay.tokens).map(([symbol, rt]) => {
     const w3 = v3Worst(rt), g3 = w3 === null ? "none" : gateOf(w3), c = rt.chosen_v4;
     if (!c) return [symbol, w3 === null ? "-" : w3.toFixed(1), g3, "none", "-", "-", "-", "-", "-", "-", ""];
     const row = rt.pools.find((p) => p.id === c.id), g4 = gateOf(c.worst_half);
     return [symbol, w3 === null ? "-" : w3.toFixed(1), g3, `${short(c.id)} ${c.fee_tier} ${c.hooks ? short(c.hooks) : "no hook"}`, row.calibration.edge_apr_pct.toFixed(1), row.test.edge_apr_pct.toFixed(1),
-      c.worst_half.toFixed(1), g4, Math.round(v4Depths[c.id]?.depth_usd_5pct ?? NaN).toString(), String(c.cap_usd), g3 !== "open" && g3 !== "reduced" && g4 !== "closed" ? "YES" : ""];
+      c.worst_half.toFixed(1), g4, Math.round(v4Depths[c.id]?.depth_usd_5pct ?? NaN).toString(), String(c.cap_usd), rt.venue === "v4" ? "YES" : ""];
   });
   const w = cols.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length)));
   const line = (r) => r.map((x, i) => x.padEnd(w[i])).join(" | ").trimEnd();

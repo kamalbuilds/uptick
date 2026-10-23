@@ -3,8 +3,6 @@ import { KEEP_FLOOR_APR, MIN_TABLE_VOLUME_USD, buildEvidence, depositGate, feeLa
 import { readReplay } from "../src/registry.ts";
 
 const replay = readReplay();
-/** PLTR from the same replay run with venue_for forced to v4 (keeper/test/fixtures/replay-pltr-v4-venue.json): the path a token takes once its v3 pool drops below the floor and its v4 pool does not. */
-const v4Replay = JSON.parse(await Bun.file(new URL("./fixtures/replay-pltr-v4-venue.json", import.meta.url)).text());
 const syms: string[] = Object.keys(replay.tokens);
 
 describe("evidence built from data/replay.json", () => {
@@ -79,7 +77,7 @@ describe("evidence built from data/replay.json", () => {
     expect(ev.gate.worst_half_apr).toBe(Math.min(ev.keep.kept_first_half, ev.keep.kept_second_half));
   });
 
-  test("every token's gate state matches its weaker half, AAPL and GOOGL are open, AMD, AMZN, INTC, META, MU, NVDA, PLTR, QQQ, SPY and USO are reduced", () => {
+  test("every token's gate state matches its weaker half, AAPL, GOOGL and PLTR are open, AMD, AMZN, INTC, META, MU, NVDA, QQQ, SPY and USO are reduced", () => {
     for (const s of syms) {
       const ev: any = buildEvidence(replay.tokens[s], replay);
       const worst = ev.gate.worst_half_apr;
@@ -87,9 +85,9 @@ describe("evidence built from data/replay.json", () => {
       expect(ev.gate.reason.startsWith(ev.gate.state === "open" ? "Open" : ev.gate.state === "reduced" ? "Reduced" : "Closed")).toBe(true);
     }
     const reduced = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "reduced").sort();
-    expect(reduced).toEqual(["AMD", "AMZN", "INTC", "META", "MU", "NVDA", "PLTR", "QQQ", "SPY", "USO"]);
+    expect(reduced).toEqual(["AMD", "AMZN", "INTC", "META", "MU", "NVDA", "QQQ", "SPY", "USO"]);
     const opened = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "open").sort();
-    expect(opened).toEqual(["AAPL", "GOOGL"]);
+    expect(opened).toEqual(["AAPL", "GOOGL", "PLTR"]);
     const closed = syms.filter((s) => (buildEvidence(replay.tokens[s], replay) as any).gate.state === "closed").sort();
     expect(closed).toEqual(["CRCL", "GME", "MSTR", "SPCX", "TSLA"]);
   });
@@ -147,16 +145,14 @@ describe("evidence built from data/replay.json", () => {
 });
 
 describe("a token that deploys on v4 is gated on its v4 pool", () => {
-  const v4syms = Object.keys(v4Replay.tokens);
-  test("the shipped replay keeps a v4 pool and a session split on every v4-venue token it has, and the forced-v4 replay carries one", () => {
-    expect(v4syms).toEqual(["PLTR"]);
-    for (const s of syms.filter((x) => replay.tokens[x].venue === "v4")) expect(replay.tokens[s].sessions_v4).toBeDefined();
-    expect(v4Replay.tokens.PLTR.venue).toBe("v4");
-    expect(v4Replay.tokens.PLTR.sessions_v4).toBeDefined();
+  const v4syms = syms.filter((x) => replay.tokens[x].venue === "v4");
+  test("the shipped replay keeps a v4 pool and a session split on every v4-venue token: PLTR, SPY and USO", () => {
+    expect(v4syms).toEqual(["PLTR", "SPY", "USO"]);
+    for (const s of v4syms) { expect(replay.tokens[s].chosen_v4).toBeDefined(); expect(replay.tokens[s].sessions_v4).toBeDefined(); }
   });
   for (const sym of v4syms) {
     test(`${sym}: the gate, the chosen pool and the kept figures come from chosen_v4, not from the v3 pool`, () => {
-      const tok = v4Replay.tokens[sym], ev: any = buildEvidence(tok, v4Replay);
+      const tok = replay.tokens[sym], ev: any = buildEvidence(tok, replay);
       const row = tok.pools.find((p: any) => p.id === tok.chosen_v4.id);
       expect(ev.chosen_pool).toBe(tok.chosen_v4.id);
       expect(ev.chosen_kind).toBe("v4");

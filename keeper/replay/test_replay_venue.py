@@ -1,4 +1,5 @@
 """Plain-assert test: which v4 pools a vault may target, and which backend a token deploys on. Run: /opt/homebrew/bin/python3.14 replay/test_replay_venue.py"""
+import json
 import os
 import sys
 
@@ -42,6 +43,15 @@ def test_venue_for():
     assert rp.venue_for(f - 0.1, f - 0.1) == "v3" and rp.venue_for(f - 0.1, None) == "v3" and rp.venue_for(None, None) == "v3"
 
 
+def test_venue_cases_shared_with_keeper():
+    """keeper/test/deploy-list.test.ts runs the same table through its TS copy of the rule: neither side can drift alone."""
+    t = json.load(open(os.path.join(HERE, "..", "test", "fixtures", "venue-cases.json")))
+    assert t["floor_apr"] == rp.KEEP_FLOOR_APR and len(t["cases"]) >= 10
+    for c in t["cases"]:
+        assert rp.venue_for(c["v3"], c["v4"]) == c["venue"], c
+    assert {c["venue"] for c in t["cases"]} == {"v3", "v4"}
+
+
 def test_vault_cap_usd():
     assert rp.vault_cap_usd(0, 100_000) == 0 and rp.vault_cap_usd(float("nan"), 100_000) == 0
     assert rp.vault_cap_usd(96_476, 100_000) == 24_119  # floor(96476 * 0.2 / 0.8), keeper/src/universe.ts vaultCapUsd
@@ -53,5 +63,5 @@ def test_allowlist_file():
 
 
 if __name__ == "__main__":
-    test_v4_key_ok(); test_venue_for(); test_vault_cap_usd(); test_allowlist_file()
-    print("4 tests passed")
+    test_v4_key_ok(); test_venue_for(); test_venue_cases_shared_with_keeper(); test_vault_cap_usd(); test_allowlist_file()
+    print("5 tests passed")

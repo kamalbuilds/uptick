@@ -9,7 +9,7 @@ const PLTR_POOL = "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac
 const OTHER_POOL = "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1";
 const VAULT = "0x74156A1F9736307b7AD34e3691f3A5B54A0B3Eb8" as const;
 
-/** The real replay with the venues overridden: a token flipped to v4 takes its own chosen_v4 row, so both directions are exercised on real rows. The shipped replay has every token on v3. */
+/** The real replay with the venues overridden: a token flipped takes its own chosen_v4 or chosen row, so both directions are exercised on real rows. The shipped replay has PLTR, SPY and USO on v4 and every other token on v3. */
 function replayWith(venues: Record<string, "v3" | "v4">) {
   const r = structuredClone(readReplay());
   for (const [sym, v] of Object.entries(venues)) r.tokens[sym].venue = v;
@@ -18,22 +18,20 @@ function replayWith(venues: Record<string, "v3" | "v4">) {
 const by = (ts: Ticker[], s: string) => ts.find((t) => t.symbol === s)!;
 
 describe("eligibleTickers venue", () => {
-  const real = eligibleTickers(universe, replayWith({ PLTR: "v4" }), params);
-  test("the shipped replay yields every token as a v3 ticker on its chosen pool", () => {
-    const shipped = eligibleTickers(universe, readReplay(), params);
-    expect(shipped.length).toBeGreaterThanOrEqual(10);
-    for (const t of shipped) { expect(t.venue).toBe("v3"); expect(t.pool).toMatch(/^0x[0-9a-fA-F]{40}$/); expect(t.poolId).toBeUndefined(); }
+  const real = eligibleTickers(universe, readReplay(), params);
+  test("the shipped replay yields PLTR, SPY and USO as v4 tickers on their pool ids and every other token as a v3 ticker on its chosen pool", () => {
+    expect(real.length).toBeGreaterThanOrEqual(10);
+    expect(real.filter((t) => t.venue === "v4").map((t) => t.symbol).sort()).toEqual(["PLTR", "SPY", "USO"]);
+    for (const t of real.filter((x) => x.venue === "v3")) { expect(t.pool).toMatch(/^0x[0-9a-fA-F]{40}$/); expect(t.poolId).toBeUndefined(); }
+    for (const t of real.filter((x) => x.venue === "v4") as TickerV4[]) { expect(t.poolId).toMatch(/^0x[0-9a-f]{64}$/); expect(t.pool).toBeUndefined(); }
   });
-  test("a replay whose PLTR venue is v4 yields PLTR as a v4 ticker on its pool id and everything else as v3", () => {
+  test("PLTR is a v4 ticker on its 1% pool id, USDG sorting below the stock", () => {
     const pltr = by(real, "PLTR") as TickerV4;
     expect(pltr.venue).toBe("v4");
     expect(pltr.poolId).toBe(PLTR_POOL);
     expect(pltr.pool).toBeUndefined();
     expect(pltr.feeTier).toBe(10000);
     expect(pltr.stockIsToken0).toBe(false); // PLTR 0x894E sorts above USDG 0x5fc5
-    const others = real.filter((t) => t.symbol !== "PLTR");
-    expect(others.length).toBeGreaterThanOrEqual(10);
-    for (const t of others) { expect(t.venue).toBe("v3"); expect(t.pool).toMatch(/^0x[0-9a-fA-F]{40}$/); expect(t.poolId).toBeUndefined(); }
   });
   test("venue decides, not the presence of chosen_v4: a v3 token that has a chosen_v4 stays v3, and a v4 token without one falls back to v3", () => {
     const r = replayWith({ PLTR: "v3" });
@@ -56,7 +54,7 @@ describe("eligibleTickers venue", () => {
 });
 
 describe("factory registry", () => {
-  const ticks = eligibleTickers(universe, replayWith({ PLTR: "v4" }), params);
+  const ticks = eligibleTickers(universe, readReplay(), params);
   const pltr = by(ticks, "PLTR") as TickerV4, nvda = by(ticks, "NVDA") as TickerV3;
   test("a VaultCreatedV4 matches a v4 ticker on (stock, poolId), case-insensitively", () => {
     const made = { stock: pltr.stock.toLowerCase(), poolId: PLTR_POOL.toUpperCase().replace("0X", "0x"), vault: VAULT, block: 7n };
