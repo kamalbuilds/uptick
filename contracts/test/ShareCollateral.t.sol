@@ -485,6 +485,35 @@ contract ShareCollateralV4Test is V4Fixture {
         return usdg * 9000 / 10_000 * 1e36 / (vault.totalSupply() + 1e6);
     }
 
+    /// @dev A closed-gate `redeemInKind` makes the PoolManager pay the whole position's fees into idle balances and the
+    /// vault records them as pending, deducting the treasury's cut from `totalAssets()` only. The fees did not become worth
+    /// more by moving into the idle balance, so the price must not rise when they do: the `totalAssets()` cap is what
+    /// carries the pending cut into the oracle, since the pending amounts are private to the vault.
+    function test_v4SweepingFeesIntoIdleDoesNotRaiseThePrice() public {
+        _deposit(bob, UNIT());
+        _volume(VOL() * 2, 3);
+        _advance(600);
+        _settle();
+        uint256 cutBp = _feeShareValue() * 1e4 / oracle.price() * 1000 / 9000;
+        assertGe(cutBp, 3, "fees accrued: the cut at stake is over 3 bp of the price");
+        uint256 before = oracle.price();
+        uint256 dust = vault.totalSupply() / 1e6;
+
+        vm.mockCall(
+            FEED(),
+            abi.encodeWithSelector(bytes4(keccak256("latestRoundData()"))),
+            abi.encode(feedRound, int256(_poolPrice()), vm.getBlockTimestamp() - 91_000, vm.getBlockTimestamp() - 91_000, feedRound)
+        );
+        assertEq(uint8(_status()), uint8(StockVaultV4.Status.FeedStale));
+        vm.prank(bob);
+        vault.redeemInKind(dust, bob, bob);
+        vm.clearMockedCalls();
+        _setFeed(_poolPrice());
+
+        assertEq(_feeShareValue(), 0, "the exit swept every uncollected fee into the idle balances");
+        assertLe(oracle.price(), before + before * 2 / 1e6, "price did not rise by the swept fees' cut");
+    }
+
     function _feedNow() internal view returns (uint256) {
         (, uint256 px,,,,) = vault.health();
         return px;
