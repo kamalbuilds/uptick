@@ -77,8 +77,8 @@ export default function ForAgentsPage() {
   "open": false,
   "deposit_cap_usd": 49212,
   "entry_fee_bps": 100,
-  "fee_apr_pct": 305.74351636968254,
-  "kept_apr_pct": -144.19014548776155,
+  "fee_apr_pct": 271.7667068310479,
+  "kept_apr_pct": -93.53472943489602,
   "venue": "v3",
   "fee_tier_pips": 10000,
   "fee_tier": "1%",
@@ -169,9 +169,9 @@ export default function ForAgentsPage() {
       "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
       "deposit_cap_usd": 49212,
       "entry_fee_bps": 100,
-      "fee_apr_pct": 305.74351636968254,
-      "kept_apr_pct": -144.19014548776155,
-      "reason": "Closed: the weaker half kept -144.2% a year, below the -20% floor."
+      "fee_apr_pct": 271.7667068310479,
+      "kept_apr_pct": -93.53472943489602,
+      "reason": "Closed: the weaker half kept -93.5% a year, below the -20% floor."
     }
   ]
 }`}
