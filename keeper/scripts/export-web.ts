@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import { writeFileSync } from "node:fs";
 import { buildEvidence, feeLabel, replayFeeApr } from "../src/evidence.ts";
 import { eligibleTickers, readReplay, readUniverse } from "../src/registry.ts";
+import { POOL_MANAGER } from "../src/v4.ts";
+import { llmsText } from "./llms-text.ts";
 
 // The published cap is the on-chain cap: a token with a liveness_share in data/params.json deploys at the largest vault that
 // holds at most that share of the pool's in-range depth (same rule as scripts/deploy-list.mjs), so the app never shows a
@@ -41,7 +43,9 @@ const vaults = eligibleTickers(universe, replay)
   .sort((a, b) => b._apr - a._apr)
   .map(({ _apr, ...v }) => v);
 const out = new URL("../../web/lib/vault-universe.json", import.meta.url);
-writeFileSync(out, JSON.stringify({ chainId: 4663, source: "keeper/data/universe.json + keeper/data/replay.json", universeBlock: universe.block, window: replay.window, vaults }, null, 2) + "\n");
+const exported = { chainId: 4663, source: "keeper/data/universe.json + keeper/data/replay.json", universeBlock: universe.block, window: replay.window, poolManager: POOL_MANAGER, vaults };
+writeFileSync(out, JSON.stringify(exported, null, 2) + "\n");
+writeFileSync(new URL("../../web/public/llms.txt", import.meta.url), llmsText(exported as any)); // the agent-facing file reads the same data, so it cannot name a stale gate, cap or venue
 console.log(`wrote ${vaults.length} vaults: ${vaults.map((v) => v.symbol).join(", ")}`);
 
 // Fee totals the pages show per pool (web/lib/summary.ts sums them over the vault list): the replay's LP income on each vault's gate pool.

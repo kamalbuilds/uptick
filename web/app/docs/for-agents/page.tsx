@@ -44,11 +44,11 @@ export default function ForAgentsPage() {
         rows={[
           [
             "GET /vaults",
-            "id, ticker, open, deposit_cap_usd, fee_apr_pct, kept_apr_pct, pool and window_days for every vault.",
+            "id, ticker, open, deposit_cap_usd, entry_fee_bps, fee_apr_pct, kept_apr_pct, venue (v3 or v4), fee_tier, pool and window_days for every vault, plus pool_id and pool_manager for a Uniswap v4 vault.",
           ],
           [
             "GET /vaults/:id",
-            "The full detail: token, pool, fee tier, feed, the per-pool replay, and the gate with its rule, reason, worst half and swap count.",
+            "The full detail: token, venue, pool, fee tier, feed, the per-pool replay, and the gate with its rule, reason, worst half and swap count.",
           ],
           [
             "GET /llms.txt",
@@ -71,13 +71,17 @@ export default function ForAgentsPage() {
       <CodeBlock
         label="Response, first entry"
         code={`{
-  "id": "mstr",
-  "ticker": "MSTR",
+  "id": "gme",
+  "ticker": "GME",
   "open": false,
-  "deposit_cap_usd": 22206,
-  "fee_apr_pct": 229.1253738312145,
-  "kept_apr_pct": -28.53260158684701,
-  "pool": "0x17578C0e0D15da44f31677263114F71aE76653EA",
+  "deposit_cap_usd": 49212,
+  "entry_fee_bps": 100,
+  "fee_apr_pct": 305.74351636968254,
+  "kept_apr_pct": -144.19014548776155,
+  "venue": "v3",
+  "fee_tier_pips": 10000,
+  "fee_tier": "1%",
+  "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
   "window_days": 30
 }`}
       />
@@ -95,7 +99,7 @@ export default function ForAgentsPage() {
         rows={[
           [
             "list_vaults",
-            "Every vault with its gate state, open flag, deposit cap, fee APR, kept APR and the gate reason.",
+            "Every vault with its gate state, open flag, venue, fee tier, deposit cap, fee APR, kept APR and the gate reason.",
           ],
           [
             "get_vault_evidence",
@@ -103,11 +107,11 @@ export default function ForAgentsPage() {
           ],
           [
             "prepare_deposit",
-            "Unsigned transactions for a deposit. Refuses closed vaults with the gate reason, and refuses an amount above the vault's deposit cap or, for a reduced vault, its per-transaction cap, whichever is lower. Asset stock approves the Stock Token then calls ERC-4626 deposit; asset usdg approves USDG then zaps through the Uptick router.",
+            "Unsigned transactions for a deposit. Refuses closed vaults with the gate reason, and refuses an amount above the vault's deposit cap or, for a reduced vault, its per-transaction cap, whichever is lower. Asset stock approves the Stock Token then calls ERC-4626 deposit; asset usdg approves USDG then zaps through the Uptick router, depositUsdg for a Uniswap v3 vault and depositUsdgV4 for a Uniswap v4 vault. A vault whose address is still launching answers with its gate and venue and builds no transaction.",
           ],
           [
             "prepare_withdraw",
-            "The unsigned ERC-4626 redeem for a vault. Shares are 24 decimals, 18 plus the vault offset of 6.",
+            "The unsigned exit for a vault on either venue: ERC-4626 redeem, or redeemInKind with mode in_kind. Shares are 24 decimals, 18 plus the vault offset of 6.",
           ],
         ]}
         caption="The vault contract also enforces its deposit cap on-chain against its total, so the cap check in prepare_deposit is an early refusal, not the only one."
@@ -134,14 +138,19 @@ export default function ForAgentsPage() {
         code={`{
   "vaults": [
     {
-      "id": "mstr",
-      "ticker": "MSTR",
+      "id": "gme",
+      "ticker": "GME",
       "gate_state": "closed",
       "open": false,
-      "deposit_cap_usd": 22206,
-      "fee_apr_pct": 229.1253738312145,
-      "kept_apr_pct": -28.53260158684701,
-      "reason": "Closed: the weaker half kept -28.5% a year, below the -20% floor."
+      "venue": "v3",
+      "fee_tier_pips": 10000,
+      "fee_tier": "1%",
+      "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
+      "deposit_cap_usd": 49212,
+      "entry_fee_bps": 100,
+      "fee_apr_pct": 305.74351636968254,
+      "kept_apr_pct": -144.19014548776155,
+      "reason": "Closed: the weaker half kept -144.2% a year, below the -20% floor."
     }
   ]
 }`}
