@@ -222,6 +222,7 @@ function listVaults(): McpToolResult {
       id: vault.id,
       ticker: vault.symbol,
       gate_state: gate.state,
+      ...doorFields(vault),
       open: vault.open,
       ...venueFields(vault),
       deposit_cap_usd: vault.depositCapUsd,
@@ -306,6 +307,17 @@ export function depositLimitUsd(vault: Vault, gate: Gate): { usd: number; why: s
     return { usd: perTx, why: `the reduced gate caps a deposit at $${perTx.toLocaleString("en-US")} per transaction` };
   }
   return { usd: vault.depositCapUsd, why: `the ${vault.id} vault is sized to its pool at $${vault.depositCapUsd.toLocaleString("en-US")}` };
+}
+
+/** The door a vault shows: state (open | reduced | closed), the most one transaction may deposit (0 when closed) and what the weaker replay half kept, in percent a year.
+ *  `open: true` elsewhere in the API means the vault accepts deposits, which is state open or reduced. */
+export function doorFields(vault: Vault): { state: Gate["state"]; per_tx_cap_usd: number; kept_worst_half_pct: number } {
+  const gate = gateOf(vault);
+  return {
+    state: gate.state,
+    per_tx_cap_usd: gate.state === "closed" ? 0 : depositLimitUsd(vault, gate).usd,
+    kept_worst_half_pct: gate.worst_half_apr,
+  };
 }
 
 function parseAmount(raw: unknown, decimals: number, label: string): bigint | string {

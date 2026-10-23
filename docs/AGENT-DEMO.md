@@ -52,6 +52,8 @@ curl -sS "$MCP" "${H[@]}" -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","par
 }
 ```
 
+Every vault in `list_vaults` and in `GET /vaults` carries `state` (open, reduced or closed), `per_tx_cap_usd` (the most one transaction may deposit, 0 for a closed vault) and `kept_worst_half_pct` (what liquidity providers kept in the weaker replay half, percent a year), beside the earlier fields. `open: true` means the vault accepts deposits, so it is true for state open and for state reduced.
+
 ## 3. get_vault_evidence for pltr
 
 ```bash
