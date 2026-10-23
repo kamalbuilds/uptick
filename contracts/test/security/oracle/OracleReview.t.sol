@@ -62,7 +62,7 @@ contract FakeVault is ERC20 {
     }
 
     function health() external view returns (uint8, uint256, uint256, uint160, uint160, uint160) {
-        return (0, reportedPrice, block.timestamp, 0, 0, 0);
+        return (0, reportedPrice, block.timestamp, 0, uint160(1 << 96), 0); // a TWAP of 1.0 so the pending-cut rebuild divides
     }
 
     function positionInfo() external pure returns (PositionInfo memory p) {}
@@ -382,5 +382,29 @@ contract OracleReviewV4 is ShareCollateralV4Test {
         // With the cap reading spot, the cap still sits above the uncapped figure (concavity, USDG at px/min(px,twap)
         // >= 1), so a push can only add the fees it pays, never lower the price.
         assertGe(p1, p0, "a spot push through the TwapUnavailable fallback does not lower the price");
+    }
+}
+
+/// @dev The same pending-cut scenarios on a v4 pool whose Stock Token is currency0 (TSLA, 0.3%, spacing 60): the
+/// oracle's `_sqrtToUsd` has two orientations and PLTR (Stock Token currency1) exercises only one.
+contract OracleReviewV4Token0 is OracleReviewV4 {
+    function STOCK() internal pure override returns (address) {
+        return 0x322F0929c4625eD5bAd873c95208D54E1c003b2d;
+    }
+
+    function FEED() internal pure override returns (address) {
+        return 0x4A1166a659A55625345e9515b32adECea5547C38;
+    }
+
+    function FEE() internal pure override returns (uint24) {
+        return 3000;
+    }
+
+    function SPACING() internal pure override returns (int24) {
+        return 60;
+    }
+
+    function test_token0IsTheStockCurrency() public view {
+        assertTrue(oracle.stockIsToken0(), "the other orientation of _sqrtToUsd");
     }
 }

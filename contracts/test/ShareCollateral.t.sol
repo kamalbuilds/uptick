@@ -408,6 +408,8 @@ contract ShareCollateralTest is Base {
         assertTrue(factory.isVault(address(oracle.vault())));
         assertEq(address(oracle), oracleFactory.oracleAddress(address(vault)), "deterministic: the address is known before deploy");
         assertEq(mp.oracle, address(oracle), "the market under test uses it");
+        assertEq(mp.collateralToken, address(oracle.vault()), "the market's collateral is the share the oracle prices");
+        assertEq(mp.loanToken, address(oracle.usdg()), "and its loan token is the oracle's USDG");
     }
 
     /// @dev Must-fail cases for the same check: nothing but the factory's own deploy is in the registry.
@@ -468,19 +470,19 @@ contract ShareCollateralV4Test is V4Fixture {
     UptickShareOracle oracle;
     address factoryOwner = makeAddr("factoryOwner");
 
-    function STOCK() internal pure override returns (address) {
+    function STOCK() internal pure virtual override returns (address) {
         return 0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A;
     }
 
-    function FEED() internal pure override returns (address) {
+    function FEED() internal pure virtual override returns (address) {
         return 0x820ABedFF239034956B7A9d2F0a331f9F075eB4c;
     }
 
-    function FEE() internal pure override returns (uint24) {
+    function FEE() internal pure virtual override returns (uint24) {
         return 10_000;
     }
 
-    function SPACING() internal pure override returns (int24) {
+    function SPACING() internal pure virtual override returns (int24) {
         return 200;
     }
 
