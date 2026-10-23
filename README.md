@@ -49,26 +49,26 @@ Kept APR is fees earned less losses to informed traders (1 hour markout) and reb
 <!-- gates:start -->
 | Vault | Band | Vault size cap | First half kept | Held-out half kept (conservative to upper) | Status | Reason |
 |---|---|---|---|---|---|---|
-| PLTR | ±3.5% | $24,207 | +181.4% | +12.8% to +33.6% | Open | Both halves at or above break-even |
 | AAPL | ±7.5% | $73,983 | +2.7% | +3.9% to +6.6% | Open | Both halves at or above break-even |
 | GOOGL | ±20% | $100,000 | +0.2% | +2.2% to +2.5% | Open | Both halves at or above break-even |
 | QQQ | ±10% | $66,787 | +0.8% | -1.3% to -1.0% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| INTC | ±20% | $19,116 | -2.0% | +3.4% to +7.2% | Reduced | Weaker half between -20% and break-even; up to $19,116 a deposit |
-| AMZN | ±7.5% | $68,501 | +2.4% | -2.9% to -1.0% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| SPY | ±2.5% | $100,000 | +4.1% | -4.0% to -0.4% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| USO | ±20% | $100,000 | -3.9% | -4.5% to -4.3% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| AMD | ±20% | $18,436 | -1.3% | -4.7% to -3.1% | Reduced | Weaker half between -20% and break-even; up to $18,436 a deposit |
-| NVDA | ±1.5% | $100,000 | +29.4% | -6.6% to +5.4% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| META | ±15% | $17,025 | +4.8% | -10.8% to -10.0% | Reduced | Weaker half between -20% and break-even; up to $17,025 a deposit |
-| MU | ±15% | $86,710 | +7.3% | -14.5% to -10.2% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
-| TSLA | ±7.5% | $83,206 | +12.5% | -27.4% to -20.2% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
-| CRCL | ±20% | $100,000 | -0.1% | -28.4% to -26.4% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
-| MSTR | ±3.5% | $22,206 | +18.5% | -37.1% to -4.9% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
-| GME | ±2.5% | $49,212 | +101.9% | -144.2% to -74.1% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
-| SPCX | ±1.5% | $100,000 | +80.6% | -199.5% to -139.4% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
+| AMZN | ±7.5% | $68,501 | +2.4% | -1.9% to -0.2% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
+| INTC | ±20% | $19,116 | -2.2% | +3.3% to +7.1% | Reduced | Weaker half between -20% and break-even; up to $19,116 a deposit |
+| SPY | ±2.5% | $100,000 | +4.0% | -3.9% to -0.5% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
+| USO | ±20% | $100,000 | -3.8% | -4.4% to -4.2% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
+| AMD | ±20% | $18,436 | -1.2% | -4.7% to -3.1% | Reduced | Weaker half between -20% and break-even; up to $18,436 a deposit |
+| NVDA | ±1.5% | $100,000 | +29.0% | -6.8% to +4.6% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
+| META | ±15% | $17,025 | +4.6% | -10.5% to -9.8% | Reduced | Weaker half between -20% and break-even; up to $17,025 a deposit |
+| MU | ±15% | $86,710 | +7.2% | -13.9% to -9.8% | Reduced | Weaker half between -20% and break-even; up to $25,000 a deposit |
+| PLTR | ±3.5% | $24,207 | +69.5% | -18.9% to +10.4% | Reduced | Weaker half between -20% and break-even; up to $24,207 a deposit |
+| TSLA | ±7.5% | $83,206 | +12.3% | -25.8% to -19.1% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
+| CRCL | ±20% | $100,000 | +0.1% | -27.8% to -25.9% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
+| MSTR | ±3.5% | $22,206 | -8.2% | -43.0% to -20.4% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
+| GME | ±2.5% | $49,212 | +105.3% | -93.5% to -37.2% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
+| SPCX | ±1.5% | $100,000 | +80.9% | -195.4% to -136.1% | Closed | Weaker half below the -20% floor, the gate shuts deposits |
 <!-- gates:end -->
 
-Every row is the vault's Uniswap v3 pool except PLTR, whose row is its Uniswap v4 1% pool (the v3 pool keeps -20.3% in its weaker half; the v4 pool, net of the PoolManager's protocol fee, keeps +12.8%), held by `StockVaultV4`.
+Every row is the vault's Uniswap v3 pool. Every range bound in the replay sits on a multiple of its pool's tick spacing, rounded outward, so the figures are for positions Uniswap can hold. `StockVaultV4` runs the same vault over a Uniswap v4 pool, and the deploy list moves a token to it when its v3 pool falls below the floor and its v4 pool does not; PLTR's v4 1% pool, net of the PoolManager's protocol fee, keeps +7.9% in its weaker half. Holding the token, one position set once and the vault are priced side by side for every token in [docs/DIY-BASELINE.md](docs/DIY-BASELINE.md).
 
 Seventeen tokens clear the registry rule in `keeper/src/universe.ts`: a Chainlink feed, a USDG pool trading at least $100K a day, and a vault sized to the pool. The vault size cap is the largest position that holds at most 20% of the pool's in-range liquidity, up to $100K and at least $10K, so a thinner pool gets a smaller vault instead of no vault; `StockVault` enforces the size on-chain through its `depositCap`. The replay simulates each vault at its own size, so every gate above reflects the vault a depositor can actually buy. The volume floor admits a token to a vault and the replay gate decides whether deposits open.
 
@@ -88,9 +88,8 @@ Session-fee and oracle-gap hooks (Fables, SessionFeeHook, Bellswap, ClosingBell)
 
 | Claim | Number | Source |
 |---|---|---|
-| Swaps replayed, weekend study | 5,113,049 on NVDA, SPCX, TSLA pools, 24 August to 17 October 2026 | `spikes/stock-vaults/FINDINGS.md` |
-| Swaps replayed, vault gates | 3,059,881 over 30 days across 17 vaults | `docs/facts.json` from `web/lib/vault-universe.json` |
-| NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 94.4% | evidence API `/vaults`, read 2026-10-21 |
+| Swaps replayed | 5.1M over 54 days on NVDA, SPCX, TSLA pools | `spikes/stock-vaults/FINDINGS.md` |
+| NVDA vault fee APR, 30 day replay, daily recentre, 1.5% band | 92.8% | `web/lib/vault-universe.json` feeAprPct, regenerated 2026-10-23 |
 | Hook share of v4 trades on Robinhood Chain | 74.5% | Bitquery |
 | Hooks labelled malicious by 0x | 80% of 84K | 0x |
 | Taken in 49 hours by hooks keeping 5 to 11% while pools quote 0 to 1% | about $1.2M | `docs/research/founder-house/OUTREACH-fomo-gmgn.md` |

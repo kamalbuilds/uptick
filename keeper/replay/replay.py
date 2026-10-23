@@ -95,6 +95,30 @@ def lp_fee_rate(total_fee, lp_fee_pips):
     p = np.maximum((total_fee - lp) / (1 - lp), 0.0)
     return lp * (1 - p)
 
+V3_TICK_SPACING = {100: 1, 500: 10, 3000: 60, 10000: 200}   # Uniswap v3 factory fee tier -> tick spacing
+STOCK_SCALE_PER_USDG = 1e12   # 1e18 stock decimals over 1e6 USDG decimals: P (USD per stock) = raw token1/token0 * 1e12 when the stock is token0, 1e12 / raw when it is token1
+
+def price_to_tick(price, stock_is0):
+    """The pool's tick (a real number) at a USD-per-stock price."""
+    raw = price / STOCK_SCALE_PER_USDG if stock_is0 else STOCK_SCALE_PER_USDG / price
+    return math.log(raw) / math.log(1.0001)
+
+def tick_to_price(tick, stock_is0):
+    raw = 1.0001 ** tick
+    return raw * STOCK_SCALE_PER_USDG if stock_is0 else STOCK_SCALE_PER_USDG / raw
+
+def snap_ticks(a, b, spacing, stock_is0):
+    """The ticks of the range [a, b] (USD per stock) snapped outward to `spacing`: the lower tick floored, the upper tick raised, so the position always holds the whole range.
+    VaultMath.targetTicks works on floor ticks, which differs from this by less than one tick (0.01%)."""
+    ta, tb = price_to_tick(a, stock_is0), price_to_tick(b, stock_is0)
+    return math.floor(min(ta, tb) / spacing) * spacing, math.ceil(max(ta, tb) / spacing) * spacing
+
+def snap_range(a, b, spacing, stock_is0):
+    """The price range (USD per stock) of the tick-snapped position that contains [a, b]."""
+    tl, tu = snap_ticks(a, b, spacing, stock_is0)
+    pa, pb = tick_to_price(tl, stock_is0), tick_to_price(tu, stock_is0)
+    return min(pa, pb), max(pa, pb)
+
 def finite(x):
     """Strict JSON has no NaN or Infinity; a pool the vault would swamp can make the engine produce them. They become null."""
     if isinstance(x, float): return x if np.isfinite(x) else None
@@ -117,15 +141,18 @@ def run_pair(pl, ref, t0, t1, plan, cap):
     return out
 
 class FeasibleStatic:
-    """+ -w around Chainlink at the initial deploy and at each fresh 02:00 UTC after-session slot.
+    """+ -w around Chainlink at the initial deploy and at each fresh 02:00 UTC after-session slot, each bound snapped outward to the pool's tick spacing (a position can only sit on a multiple of it).
 
     A slot whose feed is older than ``MAX_STALENESS_S`` is dropped and the previous band is held, which is what the
     vault would do: the recentre transaction would revert on the bound, so no gas is spent and no new band is set.
     """
-    def __init__(self, ref, w, checkpoints):
-        self.ref, self.w, self.checkpoints = ref, w, list(checkpoints)
+    def __init__(self, ref, w, checkpoints, spacing, stock_is0):
+        self.ref, self.w, self.checkpoints, self.spacing, self.stock_is0 = ref, w, list(checkpoints), spacing, stock_is0
+    def bounds(self, t):
+        """The price range in force at `t`: +-w around Chainlink, snapped outward to the pool's tick spacing."""
+        return snap_range(*rng(self.ref.at(t), self.w), self.spacing, self.stock_is0)
     def __call__(self, t):
-        a, b = rng(self.ref.at(t), self.w); return ("range", a, b, False)
+        a, b = self.bounds(t); return ("range", a, b, False)
     def recenter(self, t):
         return None
 
@@ -185,7 +212,6 @@ def replay_token(u, band_bps, allow, depths):
     t0, t1 = start.timestamp(), end.timestamp(); tm = t0 + (t1 - t0) / 2
     ref = Ref(sym)
     checkpoints, requested = recentre_slots(ref, t0, t1)
-    plan = FeasibleStatic(ref, band_bps / 10000.0, checkpoints)
     stock = u["token"].lower(); stock_is0 = int(stock, 16) < int(USDG, 16)
     pools = []
     v3 = ([u["pool"]] if u["pool"] else []) + [p for p in (u["other_pools"] or []) if (p.get("volume_7d_usd") or 0) > 0]
@@ -193,17 +219,16 @@ def replay_token(u, band_bps, allow, depths):
         key = f"{sym}-v3-{p['fee_tier']}"
         TOK[key] = dict(dir=p["address"].lower(), tok0=stock_is0, fee=p["fee_tier"] / 1e6)
         pl = Pool(key, t_lo=t0 - 7200, t_hi=t1 + 7200)
-        pools.append(dict(kind="v3", id=p["address"], fee_tier=p["fee_tier"], hooks=None, vault_capable=True, _pl=pl))
+        pools.append(dict(kind="v3", id=p["address"], fee_tier=p["fee_tier"], tick_spacing=V3_TICK_SPACING[p["fee_tier"]], hooks=None, vault_capable=True, stock_is0=stock_is0, _pl=pl))
     v4file = os.path.join(KEEPER, "data", "swaps", f"v4-live-{sym}.json")
     live4 = json.load(open(v4file)) if os.path.exists(v4file) else []
     for p in live4:
         try: pl, n = v4_pool(f"{sym}-v4", p["id"], p["usdg_is_currency0"], p["fee"], p["tick_spacing"], p["hooks"], t0 - 7200, t1 + 7200)
         except (IndexError, ValueError): continue  # no swaps in the window
-        pools.append(dict(kind="v4", id=p["id"], fee_tier=p["fee"], hooks=None if int(p["hooks"], 16) == 0 else p["hooks"], vault_capable=False, _pl=pl))
-    spacing = {p["id"]: p["tick_spacing"] for p in live4}
+        pools.append(dict(kind="v4", id=p["id"], fee_tier=p["fee"], tick_spacing=p["tick_spacing"], hooks=None if int(p["hooks"], 16) == 0 else p["hooks"], vault_capable=False, stock_is0=not p["usdg_is_currency0"], _pl=pl))
     out = []
     for p in pools:
-        pl = p.pop("_pl"); m = (pl.t >= t0) & (pl.t < t1)
+        pl = p.pop("_pl"); plan = FeasibleStatic(ref, band_bps / 10000.0, checkpoints, p["tick_spacing"], p.pop("stock_is0")); m = (pl.t >= t0) & (pl.t < t1)
         if p["kind"] == "v4" and p["fee_tier"] & DYNAMIC_FEE:
             print(f"  {sym} v4 fee={p['fee_tier']} excluded: hook-set dynamic fee", flush=True); continue
         if m.any() and float(np.median(pl.vol[m])) > MAX_MEDIAN_SWAP_USD:
@@ -225,13 +250,13 @@ def replay_token(u, band_bps, allow, depths):
         edges = [row[h]["edge_apr_pct"] for h in ("full", "calibration", "test")] + [row["full"]["fee_apr_pct"]]
         if not all(np.isfinite(e) and abs(e) <= MAX_SANE_EDGE for e in edges):
             print(f"  {sym} {p['kind']} fee={p['fee_tier']} excluded: non-finite or beyond {MAX_SANE_EDGE:.0f}% a year", flush=True); continue
-        row["_pl"] = pl
+        row["_pl"], row["_plan"] = pl, plan
         out.append(row)
         print(f"  {sym} {row['kind']} fee={row['fee_tier']:>7} hook={str(row['hooks'])[:10]:>10} swaps={swaps:>7} vol=${row['volume_usd']/1e6:8.2f}M "
               f"feeAPR={row['full']['fee_apr_pct']:7.1f} edge cal={row['calibration']['edge_apr_pct']:7.1f} test={row['test']['edge_apr_pct']:7.1f}", flush=True)
     slots = dict(requested=len(requested), kept=len(checkpoints) - 1)
     slots["stale"] = slots["requested"] - slots["kept"]
-    return t0, tm, t1, ref, out, slots, plan, cap, spacing
+    return t0, tm, t1, ref, out, slots, cap
 
 def main(symbols):
     u = json.load(open(os.path.join(KEEPER, "data", "universe.json")))
@@ -243,28 +268,28 @@ def main(symbols):
         tok = next(x for x in u["tokens"] if x["symbol"] == sym)
         band_bps = band_bps_for(sym, params)
         print(sym, f"band_bps={band_bps}", flush=True)
-        t0, tm, t1, ref, rows, slots, plan, cap, spacing = replay_token(tok, band_bps, allow, depths)
+        t0, tm, t1, ref, rows, slots, cap = replay_token(tok, band_bps, allow, depths)
         res["window"] = dict(start=dt.datetime.fromtimestamp(t0, U).isoformat(), end=dt.datetime.fromtimestamp(t1, U).isoformat(), days=DAYS,
                              calibration_end=dt.datetime.fromtimestamp(tm, U).isoformat())
         v3 = [r for r in rows if r["kind"] == "v3" and r["volume_usd"] >= MIN_CHOICE_VOLUME_USD]
         v4 = [r for r in rows if r["kind"] == "v4" and r["vault_capable"]]
         chosen = max(v3, key=lambda r: r["calibration"]["edge_apr_pct"]) if v3 else None
         best_test = max(v3, key=lambda r: r["test"]["edge_apr_pct"]) if v3 else None
-        ent = dict(symbol=sym, band_bps=band_bps, capital_usd=cap, pools=[{k: v for k, v in r.items() if k != "_pl"} for r in rows])
+        ent = dict(symbol=sym, band_bps=band_bps, capital_usd=cap, pools=[{k: v for k, v in r.items() if k not in ("_pl", "_plan")} for r in rows])
         if chosen:
             ent["chosen"] = dict(kind=chosen["kind"], id=chosen["id"], fee_tier=chosen["fee_tier"], confirmed_in_test=(best_test["id"] == chosen["id"]),
                                  rule="best calibration-half edge among v3 pools; test half is the out-of-sample figure")
-            ent["sessions"] = session_split(chosen["_pl"], ref, t0, t1, plan, cap)
+            ent["sessions"] = session_split(chosen["_pl"], ref, t0, t1, chosen["_plan"], cap)
             ent["swaps_replayed"] = sum(r["swaps"] for r in rows)
         v4_best = max(v4, key=lambda r: r["calibration"]["edge_apr_pct"]) if v4 else None
         worst = lambda r: min(r["calibration"]["edge_apr_pct"], r["test"]["edge_apr_pct"])
         if v4_best:
-            ent["chosen_v4"] = dict(kind="v4", id=v4_best["id"], fee_tier=v4_best["fee_tier"], hooks=v4_best["hooks"], tick_spacing=spacing[v4_best["id"]], cap_usd=v4_best["cap_usd"],
+            ent["chosen_v4"] = dict(kind="v4", id=v4_best["id"], fee_tier=v4_best["fee_tier"], hooks=v4_best["hooks"], tick_spacing=v4_best["tick_spacing"], cap_usd=v4_best["cap_usd"],
                                     confirmed_in_test=(max(v4, key=lambda r: r["test"]["edge_apr_pct"])["id"] == v4_best["id"]), worst_half=worst(v4_best),
                                     rule="best calibration-half edge among vault-capable v4 pools; test half is the out-of-sample figure")
         ent["venue"] = venue_for(worst(chosen) if chosen else None, worst(v4_best) if v4_best else None)
         if ent["venue"] == "v4" and v4_best:  # the evidence page of a token that deploys on v4 reads the session split of its v4 pool
-            ent["sessions_v4"] = session_split(v4_best["_pl"], ref, t0, t1, plan, v4_best["cap_usd"])
+            ent["sessions_v4"] = session_split(v4_best["_pl"], ref, t0, t1, v4_best["_plan"], v4_best["cap_usd"])
         ent["recentre"] = slots
         res["tokens"][sym] = ent
     path = os.environ.get("REPLAY_OUT") or os.path.join(KEEPER, "data", "replay.json")
