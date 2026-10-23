@@ -30,7 +30,7 @@ curl -sS "$MCP" "${H[@]}" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | 
 ```
 
 ```json
-["list_vaults", "get_vault_evidence", "prepare_deposit", "prepare_withdraw", "get_collateral_terms", "prepare_earn_and_borrow"]
+["list_vaults", "get_vault_evidence", "scan_wallet", "prepare_deposit", "prepare_withdraw", "get_collateral_terms", "prepare_earn_and_borrow"]
 ```
 
 ## 2. list_vaults
