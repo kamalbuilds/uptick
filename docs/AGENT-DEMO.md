@@ -1,0 +1,146 @@
+# Agent demo: an AI agent uses Uptick (60 seconds)
+
+An agent reads the vault list, checks the evidence behind PLTR's Uniswap v4 pool, asks for a deposit it can hand to a holder to sign, and gets a written refusal for a closed vault. Every answer carries the gate and its reason.
+
+Host: the commands below run against `BASE`. The published endpoint is `https://uptick-evidence.earn-shield-alerts.workers.dev`; the outputs pasted here come from the same Worker code running locally with `npx wrangler dev` in `api/` and `VAULTS = '{}'` (the production value while the 12 launching vaults go on-chain). Running against the published host changes only `BASE`. Once the vault addresses are set, the `prepare_deposit pltr` output switches from the gate answer (step 4a) to unsigned calldata (step 4b).
+
+```bash
+BASE=http://127.0.0.1:8787        # local worker; the published host is https://uptick-evidence.earn-shield-alerts.workers.dev
+MCP=$BASE/mcp
+H=(-H 'content-type: application/json' -H 'accept: application/json, text/event-stream')
+RECEIVER=0x2222222222222222222222222222222222222222
+```
+
+The endpoint speaks MCP over Streamable HTTP: JSON-RPC 2.0 over POST, `Accept: application/json, text/event-stream`. `scripts/agent-demo.sh [BASE]` runs every call below and exits non-zero if the server is unreachable or any call returns a JSON-RPC error.
+
+## Run of show
+
+| Seconds | Beat | Say |
+|---|---|---|
+| 0 to 10 | tools/list | "Four tools. Two read, two prepare transactions the holder signs." |
+| 10 to 22 | list_vaults | "17 vaults, 3 open, 9 reduced, 5 closed. PLTR is open, on Uniswap v4." |
+| 22 to 35 | get_vault_evidence pltr | "Venue v4, the pool id, the PoolManager, and the gate reason in the replay's own words." |
+| 35 to 50 | prepare_deposit pltr | "The agent asks for a deposit. It gets the gate and the transactions to sign." |
+| 50 to 60 | prepare_deposit spcx | "SPCX is closed. The agent is refused with the reason, so it tells the holder why." |
+
+## 1. tools/list
+
+```bash
+curl -sS "$MCP" "${H[@]}" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq '[.result.tools[].name]'
+```
+
+```json
+["list_vaults", "get_vault_evidence", "prepare_deposit", "prepare_withdraw"]
+```
+
+## 2. list_vaults
+
+```bash
+curl -sS "$MCP" "${H[@]}" -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"list_vaults","arguments":{}}}' \
+  | jq '.result.structuredContent | {vaults: (.vaults|length), by_gate: (.vaults|group_by(.gate_state)|map({(.[0].gate_state): length})|add), pltr: (.vaults[]|select(.id=="pltr")|{venue,pool_id,gate_state})}'
+```
+
+```json
+{
+  "vaults": 17,
+  "by_gate": { "closed": 5, "open": 3, "reduced": 9 },
+  "pltr": {
+    "venue": "v4",
+    "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "gate_state": "open"
+  }
+}
+```
+
+## 3. get_vault_evidence for pltr
+
+```bash
+curl -sS "$MCP" "${H[@]}" -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_vault_evidence","arguments":{"id":"pltr"}}}' \
+  | jq '.result.structuredContent | {id, venue, pool_id, pool_manager, entry_fee_bps, swaps, gate: {state: .gate.state, reason: .gate.reason}}'
+```
+
+```json
+{
+  "id": "pltr",
+  "venue": "v4",
+  "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+  "pool_manager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+  "entry_fee_bps": 109.9,
+  "swaps": 53897,
+  "gate": {
+    "state": "open",
+    "reason": "Open: the weaker half of the 30-day replay kept 12.8% a year, at or above break-even, across 53,897 swaps."
+  }
+}
+```
+
+## 4. prepare_deposit for pltr
+
+```bash
+curl -sS "$MCP" "${H[@]}" -d "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"prepare_deposit\",\"arguments\":{\"id\":\"pltr\",\"amount\":\"1000\",\"receiver\":\"$RECEIVER\",\"asset\":\"usdg\"}}}" \
+  | jq '.result.structuredContent'
+```
+
+4a. While PLTR is launching (`VAULTS` empty), the answer is the gate and `address_live: false`:
+
+```json
+{
+  "isError": true,
+  "error": "no deployed vault for pltr on this network",
+  "address_live": false,
+  "vault": "pltr",
+  "venue": "v4",
+  "gate": {
+    "state": "open",
+    "reason": "Open: the weaker half of the 30-day replay kept 12.8% a year, at or above break-even, across 53,897 swaps."
+  }
+}
+```
+
+4b. With the vault address set, the same call returns two unsigned transactions: approve USDG to the router, then `depositUsdgV4` (the router address is abbreviated below; read `router_function`):
+
+```json
+{
+  "vault": "pltr",
+  "venue": "v4",
+  "asset": "usdg",
+  "entry_fee_bps": 109.9,
+  "entry_fee_note": "The vault keeps a 1.099% entry fee from this deposit for its existing holders; shares are minted against the amount net of it.",
+  "transactions": [
+    { "chainId": 4663, "to": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", "value": "0", "description": "Approve 1000 USDG to the Uptick router" },
+    { "chainId": 4663, "to": "<router>", "value": "0", "description": "Zap 1000 USDG into vault pltr for 0x2222222222222222222222222222222222222222" }
+  ],
+  "usdg_in": "1000",
+  "router_function": "depositUsdgV4"
+}
+```
+
+Each transaction also carries its `data` hex. The holder signs; the agent never holds a key.
+
+## 5. prepare_deposit for spcx (closed)
+
+```bash
+curl -sS "$MCP" "${H[@]}" -d "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"prepare_deposit\",\"arguments\":{\"id\":\"spcx\",\"amount\":\"1000\",\"receiver\":\"$RECEIVER\"}}}" \
+  | jq '.result.structuredContent'
+```
+
+```json
+{
+  "isError": true,
+  "error": "Closed: the weaker half kept -199.5% a year, below the -20% floor."
+}
+```
+
+Exits stay open on every vault: `prepare_withdraw` with `mode: "in_kind"` builds `redeemInKind`, which reads no oracle.
+
+## Alternative: add the server to Claude Code
+
+```bash
+claude mcp add --transport http uptick https://uptick-evidence.earn-shield-alerts.workers.dev/mcp
+```
+
+Then type, in plain language:
+
+> Using the uptick tools: how many vaults are open, reduced and closed? Show me why PLTR is open and which Uniswap pool it uses. Prepare a 1000 USDG deposit into PLTR for 0x2222222222222222222222222222222222222222, then try the same for SPCX and tell me why it is refused.
+
+The agent calls `list_vaults`, `get_vault_evidence`, and `prepare_deposit` twice, and answers with the counts, PLTR's v4 pool id and gate reason, the transactions to sign (or the gate answer), and SPCX's refusal reason.
