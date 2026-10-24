@@ -47,6 +47,8 @@ export function verdict(s: Source): { main: string; more: string | null } {
   const first = p.live.usd > 0 || p.full.length > 0;
   const rest = `${money(p.launching.usd)}${first ? " more" : ""} (${names(p.launching.symbols)})`;
   const later = p.launching.usd > 0 ? (first ? `${rest} when their vaults launch.` : `${rest} can go to work when their vaults launch.`) : null;
+  if (p.tiny && p.launching.usd > 0)
+    return { main: `${idle} ${money(p.launching.usd)} of ${names(p.launching.symbols)} can go to work when their vaults launch.`, more: `${money(p.live.usd)} of ${names(p.live.symbols)} can go in today.` };
   if (p.live.usd > 0) return { main: `${idle} ${money(p.live.usd)} of ${names(p.live.symbols)} can go to work today.`, more: later };
   if (p.full.length > 0) return { main: `${idle} ${names(p.full)} ${p.full.length === 1 ? "is" : "are"} full or paused right now, so none of it can go to work today.`, more: later };
   if (later) return { main: `${idle} None of it can go to work today.`, more: later };

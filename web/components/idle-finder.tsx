@@ -105,7 +105,7 @@ function TakesCell({ r }: { r: ScanRow }) {
         <StateChip state={r.state} />
       </div>
       <p className="text-[13px] leading-4 text-mute">
-        {full ? "Full or paused right now" : r.state === "reduced" ? `Up to ${usdWhole(perDepositLimitUsd(r.depositCapUsd))} a deposit` : capped ? (r.roomUsd !== null ? `Room left today ${money(r.roomUsd)}` : `Vault size ${usdWhole(r.depositCapUsd)}`) : "All of it"}
+        {full ? "Full or paused right now" : r.state === "reduced" ? `Vault size ${usdWhole(r.depositCapUsd)}, up to ${usdWhole(perDepositLimitUsd(r.depositCapUsd))} a deposit` : capped ? (r.roomUsd !== null ? `Room left today ${money(r.roomUsd)}` : `Vault size ${usdWhole(r.depositCapUsd)}`) : "All of it"}
       </p>
       {b.kind === "room" ? (
         <p className="text-[13px] leading-4 text-mute">Borrow up to {money(b.usd)} at the market&rsquo;s {num(b.lltv, 1)}% <Term id="lltv">limit</Term></p>
@@ -244,11 +244,13 @@ function Ticket({ s }: { s: WalletScan }) {
   const wh = lead && lead.keptPerYearUsd !== null ? { gain: lead.keptPerYearUsd >= 0, usd: Math.abs(lead.keptPerYearUsd) } : null;
   const liveSymbols = LIVE_VAULTS.map((v) => v.symbol);
   const aside = p.tiny && p.lead && p.lead.vault ? p.lead : undefined;
+  // With only a tiny live holding, the big number is the launching rest, so the primary action opens the largest launching vault it holds.
+  const nextUp = aside ? s.rows.filter((r) => r.vault === null && r.state !== "closed" && (r.putToWorkUsd ?? 0) > 0).sort((a, b) => (b.putToWorkUsd as number) - (a.putToWorkUsd as number))[0] : undefined;
   const tail =
     p.full.length > 0 && !p.lead
       ? `${names(p.full)} ${p.full.length === 1 ? "is" : "are"} full or paused right now.`
       : aside
-        ? "The rest of this wallet is in tokens whose vaults are launching."
+        ? (t.refused.tokens > 0 ? "The rest of this wallet is in tokens whose vaults are launching or closed." : "The rest of this wallet is in tokens whose vaults are launching.")
         : p.launching.usd > 0
           ? "This wallet holds none of them, and the vaults for its tokens are launching."
           : "This wallet holds none of them, and its tokens' vaults are closed.";
@@ -285,7 +287,7 @@ function Ticket({ s }: { s: WalletScan }) {
         <>
           <p className="mt-5 text-[13px] leading-5 text-mute">{liveSymbols.length > 0 ? `${liveSentence(liveSymbols)} ${tail}` : "The vaults for these tokens are launching."}</p>
           <Button asChild size="lg" className="mt-3 w-full">
-            <Link href="/vaults">{liveSymbols.length > 0 ? "See the live vaults" : "See the vaults"}</Link>
+            {nextUp ? <Link href={`/vault/${nextUp.id}`}>See the {nextUp.symbol} vault</Link> : <Link href="/vaults">{liveSymbols.length > 0 ? "See the live vaults" : "See the vaults"}</Link>}
           </Button>
           {aside && aside.putToWorkUsd !== null ? (
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-hairline pt-4">

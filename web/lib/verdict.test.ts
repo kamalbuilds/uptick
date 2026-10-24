@@ -20,21 +20,22 @@ const totals = (over: Partial<Totals["putToWork"]> & { idleUsd?: number; refused
 };
 const rows = [row("NVDA", { putToWorkUsd: 100_000 }), live("AAPL", 5_000), row("GOOGL"), row("MU")];
 
-test("money is whole dollars from a thousand up and at most two decimals below, never four", () => {
+test("money is whole dollars from $10 up and at most two decimals below, never four", () => {
   assert.equal(money(0), "$0");
   assert.equal(money(2_438_135), "$2,438,135");
-  assert.equal(money(12.5), "$12.50");
+  assert.equal(money(12.5), "$13");
+  assert.equal(money(9.5), "$9.50");
   assert.equal(money(26), "$26");
   assert.equal(money(0.0123), "$0.01");
-  assert.equal(money(388.99), "$388.99");
+  assert.equal(money(388.99), "$389");
   assert.equal(money(999.996), "$1,000");
   assert.equal(money(1000.4), "$1,000");
   assert.equal(dollars(-1204.4), "-$1,204");
 });
 
-test("a row's signed yearly figure and the ticket's use one rule, so $388.99 is the same string in both", () => {
+test("a row's signed yearly figure and the ticket's use one rule, so $388.99 reads $389 in both", () => {
   assert.equal(usdSigned(388.99), `+${money(388.99)}`);
-  assert.equal(usdSigned(-388.99), "-$388.99");
+  assert.equal(usdSigned(-388.99), "-$389");
   assert.equal(usdSigned(1204.4), "+$1,204");
   assert.equal(usdSigned(32), "+$32");
   assert.equal(usdSigned(0.002), "+under $0.01");
@@ -115,4 +116,13 @@ test("a token balance keeps four decimals under a thousand and two above, so a s
   assert.equal(tokenBalance(0.123456), "0.1235");
   assert.equal(tokenBalance(999.99999), "1,000");
   assert.ok(tokenBalance(11_515.5963).length < "11,515.5963".length);
+});
+
+test("a tiny live holding never leads the headline: the launching rest does, and the live part moves to the second line", () => {
+  const tinyRows = [row("NVDA", { putToWorkUsd: 77_682 }), live("AAPL", 26)];
+  const s = { rows: tinyRows, totals: totals({ idleUsd: 118_384, live: { usd: 26, symbols: ["AAPL"] }, launching: { usd: 77_682, symbols: ["NVDA"] } }) };
+  const v = verdict(s);
+  assert.ok(plan(s).tiny);
+  assert.match(v.main, /\$77,682 of NVDA can go to work when their vaults launch\.$/);
+  assert.equal(v.more, "$26 of AAPL can go in today.");
 });
