@@ -25,7 +25,7 @@ test("every gloss is a plain sentence: a label, a definition of one to three sen
 test("the loan words are defined in plain terms a stranger can act on", () => {
   assert.match(TERMS.healthFactor.text, /Above 1 the loan is safe/);
   assert.match(TERMS.healthFactor.text, /1 or below a liquidator/);
-  assert.match(TERMS.lltv.text, /LLTV/);
+  assert.doesNotMatch(TERMS.lltv.text, /LLTV/, "the acronym is not user-facing");
   assert.match(TERMS.liquidationPrice.text, /repay your USDG and take your vault shares/);
   assert.match(TERMS.inKind.text, /no swap/);
   assert.match(TERMS.kept.text, /minus sign means/);

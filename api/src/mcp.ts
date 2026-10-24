@@ -536,8 +536,9 @@ function prepareWithdraw(env: Env, args: Record<string, unknown>): McpToolResult
 /** Loan-to-value limit of every vault with a configured Morpho market (web/lib/collateral-markets.json, synced to api/data). */
 const LLTV: ScanLltv = Object.fromEntries(Object.entries(parseMarkets(collateralMarkets)).map(([id, m]) => [id, m.lltv]));
 
-/** The tracked Stock Tokens as the scan reads them: address, feed, the gate the replay wrote, and the vault's size. */
+/** The tracked Stock Tokens as the scan reads them: address, feed, the gate the replay wrote, the vault's size, and its deployed address when VAULTS names one (the scan then reads its maxDeposit). */
 export function scanVaults(env: { VAULTS?: string } = {}): ScanVault[] {
+  const addresses = parseVaults(env.VAULTS);
   return liveVaults(env).map((v) => {
     const gate = gateOf(v);
     return {
@@ -545,6 +546,7 @@ export function scanVaults(env: { VAULTS?: string } = {}): ScanVault[] {
       symbol: v.symbol,
       name: v.name,
       token: v.token as `0x${string}`,
+      vault: liveAddress(addresses[v.id]),
       feed: v.feed as `0x${string}`,
       entryFeeBps: v.entryFeeBps,
       depositCapUsd: v.depositCapUsd,
@@ -574,8 +576,10 @@ function scanRow(r: ScanRow): Record<string, unknown> {
     holding_usd: orNull(r.holdingUsd),
     gate_state: r.state,
     gate_reason: r.reason,
-    can_deposit: r.state !== "closed",
+    can_deposit: r.state !== "closed" && r.putToWorkUsd !== 0,
     deposit_cap_usd: r.depositCapUsd,
+    vault: r.vault,
+    room_usd: orNull(r.roomUsd),
     put_to_work_usd: orNull(r.putToWorkUsd),
     worst_half_apr_pct: r.worstHalfApr,
     kept_per_year_usd: orNull(r.keptPerYearUsd),
@@ -606,13 +610,16 @@ export function scanPayload(env: Env, s: WalletScan): Record<string, unknown> {
         holding_usd: cents(t.putToWork.holdingUsd),
         kept_per_year_usd: cents(t.putToWork.keptPerYearUsd),
         borrow_room_usd: orNull(t.putToWork.borrowRoomUsd),
+        live: { usd: cents(t.putToWork.live.usd), tickers: t.putToWork.live.symbols },
+        launching: { usd: cents(t.putToWork.launching.usd), tickers: t.putToWork.launching.symbols },
+        full_tickers: t.putToWork.full,
       },
       refused: { tokens: t.refused.tokens, usd: cents(t.refused.usd), reasons: t.refused.reasons.map((x) => ({ ticker: x.symbol, reason: x.reason })) },
       unpriced: t.unpriced,
     },
     holdings: s.rows.map(scanRow),
     kept_basis: `kept_per_year_usd is put_to_work_usd net of the entry fee at worst_half_apr_pct, the weaker 15-day half of the ${REPLAY.window.days}-day replay to ${REPLAY.window.end.slice(0, 10)}. It measures past swaps. It is not a forecast, a target or a promise.`,
-    source: "eth_blockNumber, then one Multicall3 eth_call at that block reading every balanceOf and Chainlink round; read-only",
+    source: "eth_blockNumber, then one Multicall3 eth_call at that block reading every balanceOf, every Chainlink round and each live vault's maxDeposit; read-only",
     next: "prepare_deposit for a holding with can_deposit true",
   };
 }
@@ -835,7 +842,7 @@ const TOOLS: McpTool[] = [
   {
     name: "scan_wallet",
     description:
-      "Read-only. For a wallet address, read its balances of all tracked Stock Tokens from Robinhood Chain (one Multicall3 call at one block), price them with the Chainlink feeds the vaults use, and return per token: the holding in USD, the vault's gate state and reason, what the holding would have kept a year at the weaker-half kept APR of the replay (a measurement of past swaps, never a forecast), and borrow room at the Morpho market's loan-to-value limit where a market is configured, otherwise opens_with_market. Totals give idle value, what the open and reduced vaults take (a vault takes at most its size), and what the closed vaults refuse with their reasons. Holdings are only the tokens the wallet holds. Use prepare_deposit for a holding with can_deposit true.",
+      "Read-only. For a wallet address, read its balances of all tracked Stock Tokens from Robinhood Chain (one Multicall3 call at one block), price them with the Chainlink feeds the vaults use, and return per token: the holding in USD, the vault's gate state and reason, what the holding would have kept a year at the weaker-half kept APR of the replay (a measurement of past swaps, never a forecast), and borrow room at the Morpho market's loan-to-value limit where a market is configured, otherwise opens_with_market. A vault that is live reports room_usd, its own maxDeposit (the cap less what is in it, 0 when paused), and takes at most that; put_to_work_usd is the holding or the room, whichever is smaller. Totals give idle value, what the open and reduced vaults take split into live (deployed, can be deposited into today) and launching (not deployed yet), and what the closed vaults refuse with their reasons. Holdings are only the tokens the wallet holds. Use prepare_deposit for a holding with can_deposit true.",
     inputSchema: {
       type: "object",
       properties: { address: { type: "string", description: "0x wallet address to read. No signature or connection is needed." } },

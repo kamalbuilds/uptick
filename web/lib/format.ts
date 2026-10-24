@@ -23,6 +23,14 @@ export function usd(n: number, opts: { compact?: boolean } = {}): string {
   }).format(n);
 }
 
+/** The money rule of the /check screen: whole dollars from $1,000 up, below that at most two decimals and none when the cents are zero, so $388.99 stays $388.99 and $26.00 reads $26. */
+export function dollars(n: number): string {
+  if (!Number.isFinite(n)) return "n/a";
+  const abs = Math.abs(n);
+  const whole = abs >= 1000 || Number.isInteger(Math.round(abs * 100) / 100);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 }).format(n === 0 ? 0 : n);
+}
+
 /** Whole dollars, never compacted: a size or a cap, "$100,000". */
 export const usdWhole = (n: number): string => (Number.isFinite(n) ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n) : "n/a");
 

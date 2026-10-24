@@ -125,6 +125,58 @@ describe("scan_wallet against a mock chain that decodes the RPC", () => {
   });
 });
 
+describe("scan_wallet reads the room a live vault has left", () => {
+  const AAPL = "0x127eCb0e814EF0cC296910DFd5E946050d85534f";
+  const live: Env = { NETWORK: "robinhood-chain", VAULTS: JSON.stringify({ aapl: AAPL }) } as Env;
+
+  test("a vault named in VAULTS is asked for maxDeposit(owner) in the same call, and takes the lesser of the holding and that room", async () => {
+    const liveVaults = scanVaults(live);
+    const aapl = liveVaults.find((v) => v.id === "aapl")!;
+    expect(aapl.vault).toBe(AAPL);
+    const nvda = liveVaults.find((v) => v.id === "nvda")!;
+    expect(nvda.vault).toBeUndefined();
+    const chain = mockChain(liveVaults, { [aapl.token.toLowerCase()]: 100n * E18, [nvda.token.toLowerCase()]: 10n * E18 }, Object.fromEntries(liveVaults.map((v) => [v.feed.toLowerCase(), px(200)])), { rooms: { [AAPL.toLowerCase()]: 5n * E18 } });
+    const r = await scan({ address: OWNER }, { scanClient: chain.client }, live);
+    expect(r.isError).toBeUndefined();
+    expect(chain.rpc).toEqual(["eth_blockNumber", "eth_call"]);
+    const inner = chain.ethCalls[0].inner;
+    expect(inner.length).toBe(17 + 34 + 1);
+    expect([inner[51].fn, inner[51].to]).toEqual(["maxDeposit", AAPL.toLowerCase()]);
+    expect((inner[51].args[0] as string).toLowerCase()).toBe(OWNER.toLowerCase());
+
+    const h = (t: string) => r.structuredContent.holdings.find((x: any) => x.ticker === t);
+    expect(h("AAPL").vault).toBe(AAPL);
+    expect(h("AAPL").room_usd).toBe(1000);
+    expect(h("AAPL").holding_usd).toBe(20_000);
+    expect(h("AAPL").put_to_work_usd).toBe(1000);
+    expect(h("NVDA").vault).toBeNull();
+    expect(h("NVDA").room_usd).toBeNull();
+    expect(h("NVDA").put_to_work_usd).toBe(2000);
+    const w = r.structuredContent.totals.put_to_work;
+    expect(w.live).toEqual({ usd: 1000, tickers: ["AAPL"] });
+    expect(w.launching).toEqual({ usd: 2000, tickers: ["NVDA"] });
+    expect(w.usd).toBe(3000);
+  });
+
+  test("a paused vault reports no room, cannot be deposited into, and is named in full_tickers", async () => {
+    const liveVaults = scanVaults(live);
+    const aapl = liveVaults.find((v) => v.id === "aapl")!;
+    const chain = mockChain(liveVaults, { [aapl.token.toLowerCase()]: 100n * E18 }, Object.fromEntries(liveVaults.map((v) => [v.feed.toLowerCase(), px(200)])), { rooms: { [AAPL.toLowerCase()]: 0n } });
+    const p = (await scan({ address: OWNER }, { scanClient: chain.client }, live)).structuredContent;
+    expect(p.holdings[0].room_usd).toBe(0);
+    expect(p.holdings[0].put_to_work_usd).toBe(0);
+    expect(p.holdings[0].can_deposit).toBe(false);
+    expect(p.totals.put_to_work.full_tickers).toEqual(["AAPL"]);
+    expect(p.totals.put_to_work.live.usd).toBe(0);
+  });
+
+  test("a malformed VAULTS entry leaves the vault launching and sends no maxDeposit", async () => {
+    const bad: Env = { NETWORK: "robinhood-chain", VAULTS: JSON.stringify({ aapl: "0x1234" }) } as Env;
+    const liveVaults = scanVaults(bad);
+    expect(liveVaults.every((v) => v.vault === undefined)).toBe(true);
+  });
+});
+
 // A real wallet on the real chain: the top non-contract holder of the NVDA Stock Token on Blockscout,
 // https://robinhoodchain.blockscout.com/api/v2/tokens/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC/holders, read 2026-10-23.
 describe("scan_wallet live on Robinhood Chain 4663", () => {

@@ -162,3 +162,81 @@ test("a failed balance read is an error, never a zero", async () => {
   const chain = mockChain({}, {}, { failBalanceOf: "NVDA" });
   await assert.rejects(() => scanWallet(chain.client, OWNER, VAULTS), /balanceOf failed for NVDA/);
 });
+
+// ---- room: a live vault takes what its own maxDeposit says -----------------------------------------------------------------------------
+
+const AAPL_VAULT: Address = "0x127eCb0e814EF0cC296910DFd5E946050d85534f";
+const PLTR_VAULT: Address = "0xD769d94E43447937Eaa85Dc6AE291468649085a3";
+/** AAPL and PLTR deployed at $5,000, every other vault launching. */
+const WITH_LIVE: ScanVault[] = VAULTS.map((v) => ({ ...v, depositCapUsd: v.id === "aapl" || v.id === "pltr" ? 5_000 : v.depositCapUsd, vault: v.id === "aapl" ? AAPL_VAULT : v.id === "pltr" ? PLTR_VAULT : undefined }));
+const liveBy = (id: string) => WITH_LIVE.find((v) => v.id === id)!;
+const flat = (usd: number) => Object.fromEntries(WITH_LIVE.map((v) => [v.feed.toLowerCase(), px(usd)]));
+
+test("a live vault near its cap takes the room it has left, not its size", async () => {
+  const aapl = liveBy("aapl");
+  // $20,000 of AAPL at $200; the vault holds $4,000 already, so its maxDeposit is 5 tokens ($1,000)
+  const chain = mock(WITH_LIVE, { [aapl.token.toLowerCase()]: 100n * E18 }, flat(200), { rooms: { [AAPL_VAULT.toLowerCase()]: 5n * E18, [PLTR_VAULT.toLowerCase()]: 25n * E18 } });
+  const scan = await scanWallet(chain.client, OWNER, WITH_LIVE);
+  const r = scan.rows[0];
+  assert.equal(r.vault, AAPL_VAULT);
+  assert.equal(r.roomUsd, 1_000);
+  assert.equal(r.putToWorkUsd, 1_000, "not the $5,000 size");
+  assert.equal(scan.totals.putToWork.live.usd, 1_000);
+  assert.deepEqual(scan.totals.putToWork.live.symbols, ["AAPL"]);
+  // the call is one more entry in the same eth_call: the owner is the argument, the target the deployed vault
+  const inner = chain.ethCalls[0].inner;
+  assert.equal(chain.ethCalls.length, 1);
+  assert.equal(inner.length, 17 + 34 + 2, "one maxDeposit per deployed vault");
+  const rooms = inner.slice(17 + 34);
+  assert.deepEqual(rooms.map((c) => [c.fn, c.to]), WITH_LIVE.filter((v) => v.vault).map((v) => ["maxDeposit", (v.vault as string).toLowerCase()]), "in the order of the vault list");
+  for (const c of rooms) assert.equal((c.args[0] as string).toLowerCase(), OWNER.toLowerCase());
+});
+
+test("a paused or full vault reports no room, takes nothing, and is named as full rather than counted as working", async () => {
+  const aapl = liveBy("aapl"), nvda = liveBy("nvda");
+  const chain = mock(WITH_LIVE, { [aapl.token.toLowerCase()]: 100n * E18, [nvda.token.toLowerCase()]: 10n * E18 }, flat(200), { rooms: { [AAPL_VAULT.toLowerCase()]: 0n, [PLTR_VAULT.toLowerCase()]: 0n } });
+  const scan = await scanWallet(chain.client, OWNER, WITH_LIVE);
+  const a = scan.rows.find((r) => r.id === "aapl")!;
+  assert.equal(a.roomUsd, 0);
+  assert.equal(a.putToWorkUsd, 0);
+  assert.equal(a.keptPerYearUsd, 0);
+  assert.deepEqual(scan.totals.putToWork.full, ["AAPL"]);
+  assert.equal(scan.totals.putToWork.live.usd, 0);
+  assert.deepEqual(scan.totals.putToWork.live.symbols, []);
+  // the launching NVDA still counts, on its size
+  assert.equal(scan.totals.putToWork.tokens, 1);
+  assert.equal(scan.totals.putToWork.launching.usd, 2_000);
+  assert.deepEqual(scan.totals.putToWork.launching.symbols, ["NVDA"]);
+});
+
+test("the room caps the holding only when it is the smaller; a small holding is taken whole", async () => {
+  const aapl = liveBy("aapl");
+  const chain = mock(WITH_LIVE, { [aapl.token.toLowerCase()]: E18 / 10n }, flat(200), { rooms: { [AAPL_VAULT.toLowerCase()]: 25n * E18, [PLTR_VAULT.toLowerCase()]: 25n * E18 } });
+  const r = (await scanWallet(chain.client, OWNER, WITH_LIVE)).rows[0];
+  assert.equal(r.holdingUsd, 20);
+  assert.equal(r.roomUsd, 5_000);
+  assert.equal(r.putToWorkUsd, 20);
+});
+
+test("an uncapped vault and an unreadable maxDeposit leave the room unknown, and the vault's size stands in", async () => {
+  const aapl = liveBy("aapl");
+  const held = { [aapl.token.toLowerCase()]: 100n * E18 };
+  const uncapped = await scanWallet(mock(WITH_LIVE, held, flat(200), { rooms: { [AAPL_VAULT.toLowerCase()]: 2n ** 256n - 1n, [PLTR_VAULT.toLowerCase()]: 0n } }).client, OWNER, WITH_LIVE);
+  assert.equal(uncapped.rows[0].roomUsd, null);
+  assert.equal(uncapped.rows[0].putToWorkUsd, 5_000);
+  const unreadable = await scanWallet(mock(WITH_LIVE, held, flat(200), { rooms: {} }).client, OWNER, WITH_LIVE);
+  assert.equal(unreadable.rows[0].roomUsd, null);
+  assert.equal(unreadable.rows[0].putToWorkUsd, 5_000);
+});
+
+test("a vault that is launching is never asked for its room, and splits into the launching total", async () => {
+  const nvda = liveBy("nvda");
+  const chain = mock(WITH_LIVE, { [nvda.token.toLowerCase()]: 10n * E18 }, flat(200), { rooms: { [AAPL_VAULT.toLowerCase()]: 5n * E18, [PLTR_VAULT.toLowerCase()]: 5n * E18 } });
+  const scan = await scanWallet(chain.client, OWNER, WITH_LIVE);
+  assert.equal(scan.rows[0].vault, null);
+  assert.equal(scan.rows[0].roomUsd, null);
+  assert.equal(scan.totals.putToWork.live.usd, 0);
+  assert.equal(scan.totals.putToWork.launching.usd, 2_000);
+  assert.equal(scan.totals.putToWork.usd, 2_000);
+  assert.deepEqual(scan.totals.putToWork.full, []);
+});
