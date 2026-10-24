@@ -407,3 +407,12 @@ Sequencer: there is no Chainlink L2 Sequencer Uptime feed for Robinhood Chain. T
 | Pending cut not subtracted (`cut += _pendingCutUsdg(...)` removed, review O-L1) | `test_poc_v4PendingCutDoesNotLeakWhenFeedAboveTwap` (the price rises 1,263 ppm, the whole cut) and `test_poc_v4PendingCutDoesNotLeakAtTheEdgeOfTheGate` (1,263 ppm); `test_poc_v4PendingCutControlFeedAtPool` stays green because the cap binds there; restored, green |
 | Pending cut valued at Chainlink (`pending.mulDiv(px * usdgScale, stockScale)`, the pre-C-1 code, review C-1) | `test_c1_weekendSpotPushDoesNotLowerPrice` (price 0 after the push), `test_c1_weekendSpotPushWithPendingFeesNeverLowersPrice` (199.09 to 198.88 at the first 100x push), `test_c1_weekendSpotPushCannotLiquidateAHealthyBorrower` (the liquidation succeeded), on PLTR and on TSLA; restored, all green; `test_control_weekendSpotPushWithoutPendingFeesDoesNotLowerPrice` is green in both states (nothing pending) |
 | `DEPLOY_ORACLE_FACTORY` default flipped to false in `DeployAll` | `test_oracleFactoryIsDeployedByDefaultAndBoundToTheVaultFactory` ("an empty value falls back to the default"); restored, green |
+
+## Pinned creation-code hashes
+
+The factory registers only the reviewed builds. The hashes below are the `keccak256` of the creation code of the build the review rounds covered; `contracts/pinned-hashes.json` holds the same two values and `scripts/deploy-mainnet.sh` refuses to broadcast unless `DeployAll` computes both from the compiled artifacts, and after the deploy it reads `vaultCodeHash()` and `vaultV4CodeHash()` back from the factory and compares them again.
+
+| Contract | Creation-code hash |
+|---|---|
+| StockVault | `0x85efc542ca5d50c5bc88574651a378b95ff3acdd2898350fbfd5746141ba5c94` |
+| StockVaultV4 | `0xd9d7f807bb6ea3513b3ba7cbec346bc4af8cb6ffd4611aba423c429a3f7e086c` |

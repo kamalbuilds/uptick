@@ -146,3 +146,25 @@ test("--v4-report lists every replayed token and marks exactly the tokens the li
   expect(yes).toEqual(v4Entries.map((r) => r.symbol).sort());
   expect(out[0]).toContain("ON V4");
 });
+
+const run = (...args: string[]) => Bun.spawnSync(["bun", script, ...args], { stderr: "pipe" });
+
+test("--only keeps just the named symbols and --cap-usd lowers each cap to the figure at the Chainlink price, never raises it", () => {
+  const small = JSON.parse(run("--open-only", "--only=PLTR,AAPL,GOOGL", "--cap-usd=1000").stdout.toString());
+  expect(small.map((e: any) => e.symbol).sort()).toEqual(["AAPL", "GOOGL", "PLTR"]);
+  for (const e of small) {
+    expect(e.capUsd).toBe(1000);
+    const t = universe.tokens.find((u: any) => u.symbol === e.symbol);
+    const usd = (BigInt(e.depositCapTokens) * BigInt(Math.round(t.feed.usd * 10 ** t.feed.decimals))) / 10n ** BigInt(18 + t.feed.decimals);
+    expect(Number(usd)).toBeGreaterThanOrEqual(999);
+    expect(Number(usd)).toBeLessThanOrEqual(1000);
+  }
+  const huge = JSON.parse(run("--open-only", "--only=AAPL", "--cap-usd=100000000").stdout.toString());
+  expect(huge[0].capUsd).toBe(list.find((e) => e.symbol === "AAPL")!.capUsd);
+});
+
+test("--only with a symbol that is not in the list fails instead of deploying fewer vaults", () => {
+  const r = run("--open-only", "--only=AAPL,NOPE");
+  expect(r.exitCode).not.toBe(0);
+  expect(r.stderr.toString()).toContain("--only=NOPE");
+});
