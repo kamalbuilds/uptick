@@ -94,3 +94,59 @@ export function parseBorrowApr(json: unknown): MorphoBorrow | null {
   }
   return best;
 }
+
+// ---- how the panel prints money and the first read of the cost -------------------------------------------------------------------------
+
+/** Dollars for the panel, always two decimals and unsigned: a cent is the smallest figure printed, so anything under it reads "under $0.01" and zero reads "$0". */
+export function money(n: number): string {
+  if (!Number.isFinite(n)) return "n/a";
+  const a = Math.abs(n);
+  if (a === 0) return "$0";
+  if (a < 0.01) return "under $0.01";
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(a);
+}
+
+/** Basis points for the panel, unsigned: one decimal, two under 0.1, and "under 0.01 bp" below that. */
+export function bpLabel(bp: number): string {
+  const a = Math.abs(bp);
+  if (a === 0) return "0 bp";
+  if (a < 0.01) return "under 0.01 bp";
+  return `${a.toFixed(a < 0.1 ? 2 : 1)} bp`;
+}
+
+export type CostInput = {
+  symbol: string;
+  notionalUsd: number;
+  /** Round trip through the book in bp of the notional. */
+  roundTripBp: number;
+  /** Lighter's fee in bp of the notional, or null when the fee unit is not known. */
+  feeBp: number | null;
+  marginUsdg: number;
+  /** Price of one token, to turn the margin into tokens. */
+  tokenPrice: number;
+  /** Lighter's loan-to-value on the token when it is posted as margin, else null. */
+  stockLoanToValue: number | null;
+  /** Interest on borrowed margin in USD, or null when nothing is borrowed. */
+  marginInterestUsd: number | null;
+  /** What past weekend funding paid (positive) or charged (negative) a short of this size over the hours left, or null with too little history. */
+  fundingUsd: number | null;
+};
+
+const about = (n: number): string => (money(n).startsWith("under") ? money(n) : `about ${money(n)}`);
+
+/** Whole tokens rounded up from 10 up, hundredths below, so the count posted always covers the margin. */
+function tokensToPost(usdg: number, price: number, ltv: number): string {
+  const t = usdg / (price * ltv);
+  const v = t >= 10 ? Math.ceil(t) : Math.ceil(t * 100) / 100;
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(v);
+}
+
+/** The first read of the panel: what opening and closing costs, what it ties up, and what past funding paid, in dollars and with no basis points. */
+export function costSentences(i: CostInput): string[] {
+  const slip = (i.notionalUsd * (i.roundTripBp + (i.feeBp ?? 0))) / 1e4;
+  const out = [i.feeBp === null ? `Opening and closing costs ${about(slip)} in book depth, before Lighter's fees.` : `Opening and closing costs ${about(slip)}.`];
+  const tokens = i.stockLoanToValue !== null && i.stockLoanToValue > 0 ? `, or about ${tokensToPost(i.marginUsdg, i.tokenPrice, i.stockLoanToValue)} ${i.symbol},` : "";
+  out.push(`It ties up ${money(i.marginUsdg)} USDG${tokens} as margin.${i.marginInterestUsd !== null ? ` Interest on the borrowed USDG is ${about(i.marginInterestUsd)}.` : ""}`);
+  if (i.fundingUsd !== null) out.push(`At the funding of the last four weekends, a short this size would have ${i.fundingUsd >= 0 ? "been paid" : "paid"} ${money(i.fundingUsd)}.`);
+  return out;
+}

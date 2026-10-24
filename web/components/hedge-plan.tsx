@@ -11,7 +11,7 @@ import { vaultAbi } from "@/lib/abis";
 import { robinhoodChain } from "@/lib/chain";
 import { ago, num, pct, usd } from "@/lib/format";
 import { DEFAULT_UNWIND_MINUTES, type HedgePlan as Plan } from "@/lib/hedge";
-import { STRESS_FALL_PCT, aprText, driftFor, DRIFT_SYMBOLS, earnsOrPays, healthAfterFall, lighterTradeUrl, orderLines, orderText, utcStamp } from "@/lib/hedge-view";
+import { STRESS_FALL_PCT, aprText, bpLabel, costSentences, driftFor, DRIFT_SYMBOLS, earnsOrPays, healthAfterFall, lighterTradeUrl, money, orderLines, orderText, utcStamp } from "@/lib/hedge-view";
 import { MORPHO_BLUE } from "@/lib/morpho";
 import { usePrices } from "@/lib/prices";
 import { useHedgePlan, type BorrowRate, type MarginBasis } from "@/lib/use-hedge";
@@ -33,7 +33,7 @@ type LoanProps = Common & {
   healthFactor: number | null;
 };
 
-const bpText = (bp: number) => `${Math.abs(bp).toFixed(Math.abs(bp) < 0.1 ? 2 : 1)} bp`;
+const bpText = bpLabel;
 const utcClock = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" });
 
 function HRow({ k, children, last }: { k: React.ReactNode; children: React.ReactNode; last?: boolean }) {
@@ -61,7 +61,7 @@ export function HedgePlan(p: WalletProps | LoanProps) {
         onClick={() => setOpen((o) => !o)}
         className="press -ml-3 inline-flex h-9 items-center gap-2 rounded-full px-3 text-[13px] font-semibold text-mute hover:bg-panel hover:text-fg"
       >
-        {open ? "Close the weekend hedge" : `Hedge ${p.symbol} for the weekend`}
+        {open ? "Hide the hedge plan" : `Hedge ${p.symbol} for the weekend`}
         <CaretDown size={14} weight="bold" aria-hidden className={cn("transition-transform duration-150 ease-out motion-reduce:transition-none", open && "rotate-180")} />
       </button>
       <div id={panel}>{open ? <Panel {...p} /> : null}</div>
@@ -118,21 +118,45 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
   const started = new Date(plan.window.startAt) > new Date(plan.window.closeAt);
   const afterFall = loan ? healthAfterFall(loan.healthFactor, STRESS_FALL_PCT) : null;
 
+  const price = notional / Number(shares);
+  const stockLtv = margin.kind === "stock" ? margin.loanToValue : null;
+  const cost = costSentences({
+    symbol: p.symbol,
+    notionalUsd: notional,
+    roundTripBp: roundTripBp === "unfillable" ? 0 : roundTripBp,
+    feeBp: plan.fees.value.bp,
+    marginUsdg: plan.marginUsdg.value,
+    tokenPrice: price,
+    stockLoanToValue: stockLtv,
+    marginInterestUsd: mc.borrowed ? mc.usd : null,
+    fundingUsd: carry === null ? null : carry.usd,
+  });
+
+  // Phones read headline, ticket, ledger; from 1024px the ticket sits beside both.
   return (
-    <div className="grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
-      <div className="min-w-0">
+    <div className="grid gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-6">
+      <div className="min-w-0 lg:col-start-1 lg:row-start-1">
         <p className="serif max-w-[560px] text-[22px] leading-7" data-testid="hedge-headline">
           Sell {shares} {p.symbol} on Lighter from {started ? "now" : utcStamp(plan.window.closeAt)} to {utcStamp(plan.window.unwindAt)}.
         </p>
-        <p className="mt-1 text-[13px] leading-5 text-mute">
-          {Math.round(plan.window.hours)} hours {started ? "left" : "in all"}. The default buy-back is {DEFAULT_UNWIND_MINUTES} minutes before the US open.{started ? " Friday’s close has passed, so the hours below count from now." : null}
+        {roundTripBp === "unfillable" ? (
+          <p className="mt-3 max-w-[560px] text-caution" data-testid="hedge-cost">Lighter&rsquo;s book is too thin for this size, so no cost is priced.</p>
+        ) : (
+          <p className="mt-3 max-w-[560px] text-[15px] leading-6" data-testid="hedge-cost">{cost.join(" ")}</p>
+        )}
+        <p className="mt-2 text-[13px] leading-5 text-mute">
+          {Math.round(plan.window.hours)} hours {started ? "left" : "in all"}. Buy back {DEFAULT_UNWIND_MINUTES} minutes before the US open.
         </p>
+      </div>
 
-        <dl className="mt-3 max-w-[690px]">
+      <HandOff className="lg:col-start-2 lg:row-span-2 lg:row-start-1" symbol={p.symbol} shares={shares} leverage={plan.leverage} />
+
+      <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+        <dl className="max-w-[690px]" data-testid="hedge-ledger">
           <HRow k="Shares to short">
             <span className="figure text-[20px] font-medium leading-6" data-testid="hedge-shares">{shares}</span> <span className="text-[15px] font-semibold">{p.symbol}</span>
             <Sub>
-              {loan ? <>the stock leg of {num(Number(formatUnits(loan.shares, SHARE_DECIMALS)), 6)} vault shares, {held} {p.symbol},</> : <>{held} {p.symbol} in the wallet</>} times the {mult.toFixed(6)} multiplier, about {usd(notional, { compact: false })}
+              {loan ? <>the stock leg of {num(Number(formatUnits(loan.shares, SHARE_DECIMALS)), 6)} vault shares, {held} {p.symbol},</> : <>{held} {p.symbol} in the wallet</>}{mult === 1 ? "" : <> times the {mult.toFixed(6)} multiplier</>}, about {money(notional)}
             </Sub>
           </HRow>
 
@@ -153,15 +177,15 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
             ) : (
               <>
                 <span className="figure" data-testid="hedge-funding">
-                  A short <span className={cn("font-semibold", carry.bp > 0 ? "text-kept" : carry.bp < 0 ? "text-loss" : "")}>{earnsOrPays(carry.bp)}</span> {bpText(carry.bp)}, {usd(Math.abs(carry.usd), { compact: false })}
+                  Past weekends {carry.bp >= 0 ? "paid" : "charged"} a short {bpText(carry.bp)} ({money(carry.usd)})
                 </span>
-                <Sub>the mean of {carry.weekendRows} weekend hours of the last 28 days, a history</Sub>
+                <Sub>the mean of {carry.weekendRows} weekend hours of the last 28 days</Sub>
               </>
             )}
           </HRow>
 
           <HRow k="Margin">
-            <Margin plan={plan} margin={margin} symbol={p.symbol} mc={mc} />
+            <Margin plan={plan} margin={margin} symbol={p.symbol} mc={mc} price={price} />
           </HRow>
 
           <HRow k="Net at past funding">
@@ -170,23 +194,19 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
             ) : (
               <>
                 <span className={cn("figure font-medium", net > 0 ? "text-kept" : net < 0 ? "text-loss" : "")} data-testid="hedge-net">
-                  {net > 0 ? "earns" : net < 0 ? "costs" : "breaks even"} {bpText(net)}, {usd(Math.abs(plan.netUsd as number), { compact: false })}
+                  would have {net > 0 ? "netted" : net < 0 ? "cost" : "broken even at"} {bpText(net)} ({money(plan.netUsd as number)})
                 </span>
                 <Sub>at the last 28 days of weekend funding, less round-trip slippage{mc.borrowed ? ", fees and margin interest" : " and fees"}</Sub>
               </>
             )}
           </HRow>
 
-          <HRow k={drift ? `Pool against perp at the unwind, ${drift.pool} pool` : "Pool against perp at the unwind"}>
-            {drift ? (
-              <>
-                <span className="figure" data-testid="hedge-drift">about &plusmn;{drift.unwind.sdBp} bp</span>
-                <Sub>largest {drift.unwind.maxAbsBp} bp, measured 30 minutes before the open; &plusmn;{drift.open.sdBp} bp at the open. The last {drift.unwind.n} weekends, a past range and not a forecast</Sub>
-              </>
-            ) : (
-              <span className="text-mute" data-testid="hedge-drift">Measured for {DRIFT_SYMBOLS.join(", ")} only, so no range for {p.symbol}</span>
-            )}
-          </HRow>
+          {drift ? (
+            <HRow k="Gap between your pool and Lighter at the Monday buy-back">
+              <span className="figure" data-testid="hedge-drift">about &plusmn;{drift.unwind.sdBp} bp</span>
+              <Sub>largest {drift.unwind.maxAbsBp} bp on the {drift.pool} pool, measured 30 minutes before the open; &plusmn;{drift.open.sdBp} bp at the open. The last {drift.unwind.n} weekends, a past range and not a forecast</Sub>
+            </HRow>
+          ) : null}
 
           <HRow k="Chainlink feed" last={loan === null}>
             {feed ? <span className="figure" data-testid="hedge-feed">{p.symbol} / USD updated {ago(feed.updatedAt * 1000)}</span> : <span className="text-mute" data-testid="hedge-feed">The {p.symbol} feed has not answered yet</span>}
@@ -209,23 +229,23 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
 
         {loan ? <p className="mt-3 max-w-[690px] text-[13px] leading-5 text-mute" data-testid="hedge-loan-note">Lighter profit does not repay Morpho. The short is a separate account on a separate exchange, and the loan stays open until you repay it.</p> : null}
         <p className="mt-3 max-w-[690px] text-[13px] leading-5 text-mute">
-          Read at {utcClock(readAt)} UTC from api.rh.lighter.xyz, with uiMultiplier() on Robinhood Chain at block {block.toLocaleString("en-US")}. Funding and the pool gap describe past weekends, not the next one.
+          Read at {utcClock(readAt)} UTC from api.rh.lighter.xyz and, for the token&rsquo;s split multiplier, from Robinhood Chain at block {block.toLocaleString("en-US")}. Funding and the pool gap describe past weekends, not the next one.
         </p>
       </div>
-
-      <HandOff symbol={p.symbol} shares={shares} leverage={plan.leverage} />
     </div>
   );
 }
 
-function Margin({ plan, margin, symbol, mc }: { plan: Ok; margin: MarginBasis; symbol: string; mc: { borrowed: boolean; bp: number; usd: number } }) {
-  const usdg = usd(plan.marginUsdg.value, { compact: false });
-  const ownUsdg = <Sub>or {usdg} USDG of your own at {plan.leverage}x</Sub>;
+function Margin({ plan, margin, symbol, mc, price }: { plan: Ok; margin: MarginBasis; symbol: string; mc: { borrowed: boolean; bp: number; usd: number }; price: number }) {
+  const usdg = money(plan.marginUsdg.value);
+  const ownUsdg = <Sub>or {usdg} of your own USDG at {plan.leverage}x</Sub>;
   if (margin.kind === "stock") {
+    const ltv = margin.loanToValue;
+    const tokens = ltv !== null && ltv > 0 ? Math.ceil(plan.marginUsdg.value / (price * ltv)) : null;
     return (
       <span data-testid="hedge-margin">
-        <span>Post {symbol} itself as Lighter margin{margin.capTokens !== null ? ` (cap ${num(margin.capTokens, 2)} tokens)` : ""}</span>
-        {margin.loanToValue !== null ? <Sub>Lighter counts it at {pct(margin.loanToValue * 100, 0)} of its value, so no borrow interest is counted</Sub> : null}
+        <span>Post {tokens !== null ? `about ${num(tokens, 0)} ` : ""}{symbol} as Lighter margin{margin.capTokens !== null ? ` (up to ${num(margin.capTokens, 0)} per account)` : ""}</span>
+        {ltv !== null ? <Sub>Lighter counts a token at {pct(ltv * 100, 0)} of its value, so {usdg} of margin takes{tokens !== null ? ` about ${num(tokens, 0)} ${symbol}` : ` ${symbol} worth ${money(plan.marginUsdg.value / ltv)}`}. Nothing is borrowed, so no interest is counted</Sub> : <Sub>Nothing is borrowed, so no interest is counted</Sub>}
         {ownUsdg}
       </span>
     );
@@ -240,13 +260,13 @@ function Margin({ plan, margin, symbol, mc }: { plan: Ok; margin: MarginBasis; s
   }
   return (
     <span data-testid="hedge-margin">
-      <span className="figure">{usdg} USDG at {plan.leverage}x costs {bpText(mc.bp)}, {usd(mc.usd, { compact: false })}</span>
+      <span className="figure">{usdg} USDG at {plan.leverage}x costs {bpText(mc.bp)} ({money(mc.usd)})</span>
       <Sub>{margin.kind === "loan" ? "the USDG you borrowed" : "USDG borrowed on Morpho Blue"} at {aprText(margin.rate.pct)} a year for the {Math.round(plan.window.hours)} hours</Sub>
     </span>
   );
 }
 
-function HandOff({ symbol, shares, leverage }: { symbol: string; shares: string; leverage: number }) {
+function HandOff({ symbol, shares, leverage, className }: { symbol: string; shares: string; leverage: number; className?: string }) {
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   async function copy() {
     try {
@@ -257,7 +277,7 @@ function HandOff({ symbol, shares, leverage }: { symbol: string; shares: string;
     }
   }
   return (
-    <div className="min-w-0 self-start rounded-lg border border-line bg-panel p-5">
+    <div className={cn("min-w-0 self-start rounded-lg border border-line bg-panel p-5", className)} data-testid="hedge-ticket">
       <p className="text-[15px] font-semibold">Take it to Lighter</p>
       <p className="mt-1 text-[13px] leading-5 text-mute">Lighter opens on the {symbol} market. Enter the order below in its form.</p>
       <dl className="mt-4" data-testid="hedge-order">

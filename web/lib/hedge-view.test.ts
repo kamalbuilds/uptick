@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { DRIFT_SYMBOLS, STRESS_FALL_PCT, aprText, borrowCovers, driftFor, earnsOrPays, healthAfterFall, lighterTradeUrl, orderLines, orderText, parseBorrowApr, utcStamp } from "./hedge-view.ts";
+import { DRIFT_SYMBOLS, STRESS_FALL_PCT, aprText, borrowCovers, bpLabel, costSentences, driftFor, money, earnsOrPays, healthAfterFall, lighterTradeUrl, orderLines, orderText, parseBorrowApr, utcStamp } from "./hedge-view.ts";
 
 const fixture = (f: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url), "utf8")) as Record<string, unknown>;
 
@@ -110,4 +110,35 @@ test("a market with no supply is not a price, and a bad answer is an error", () 
   assert.equal(parseBorrowApr({ data: { markets: { items: [{ marketId: "0xab", state: null }] } } }), null);
   assert.equal(parseBorrowApr({ data: { markets: { items: [mk(10, -0.1)] } } }), null);
   assert.throws(() => parseBorrowApr({ errors: [{ message: "x" }] }), /no markets list/);
+});
+
+test("small dollar and basis-point figures keep two decimals and read under the smallest one", () => {
+  assert.equal(money(9.7034), "$9.70");
+  assert.equal(money(0.3094), "$0.31");
+  assert.equal(money(0.003), "under $0.01");
+  assert.equal(money(-4160.8), "$4,160.80");
+  assert.equal(money(0), "$0");
+  assert.equal(bpLabel(2.31), "2.3 bp");
+  assert.equal(bpLabel(0.04), "0.04 bp");
+  assert.equal(bpLabel(0.0003), "under 0.01 bp");
+  assert.equal(bpLabel(-4.7), "4.7 bp");
+  assert.equal(bpLabel(0), "0 bp");
+});
+
+test("the cost lines are in dollars: the round trip priced at the size, the margin in USDG and in tokens at Lighter's value, past funding paid", () => {
+  const base = { symbol: "NVDA", notionalUsd: 20_000, roundTripBp: 3, feeBp: 0, marginUsdg: 4_000, tokenPrice: 200, stockLoanToValue: 0.5, marginInterestUsd: null, fundingUsd: 9.694 };
+  assert.deepEqual(costSentences(base), [
+    "Opening and closing costs about $6.00.",
+    "It ties up $4,000.00 USDG, or about 40 NVDA, as margin.",
+    "At the funding of the last four weekends, a short this size would have been paid $9.69.",
+  ]);
+  // 4000 / (200 x 0.5) = 40 exactly; a fraction rounds up so the tokens always cover the margin
+  assert.match(costSentences({ ...base, marginUsdg: 4_010 })[1], /about 41 NVDA/);
+  // no stock margin: no token count; borrowed margin adds its interest; funding that charged says paid; a thin history says nothing
+  const borrowed = costSentences({ ...base, stockLoanToValue: null, marginInterestUsd: 0.003, fundingUsd: -2.5 });
+  assert.equal(borrowed[1], "It ties up $4,000.00 USDG as margin. Interest on the borrowed USDG is under $0.01.");
+  assert.match(borrowed[2], /would have paid \$2\.50\.$/);
+  assert.equal(costSentences({ ...base, fundingUsd: null }).length, 2);
+  assert.match(costSentences({ ...base, feeBp: null })[0], /in book depth, before Lighter's fees/);
+  assert.ok(!costSentences(base).join(" ").includes(" bp"), "no basis points in the first read");
 });
