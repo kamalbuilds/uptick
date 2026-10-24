@@ -252,9 +252,8 @@ python3 scripts/paper.py order ioc NVDA --side short --amount 1275.0913 --price 
 python3 scripts/paper.py positions --symbol NVDA`}
       />
       <P>
-        Run verbatim against the live Lighter order book, that proposal filled in full at an average within 1
-        basis point of expected_avg_fill_price, every fill at or above the limit, and the kit&apos;s liquidation
-        price matched the estimate to three cents. A size under Lighter&apos;s smallest order returns the
+        In a paper run against the live Lighter order book on 2026-10-24, that proposal filled in full at an
+        average within 1 basis point of expected_avg_fill_price, with every fill at or above the limit. A size under Lighter&apos;s smallest order returns the
         reason and no proposal, so there is nothing to paste.
       </P>
 
