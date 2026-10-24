@@ -4,7 +4,7 @@
  *  1. data-fact: an element carrying data-fact="a.b.c" must show exactly docs/facts.json a.b.c, so a headline figure whose label sits in another element is still bound to its fact.
  *  2. Fee per $1 lost: every non-range figure in a sentence about weekends or NYSE hours must belong to ONE sample (the fixed-range spike, the 30-day vault replay or the 30-day whole-pool replay).
  *  3. Off-hours share: "N% of swaps" or "N% of fees" in a sentence about off-hours must equal web/lib/moment.json offHours, rounded to the precision quoted.
- *  4. Sample labels: a spike figure needs the pools, the fixed range and the start date in its own block (slide, paragraph, list item or table row); a replay figure needs its label in its block.
+ *  4. Sample labels: a spike figure needs the pools, the fixed range and the start date on its own line, or the sentence says "pooled" or "those three pools" and the block carries them; a replay figure needs its label on its own line.
  *  Each check must read something: finding no instance of a claim is a failure. */
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -35,6 +35,8 @@ const inSample = (n, set) => set.some((v) => num(v) === n);
 /** Blocks a label must share with its figure: a slide, a paragraph, a list item, a table row, a JSX paragraph. */
 const blocks = (t) => t.split(/\n[ \t]*\n|(?=<section)|<\/section>|\n(?=\s*[-*|] )|<\/?P>/);
 const sentences = (t) => t.split(/(?<=[.!?;:])\s+(?=[A-Z$<0-9])/);
+/** Section 4 holds each figure to the labels on its own line, so a quote appended on the next line of a labelled paragraph is checked alone. */
+const lines = (t) => t.split("\n");
 
 for (const f of files) {
   const text = readFileSync(resolve(root, f), "utf8");
@@ -76,18 +78,22 @@ for (const f of files) {
   const spikeRe = new RegExp(`(?<![\\d.])(${[fp.spike.weekend, fp.spike.nyse].map((v) => String(v).replace(".", "\\.")).join("|")})(?![\\d])`, "g");
   const replayVals = Object.values(fp.replay_30d).flatMap((s) => [s.vault, s.pool]);
   const replayRe = new RegExp(`(?<![\\d.])(${[...new Set(replayVals)].map((v) => String(v).replace(".", "\\.")).join("|")})(?![\\d])`, "g");
+  const BACKREF = /\b(pooled|those (three )?pools|these (three )?pools|the same (sample|pools))\b/i;
   const spikeNeeds = [["NVDA", /NVDA/], ["SPCX", /SPCX/], ["TSLA", /TSLA/], ["fixed", /(fixed|static)/i], ["24 August", /(24 August|2026-08-24)/]];
-  for (const b of blocks(text)) {
-    for (const m of b.matchAll(spikeRe)) {
+  for (const b of blocks(text)) for (const ln of lines(b)) for (const s of sentences(ln)) {
+    for (const m of s.matchAll(spikeRe)) {
       seen.spike++;
-      for (const [name, re] of spikeNeeds) if (!re.test(b)) fail(f, `spike figure ${m[1]} without "${name}" in its block`, b.slice(Math.max(0, m.index - 80), m.index + 60));
+      // The labels sit in the figure's own sentence, or the sentence points back at them ("pooled", "those three pools") and its block carries them.
+      const scope = BACKREF.test(s) ? b : ln;
+      for (const [name, re] of spikeNeeds) if (!re.test(scope)) fail(f, `spike figure ${m[1]} without "${name}" on its own line or a back-reference to its block`, s);
     }
-    for (const m of b.matchAll(replayRe)) {
-      // A replay value is also an ordinary decimal elsewhere in a page; only a fee-per-dollar-lost sentence is held to the label.
-      const s = sentences(b).find((x) => x.includes(m[1]));
-      if (!s || !/\b(weekends?|weeknights?|NYSE)\b/i.test(b) || !PER_DOLLAR.test(b)) continue;
+  }
+  for (const b of blocks(text)) for (const ln of lines(b)) {
+    // A replay value is also an ordinary decimal elsewhere in a page; only a fee-per-dollar-lost line is held to the label.
+    if (!/\b(weekends?|weeknights?|NYSE)\b/i.test(ln) || !PER_DOLLAR.test(ln)) continue;
+    for (const m of ln.matchAll(replayRe)) {
       seen.replay++;
-      if (!/(30-day replay|vault replay|whole-pool|pool replay)/i.test(b)) fail(f, `30-day replay figure ${m[1]} without its label in its block`, b.slice(Math.max(0, m.index - 80), m.index + 60));
+      if (!/(30-day replay|vault replay|whole-pool|pool replay)/i.test(ln)) fail(f, `30-day replay figure ${m[1]} without its label on its own line`, ln);
     }
   }
 }
