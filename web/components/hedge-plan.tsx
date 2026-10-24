@@ -33,7 +33,7 @@ type LoanProps = Common & {
   healthFactor: number | null;
 };
 
-const bpText = (bp: number) => `${Math.abs(bp).toFixed(1)} bp`;
+const bpText = (bp: number) => `${Math.abs(bp).toFixed(Math.abs(bp) < 0.1 ? 2 : 1)} bp`;
 const utcClock = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" });
 
 function HRow({ k, children, last }: { k: React.ReactNode; children: React.ReactNode; last?: boolean }) {
