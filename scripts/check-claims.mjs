@@ -60,7 +60,7 @@ for (const f of files) {
   // 3. off-hours share
   for (const b of blocks(text)) for (const s of sentences(b)) {
     if (!/off[- ]hours|outside (of )?(NYSE|regular|market)/i.test(s)) continue;
-    for (const m of s.matchAll(/(\d+(?:\.\d+)?)% of (?:their |the |its |all )?(swaps|fees)\b/gi)) {
+    for (const m of s.matchAll(/(\d+(?:\.\d+)?)% of (?:[\w'-]+ ){0,3}?(swaps|fees)\b/gi)) {
       seen.share++;
       const want = mo.off_hours[`${m[2].toLowerCase()}_pct`], dp = (m[1].split(".")[1] ?? "").length;
       if (num(m[1]) !== Number(want.toFixed(dp))) fail(f, `states ${m[1]}% of ${m[2]} off hours, docs/facts.json moment.off_hours.${m[2].toLowerCase()}_pct is ${want}`, s);
