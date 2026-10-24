@@ -227,6 +227,40 @@ function StateKey() {
   );
 }
 
+/** Real Robinhood Chain wallets (externally owned, from Blockscout's top holders on 2026-10-24), one per kind of result. Labels name the
+ *  shape of the holding, not its size, because balances move. */
+const EXAMPLES = [
+  { label: "PLTR holder, one open vault", address: "0x335836A23a2E475265058CB55318EF91A07136b7" },
+  { label: "Four tokens across all three states", address: "0xdBD1bac81ad581C7198C9D155cA468F32a0C29DD" },
+  { label: "All 17 Stock Tokens", address: "0x92d435C96E63c43E12d6D0AB28f6b0B04072F765" },
+  { label: "Mostly NVDA", address: "0x28C66690Ae101a4f07546b07a2Ac8Eb439b6C245" },
+] as const;
+
+function Examples({ current }: { current: string }) {
+  return (
+    <div className="mt-4 max-w-[640px]">
+      <p className="text-[13px] leading-5 text-mute">Or open a real holder&rsquo;s wallet</p>
+      <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+        {EXAMPLES.map((e) => {
+          const on = current.toLowerCase() === e.address.toLowerCase();
+          return (
+            <li key={e.address}>
+              <Link
+                href={`/check?address=${e.address}`}
+                aria-current={on ? "page" : undefined}
+                className={cn("flex min-h-11 flex-col justify-center rounded-lg border px-3 py-2 hover:border-fg", on ? "border-fg" : "border-line")}
+              >
+                <span className="text-[13px] leading-5">{e.label}</span>
+                <span className="figure text-[12px] leading-4 text-mute">{shortAddress(e.address)}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 /** /check: paste a wallet, see which Stock Tokens sit idle, what each vault would keep, and where a loan opens. The address lives in the URL so a result can be shared. */
 export function IdleFinder() {
   const raw = useSearchParams().get("address") ?? "";
@@ -240,6 +274,7 @@ export function IdleFinder() {
         Paste any wallet address. Uptick reads which of the {VAULTS.length} Stock Tokens it holds from Robinhood Chain, prices them with Chainlink, and shows what each vault would keep on them and where a loan against them opens. Nothing to connect or sign.
       </p>
       <CheckForm key={raw} initial={raw} className="mt-6 max-w-[640px]" />
+      <Examples current={raw} />
       {raw !== "" && owner === null ? (
         <p role="alert" className="mt-4 max-w-[640px] text-loss">The address in the link is not a wallet address. Paste the 42-character 0x address above.</p>
       ) : null}
