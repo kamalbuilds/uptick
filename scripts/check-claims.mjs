@@ -16,6 +16,8 @@ const files = process.argv.slice(2);
 if (files.length === 0) { console.error("check-claims: no files given"); process.exit(2); }
 let bad = 0;
 const fail = (f, msg, ctx) => { console.log(`${f}: ${msg}${ctx ? `\n  ${ctx.replace(/\s+/g, " ").slice(0, 200)}` : ""}`); bad = 1; };
+/** Headline figures whose label sits in another element are bound to a fact by data-fact; deleting the attribute must fail, so each file lists the keys it has to carry. */
+const REQUIRED_FACTS = { "deck/index.html": ["tests.security", "mutations.total"] };
 const seen = { dataFact: 0, ratio: 0, share: 0, spike: 0, replay: 0 };
 
 const fp = facts.fee_per_dollar_lost, mo = facts.moment;
@@ -38,11 +40,14 @@ for (const f of files) {
   const text = readFileSync(resolve(root, f), "utf8");
 
   // 1. data-fact
+  const carried = new Set();
   for (const m of text.matchAll(/data-fact="([a-z0-9_.]+)"[^>]*>\s*([^<]*?)\s*</gi)) {
-    seen.dataFact++;
+    seen.dataFact++; carried.add(m[1]);
     const want = m[1].split(".").reduce((o, k) => o?.[k], facts);
     if (want === undefined || String(want) !== m[2].replace(/,/g, "")) fail(f, `data-fact="${m[1]}" shows "${m[2]}", docs/facts.json says ${want}`);
   }
+
+  for (const k of REQUIRED_FACTS[f] ?? []) if (!carried.has(k)) fail(f, `data-fact="${k}" is missing; this file must bind that figure to docs/facts.json`);
 
   // 2. one sample per sentence
   for (const b of blocks(text)) for (const s of sentences(b)) {
