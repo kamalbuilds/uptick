@@ -17,7 +17,7 @@ import universe from "@/lib/vault-universe.json";
 export const metadata: Metadata = {
   title: "The evidence gate | Uptick",
   description:
-    "How the 30-day replay decides whether a vault takes deposits, caps a single ticket or closes, and the gate state of every vault today.",
+    "How the 30-day replay decides whether a vault opens, caps a single ticket or closes, and the gate state of every vault today.",
 };
 
 const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
@@ -173,7 +173,7 @@ worst < -20           closed    deposits refused`}
         caption={`Read from web/lib/vault-universe.json at block ${universe.universeBlock.toLocaleString("en-US")}.`}
       />
       <P>
-        A closed vault still has a contract, a feed and a price. It simply does not take deposits
+        A closed vault still has a contract, a feed and a price. It simply stays shut to deposits
         while the gate says closed. When a later replay clears the floor, the same vault can reopen
         without a migration.
       </P>

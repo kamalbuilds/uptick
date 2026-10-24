@@ -141,8 +141,9 @@ export default function ContractsPage() {
       </P>
       <P>
         Session pricing is a measurement, not a preference. Fee per dollar of one-hour markout on the
-        NVDA, SPCX and TSLA pools ran 1.03 to 1.35 in NYSE hours and 3.94 to 33.27 on weekends; the
-        pooled figures are 1.16 and 13.64. The schedule is a deploy parameter, so a new pool can set
+        NVDA, SPCX and TSLA pools, in a fixed range from 24 August to 17 October 2026, ran 1.03 to
+        1.35 in NYSE hours and 3.94 to 33.27 on weekends; the pooled figures are 1.16 and 13.64.
+        The schedule is a deploy parameter, so a new pool can set
         its own three fees within the same cap.
       </P>
 

@@ -51,6 +51,56 @@ const fee = {
 const abs = must(read("paper/main.tex").match(/We replay ([\d,]+) swaps on three Stock Token pools over (\d+) days/), "sample size in paper/main.tex");
 const study = { swaps: Number(abs[1].replaceAll(",", "")), days: Number(abs[2]), pools: 3, source: "paper/main.tex abstract" };
 
+// MCP tools: the entries of the TOOLS array in api/src/mcp.ts (what tools/list returns).
+const mcpSrc = read("api/src/mcp.ts");
+const toolsBlock = must(mcpSrc.match(/const TOOLS: McpTool\[\] = \[([\s\S]*?)\n\];/), "TOOLS array in api/src/mcp.ts");
+const mcp = { tools: [...toolsBlock[1].matchAll(/^ {4}name: "([a-z_]+)"/gm)].map((m) => m[1]) };
+mcp.count = mcp.tools.length;
+if (mcp.count === 0) throw new Error("facts: no MCP tools found");
+
+// Mutation checks: rows of every "| Mutation | Tests that went red |" table in contracts/SECURITY.md whose second cell names a test that went red.
+// A row whose cell starts with "none" is a documented non-guard and is not counted.
+const mutations = { by_table: [], total: 0 };
+{
+  const lines = read("contracts/SECURITY.md").split("\n");
+  let section = "", inTable = false, n = 0, name = "";
+  const flush = () => { if (inTable) mutations.by_table.push({ section: name, checks: n }); inTable = false; };
+  for (const l of lines) {
+    if (l.startsWith("## ")) { flush(); section = l.slice(3); }
+    if (/^\| Mutation \| Tests that went red \|/.test(l)) { flush(); inTable = true; n = 0; name = section; continue; }
+    if (inTable) {
+      if (!l.startsWith("|")) { flush(); continue; }
+      if (/^\|[-| ]+\|$/.test(l)) continue;
+      const cell = l.split("|")[2]?.trim() ?? "";
+      if (cell && !/^none/i.test(cell)) n++;
+    }
+  }
+  flush();
+  mutations.total = mutations.by_table.reduce((a, t) => a + t.checks, 0);
+  if (!(mutations.by_table.length >= 3 && mutations.total > 0)) throw new Error("facts: mutation tables not found in contracts/SECURITY.md");
+}
+
+// SPCX holders: Blockscout API v2 /tokens/<addr>, docs/research/founder-house/PLATFORM-TRUTH.md "Stock Tokens" table (outside this repo), read 2026-10-16. One value for every surface.
+const holders = { spcx: 114222, nvda: 189012, read_at: "2026-10-16", source: "Blockscout API v2 /tokens/<addr> via docs/research/founder-house/PLATFORM-TRUTH.md Stock Tokens table" };
+
+// The two weekend fee-per-$1-lost samples. The 30-day replay (17 gate pools) is web/lib/moment.json; the study is the fixed-range spike.
+const moment = JSON.parse(read("web/lib/moment.json"));
+const feePerDollarLost = {
+  replay_30d: Object.fromEntries(Object.entries(moment.sessions).map(([k, v]) => [k, { vault: v.feePerDollarLost, pool: v.poolFeePerDollarLost }])),
+  replay_label: "30-day replay",
+  spike: { weekend: 13.64, weeknight: 2.74, nyse: 1.16, sample: "fixed range, NVDA, SPCX and TSLA pools, 24 August to 17 October 2026 (54 days), 5,113,049 swaps", source: "spikes/stock-vaults/FINDINGS.md" },
+};
+
+// The 30-day replay figures a public file may quote: session shares and the off-hours share of swaps and fees. check-facts reads these, so a quote with another value fails.
+const momentFacts = {
+  window_days: moment.window.days, vaults: moment.vaults, swaps: moment.swaps,
+  off_hours: { swaps_pct: moment.offHours.swapsPct, fees_pct: moment.offHours.feesPct },
+  sessions: Object.fromEntries(Object.entries(moment.sessions).map(([k, v]) => [k, { swaps_pct: v.swapsPct, fees_pct: v.feesPct }])),
+  source: "web/lib/moment.json",
+};
+
+const repo = "https://github.com/kamalbuilds/uptick";
+
 const facts = {
   generated_by: "scripts/facts.mjs",
   sources: {
@@ -59,9 +109,15 @@ const facts = {
     doors: "web/lib/vault-universe.json",
     fee: "contracts/script/DeployAll.s.sol PERF_FEE_BPS default, contracts/src/StockVault.sol perfFeeBps bound, web/lib/vault-universe.json entryFeeBps, keeper/data/params.json",
     study: "paper/main.tex",
+    mcp: "TOOLS array in api/src/mcp.ts",
+    mutations: "contracts/SECURITY.md tables headed Mutation | Tests that went red, rows that name a test",
+    holders: "constant in this script, read 2026-10-16 from Blockscout (see holders.source)",
+    fee_per_dollar_lost: "web/lib/moment.json and the spike constants in this script",
+    moment: "web/lib/moment.json",
   },
   tests: { total, security },
   reviews: { files: reviews, count: reviews.length, rereview_files: rereviews, reports_total: reviews.length + rereviews.length },
+  mcp, mutations, holders, fee_per_dollar_lost: feePerDollarLost, moment: momentFacts, repo,
   doors, fee, study,
 };
 writeFileSync(resolve(root, "docs/facts.json"), JSON.stringify(facts, null, 2) + "\n");

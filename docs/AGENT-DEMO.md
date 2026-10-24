@@ -162,7 +162,7 @@ claude mcp add --transport http uptick https://uptick-evidence.earn-shield-alert
 
 Then type, in plain language:
 
-> Using the uptick tools: how many vaults are open, reduced and closed? Show me why PLTR is open and which Uniswap pool it uses. Prepare a 1000 USDG deposit into PLTR for 0x2222222222222222222222222222222222222222, then try the same for SPCX and tell me why it is refused.
+> Using the uptick tools: count the vaults by gate state. Show me why PLTR is open and which Uniswap pool it uses. Prepare a 1000 USDG deposit into PLTR for 0x2222222222222222222222222222222222222222, then try the same for SPCX and tell me why it is refused.
 
 The agent calls `list_vaults`, `get_vault_evidence`, and `prepare_deposit` twice, and answers with the counts, PLTR's v4 pool id and gate reason, the transactions to sign (or the gate answer), and SPCX's refusal reason.
 
