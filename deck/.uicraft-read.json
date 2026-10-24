@@ -1,14 +1,14 @@
 {
-  "as": "investor pitch deck for Robinhood Chain stock token holders and funds, calm ledger",
-  "dials": "5/4/2",
+  "as": "investor pitch deck for Founder House judges, austere ink-and-hairline, one serif verdict per slide",
+  "dials": "6/3/6",
   "type": "Literata + Hanken Grotesk",
-  "surface": "off-black",
-  "accent": "green",
+  "surface": "off-black #0a0b0c",
+  "accent": "kept green #1fd16b",
   "radius": "8",
   "showpiece": "none",
-  "direction": "design-taste-frontend",
-  "review": "anti-ai-slop-frontend",
-  "research": "skipped: extends web/DESIGN.md, researched in web/design-research",
-  "cwd": "/Users/kamal/Desktop/arbitrium/stock-vaults-app/deck",
-  "ts": "2026-10-21T02:34:40Z"
+  "direction": "",
+  "review": "",
+  "research": "skipped: extends web/DESIGN.md Uptick-ink-and-hairline and deck/DESIGN.md, researched in web/design-research/REFS.md",
+  "cwd": "/private/tmp/deck-visual-r2/deck",
+  "ts": "2026-10-24T00:17:41Z"
 }
