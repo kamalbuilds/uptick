@@ -11,7 +11,7 @@ import { vaultAbi } from "@/lib/abis";
 import { robinhoodChain } from "@/lib/chain";
 import { ago, num, pct, usd } from "@/lib/format";
 import { DEFAULT_UNWIND_MINUTES, type HedgePlan as Plan } from "@/lib/hedge";
-import { STRESS_FALL_PCT, driftFor, DRIFT_SYMBOLS, earnsOrPays, healthAfterFall, lighterTradeUrl, orderLines, orderText, utcStamp } from "@/lib/hedge-view";
+import { STRESS_FALL_PCT, aprText, driftFor, DRIFT_SYMBOLS, earnsOrPays, healthAfterFall, lighterTradeUrl, orderLines, orderText, utcStamp } from "@/lib/hedge-view";
 import { MORPHO_BLUE } from "@/lib/morpho";
 import { usePrices } from "@/lib/prices";
 import { useHedgePlan, type BorrowRate, type MarginBasis } from "@/lib/use-hedge";
@@ -93,7 +93,7 @@ function Panel(p: WalletProps | LoanProps) {
         <p className="max-w-[640px]" data-testid="hedge-no-perp">Lighter Robinhood Chain lists no active {p.symbol} perpetual, so there is no short to place against this token.</p>
       ) : s.plan.status === "below_min" ? (
         <p className="max-w-[640px]" data-testid="hedge-below-min">
-          The {p.symbol} {p.source === "wallet" ? "in this wallet" : "behind these shares"} is under Lighter&rsquo;s smallest {p.symbol} order of {s.plan.minBase.value} shares, so there is nothing to short.
+          The {p.symbol} {p.source === "wallet" ? "in this wallet" : "behind these shares"} is {s.plan.limit === "min_base_amount" ? <>under Lighter&rsquo;s smallest {p.symbol} order of {s.plan.minBase.value} shares</> : <>worth under Lighter&rsquo;s smallest order of {usd(s.plan.minQuoteUsd.value, { compact: false })}</>}, so there is nothing to short.
         </p>
       ) : (
         <Ready p={p} plan={s.plan} margin={s.margin} block={s.multiplierBlock} readAt={s.readAt} balanceRaw={balanceRaw as bigint} />
@@ -114,17 +114,18 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
   const carry = plan.carry.value;
   const mc = plan.marginCarry.value;
   const net = plan.netBp;
-  const started = new Date(readAt) > new Date(plan.window.closeAt);
+  // Once Friday's close has passed the short starts now, and the hours, funding and margin interest are for what is left of the weekend.
+  const started = new Date(plan.window.startAt) > new Date(plan.window.closeAt);
   const afterFall = loan ? healthAfterFall(loan.healthFactor, STRESS_FALL_PCT) : null;
 
   return (
     <div className="grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
       <div className="min-w-0">
         <p className="serif max-w-[560px] text-[22px] leading-7" data-testid="hedge-headline">
-          Sell {shares} {p.symbol} on Lighter from {utcStamp(plan.window.closeAt)} to {utcStamp(plan.window.unwindAt)}.
+          Sell {shares} {p.symbol} on Lighter from {started ? "now" : utcStamp(plan.window.closeAt)} to {utcStamp(plan.window.unwindAt)}.
         </p>
         <p className="mt-1 text-[13px] leading-5 text-mute">
-          {Math.round(plan.window.hours)} hours in all. The default buy-back is {DEFAULT_UNWIND_MINUTES} minutes before the US open.{started ? " Friday’s close has passed, and the hours below count from it." : null}
+          {Math.round(plan.window.hours)} hours {started ? "left" : "in all"}. The default buy-back is {DEFAULT_UNWIND_MINUTES} minutes before the US open.{started ? " Friday’s close has passed, so the hours below count from now." : null}
         </p>
 
         <dl className="mt-3 max-w-[690px]">
@@ -163,7 +164,7 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
             <Margin plan={plan} margin={margin} symbol={p.symbol} mc={mc} />
           </HRow>
 
-          <HRow k="Net for the weekend">
+          <HRow k="Net at past funding">
             {net === null ? (
               <span className="text-mute" data-testid="hedge-net">Waits for a complete read</span>
             ) : (
@@ -171,12 +172,12 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
                 <span className={cn("figure font-medium", net > 0 ? "text-kept" : net < 0 ? "text-loss" : "")} data-testid="hedge-net">
                   {net > 0 ? "earns" : net < 0 ? "costs" : "breaks even"} {bpText(net)}, {usd(Math.abs(plan.netUsd as number), { compact: false })}
                 </span>
-                <Sub>funding less round-trip slippage{mc.borrowed ? ", fees and margin interest" : " and fees"}</Sub>
+                <Sub>at the last 28 days of weekend funding, less round-trip slippage{mc.borrowed ? ", fees and margin interest" : " and fees"}</Sub>
               </>
             )}
           </HRow>
 
-          <HRow k="Pool against perp at the unwind">
+          <HRow k={drift ? `Pool against perp at the unwind, ${drift.pool} pool` : "Pool against perp at the unwind"}>
             {drift ? (
               <>
                 <span className="figure" data-testid="hedge-drift">about &plusmn;{drift.unwind.sdBp} bp</span>
@@ -233,14 +234,14 @@ function Margin({ plan, margin, symbol, mc }: { plan: Ok; margin: MarginBasis; s
     return (
       <span data-testid="hedge-margin">
         <span className="figure">{usdg} USDG at {plan.leverage}x</span>
-        <Sub>{margin.why === "no_market" ? `no Morpho market lends USDG against ${symbol} right now, so no interest is counted` : "the Morpho rate did not answer, so no interest is counted"}</Sub>
+        <Sub>{margin.why === "no_market" ? `no Morpho market has ${usdg} to lend against ${symbol} right now, so no interest is counted` : "the Morpho rate did not answer, so no interest is counted"}</Sub>
       </span>
     );
   }
   return (
     <span data-testid="hedge-margin">
       <span className="figure">{usdg} USDG at {plan.leverage}x costs {bpText(mc.bp)}, {usd(mc.usd, { compact: false })}</span>
-      <Sub>{margin.kind === "loan" ? "the USDG you borrowed" : "USDG borrowed on Morpho Blue"} at {pct(margin.rate.pct, 1)} a year for the {Math.round(plan.window.hours)} hours</Sub>
+      <Sub>{margin.kind === "loan" ? "the USDG you borrowed" : "USDG borrowed on Morpho Blue"} at {aprText(margin.rate.pct)} a year for the {Math.round(plan.window.hours)} hours</Sub>
     </span>
   );
 }

@@ -31,17 +31,19 @@ export const orderText = (symbol: string, shares: string, leverage: number): str
 export const lighterTradeUrl = (symbol: string): string => `${LIGHTER_RH.app}/trade/${encodeURIComponent(symbol)}`;
 
 export type DriftPoint = { n: number; sdBp: number; maxAbsBp: number };
-export type Drift = { unwind: DriftPoint; open: DriftPoint };
+/** `pool` is the Uniswap fee tier the gap was measured against: the one the symbol's Uptick vault trades in. */
+export type Drift = { pool: string; unwind: DriftPoint; open: DriftPoint };
 
-const SYMBOLS = drift.symbols as Record<string, Record<string, DriftPoint>>;
+const SYMBOLS = drift.symbols as unknown as Record<string, Record<string, DriftPoint | string>>;
 
 /** The measured gap between pool and perp at the unwind (30 minutes before the open) and at the open, over past weekends, or null for a symbol the spike did not measure. */
 export function driftFor(symbol: string): Drift | null {
   const row = SYMBOLS[symbol.toUpperCase()];
   if (!row) return null;
+  const pool = row.pool;
   const unwind = row[drift.points.unwind];
   const open = row[drift.points.open];
-  return unwind && open ? { unwind, open } : null;
+  return typeof pool === "string" && typeof unwind === "object" && typeof open === "object" ? { pool, unwind, open } : null;
 }
 
 export const DRIFT_SYMBOLS = Object.keys(SYMBOLS);
@@ -63,9 +65,15 @@ export const earnsOrPays = (bp: number): "earns" | "pays" | "settles at zero" =>
 export const MORPHO_API = "https://blue-api.morpho.org/graphql";
 
 export const BORROW_APR_QUERY =
-  "query($c:[String!],$l:[String!]){ markets(first: 20, where:{chainId_in:[4663], collateralAssetAddress_in:$c, loanAssetAddress_in:$l}, orderBy: SupplyAssetsUsd, orderDirection: Desc) { items { marketId lltv state{ borrowApy supplyAssetsUsd utilization timestamp } } } }";
+  "query($c:[String!],$l:[String!]){ markets(first: 20, where:{chainId_in:[4663], collateralAssetAddress_in:$c, loanAssetAddress_in:$l}, orderBy: SupplyAssetsUsd, orderDirection: Desc) { items { marketId lltv state{ borrowApy supplyAssetsUsd borrowAssetsUsd utilization timestamp } } } }";
 
-export type MorphoBorrow = { pct: number; marketId: string; supplyUsd: number; observedAt: string };
+export type MorphoBorrow = { pct: number; marketId: string; supplyUsd: number; /** Supplied less borrowed: what a new borrower can still take out. */ liquidityUsd: number; observedAt: string };
+
+/** A yearly rate for display: one decimal, or two below 0.1% so a thin market does not read "0.0%". */
+export const aprText = (pct: number): string => `${pct.toFixed(Math.abs(pct) < 0.1 ? 2 : 1)}%`;
+
+/** Whether the market has the USDG to lend that the margin needs. A rate on a market that cannot fill the borrow is not a price the holder can take. */
+export const borrowCovers = (m: MorphoBorrow, marginUsdg: number): boolean => m.liquidityUsd >= marginUsdg;
 
 /** The borrow rate of the deepest USDG market for a collateral token, as a yearly percent. The API answers an APY (compounded); the planner prices simple interest over a few days, so the
  *  rate is turned back into the continuous APR, ln(1 + apy). Null when no market for the pair holds any supply: a rate on an empty market is not a price anyone can borrow at. */
@@ -74,14 +82,15 @@ export function parseBorrowApr(json: unknown): MorphoBorrow | null {
   if (!Array.isArray(items)) throw new Error("Morpho API answered no markets list");
   let best: MorphoBorrow | null = null;
   for (const it of items) {
-    const o = it as { marketId?: unknown; state?: { borrowApy?: unknown; supplyAssetsUsd?: unknown; timestamp?: unknown } | null };
+    const o = it as { marketId?: unknown; state?: { borrowApy?: unknown; supplyAssetsUsd?: unknown; borrowAssetsUsd?: unknown; timestamp?: unknown } | null };
     const s = o.state;
     if (!s || typeof o.marketId !== "string") continue;
     const apy = s.borrowApy;
     const supply = s.supplyAssetsUsd;
+    const borrowed = s.borrowAssetsUsd;
     const ts = s.timestamp;
-    if (typeof apy !== "number" || !Number.isFinite(apy) || apy < 0 || typeof supply !== "number" || !(supply > 0) || typeof ts !== "number") continue;
-    if (best === null || supply > best.supplyUsd) best = { pct: Math.log1p(apy) * 100, marketId: o.marketId, supplyUsd: supply, observedAt: new Date(ts * 1000).toISOString() };
+    if (typeof apy !== "number" || !Number.isFinite(apy) || apy < 0 || typeof supply !== "number" || !(supply > 0) || typeof borrowed !== "number" || !(borrowed >= 0) || typeof ts !== "number") continue;
+    if (best === null || supply > best.supplyUsd) best = { pct: Math.log1p(apy) * 100, marketId: o.marketId, supplyUsd: supply, liquidityUsd: Math.max(0, supply - borrowed), observedAt: new Date(ts * 1000).toISOString() };
   }
   return best;
 }

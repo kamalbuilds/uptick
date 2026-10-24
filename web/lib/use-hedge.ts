@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Address } from "viem";
 import { hedgeable, planHedge, type HedgePlan } from "./hedge.ts";
 import { readMultipliers } from "./hedge-chain.ts";
-import { BORROW_APR_QUERY, MORPHO_API, parseBorrowApr } from "./hedge-view.ts";
+import { BORROW_APR_QUERY, MORPHO_API, borrowCovers, parseBorrowApr } from "./hedge-view.ts";
 import { fetchAssetDetails, fetchFundings, fetchOrderBookDetails, fetchOrderBookOrders, type Sourced } from "./lighter.ts";
 import { READ_LAG } from "./scan.ts";
 import { client as rhcClient } from "./use-scan";
@@ -94,33 +94,38 @@ export function useHedgePlan(i: HedgeInput): HedgeState {
     if (!read.ok) return { status: "unsized", reason: read.reason };
     if (wantsBorrow && morpho.isLoading) return { status: "loading" };
 
-    let margin: MarginBasis;
-    if (i.loanRate) margin = { kind: "loan", rate: i.loanRate };
-    else if (eligible.marginEligible) {
-      const a = assets.data.data.find((x) => x.l1Address.toLowerCase() === i.token.toLowerCase());
-      margin = { kind: "stock", loanToValue: a?.loanToValue ?? null, capTokens: eligible.userCapTokens, roomTokens: eligible.globalRoom };
-    } else if (morpho.isError) margin = { kind: "own", why: "api_error" };
-    else if (morpho.data?.data) {
-      const m = morpho.data.data;
-      margin = { kind: "borrow", marketId: m.marketId, rate: { pct: m.pct, source: `${morpho.data.url} market ${m.marketId}, observed ${m.observedAt}`, fetchedAt: morpho.data.fetchedAt } };
-    } else margin = { kind: "own", why: "no_market" };
-
-    try {
-      const plan = planHedge({
+    const balanceRaw = i.balanceRaw;
+    const build = (m: MarginBasis) =>
+      planHedge({
         symbol: i.symbol,
         token: i.token,
-        balanceRaw: i.balanceRaw,
+        balanceRaw,
         tokenDecimals: 18,
         uiMultiplier: read.multiplier,
         uiMultiplierRead: { source: `eth_call uiMultiplier() on ${i.token} at block ${mult.data.block}`, fetchedAt: mult.data.fetchedAt },
-        borrowApr: margin.kind === "loan" || margin.kind === "borrow" ? margin.rate : undefined,
+        borrowApr: m.kind === "loan" || m.kind === "borrow" ? m.rate : undefined,
         now: new Date(book.data.fetchedAt),
         perps: perps.data,
         assets: assets.data,
         book: book.data,
         fundings: fundings.data,
       });
-      return { status: "ready", plan, margin, multiplierBlock: mult.data.block, readAt: book.data.fetchedAt };
+
+    try {
+      let margin: MarginBasis;
+      if (i.loanRate) margin = { kind: "loan", rate: i.loanRate };
+      else if (eligible.marginEligible) {
+        const a = assets.data.data.find((x) => x.l1Address.toLowerCase() === i.token.toLowerCase());
+        margin = { kind: "stock", loanToValue: a?.loanToValue ?? null, capTokens: eligible.userCapTokens, roomTokens: eligible.globalRoom };
+      } else if (morpho.isError) margin = { kind: "own", why: "api_error" };
+      else if (morpho.data?.data) {
+        const m = morpho.data.data;
+        margin = { kind: "borrow", marketId: m.marketId, rate: { pct: m.pct, source: `${morpho.data.url} market ${m.marketId}, observed ${m.observedAt}`, fetchedAt: morpho.data.fetchedAt } };
+        // A market that cannot lend the margin is no market. The plan sizes the margin, so it is built once without a borrow to read it.
+        const probe = build({ kind: "own", why: "no_market" });
+        if (probe.status === "ok" && !borrowCovers(m, probe.marginUsdg.value)) margin = { kind: "own", why: "no_market" };
+      } else margin = { kind: "own", why: "no_market" };
+      return { status: "ready", plan: build(margin), margin, multiplierBlock: mult.data.block, readAt: book.data.fetchedAt };
     } catch (e) {
       return { status: "error", message: e instanceof Error ? e.message : "The plan could not be built", retry };
     }
