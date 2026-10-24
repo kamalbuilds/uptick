@@ -12,6 +12,7 @@ import {
   Sources,
   TLDR,
 } from "@/components/prose";
+import deployed from "@/lib/deployments.json";
 import universe from "@/lib/vault-universe.json";
 
 export const metadata: Metadata = {
@@ -177,6 +178,12 @@ capUsd = min(100_000, floor(depth / 4))`}
         numeric={[1]}
         caption={`Read from web/lib/vault-universe.json at block ${universe.universeBlock.toLocaleString("en-US")}.`}
       />
+
+      <P>
+        {Object.keys(deployed.vaults).join(" and ")} {Object.keys(deployed.vaults).length === 1 ? "is" : "are"} live on Robinhood Chain and{" "}
+        {Object.keys(deployed.vaults).length === 1 ? "enforces" : "enforce"} the cap each was deployed with:{" "}
+        {Object.entries(deployed.vaults).map(([symbol, d]) => `${symbol} ${usd(d.capUsd)}`).join(", ")}. The other vaults are created at the sizes above.
+      </P>
 
       <H3>How the contract enforces it</H3>
       <P>

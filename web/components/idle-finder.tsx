@@ -10,14 +10,14 @@ import { Term } from "./term";
 import { TokenLogo } from "./token-logo";
 import { Button } from "@/components/ui/button";
 import { EXPLORER } from "@/lib/chain";
-import { num, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
+import { liveSentence, num, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
 import { usdSigned } from "@/lib/leak";
 import { priceLabel } from "@/lib/price-math";
 import { parseOwner, type ScanRow, type WalletScan } from "@/lib/scan";
 import { useWalletScan } from "@/lib/use-scan";
 import { TERMS } from "@/lib/terms";
 import { money, verdict } from "@/lib/verdict";
-import { REPLAY_WINDOW, VAULTS, isoDay } from "@/lib/vaults";
+import { LIVE_VAULTS, REPLAY_WINDOW, VAULTS, isoDay } from "@/lib/vaults";
 import { cn } from "@/lib/utils";
 
 const COLS = "lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_96px_minmax(0,1fr)_minmax(0,1.3fr)_128px]";
@@ -132,7 +132,7 @@ function Results({ s }: { s: WalletScan }) {
             The wallet was read on Robinhood Chain at <a className="underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>.
             The tokens checked are {VAULTS.map((v) => v.symbol).sort().join(", ")}. A wallet that holds any of them shows here, with what each vault would keep and where a loan opens.
           </p>
-          <Button asChild variant="outline" className="mt-6"><Link href="/vaults">See the vaults that are launching</Link></Button>
+          <Button asChild variant="outline" className="mt-6"><Link href="/vaults">See the vaults</Link></Button>
         </div>
       </>
     );
@@ -192,7 +192,7 @@ function Results({ s }: { s: WalletScan }) {
       <p className="mt-8 max-w-[690px] text-[13px] leading-5 text-mute">
         Read from Robinhood Chain in one Multicall3 call at <a className="underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>,
         priced by the Chainlink feeds the vaults read. Kept is the weaker 15-day half of the {REPLAY_WINDOW.days}-day replay to {isoDay(REPLAY_WINDOW.end)}, taken on the deposit net of the entry fee.
-        It measures past swaps and is not a promise. The vaults are launching, and each row opens its vault page.
+        It measures past swaps and is not a promise. {LIVE_VAULTS.length ? `${liveSentence(LIVE_VAULTS.map((v) => v.symbol))} The rest are launching, and each row opens its vault page.` : "The vaults are launching, and each row opens its vault page."}
       </p>
     </>
   );

@@ -86,6 +86,12 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
           </span>
         </div>
         <p className="mt-2 text-mute">{cfg.name} in the {cfg.symbol} / USDG pool, {cfg.feeTier} fee tier</p>
+        {cfg.vault && (
+          <p className="mt-1">
+            Live on Robinhood Chain at{" "}
+            <a className="figure underline underline-offset-4 hover:text-fg" href={addressUrl(cfg.vault)} target="_blank" rel="noreferrer" title={cfg.vault}>{shortAddress(cfg.vault)}</a>
+          </p>
+        )}
         <p className="mt-1"><PriceLine id={cfg.id} /></p>
 
         <p className="serif verdict mt-8 max-w-[900px] text-[30px] font-normal leading-[34px] sm:text-[44px] sm:leading-[48px]">
@@ -125,7 +131,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
             <section aria-labelledby="tvl">
               <SectionTitle id="tvl">Vault</SectionTitle>
               <dl className="border-t-0">
-                <Fact k="Total value locked" v={!q.data ? "..." : q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)} />
+                {!(cfg.vault && q.data && q.data.tvlUsd === null) && <Fact k="Total value locked" v={!q.data ? "..." : q.data.tvlUsd === null ? "Opening" : usd(q.data.tvlUsd)} />}
                 <Fact k="Vault size" v={usdWhole(cfg.depositCapUsd)} />
                 <Fact k="Fee tier" v={cfg.feeTier} />
                 <Fact k={<Term id="entryFee" />} v={entryFeePct(cfg.entryFeeBps)} />
