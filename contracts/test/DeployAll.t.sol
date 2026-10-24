@@ -98,7 +98,11 @@ contract DeployAllTest is Test {
         assertTrue(ofac.factory().isVault(f.entryAt(0).vault));
 
         address vault = f.entryAt(0).vault;
+        address deployed = ofac.oracleOf(vault);
+        assertTrue(deployed != address(0), "the script itself deployed the vault's oracle");
+        assertTrue(ofac.isOracle(deployed));
         address oracle = ofac.createOracle(IUptickVault(vault));
+        assertEq(oracle, deployed, "createOracle returns the one the script made");
         assertTrue(ofac.isOracle(oracle));
         assertEq(ofac.oracleOf(vault), oracle);
         assertEq(address(UptickShareOracle(oracle).factory()), address(f));

@@ -25,7 +25,10 @@
 // the verdict web/lib/vault-universe.json carries for a v4 vault (the gate reads the venue's own pool).
 // --v4-report prints, for every replayed token, the v3 and v4 verdicts side by side instead of the list; ON V4 is the replay's venue (replay/replay.py venue_for:
 // the backend whose chosen pool keeps more in its weaker half among those at or above KEEP_FLOOR_APR, v3 on a tie). This script never re-derives the venue.
-// Usage: node scripts/deploy-list.mjs [--open-only] [--v4-report] [out.json]   (stdout when no path)
+// --only=AAPL,GOOGL keeps just those symbols (an unknown or ineligible symbol is an error); --cap-usd=1000 lowers every kept entry's capUsd
+// to at most that figure (never raises it) and recomputes depositCapTokens at the same Chainlink price: scripts/deploy-mainnet.sh uses both
+// for its small-cap launch.
+// Usage: node scripts/deploy-list.mjs [--open-only] [--only=A,B] [--cap-usd=N] [--v4-report] [out.json]   (stdout when no path)
 import { readFileSync, writeFileSync } from "node:fs";
 
 const data = (f) => JSON.parse(readFileSync(new URL(`../keeper/data/${f}`, import.meta.url), "utf8"));
@@ -42,6 +45,11 @@ const args = process.argv.slice(2);
 const openOnly = args.includes("--open-only");
 const v4Report = args.includes("--v4-report");
 const outPath = args.find((a) => !a.startsWith("--"));
+const flag = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+const only = flag("only")?.split(",").filter(Boolean);
+const capOverride = flag("cap-usd") === undefined ? null : BigInt(flag("cap-usd"));
+if (capOverride !== null && capOverride <= 0n) throw new Error("--cap-usd must be a positive whole number of USD");
+const capped = (capUsd) => (capOverride !== null && capOverride < capUsd ? capOverride : capUsd);
 const gates = Object.fromEntries(
   JSON.parse(readFileSync(new URL("../web/lib/vault-universe.json", import.meta.url), "utf8")).vaults.map((v) => [v.symbol, v.gate?.state]),
 );
@@ -82,6 +90,7 @@ const v4Entry = (t, rt) => {
   const live = BigInt(Math.floor((pool.depth_usd_5pct * MAX_VAULT_SHARE) / (1 - MAX_VAULT_SHARE)));
   if (live < capUsd) capUsd = live;
   if (Number(capUsd) !== c.cap_usd) throw new Error(`${t.symbol}: deploy cap ${capUsd} differs from the cap the replay ran the v4 pool at (${c.cap_usd}); rerun replay/replay.py ${t.symbol}`);
+  capUsd = capped(capUsd);
   const rangeBps = params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS;
   if (!Number.isInteger(rangeBps) || rangeBps < 50 || rangeBps > 2000) throw new Error(`${t.symbol}: rangeBps ${rangeBps} outside [50, 2000]`);
   const depositCapTokens = (capUsd * 10n ** BigInt(t.decimals) * 10n ** BigInt(t.feed.decimals)) / answer;
@@ -90,7 +99,7 @@ const v4Entry = (t, rt) => {
     rangeBps, capUsd: Number(capUsd), depositCapTokens: depositCapTokens.toString(), deployable: c.worst_half >= KEEP_FLOOR_APR,
   };
 };
-const list = universe.tokens.filter((t) => t.eligible && (!openOnly || replay.tokens?.[t.symbol]?.venue === "v4" || isDeployable(t.symbol))).map((t) => {
+const list = universe.tokens.filter((t) => t.eligible && (!only || only.includes(t.symbol)) && (!openOnly || replay.tokens?.[t.symbol]?.venue === "v4" || isDeployable(t.symbol))).map((t) => {
   if (replay.tokens?.[t.symbol]?.venue === "v4") return v4Entry(t, replay.tokens[t.symbol]);
   const chosen = replay.tokens?.[t.symbol]?.chosen;
   const pool = chosen ? { address: chosen.id, fee_tier: chosen.fee_tier } : t.pool;
@@ -103,6 +112,7 @@ const list = universe.tokens.filter((t) => t.eligible && (!openOnly || replay.to
     const live = BigInt(Math.floor((t.pool.depth_usd_5pct * share) / (1 - share)));
     if (live < capUsd) capUsd = live;
   }
+  capUsd = capped(capUsd);
   const rangeBps = params[t.symbol]?.range_bps ?? DEFAULT_RANGE_BPS;
   if (!Number.isInteger(rangeBps) || rangeBps < 50 || rangeBps > 2000) throw new Error(`${t.symbol}: rangeBps ${rangeBps} outside [50, 2000]`);
   const depositCapTokens = (capUsd * 10n ** BigInt(t.decimals) * 10n ** BigInt(t.feed.decimals)) / answer;
@@ -112,6 +122,7 @@ const list = universe.tokens.filter((t) => t.eligible && (!openOnly || replay.to
   };
 });
 if (!list.length) throw new Error("universe.json has no eligible token");
+for (const s of only ?? []) if (!list.some((e) => e.symbol === s)) throw new Error(`--only=${s}: no such eligible token in the list`);
 
 const out = JSON.stringify(list, null, 2) + "\n";
 if (outPath) writeFileSync(outPath, out);

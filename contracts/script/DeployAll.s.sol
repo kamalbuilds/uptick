@@ -7,7 +7,7 @@ import {StockVaultV4} from "../src/v4/StockVaultV4.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 import {UptickShareOracleFactory} from "../src/UptickShareOracleFactory.sol";
-import {IVaultFactory} from "../src/UptickShareOracle.sol";
+import {IVaultFactory, IUptickVault} from "../src/UptickShareOracle.sol";
 
 /// @notice Deploys the VaultFactory, one StockVault per entry of the deploy list (through the factory, which pins
 /// StockVault's creation-code hash and registers every vault) and one UptickRouter bound to the factory registry
@@ -17,7 +17,9 @@ import {IVaultFactory} from "../src/UptickShareOracle.sol";
 /// read by vm.envUint, never argv), OWNER (owns every vault, a multisig on mainnet), KEEPER, TREASURY.
 /// Optional: DEPLOY_ORACLE_FACTORY (default true) also deploys the UptickShareOracleFactory bound to the new VaultFactory,
 /// the only way to deploy a share oracle and the registry (`isOracle`) a Morpho lender checks; its address is logged and
-/// kept in `oracleFactory`. ROUTER_SLIPPAGE_BPS (default 100), MIN_REBALANCE_INTERVAL in seconds (default 6 hours, the mainnet value;
+/// kept in `oracleFactory`, and it then deploys one UptickShareOracle per vault (logged as `UptickShareOracle <symbol> <address>`).
+/// The pinned creation-code hashes are logged first (`StockVault codehash`, `StockVaultV4 codehash`) so scripts/deploy-mainnet.sh can compare
+/// them with contracts/pinned-hashes.json before anything is broadcast. ROUTER_SLIPPAGE_BPS (default 100), MIN_REBALANCE_INTERVAL in seconds (default 6 hours, the mainnet value;
 /// the fork script shortens it so the keeper's first rebalance needs less warped time). The factory is handed to OWNER (Ownable2Step, OWNER must accept)
 /// when OWNER is not the deployer.
 /// Each deploy-list entry may carry `rangeBps` (50 to 2000, from keeper/data/params.json via scripts/deploy-list.mjs);
@@ -102,6 +104,8 @@ contract DeployAll is Script {
                 minRebalanceInterval: uint32(vm.envOr("MIN_REBALANCE_INTERVAL", uint256(6 hours)))
             })
         });
+        console.log("StockVault codehash", vm.toString(keccak256(code)));
+        console.log("StockVaultV4 codehash", vm.toString(keccak256(code4)));
         vm.startBroadcast(pk);
         factory = new VaultFactory(me, keccak256(code), keccak256(code4), POOL_MANAGER, d);
         console.log("VaultFactory", address(factory));
@@ -126,7 +130,11 @@ contract DeployAll is Script {
                 vm.parseJsonAddress(json, string.concat(k, ".feed")),
                 vm.parseJsonUint(json, string.concat(k, ".depositCapTokens"))
             );
-            console.log(_isV4(json, k) ? "StockVaultV4" : "StockVault", vm.parseJsonString(json, string.concat(k, ".symbol")), vault);
+            string memory sym = vm.parseJsonString(json, string.concat(k, ".symbol"));
+            console.log(_isV4(json, k) ? "StockVaultV4" : "StockVault", sym, vault);
+            if (address(oracleFactory) != address(0)) {
+                console.log("UptickShareOracle", sym, oracleFactory.createOracle(IUptickVault(vault)));
+            }
         }
         if (d.params.rangeBps != DEFAULT_RANGE_BPS) {
             d.params.rangeBps = DEFAULT_RANGE_BPS;
