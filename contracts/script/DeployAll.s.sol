@@ -6,6 +6,8 @@ import {StockVault} from "../src/StockVault.sol";
 import {StockVaultV4} from "../src/v4/StockVaultV4.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
+import {UptickShareOracleFactory} from "../src/UptickShareOracleFactory.sol";
+import {IVaultFactory, IUptickVault} from "../src/UptickShareOracle.sol";
 
 /// @notice Deploys the VaultFactory, one StockVault per entry of the deploy list (through the factory, which pins
 /// StockVault's creation-code hash and registers every vault) and one UptickRouter bound to the factory registry
@@ -13,7 +15,11 @@ import {UptickRouter, IVaultRegistry} from "../src/UptickRouter.sol";
 /// local fork and on mainnet: only --rpc-url and the key env differ. Without --broadcast it only simulates.
 /// Env: DEPLOY_LIST (path to the JSON written by scripts/deploy-list.mjs), DEPLOYER_KEY or ANVIL_KEY (the broadcaster,
 /// read by vm.envUint, never argv), OWNER (owns every vault, a multisig on mainnet), KEEPER, TREASURY.
-/// Optional: ROUTER_SLIPPAGE_BPS (default 100), MIN_REBALANCE_INTERVAL in seconds (default 6 hours, the mainnet value;
+/// Optional: DEPLOY_ORACLE_FACTORY (default true) also deploys the UptickShareOracleFactory bound to the new VaultFactory,
+/// the only way to deploy a share oracle and the registry (`isOracle`) a Morpho lender checks; its address is logged and
+/// kept in `oracleFactory`, and it then deploys one UptickShareOracle per vault (logged as `UptickShareOracle <symbol> <address>`).
+/// The pinned creation-code hashes are logged first (`StockVault codehash`, `StockVaultV4 codehash`) so scripts/deploy-mainnet.sh can compare
+/// them with contracts/pinned-hashes.json before anything is broadcast. ROUTER_SLIPPAGE_BPS (default 100), MIN_REBALANCE_INTERVAL in seconds (default 6 hours, the mainnet value;
 /// the fork script shortens it so the keeper's first rebalance needs less warped time). The factory is handed to OWNER (Ownable2Step, OWNER must accept)
 /// when OWNER is not the deployer.
 /// Each deploy-list entry may carry `rangeBps` (50 to 2000, from keeper/data/params.json via scripts/deploy-list.mjs);
@@ -39,6 +45,9 @@ contract DeployAll is Script {
     address constant ROUTER = 0xCaf681a66D020601342297493863E78C959E5cb2;
     address constant POOL_MANAGER = 0x8366a39CC670B4001A1121B8F6A443A643e40951;
     uint16 constant DEFAULT_RANGE_BPS = 500;
+
+    /// @notice The oracle factory of the last run, zero when DEPLOY_ORACLE_FACTORY is false.
+    UptickShareOracleFactory public oracleFactory;
 
     function run() external returns (VaultFactory factory, UptickRouter router) {
         require(block.chainid == 4663, "not Robinhood Chain");
@@ -95,9 +104,17 @@ contract DeployAll is Script {
                 minRebalanceInterval: uint32(vm.envOr("MIN_REBALANCE_INTERVAL", uint256(6 hours)))
             })
         });
+        console.log("StockVault codehash", vm.toString(keccak256(code)));
+        console.log("StockVaultV4 codehash", vm.toString(keccak256(code4)));
         vm.startBroadcast(pk);
         factory = new VaultFactory(me, keccak256(code), keccak256(code4), POOL_MANAGER, d);
         console.log("VaultFactory", address(factory));
+        if (vm.envOr("DEPLOY_ORACLE_FACTORY", true)) {
+            oracleFactory = new UptickShareOracleFactory(IVaultFactory(address(factory)));
+            console.log("UptickShareOracleFactory", address(oracleFactory));
+        } else {
+            oracleFactory = UptickShareOracleFactory(address(0));
+        }
         for (uint256 i = 0; i < n; ++i) {
             string memory k = string.concat(".[", vm.toString(i), "]");
             string memory rk = string.concat(k, ".rangeBps");
@@ -113,7 +130,11 @@ contract DeployAll is Script {
                 vm.parseJsonAddress(json, string.concat(k, ".feed")),
                 vm.parseJsonUint(json, string.concat(k, ".depositCapTokens"))
             );
-            console.log(_isV4(json, k) ? "StockVaultV4" : "StockVault", vm.parseJsonString(json, string.concat(k, ".symbol")), vault);
+            string memory sym = vm.parseJsonString(json, string.concat(k, ".symbol"));
+            console.log(_isV4(json, k) ? "StockVaultV4" : "StockVault", sym, vault);
+            if (address(oracleFactory) != address(0)) {
+                console.log("UptickShareOracle", sym, oracleFactory.createOracle(IUptickVault(vault)));
+            }
         }
         if (d.params.rangeBps != DEFAULT_RANGE_BPS) {
             d.params.rangeBps = DEFAULT_RANGE_BPS;

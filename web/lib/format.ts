@@ -5,6 +5,13 @@ export function perDepositLimitUsd(depositCapUsd: number): number {
   return Math.min(REDUCED_CAP_STOCK_USD, depositCapUsd);
 }
 
+/** "AAPL and PLTR are live on Robinhood Chain." for the tickers whose vault address is set; "" when there are none. */
+export function liveSentence(symbols: readonly string[]): string {
+  if (symbols.length === 0) return "";
+  const names = symbols.length < 3 ? symbols.join(" and ") : `${symbols.slice(0, -1).join(", ")} and ${symbols[symbols.length - 1]}`;
+  return `${names} ${symbols.length === 1 ? "is" : "are"} live on Robinhood Chain.`;
+}
+
 export function usd(n: number, opts: { compact?: boolean } = {}): string {
   if (!Number.isFinite(n)) return "n/a";
   const compact = opts.compact ?? Math.abs(n) >= 100_000;
@@ -14,6 +21,14 @@ export function usd(n: number, opts: { compact?: boolean } = {}): string {
     notation: compact ? "compact" : "standard",
     maximumFractionDigits: compact ? 1 : Math.abs(n) < 1 ? 4 : 2,
   }).format(n);
+}
+
+/** The money rule of the /check screen: whole dollars from $10 up (replay estimates carry no cents of precision), below that at most two decimals and none when the cents are zero. */
+export function dollars(n: number): string {
+  if (!Number.isFinite(n)) return "n/a";
+  const abs = Math.abs(n);
+  const whole = abs >= 10 || Number.isInteger(Math.round(abs * 100) / 100);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 }).format(n === 0 ? 0 : n);
 }
 
 /** Whole dollars, never compacted: a size or a cap, "$100,000". */

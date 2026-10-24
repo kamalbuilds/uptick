@@ -40,9 +40,10 @@
       "get_collateral_terms",
       "check_loan_health",
       "prepare_earn_and_borrow",
-      "prepare_make_safer"
+      "prepare_make_safer",
+      "plan_weekend_hedge"
     ],
-    "count": 9
+    "count": 10
   },
   "mutations": {
     "by_table": [
@@ -56,10 +57,10 @@
       },
       {
         "section": "Share oracle: test and mutation evidence",
-        "checks": 3
+        "checks": 7
       }
     ],
-    "total": 89
+    "total": 93
   },
   "holders": {
     "spcx": 114222,

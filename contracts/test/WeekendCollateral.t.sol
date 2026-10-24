@@ -10,6 +10,7 @@ import {IMorpho, MarketParams} from "./ShareCollateral.t.sol";
 import {StockVault} from "../src/StockVault.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {UptickShareOracle, IUptickVault, IVaultFactory} from "../src/UptickShareOracle.sol";
+import {UptickShareOracleFactory} from "../src/UptickShareOracleFactory.sol";
 
 interface IMorphoAdmin {
     function enableLltv(uint256 lltv) external;
@@ -80,7 +81,7 @@ contract WeekendCollateralTest is Base {
         _instant();
         shares = _deposit(alice, 200e18);
         assertGt(vault.positionInfo().liquidity, 0, "the deposit opened a real position");
-        oracle = new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(vault)));
+        oracle = UptickShareOracle(new UptickShareOracleFactory(IVaultFactory(address(factory))).createOracle(IUptickVault(address(vault))));
         deal(USDG, liquidator, 10_000_000e6);
         vm.prank(liquidator);
         IERC20(USDG).approve(address(MORPHO), type(uint256).max);

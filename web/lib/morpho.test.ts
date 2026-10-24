@@ -33,9 +33,23 @@ test("market id of the live USDG/AMZN market matches the id Morpho holds on-chai
   assert.notEqual(marketId({ ...AMZN_MARKET, lltv: LLTV + 1n }), AMZN_ID);
 });
 
-test("the batch is approve token, deposit, approve shares, supplyCollateral, borrow, and every call decodes to the plan", () => {
+test("no phase holds both the deposit and the supplyCollateral: the vault locks shares minted in the current parent block", () => {
+  const phases = earnAndBorrowSteps(plan());
+  assert.equal(phases.length, 2);
+  assert.deepEqual(phases[0].map((s) => s.id), ["approve-token", "deposit"]);
+  assert.deepEqual(phases[1].map((s) => s.id), ["approve-shares", "supply-collateral", "borrow"]);
+  for (const phase of phases) {
+    const ids = phase.map((s) => s.id);
+    assert.ok(!(ids.includes("deposit") && ids.includes("supply-collateral")), `phase ${ids.join(",")} mixes the deposit with supplyCollateral`);
+  }
+  // with the approvals already in place the same split holds
+  const bare = earnAndBorrowSteps(plan({ tokenAllowance: parseUnits("2", 18), shareAllowance: parseUnits("1.99", 24) }));
+  assert.deepEqual(bare.map((ph) => ph.map((s) => s.id)), [["deposit"], ["supply-collateral", "borrow"]]);
+});
+
+test("the phases are approve token, deposit, then approve shares, supplyCollateral, borrow, and every call decodes to the plan", () => {
   const p = plan();
-  const steps = earnAndBorrowSteps(p);
+  const steps = earnAndBorrowSteps(p).flat();
   assert.deepEqual(steps.map((s) => s.id), ["approve-token", "deposit", "approve-shares", "supply-collateral", "borrow"]);
   assert.deepEqual(steps.map((s) => s.call.to), [TOKEN, VAULT, VAULT, MORPHO_BLUE, MORPHO_BLUE]);
 
@@ -69,14 +83,14 @@ test("the batch is approve token, deposit, approve shares, supplyCollateral, bor
 });
 
 test("allowances that already cover an amount skip the approval, and a short one does not", () => {
-  const ids = (o: Partial<FlowPlan>) => earnAndBorrowSteps(plan(o)).map((s) => s.id);
+  const ids = (o: Partial<FlowPlan>) => earnAndBorrowSteps(plan(o)).flat().map((s) => s.id);
   assert.deepEqual(ids({ tokenAllowance: parseUnits("2", 18), shareAllowance: parseUnits("1.99", 24) }), ["deposit", "supply-collateral", "borrow"]);
   assert.deepEqual(ids({ tokenAllowance: parseUnits("2", 18) - 1n }), ["approve-token", "deposit", "approve-shares", "supply-collateral", "borrow"]);
   assert.deepEqual(ids({ shareAllowance: parseUnits("1.99", 24) - 1n, tokenAllowance: parseUnits("2", 18) }), ["deposit", "approve-shares", "supply-collateral", "borrow"]);
 });
 
 test("zero borrow is the earn-only deposit: no share approval, no collateral, no borrow", () => {
-  assert.deepEqual(earnAndBorrowSteps(plan({ borrow: 0n })).map((s) => s.id), ["approve-token", "deposit"]);
+  assert.deepEqual(earnAndBorrowSteps(plan({ borrow: 0n })).map((ph) => ph.map((s) => s.id)), [["approve-token", "deposit"]]);
 });
 
 test("the flow refuses a market whose collateral is not this vault's share, and a zero deposit", () => {

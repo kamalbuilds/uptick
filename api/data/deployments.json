@@ -1,0 +1,70 @@
+{
+  "chainId": 4663,
+  "readAtBlock": 96363466,
+  "deployer": "0x8150FbaC6e042671cc54F445ae2962818C57779E",
+  "factory": {
+    "address": "0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a",
+    "block": 96359080,
+    "tx": "0xbae904a0eb34f7d6a742f10832047f64307ccf825c97c3b22486f57b3de5d59d",
+    "vaultCodeHash": "0x85efc542ca5d50c5bc88574651a378b95ff3acdd2898350fbfd5746141ba5c94",
+    "vaultV4CodeHash": "0xd9d7f807bb6ea3513b3ba7cbec346bc4af8cb6ffd4611aba423c429a3f7e086c",
+    "owner": "0x8150FbaC6e042671cc54F445ae2962818C57779E"
+  },
+  "oracleFactory": {
+    "address": "0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB",
+    "block": 96359108,
+    "tx": "0x98c6c06ffde6b1eac06cfa76b59f11b1edd0eb84e963caf3154e960c8f7cf401",
+    "factory": "0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a"
+  },
+  "router": {
+    "address": "0x599BE83442e02810B501fab280dC2eBD6d0D2c48",
+    "block": 96359275,
+    "tx": "0x55df832ca80c109b86938b71e98a74f34eacf68ff828c301488e09d361632d3f",
+    "registry": "0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a"
+  },
+  "vaults": {
+    "AAPL": {
+      "address": "0x127eCb0e814EF0cC296910DFd5E946050d85534f",
+      "block": 96359164,
+      "tx": "0xef9e9aabdb38d339ce0c53206a4df6b51a9519e5c5d4080097dd855605974a48",
+      "venue": "v3",
+      "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
+      "poolId": null,
+      "feed": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
+      "capUsd": 5000,
+      "depositCapTokens": "14594816990699906129",
+      "owner": "0x8150FbaC6e042671cc54F445ae2962818C57779E",
+      "oracle": "0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB",
+      "oracleTx": "0xf01dc7d02a31acb8e77329f4e823a7f98e772717a59c000f9c3ba21248f60817"
+    },
+    "PLTR": {
+      "address": "0xD769d94E43447937Eaa85Dc6AE291468649085a3",
+      "block": 96359219,
+      "tx": "0xc4bd17cc59b68be6e69050aee07d5150d14203a4baf906c572e9661c92fe5ce6",
+      "venue": "v4",
+      "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
+      "pool": null,
+      "poolId": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+      "feed": "0x820ABedFF239034956B7A9d2F0a331f9F075eB4c",
+      "capUsd": 5000,
+      "depositCapTokens": "25785822954539594131",
+      "owner": "0x8150FbaC6e042671cc54F445ae2962818C57779E",
+      "oracle": "0x613F1250fc27aD51C11C403bd9b5440181D0f9A4",
+      "oracleTx": "0xcefe2238a627ad7e20378f3148a0321ed4100209a2bfc55dda8cb18d28a8d0df"
+    }
+  },
+  "morphoMarkets": {
+    "AAPL": {
+      "id": "0x80bdad68abdbddbc8459b0e4cce11458d6c3e1aec28286d3ae46148032b0de5b",
+      "loanToken": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "collateralToken": "0x127eCb0e814EF0cC296910DFd5E946050d85534f",
+      "oracle": "0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB",
+      "irm": "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+      "lltv": "625000000000000000",
+      "morpho": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+      "tx": "0xe3d688e35cd91ac499d2518ab63b1e75cb5a4addb9c7ed51652c49cdb9f85500",
+      "block": 96394191
+    }
+  }
+}

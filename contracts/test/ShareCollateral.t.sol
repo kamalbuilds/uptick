@@ -10,6 +10,7 @@ import {StockVault} from "../src/StockVault.sol";
 import {StockVaultV4} from "../src/v4/StockVaultV4.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {UptickShareOracle, IUptickVault, IVaultFactory} from "../src/UptickShareOracle.sol";
+import {UptickShareOracleFactory} from "../src/UptickShareOracleFactory.sol";
 
 struct MarketParams {
     address loanToken;
@@ -77,6 +78,7 @@ contract ShareCollateralTest is Base {
 
     VaultFactory factory;
     StockVault direct; // Base's vault, built by hand and so not in the registry
+    UptickShareOracleFactory oracleFactory;
     UptickShareOracle oracle;
     MarketParams mp;
     bytes32 id;
@@ -120,7 +122,8 @@ contract ShareCollateralTest is Base {
         assertEq(live.irm, IRM);
         assertEq(live.lltv, LLTV);
 
-        oracle = new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(vault)));
+        oracleFactory = new UptickShareOracleFactory(IVaultFactory(address(factory)));
+        oracle = UptickShareOracle(oracleFactory.createOracle(IUptickVault(address(vault))));
         mp = MarketParams(USDG, address(vault), address(oracle), IRM, LLTV);
         id = keccak256(abi.encode(mp));
         MORPHO.createMarket(mp);
@@ -385,10 +388,74 @@ contract ShareCollateralTest is Base {
     }
 
     function test_onlyFactoryVaultsGetAnOracle() public {
-        vm.expectRevert(UptickShareOracle.NotRegisteredVault.selector);
-        new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(direct)));
-        vm.expectRevert(UptickShareOracle.NotRegisteredVault.selector);
-        new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(makeAddr("anything")));
+        vm.expectRevert(UptickShareOracleFactory.NotRegisteredVault.selector);
+        oracleFactory.createOracle(IUptickVault(address(direct)));
+        vm.expectRevert(UptickShareOracleFactory.NotRegisteredVault.selector);
+        oracleFactory.createOracle(IUptickVault(makeAddr("anything")));
+    }
+
+    // ------------------------------------------------------------ oracle factory (review O-M1)
+
+    /// @dev What a lender checks before supplying to a market: the oracle is in the published oracle factory's registry,
+    /// the oracle names the real VaultFactory and the vault, and the oracle factory itself is bound to the real VaultFactory.
+    function test_aLenderCanVerifyTheOracleAgainstTheOracleFactory() public view {
+        assertTrue(oracleFactory.isOracle(address(oracle)), "registered by the oracle factory");
+        assertEq(oracleFactory.oracleOf(address(vault)), address(oracle));
+        assertEq(address(oracleFactory.factory()), address(factory), "the oracle factory is bound to the real VaultFactory");
+        assertEq(address(oracle.factory()), address(factory), "the oracle names the real VaultFactory");
+        assertEq(address(oracle.vault()), address(vault));
+        assertEq(oracle.oracleFactory(), address(oracleFactory));
+        assertTrue(factory.isVault(address(oracle.vault())));
+        assertEq(address(oracle), oracleFactory.oracleAddress(address(vault)), "deterministic: the address is known before deploy");
+        assertEq(mp.oracle, address(oracle), "the market under test uses it");
+        assertEq(mp.collateralToken, address(oracle.vault()), "the market's collateral is the share the oracle prices");
+        assertEq(mp.loanToken, address(oracle.usdg()), "and its loan token is the oracle's USDG");
+    }
+
+    /// @dev Must-fail cases for the same check: nothing but the factory's own deploy is in the registry.
+    function test_theRegistryRejectsWhatTheFactoryDidNotDeploy() public {
+        assertFalse(oracleFactory.isOracle(address(0)));
+        assertFalse(oracleFactory.isOracle(makeAddr("anything")));
+        assertFalse(oracleFactory.isOracle(address(vault)), "a vault is not an oracle");
+        assertFalse(oracleFactory.isOracle(address(oracleFactory)));
+        assertEq(oracleFactory.oracleOf(address(direct)), address(0), "no oracle for an unregistered vault");
+    }
+
+    /// @dev One oracle per vault: a second call, from anyone, returns the same oracle and emits nothing.
+    function test_createOracleIsIdempotentAndPermissionless() public {
+        vm.recordLogs();
+        vm.prank(makeAddr("anyone"));
+        address again = oracleFactory.createOracle(IUptickVault(address(vault)));
+        assertEq(again, address(oracle));
+        assertEq(vm.getRecordedLogs().length, 0, "no second OracleCreated");
+    }
+
+    /// @dev A second oracle factory over the same VaultFactory (a vault with no oracle of its own yet): the event, the
+    /// predicted CREATE2 address, and a registry that knows only its own deploys.
+    function test_createOracleEmitsAndLandsOnThePredictedAddress() public {
+        UptickShareOracleFactory other = new UptickShareOracleFactory(IVaultFactory(address(factory)));
+        address predicted = other.oracleAddress(address(vault));
+        assertTrue(predicted != address(oracle), "the address depends on the deploying factory");
+        assertEq(predicted.code.length, 0, "not deployed yet");
+        vm.expectEmit(true, true, false, false, address(other));
+        emit UptickShareOracleFactory.OracleCreated(address(vault), predicted);
+        address created = other.createOracle(IUptickVault(address(vault)));
+        assertEq(created, predicted);
+        assertGt(created.code.length, 0);
+        assertTrue(other.isOracle(created));
+        assertFalse(other.isOracle(address(oracle)), "each registry knows only what it deployed");
+        assertFalse(oracleFactory.isOracle(created));
+        assertEq(UptickShareOracle(created).price(), oracle.price(), "same vault, same price");
+    }
+
+    /// @dev The oracle's constructor answers only to a deployer contract: an account cannot deploy one, and a contract
+    /// that is not an oracle factory (this test) has no `deployParams`.
+    function test_theOracleConstructorCannotBeCalledByAnAccountOrAStranger() public {
+        vm.expectRevert();
+        new UptickShareOracle();
+        vm.prank(makeAddr("eoa"), makeAddr("eoa"));
+        vm.expectRevert();
+        new UptickShareOracle();
     }
 }
 
@@ -399,22 +466,23 @@ contract ShareCollateralV4Test is V4Fixture {
     address internal constant V3_ROUTER = 0xCaf681a66D020601342297493863E78C959E5cb2;
 
     VaultFactory factory;
+    UptickShareOracleFactory oracleFactory;
     UptickShareOracle oracle;
     address factoryOwner = makeAddr("factoryOwner");
 
-    function STOCK() internal pure override returns (address) {
+    function STOCK() internal pure virtual override returns (address) {
         return 0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A;
     }
 
-    function FEED() internal pure override returns (address) {
+    function FEED() internal pure virtual override returns (address) {
         return 0x820ABedFF239034956B7A9d2F0a331f9F075eB4c;
     }
 
-    function FEE() internal pure override returns (uint24) {
+    function FEE() internal pure virtual override returns (uint24) {
         return 10_000;
     }
 
-    function SPACING() internal pure override returns (int24) {
+    function SPACING() internal pure virtual override returns (int24) {
         return 200;
     }
 
@@ -435,7 +503,8 @@ contract ShareCollateralV4Test is V4Fixture {
         _seed();
         _instant();
         _deposit(alice, UNIT());
-        oracle = new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(vault)));
+        oracleFactory = new UptickShareOracleFactory(IVaultFactory(address(factory)));
+        oracle = UptickShareOracle(oracleFactory.createOracle(IUptickVault(address(vault))));
     }
 
     function _bps(uint256 a, uint256 b) internal pure returns (uint256) {

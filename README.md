@@ -2,19 +2,20 @@
 
 Uptick puts Robinhood Stock Tokens to work: ERC-4626 vaults that provide Uniswap v3 and v4 liquidity against USDG on Robinhood Chain (4663), and vault shares that serve as Morpho Blue collateral.
 
-App https://uptick-fi.pages.dev, evidence API https://uptick-evidence.earn-shield-alerts.workers.dev, code https://github.com/kamalbuilds/uptick. Verify in three commands:
+App https://uptick-fi.pages.dev, evidence API https://uptick-evidence.earn-shield-alerts.workers.dev, code https://github.com/kamalbuilds/uptick. Verify in four commands:
 
 1. `curl -s https://uptick-evidence.earn-shield-alerts.workers.dev/vaults | jq '[.[] | select(.open)] | length'` prints how many of the 17 vaults accept deposits.
 2. `cd contracts && forge test --match-test test_realFeedUnmocked -j 1` reads the live NVDA Chainlink feed and Uniswap pool on a fork of Robinhood Chain, unmocked.
 3. `cast code 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010 --rpc-url https://rpc.mainnet.chain.robinhood.com` prints the bytecode of the Morpho Blue singleton that takes a vault share as collateral.
+4. `scripts/forge-pinned.sh` forks Robinhood Chain at block 93,694,185 (Tue 2026-10-20 15:30 ET, inside the NYSE session) and runs all 38 forge suites: 412 passed, 0 failed, 0 skipped (log: `contracts/test-logs/forge-ad07be8-93694185.txt`).
 
 **Put your Stock Tokens to work.**
 
-On 22 October 2026 Robinhood made Stock Tokens collateral on Morpho: "Any eligible wallet can plug in and any app can tap into these markets" ([@RobinhoodCrypto](https://x.com/RobinhoodCrypto/status/2113270580472381515), 55,663 views by 2026-10-23 16:55 UTC). Morpho Blue holds $609.5M of Robinhood Chain's $1.14B in TVL, and a Stock Token posted there earns nothing while the loan accrues interest. Uptick is what gets built on top: deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults launch first), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep, and opens a vault only where past trades say it holds up.
+On 22 October 2026 Robinhood made Stock Tokens collateral on Morpho: "Any eligible wallet can plug in and any app can tap into these markets" ([@RobinhoodCrypto](https://x.com/RobinhoodCrypto/status/2113270580472381515), 55,663 views by 2026-10-23 16:55 UTC). Morpho Blue holds $609.5M of Robinhood Chain's $1.14B in TVL, and a Stock Token posted there earns nothing while the loan accrues interest. Uptick is what gets built on top: deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults open first, AAPL and PLTR live on Robinhood Chain now), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep, and opens a vault only where past trades say it holds up.
 
 Borrowing USDG against AAPL on Morpho cost 24.7% a year at the 2026-10-23 16:56 UTC read (market at a 62.5% loan to value limit, $221,409 supplied). An Uptick AAPL share earns its kept APR while posted, +2.7% to +3.9% a year across the two replay halves, which at a 50% loan to value pays back 5.4 to 7.8 points of that rate. That is an estimate from one read; the rate is variable and fee income varies.
 
-Try it: paste any wallet address into `/check` to see which of its Stock Tokens can earn and where a loan opens, open a vault page for the Earn and borrow panel, and run `scripts/fork-demo.sh` for the whole loop on a fork of Robinhood Chain against the real Morpho Blue (deposit, borrow at 62.5%, a 3% push on the pool, a stale feed, a liquidation; every transaction in [docs/FORK-DEMO.md](docs/FORK-DEMO.md)). Nine MCP tools give agents the same reads and unsigned transactions.
+Try it: paste any wallet address into `/check` to see which of its Stock Tokens can earn and where a loan opens, open a vault page for the Earn and borrow panel, and run `scripts/fork-demo.sh` for the whole loop on a fork of Robinhood Chain against the real Morpho Blue (deposit, borrow at 62.5%, a 3% push on the pool, a stale feed, a liquidation; every transaction in [docs/FORK-DEMO.md](docs/FORK-DEMO.md)). Ten MCP tools give agents the same reads and unsigned transactions, plus a sized weekend hedge: `plan_weekend_hedge` prices a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from what the wallet holds, with funding, order-book slippage and margin terms read live before you trade.
 
 Every vault page shows fee APR next to what LPs keep.
 
@@ -38,13 +39,15 @@ The spread between pools and tiers is as large as the spread between sessions. T
 
 **1. Evidence engine** (`spikes/stock-vaults/scripts/engine.py`, `keeper/replay/build_replay.py`). For every eligible Stock Token (Chainlink feed, deep and busy USDG pool; `keeper/src/universe.ts`) it replays every swap on every USDG pool and fee tier, computes fee per dollar of 1 hour markout by session, and ranks pool and tier on a held-out half of the window.[^2]
 
-**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 412 contract tests cover the vaults, 141 of them in a security suite that runs on a fork of Robinhood Chain, and 89 mutation checks (50 on StockVault, 36 on StockVaultV4, 3 on the share oracle) each break a guard, see named tests go red and restore to green.[^3]
+**2. StockVault** is an ERC-4626 vault per Stock Token. It deposits into the pool and tier the evidence selects, in one click. Shares rise in price as fees accrue. Every value-in and value-out path passes an oracle gate (Chainlink freshness, TWAP and spot within bounds), and `redeemInKind` always pays out both tokens. `StockVaultV4` is the same vault over a Uniswap v4 pool, with a keeper-fed TWAP ring in place of the pool's own oracle. 412 contract tests cover the vaults, 141 of them in a security suite that runs on a fork of Robinhood Chain, and 93 mutation checks (50 on StockVault, 36 on StockVaultV4, 7 on the share oracle) each break a guard, see named tests go red and restore to green.[^3]
 
 **3. Keeper and stats API** refresh the evidence and recentre each vault once a day after each NYSE session, from 02:00 UTC with a jittered minute (`keeper/src/calendar.ts`). Every `rebalance()` is simulated with `eth_call` first and only a passing simulation is signed. The stats API serves TVL, fee APR, tier comparison and share price per vault.
 
 **4. Pools under a declared cap.** The cap standard (`CappedTakeHook` + `CapRegistry`) lets a hook declare its maximum take and enforces it inside every swap on every router. The vault targets pools without take-capable hooks, or hooks with a registered cap. On a mainnet fork the cap stops 200 of 200 over-cap swaps, accounting matches to the wei, and the cap holds against a nested self-swap.[^4] `UptickHook` is one reference implementation of the standard.
 
 **5. Web app** shows each token's tier comparison and session evidence, then deposits, redeems and tracks the portfolio.
+
+**6. Weekend hedge** (`web/lib/hedge.ts`, `api/src/hedge-tools.ts`). Earn, borrow, hedge: each Stock Token row on `/check` opens the planner, which sizes a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from the Stock Tokens a wallet holds, using the on-chain ERC-8056 multiplier; the `plan_weekend_hedge` tool also takes `source: "loan"` and sizes from the stock leg of vault shares posted as Morpho collateral. It reads Lighter live for funding, order-book slippage at your exact size and margin terms, shows whether the short earns or pays funding over the weekend in basis points and USDG, and covers the 15 of 17 Uptick tokens that trade as Lighter perps. An NVDA weekend hedge costs about 1.9 bp at $10k (slippage and borrowed-margin interest net of the funding it earns) against a 135 bp unhedged weekend swing (16 weekends of funding, 9 of pool-vs-perp drift).[^7] The default unwind is 30 minutes before the US open because the pool lags the perp at the open (NVDA residual 6.4 bp against 17.8 bp). The same plan is the `plan_weekend_hedge` MCP tool.
 
 ## How vaults open
 
@@ -112,6 +115,22 @@ Each address returns bytecode from `cast code` against `https://rpc.mainnet.chai
 | SPCX | `0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa` |
 | USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
 
+<!-- deployed:start -->
+## Deployed on Robinhood Chain
+
+Live on Robinhood Chain mainnet (chain id 4663) through block 96359219. Every address returns bytecode from `cast code`; the factory pins the creation-code hash of StockVault and StockVaultV4, each vault's deposit cap, owner, keeper, pool and feed were read back from the chain after the deploy, and every share oracle is registered in the oracle factory's `isOracle`.
+
+| Contract | Address | Deposit cap |
+|---|---|---|
+| VaultFactory | [`0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a`](https://robinhoodchain.blockscout.com/address/0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a) | |
+| UptickRouter | [`0x599BE83442e02810B501fab280dC2eBD6d0D2c48`](https://robinhoodchain.blockscout.com/address/0x599BE83442e02810B501fab280dC2eBD6d0D2c48) | |
+| UptickShareOracleFactory | [`0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB`](https://robinhoodchain.blockscout.com/address/0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB) | |
+| AAPL vault (Uniswap v3 pool) | [`0x127eCb0e814EF0cC296910DFd5E946050d85534f`](https://robinhoodchain.blockscout.com/address/0x127eCb0e814EF0cC296910DFd5E946050d85534f) | $5,000 |
+| AAPL share oracle | [`0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB`](https://robinhoodchain.blockscout.com/address/0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB) | |
+| PLTR vault (Uniswap v4 pool) | [`0xD769d94E43447937Eaa85Dc6AE291468649085a3`](https://robinhoodchain.blockscout.com/address/0xD769d94E43447937Eaa85Dc6AE291468649085a3) | $5,000 |
+| PLTR share oracle | [`0x613F1250fc27aD51C11C403bd9b5440181D0f9A4`](https://robinhoodchain.blockscout.com/address/0x613F1250fc27aD51C11C403bd9b5440181D0f9A4) | |
+<!-- deployed:end -->
+
 ## Run locally
 
 ```
@@ -148,3 +167,4 @@ Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture.h
 [^4]: `spikes/capped-hooks/FINDINGS.md`.
 [^5]: 74.5%: Bitquery. 80% of 84K: 0x. $1.2M in 49 hours: `docs/research/founder-house/OUTREACH-fomo-gmgn.md`.
 [^6]: `docs/research/founder-house/vaults/HOOK-DESIGN.md` section A and `docs/research/founder-house/vaults/COMPETITORS.md`.
+[^7]: `spikes/stock-hedge/EVIDENCE.md` lists each figure with the script and output file in `spikes/stock-hedge/economics/` that produce it (funding, basis, order book, close-time and the weekend cost).

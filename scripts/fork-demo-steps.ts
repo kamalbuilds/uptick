@@ -12,7 +12,7 @@ if (process.env.MODE === "id") {
   console.log(marketId({ ...p.market, lltv: BigInt(p.market.lltv) }));
   process.exit(0);
 }
-const steps = earnAndBorrowSteps({
+const phases = earnAndBorrowSteps({
   symbol: p.symbol,
   token: p.token,
   vault: p.vault,
@@ -24,4 +24,5 @@ const steps = earnAndBorrowSteps({
   tokenAllowance: BigInt(p.tokenAllowance),
   shareAllowance: BigInt(p.shareAllowance),
 });
-console.log(JSON.stringify(steps.map((s) => ({ id: s.id, to: s.call.to, data: s.call.data }))));
+// One entry per call, in order; `phase` is the app's batch the call belongs to (the app waits for the next parent-chain block between phases).
+console.log(JSON.stringify(phases.flatMap((steps, phase) => steps.map((s) => ({ phase, id: s.id, to: s.call.to, data: s.call.data })))));

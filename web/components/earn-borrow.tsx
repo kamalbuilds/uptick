@@ -6,9 +6,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { CircleNotch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { LoanHedge } from "./hedge-plan";
 import { SectionTitle, toneClass } from "./ledger";
 import { Term } from "./term";
-import { StepList, useStepRunner } from "./step-runner";
+import { StepList, runLabel, useStepRunner } from "./step-runner";
 import { WalletButton } from "./wallet-button";
 import { erc20Abi, vaultAbi } from "@/lib/abis";
 import { robinhoodChain } from "@/lib/chain";
@@ -42,7 +43,7 @@ function parse(v: string): bigint | null {
 
 const usdg = (n: bigint) => num(Number(formatUnits(n, USDG_DECIMALS)), 2);
 
-/** Earn and borrow on a vault page: deposit the Stock Token, post the shares to Morpho Blue and borrow USDG, as one wallet confirmation when the wallet batches.
+/** Earn and borrow on a vault page: deposit the Stock Token, post the shares to Morpho Blue and borrow USDG, as two wallet batches a parent-chain block apart (the vault locks fresh shares for that block).
  *  The numbers and the ticket render for a vault whose Morpho market is in web/lib/collateral-markets.json and exists on-chain; every other open vault shows what the loan will be and that it opens with the market. */
 export function EarnBorrow({ cfg }: { cfg: VaultConfig }) {
   if (cfg.gate.state === "closed") return null;
@@ -52,7 +53,7 @@ export function EarnBorrow({ cfg }: { cfg: VaultConfig }) {
       <SectionTitle id="earn-borrow" aside={market ? <><Term id="morpho">Morpho Blue</Term> · {pct(Number(market.lltv) / 1e16, 1)} <Term id="lltv">loan-to-value limit</Term></> : <Term id="morpho">Morpho Blue</Term>}>Earn and borrow</SectionTitle>
       <p className="mt-4 max-w-[690px] text-[20px] font-medium leading-7 tracking-[-0.2px]">Earn the pool fees on your {cfg.symbol}, and borrow USDG against the same position.</p>
       <p className="mt-2 max-w-[690px] text-mute">
-        One confirmation deposits {cfg.symbol} into the vault, posts the vault shares as collateral and sends USDG to your wallet. The shares keep earning pool fees while they are collateral.
+        One click deposits {cfg.symbol} into the vault, then posts the vault shares as collateral and sends USDG to your wallet. Fresh shares are held for the next block, about 12 seconds, so the loan follows the deposit by that long. The shares keep earning pool fees while they are collateral.
       </p>
       {market && cfg.vault ? <Flow cfg={cfg} vault={cfg.vault} market={market} /> : <Opening cfg={cfg} />}
     </section>
@@ -83,7 +84,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
   const [sliderPos, setSliderPos] = useState(SLIDER_REST);
-  const { run, running, finished, failedAt, batchOk, start: startSteps, retry, reset } = useStepRunner();
+  const { run, running, finished, failedAt, canRetry, batchOk, start: startSteps, retry, reset } = useStepRunner();
 
   const id = marketId(market);
   const onChain = Boolean(address && chainId === robinhoodChain.id);
@@ -191,8 +192,13 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
   const limitPct = room && room.maxBorrow > 0n ? Math.min(100, Number(((debt + borrow) * 10_000n) / room.maxBorrow) / 100) : 0;
   const capPct = room && room.maxBorrow > 0n ? Math.min(100, Number(((debt + room.cap) * 10_000n) / room.maxBorrow) / 100) : 0;
   const sized = parsed ? `${amount} ${cfg.symbol}` : `1 ${cfg.symbol}`;
+  // Step three reads the settled position: the collateral and debt on Morpho after the borrow, not the amounts typed for the next one.
+  const stepThree = finished && address && heldCollateral > 0n && run?.steps.some((s) => s.id === "borrow") === true;
+  const settledHealth = price !== undefined ? positionRisk({ collateral: heldCollateral, price, lltv: market.lltv, debt }).healthFactor : null;
+  const loanRate = rate.data === undefined ? undefined : { pct: aprPct(rate.data), source: `Morpho Blue borrowRateView on ${market.irm}`, fetchedAt: new Date(rate.dataUpdatedAt).toISOString() };
 
   return (
+    <>
     <div className="mt-6 grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="min-w-0 self-start rounded-lg border border-line bg-panel p-5">
         <label htmlFor="eb-amount" className="flex items-baseline justify-between text-[13px] leading-5 text-mute">
@@ -262,7 +268,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
         <div className="mt-5">
           {!isConnected || chainId !== robinhoodChain.id ? (
             <WalletButton size="lg" label={!isConnected ? "Connect wallet" : undefined} className="w-full" />
-          ) : failedAt >= 0 && run?.mode === "sequential" ? (
+          ) : canRetry && run ? (
             <div className="flex flex-wrap gap-3">
               <Button size="lg" className="px-5" onClick={retry}>Retry the failed step</Button>
               <Button size="lg" variant="outline" onClick={reset}>Start over</Button>
@@ -271,12 +277,12 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
             <Button size="lg" variant="outline" onClick={reset}>Start over</Button>
           ) : (
             <Button size="lg" className="w-full px-4 sm:px-8" disabled={blocker !== null || running || finished} onClick={start}>
-              {running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {run?.mode === "batch" ? "Confirm in your wallet" : "Working through the steps"}</> : borrow > 0n ? `Deposit and borrow ${usdg(borrow)} USDG` : `Deposit ${cfg.symbol}`}
+              {running ? <><CircleNotch size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> {runLabel(run)}</> : borrow > 0n ? `Deposit and borrow ${usdg(borrow)} USDG` : `Deposit ${cfg.symbol}`}
             </Button>
           )}
           {!run && blocker && (parsed !== null || unreadable) && <p className="mt-2 text-[13px] leading-5 text-caution">{blocker}</p>}
           {!run && isConnected && chainId === robinhoodChain.id && (
-            <p className="mt-2 text-[13px] leading-5 text-mute">{batchOk ? "Your wallet batches these steps into one confirmation." : "Your wallet confirms each step in turn."} Stock Tokens are not offered to US persons. Check that you are eligible in your country before depositing.</p>
+            <p className="mt-2 text-[13px] leading-5 text-mute">{batchOk ? (borrow > 0n ? "Your wallet batches these steps into two confirmations, about 12 seconds apart." : "Your wallet batches these steps into one confirmation.") : "Your wallet confirms each step in turn, with about 12 seconds before the loan steps."} Stock Tokens are not offered to US persons. Check that you are eligible in your country before depositing.</p>
           )}
           {run && <StepList run={run} />}
           {run?.error && <p role="alert" className="mt-3 break-words text-[13px] leading-5 text-loss">{run.error}</p>}
@@ -320,6 +326,16 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
         </p>
       </div>
     </div>
+    {stepThree && address && (
+      <div className="mt-8 border-t border-hairline pt-6" role="region" aria-labelledby="step-three">
+        <h3 id="step-three" className="text-[20px] font-medium leading-7 tracking-[-0.2px]">Step three: hedge it for the weekend</h3>
+        <p className="mt-1 max-w-[690px] text-mute">
+          You earn on the shares and hold the USDG. Before Friday&rsquo;s close, take the planned {cfg.symbol} short to Lighter with its size, side and leverage ready to enter, sized from the {cfg.symbol} behind your shares.
+        </p>
+        <LoanHedge className="mt-3" cfg={cfg} vault={vault} owner={address} collateral={heldCollateral} loanRate={loanRate} healthFactor={settledHealth} />
+      </div>
+    )}
+    </>
   );
 }
 

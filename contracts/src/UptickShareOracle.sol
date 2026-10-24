@@ -58,6 +58,12 @@ interface IVaultFactory {
     function isVault(address vault) external view returns (bool);
 }
 
+/// @dev What the oracle reads from the contract that deploys it: the Uptick VaultFactory and the vault to price.
+/// `UptickShareOracleFactory` is the one implementation, and the oracle records its deployer as `oracleFactory`.
+interface IOracleDeployer {
+    function deployParams() external view returns (IVaultFactory factory, IUptickVault vault);
+}
+
 /// @title UptickShareOracle
 /// @notice A Morpho Blue oracle that prices one share of an Uptick vault (StockVault v3 or StockVaultV4) in USDG, so
 /// the share can be a market's collateral token and USDG its loan token.
@@ -90,15 +96,24 @@ interface IVaultFactory {
 /// answer itself is unusable (`FeedInvalid`: reverted, non-positive, future-dated or `answeredInRound < roundId`).
 ///
 /// No owner, no setters, no upgrade path. One oracle per vault; the vault must be one the Uptick factory deployed,
-/// which pins its creation code.
+/// which pins its creation code. The constructor takes no argument: it asks its deployer (`msg.sender`, a
+/// `UptickShareOracleFactory`) for the VaultFactory and the vault, requires `factory.isVault(vault)`, and stores all
+/// three as immutables (`factory()`, `vault()`, `oracleFactory()`). An account cannot deploy it; a look-alike deployer
+/// contract can, but its oracle is not in the real oracle factory's `isOracle` registry and `oracleFactory()` names the
+/// look-alike, so a lender checks `UptickShareOracleFactory(<published>).isOracle(oracle)`.
 contract UptickShareOracle is IOracle {
     using Math for uint256;
 
     /// @notice The oldest Chainlink print the oracle accepts, in seconds (97 hours).
     uint256 public constant MAX_FEED_AGE = 349_200;
+    uint256 private constant Q96 = 1 << 96;
     uint8 private constant FEED_INVALID = 1; // Status.FeedInvalid in StockVault and StockVaultV4
 
+    /// @notice The Uptick VaultFactory whose `isVault` approved `vault`.
+    IVaultFactory public immutable factory;
     IUptickVault public immutable vault;
+    /// @notice The contract that deployed this oracle, which asked its own immutable VaultFactory about `vault`.
+    address public immutable oracleFactory;
     IERC20 public immutable stock;
     IERC20 public immutable usdg;
     bool public immutable stockIsToken0;
@@ -113,8 +128,11 @@ contract UptickShareOracle is IOracle {
     error FeedInvalid();
     error FeedTooOld(uint256 updatedAt);
 
-    constructor(IVaultFactory factory, IUptickVault vault_) {
-        if (!factory.isVault(address(vault_))) revert NotRegisteredVault();
+    constructor() {
+        (IVaultFactory factory_, IUptickVault vault_) = IOracleDeployer(msg.sender).deployParams();
+        if (!factory_.isVault(address(vault_))) revert NotRegisteredVault();
+        factory = factory_;
+        oracleFactory = msg.sender;
         vault = vault_;
         IERC20Metadata stock_ = IERC20Metadata(vault_.stock());
         IERC20Metadata usdg_ = IERC20Metadata(vault_.usdg());
@@ -129,15 +147,16 @@ contract UptickShareOracle is IOracle {
 
     /// @inheritdoc IOracle
     function price() external view returns (uint256) {
-        (uint8 status, uint256 px, uint256 updatedAt, uint160 sqrtOracle,,) = vault.health();
+        (uint8 status, uint256 px, uint256 updatedAt, uint160 sqrtOracle, uint160 sqrtTwap,) = vault.health();
         if (status == FEED_INVALID) revert FeedInvalid();
         if (block.timestamp - updatedAt > MAX_FEED_AGE) revert FeedTooOld(updatedAt);
-        return valueInUsdg(px, sqrtOracle).mulDiv(1e36, vault.totalSupply() + virtualShares);
+        return valueInUsdg(px, sqrtOracle, sqrtTwap).mulDiv(1e36, vault.totalSupply() + virtualShares);
     }
 
     /// @notice The vault's holdings in USDG raw units at the Chainlink answer `px` (feed decimals), the position at
-    /// `sqrtOracle`, less the treasury's cut of the uncollected fees, capped by `totalAssets()` at the same price.
-    function valueInUsdg(uint256 px, uint160 sqrtOracle) public view returns (uint256) {
+    /// `sqrtOracle`, less the treasury's cut of the uncollected fees and of the fees the vault recorded as pending
+    /// (see `_pendingCutUsdg`; `sqrtTwap` is the vault's TWAP from `health()`), capped by `totalAssets()` at the same price.
+    function valueInUsdg(uint256 px, uint160 sqrtOracle, uint160 sqrtTwap) public view returns (uint256) {
         IUptickVault.PositionInfo memory p = vault.positionInfo();
         uint256 posStock;
         uint256 posUsdg;
@@ -147,16 +166,73 @@ contract UptickShareOracle is IOracle {
         }
         uint256 owed = vault.totalStockOwed();
         uint256 idle = stock.balanceOf(address(vault));
-        uint256 stockTotal = (idle > owed ? idle - owed : 0) + posStock + p.uncollectedStock;
-        uint256 usdgTotal = usdg.balanceOf(address(vault)) + posUsdg + p.uncollectedUsdg;
-
+        idle = idle > owed ? idle - owed : 0;
+        uint256 idleUsdg = usdg.balanceOf(address(vault));
         uint256 usdgPerStock = px * usdgScale;
-        uint256 value = stockTotal.mulDiv(usdgPerStock, stockScale) + usdgTotal;
+        uint256 value = (idle + posStock + p.uncollectedStock).mulDiv(usdgPerStock, stockScale) + idleUsdg + posUsdg
+            + p.uncollectedUsdg;
         (, uint16 perfFeeBps,,,,,,) = vault.params();
         uint256 feeValue = p.uncollectedStock.mulDiv(usdgPerStock, stockScale) + p.uncollectedUsdg;
         uint256 cut = feeValue.mulDiv(perfFeeBps, 1e4, Math.Rounding.Ceil);
+        uint256 ta = vault.totalAssets();
+        cut += _pendingCutUsdg(p, idle, idleUsdg, px, sqrtTwap, perfFeeBps, ta);
         value = value > cut ? value - cut : 0;
 
-        return Math.min(value, vault.totalAssets().mulDiv(usdgPerStock, stockScale));
+        return Math.min(value, ta.mulDiv(usdgPerStock, stockScale));
+    }
+
+    /// @notice The treasury's cut of the fees a closed-gate `redeemInKind` moved into the vault's idle balances and
+    /// recorded as pending (v4; always zero on v3), in USDG raw units at `nav = min(Chainlink, TWAP)`.
+    function pendingCutUsdg() external view returns (uint256) {
+        (, uint256 px,,, uint160 sqrtTwap,) = vault.health();
+        IUptickVault.PositionInfo memory p = vault.positionInfo();
+        uint256 owed = vault.totalStockOwed();
+        uint256 idle = stock.balanceOf(address(vault));
+        (, uint16 perfFeeBps,,,,,,) = vault.params();
+        return _pendingCutUsdg(
+            p, idle > owed ? idle - owed : 0, usdg.balanceOf(address(vault)), px, sqrtTwap, perfFeeBps, vault.totalAssets()
+        );
+    }
+
+    /// @dev The vault keeps the pending fees private, but its net valuation `ta` is `gross - cut(uncollected + pending)`
+    /// with every term at `nav = min(Chainlink, TWAP)`, and everything but the pending cut is readable: the idle
+    /// balances, the position's legs at the vault's TWAP and the uncollected fees all come from `positionInfo()`. So
+    /// the pending cut is `gross - cut(uncollected) - ta`, rebuilt here with the vault's own formulas and rounding (it
+    /// is zero on v3, and within a wei or two of zero on v4 when nothing is pending), saturating at zero.
+    ///
+    /// The cut is valued at `nav`, the price it was rebuilt at, and never at Chainlink (review C-1). The vault reports
+    /// the spot price as its TWAP whenever its observation ring has lapsed (a weekend, a keeper outage), so `nav` can be
+    /// moved down by a same-transaction swap. Scaling a nav-denominated amount by `px / nav` made the USDG part of the
+    /// deduction grow without bound as spot fell and drove the price to zero. At `nav` the USDG part is exact and the
+    /// deduction can only shrink as spot falls, so no push lowers the price. The price paid is that the stock part of
+    /// the pending cut is deducted at `nav` instead of `px`: under-deducted by `(px - nav) / px`, at most `maxDeviationBps`
+    /// (1%) of the cut with a live ring and at most the stock part of the pending cut (the O-L1 leak, 13 bp of the price
+    /// in the review's run) with a lapsed ring, and never a path that lowers the price. The tighter alternative (stock
+    /// part up to `perfFeeBps x idle` at `px`, the rest at `nav`) was rejected: its split moves with `nav`, so a push
+    /// could still lower the price by up to `perfFeeBps x idle stock value`, which is not safe when the position is
+    /// out of range and the vault is mostly idle stock. Spot enters only through `nav`, in the safe direction.
+    function _pendingCutUsdg(
+        IUptickVault.PositionInfo memory p,
+        uint256 idle,
+        uint256 idleUsdg,
+        uint256 px,
+        uint160 sqrtTwap,
+        uint16 perfFeeBps,
+        uint256 ta
+    ) private view returns (uint256) {
+        uint256 navScale = Math.min(px, _sqrtToUsd(sqrtTwap)) * usdgScale;
+        uint256 gross = idle + p.stockAmount + p.uncollectedStock
+            + (idleUsdg + p.usdgAmount + p.uncollectedUsdg).mulDiv(stockScale, navScale);
+        uint256 uncollectedCut = (p.uncollectedStock + p.uncollectedUsdg.mulDiv(stockScale, navScale)) * perfFeeBps / 1e4;
+        uint256 pending = gross > uncollectedCut + ta ? gross - uncollectedCut - ta : 0;
+        return pending.mulDiv(navScale, stockScale);
+    }
+
+    /// @dev USD per Stock Token (feed decimals) of a sqrt price, the vault's own `_sqrtToUsd`.
+    function _sqrtToUsd(uint160 sqrtP) private view returns (uint256) {
+        uint256 price96 = Math.mulDiv(sqrtP, sqrtP, Q96);
+        return stockIsToken0
+            ? Math.mulDiv(price96, stockScale, Q96) / usdgScale
+            : Math.mulDiv(stockScale, Q96, price96) / usdgScale;
     }
 }

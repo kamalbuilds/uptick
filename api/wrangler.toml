@@ -3,8 +3,11 @@ main = "src/worker.ts"
 compatibility_date = "2026-10-01"
 
 [vars]
-VAULTS = '{}'
+VAULTS = '{"aapl":"0x127eCb0e814EF0cC296910DFd5E946050d85534f","pltr":"0xD769d94E43447937Eaa85Dc6AE291468649085a3"}'
+ROUTER = "0x599BE83442e02810B501fab280dC2eBD6d0D2c48"
 NETWORK = "robinhood-chain"
+# keyless public endpoint for chain 4663 (eth_chainId 0x1237); the official RPC answers 429 to Cloudflare Workers
+CHAIN_RPC_URL = "https://robinhood-rpc.publicnode.com"
 
 [[kv_namespaces]]
 binding = "TALK"
@@ -14,7 +17,7 @@ id = "49cc51a2f53b4ec080a24c415612a4d7"
 # and its id replaces the placeholder below; until then the endpoints answer 503 alerts_unavailable and the scheduled run does nothing.
 [[kv_namespaces]]
 binding = "ALERTS"
-id = "00000000000000000000000000000000" # placeholder: replace with the id printed by `wrangler kv namespace create ALERTS`
+id = "4b386bf58f8245609ae158eaad1d7370"
 
 [triggers]
 crons = ["*/10 * * * *"]

@@ -6,6 +6,8 @@ import {Test} from "forge-std/Test.sol";
 import {DeployAll} from "../script/DeployAll.s.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {StockVault} from "../src/StockVault.sol";
+import {UptickShareOracle, IUptickVault} from "../src/UptickShareOracle.sol";
+import {UptickShareOracleFactory} from "../src/UptickShareOracleFactory.sol";
 
 /// @dev The deploy script against the real chain state (public RPC fork, chain id 4663). One test, one step after the
 /// other: the script reads its inputs from process environment variables, which parallel tests would overwrite.
@@ -82,6 +84,40 @@ contract DeployAllTest is Test {
         (, perf,,,,,,) = StockVault(f.entryAt(0).vault).params();
         assertEq(perf, 1000, "PERF_FEE_BPS sets the share");
         vm.setEnv("PERF_FEE_BPS", "0");
+    }
+
+    /// The oracle factory is deployed with the VaultFactory by default, bound to it, and is the registry of the oracles it
+    /// deploys. DEPLOY_ORACLE_FACTORY=false leaves it out.
+    function test_oracleFactoryIsDeployedByDefaultAndBoundToTheVaultFactory() public {
+        _env("test/fixtures/deploy-list-open.json", false);
+        vm.setEnv("DEPLOY_ORACLE_FACTORY", "true");
+        (VaultFactory f,) = script.run();
+        UptickShareOracleFactory ofac = script.oracleFactory();
+        assertGt(address(ofac).code.length, 0, "deployed");
+        assertEq(address(ofac.factory()), address(f), "bound to the VaultFactory of the same run");
+        assertTrue(ofac.factory().isVault(f.entryAt(0).vault));
+
+        address vault = f.entryAt(0).vault;
+        address deployed = ofac.oracleOf(vault);
+        assertTrue(deployed != address(0), "the script itself deployed the vault's oracle");
+        assertTrue(ofac.isOracle(deployed));
+        address oracle = ofac.createOracle(IUptickVault(vault));
+        assertEq(oracle, deployed, "createOracle returns the one the script made");
+        assertTrue(ofac.isOracle(oracle));
+        assertEq(ofac.oracleOf(vault), oracle);
+        assertEq(address(UptickShareOracle(oracle).factory()), address(f));
+        assertEq(address(UptickShareOracle(oracle).vault()), vault);
+
+        // unset means on
+        vm.setEnv("DEPLOY_ORACLE_FACTORY", "");
+        (f,) = script.run();
+        assertGt(address(script.oracleFactory()).code.length, 0, "an empty value falls back to the default");
+
+        vm.setEnv("DEPLOY_ORACLE_FACTORY", "false");
+        (f,) = script.run();
+        assertEq(address(script.oracleFactory()), address(0), "the flag turns it off");
+        assertEq(f.vaultCount(), 1);
+        vm.setEnv("DEPLOY_ORACLE_FACTORY", "true");
     }
 
     function test_allowClosedRefusedOnARealChain() public {

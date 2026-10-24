@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, depositRoom, perDepositLimitUsd, shareOfBalance, entryFeePct, netOfEntryFee } from "./format.ts";
+import { pct, shortAddress, usd, ago, swapsLabel, pitchLine, liveSentence, depositRoom, perDepositLimitUsd, shareOfBalance, entryFeePct, netOfEntryFee } from "./format.ts";
 import { parseVaultStats } from "./keeper.ts";
 
 const fx = (f: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url), "utf8"));
@@ -123,4 +123,11 @@ test("entry fee: percent label and the net base for yearly figures", () => {
   assert.equal(entryFeePct(100), "1%");
   assert.equal(netOfEntryFee(10_000, 35), 9_965);
   assert.equal(netOfEntryFee(10_000, 100), 9_900);
+});
+
+test("liveSentence names the vaults with an address and says nothing when none is live", () => {
+  assert.equal(liveSentence([]), "");
+  assert.equal(liveSentence(["AAPL"]), "AAPL is live on Robinhood Chain.");
+  assert.equal(liveSentence(["AAPL", "PLTR"]), "AAPL and PLTR are live on Robinhood Chain.");
+  assert.equal(liveSentence(["AAPL", "PLTR", "GOOGL"]), "AAPL, PLTR and GOOGL are live on Robinhood Chain.");
 });

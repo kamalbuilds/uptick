@@ -64,7 +64,7 @@ console.log(`oracle price ${price}, borrow limit ${room.maxBorrow}, slider cap $
 
 const steps = earnAndBorrowSteps({
   symbol: "AMZN", token: AMZN, vault: AMZN, market, account: user, deposit: 1n, collateral, borrow, tokenAllowance: 1n, shareAllowance: 0n,
-}).filter((s) => s.id !== "deposit");
+})[1];
 check("steps are approve, supplyCollateral, borrow", steps.map((s) => s.id).join() === "approve-shares,supply-collateral,borrow", steps.map((s) => s.id).join());
 
 const usdgBefore = await pub.readContract({ address: USDG, abi: erc20Abi, functionName: "balanceOf", args: [user] });
@@ -85,7 +85,7 @@ check("unhealthy one tick below it", maxBorrowOf(collateral, risk.liquidationPri
 // Must-fail: Morpho refuses a borrow that takes the position past the LLTV limit, so the limit the UI computes is the one Morpho enforces.
 const over = earnAndBorrowSteps({
   symbol: "AMZN", token: AMZN, vault: AMZN, market, account: user, deposit: 1n, collateral, borrow: room.maxBorrow, tokenAllowance: 1n, shareAllowance: collateral,
-}).find((s) => s.id === "borrow")!;
+}).flat().find((s) => s.id === "borrow")!;
 let refused = false;
 try {
   refused = (await send(user, over.call.to, over.call.data)) === "reverted";

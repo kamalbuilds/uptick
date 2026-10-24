@@ -11,14 +11,17 @@ import {ShareCollateralTest, ShareCollateralV4Test, MarketParams, IMorpho} from 
 import {StockVault} from "../../../src/StockVault.sol";
 import {StockVaultV4} from "../../../src/v4/StockVaultV4.sol";
 import {UptickShareOracle, IUptickVault, IVaultFactory} from "../../../src/UptickShareOracle.sol";
+import {UptickShareOracleFactory} from "../../../src/UptickShareOracleFactory.sol";
 import {ISwapRouter02} from "../../../src/interfaces/IUniswapV3.sol";
 
 /// @dev Security review of UptickShareOracle, 2026-10-23. Run on a fork of 4663:
 ///   forge test --match-path 'test/security/oracle/*' --match-test 'test_poc|test_measure' -j 1 -vv
-/// Each `test_poc_*` asserts the vulnerable behaviour on the code as written: it passes while the issue exists and
-/// goes red once the fix lands. `test_measure_*` print the numbers the LLTV recommendation rests on.
+/// Each `test_poc_*` asserts the behaviour of the code under review. After the fixes of 2026-10-23 (branch
+/// r2-oracle-fix) the O-M1 and O-L1 tests assert the fixed behaviour and go red if the fix is reverted; O-L2 has no
+/// code fix and keeps asserting the integration pattern. `test_measure_*` print the numbers the LLTV recommendation
+/// rests on.
 
-/// @dev Says yes to every vault. Anyone can deploy this and pass it to the oracle's constructor.
+/// @dev Says yes to every vault. Anyone can deploy this and bind an imitation oracle factory to it.
 contract YesFactory {
     function isVault(address) external pure returns (bool) {
         return true;
@@ -59,7 +62,7 @@ contract FakeVault is ERC20 {
     }
 
     function health() external view returns (uint8, uint256, uint256, uint160, uint160, uint160) {
-        return (0, reportedPrice, block.timestamp, 0, 0, 0);
+        return (0, reportedPrice, block.timestamp, 0, uint160(1 << 96), 0); // a TWAP of 1.0 so the pending-cut rebuild divides
     }
 
     function positionInfo() external pure returns (PositionInfo memory p) {}
@@ -112,51 +115,55 @@ contract FlashLiquidator {
 contract OracleReviewV3 is ShareCollateralTest {
     using Math for uint256;
 
-    // ----------------------------------------------------------- M-1 forged registry
+    // ----------------------------------------------------------- M-1 forged registry (fixed by the oracle factory)
 
-    /// @dev The constructor trusts whatever `factory` the deployer passes and stores nothing about it, so the
-    /// `NotRegisteredVault` guard binds nobody: a contract with the oracle's exact source, pointed at a fake vault,
-    /// prices one raw unit of a worthless token at hundreds of thousands of USDG and a lender in that market is drained.
-    function test_poc_forgedFactoryOracleDrainsLender() public {
+    /// @dev What a lender checks before supplying to a market: the oracle is in the published oracle factory's registry,
+    /// names the real VaultFactory, and prices a vault that factory knows.
+    function _lenderAccepts(UptickShareOracle o) internal view returns (bool) {
+        return oracleFactory.isOracle(address(o)) && address(o.factory()) == address(factory)
+            && o.oracleFactory() == address(oracleFactory) && factory.isVault(address(o.vault()));
+    }
+
+    /// @dev The look-alike oracle of the original PoC (same source, a fake vault, a registry that says yes) can no
+    /// longer come out of the oracle factory, and the copy an attacker deploys through an imitation of the factory
+    /// fails every leg of the lender's check. Before the fix the same lender had nothing to check: the oracle stored no
+    /// registry and the guard consulted whatever the deployer passed.
+    function test_poc_forgedFactoryOracleCannotComeFromTheOracleFactory() public {
         address attacker = makeAddr("attacker");
-        address victim = makeAddr("victimLender");
-
         vm.prank(attacker);
         FakeVault fake = new FakeVault(NVDA, USDG, FEED, 1e20); // 1e12 USD per NVDA
         deal(NVDA, address(fake), 1e18); // one NVDA "held"
+        assertFalse(factory.isVault(address(fake)), "the real VaultFactory does not know the fake");
 
-        // The registry the guard is meant to consult rejects the fake ...
-        assertFalse(factory.isVault(address(fake)), "the real factory does not know the fake");
-        vm.expectRevert(UptickShareOracle.NotRegisteredVault.selector);
-        new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(fake)));
-
-        // ... but the deployer chooses the registry.
+        // 1. The oracle factory refuses a vault the VaultFactory did not deploy, for anyone.
         vm.prank(attacker);
-        UptickShareOracle forged =
-            new UptickShareOracle(IVaultFactory(address(new YesFactory())), IUptickVault(address(fake)));
-        assertEq(address(forged).code.length, address(oracle).code.length, "same contract, same runtime size");
-        (bool hasGetter,) = address(forged).staticcall(abi.encodeWithSignature("factory()"));
-        assertFalse(hasGetter, "nothing on-chain says which registry approved the vault");
-        assertGt(forged.price(), 1e45, "one raw unit priced above 1e9 USDG");
+        vm.expectRevert(UptickShareOracleFactory.NotRegisteredVault.selector);
+        oracleFactory.createOracle(IUptickVault(address(fake)));
+        assertEq(oracleFactory.oracleOf(address(fake)), address(0));
 
-        MarketParams memory bad = MarketParams(USDG, address(fake), address(forged), IRM, LLTV);
-        MORPHO.createMarket(bad);
-        deal(USDG, victim, 100_000e6);
-        vm.startPrank(victim);
-        IERC20(USDG).approve(address(MORPHO), type(uint256).max);
-        MORPHO.supply(bad, 100_000e6, 0, victim, "");
-        vm.stopPrank();
+        // 2. Nobody can deploy the oracle bare: its constructor asks the deployer for its parameters.
+        vm.expectRevert();
+        new UptickShareOracle();
+        vm.prank(attacker, attacker);
+        vm.expectRevert();
+        new UptickShareOracle();
 
+        // 3. An imitation of the oracle factory (the same contract, bound to a registry that says yes) still yields a
+        // look-alike with the same runtime code that prices one raw unit above 1e9 USDG ...
         vm.startPrank(attacker);
-        IERC20(address(fake)).approve(address(MORPHO), type(uint256).max);
-        MORPHO.supplyCollateral(bad, 1, attacker, ""); // one raw unit
-        MORPHO.borrow(bad, 100_000e6, 0, attacker, attacker);
+        UptickShareOracleFactory imitation = new UptickShareOracleFactory(IVaultFactory(address(new YesFactory())));
+        UptickShareOracle forged = UptickShareOracle(imitation.createOracle(IUptickVault(address(fake))));
         vm.stopPrank();
+        assertEq(address(forged).code.length, address(oracle).code.length, "same contract, same runtime size");
+        assertGt(forged.price(), 1e45, "the look-alike still prices absurdly");
 
-        assertEq(IERC20(USDG).balanceOf(attacker), 100_000e6, "the attacker walked off with the whole supply");
-        bytes32 badId = keccak256(abi.encode(bad));
-        (uint128 tsa,, uint128 tba,,,) = MORPHO.market(badId);
-        assertEq(tba, tsa, "100% utilised against one raw unit of a worthless token");
+        // ... and the lender's check tells them apart, leg by leg.
+        assertTrue(_lenderAccepts(oracle), "control: the genuine oracle passes");
+        assertFalse(_lenderAccepts(forged), "the look-alike fails");
+        assertFalse(oracleFactory.isOracle(address(forged)), "not in the published registry");
+        assertTrue(address(forged.factory()) != address(factory), "names a different VaultFactory");
+        assertTrue(forged.oracleFactory() != address(oracleFactory), "deployed by a different oracle factory");
+        assertFalse(factory.isVault(address(forged.vault())), "prices a vault the real VaultFactory never deployed");
     }
 
     // ----------------------------------------------------------- L-2 dust lock on the liquidator
@@ -222,6 +229,31 @@ contract OracleReviewV3 is ShareCollateralTest {
     }
 }
 
+/// @dev v3 records no pending fees, so the oracle's rebuilt pending cut (gross - cut(uncollected) - totalAssets, with the
+/// vault's own formulas) must come out zero with fees accrued, the USDG leg valued at a lower TWAP than Chainlink, and
+/// the vault emptied of liquidity: a non-zero value here would be a rounding or composition mismatch.
+contract OracleReviewV3Pending is ShareCollateralTest {
+    /// @dev Before the O-L1 change: 323,285 cold and 183,646 warm.
+    function test_measure_priceGasV3() public {
+        uint256 g = gasleft();
+        oracle.price();
+        emit log_named_uint("v3 price() gas, first call", g - gasleft());
+        g = gasleft();
+        oracle.price();
+        emit log_named_uint("v3 price() gas, warm", g - gasleft());
+    }
+
+    function test_pendingCutIsZeroOnV3() public {
+        assertEq(oracle.pendingCutUsdg(), 0, "fresh position");
+        _pushPrice(300);
+        _pushPrice(-300);
+        assertGt(vault.positionInfo().uncollectedStock + vault.positionInfo().uncollectedUsdg, 0, "fees accrued");
+        assertEq(oracle.pendingCutUsdg(), 0, "uncollected fees are not pending");
+        _setFeed(_poolPrice() * 10_050 / 10_000);
+        assertEq(oracle.pendingCutUsdg(), 0, "Chainlink 50 bp above the TWAP");
+    }
+}
+
 /// @dev The live NVDA/USDG v3 pool with no Uptick liquidity in it: what a liquidator who redeemed in kind meets when
 /// it sells the NVDA leg.
 contract OracleReviewDepth is Base {
@@ -251,17 +283,20 @@ contract OracleReviewV4 is ShareCollateralV4Test {
     using Math for uint256;
 
     /// @dev The builder's own scenario (fees swept into idle by a closed-gate redeemInKind) with one change: the
-    /// Chainlink answer sits `offsetBps` above the pool, inside the vault's 100 bp deviation band. The totalAssets()
-    /// cap is the only thing that carries the treasury's cut of pending fees into the oracle, and the cap has slack
-    /// whenever Chainlink is above the TWAP (the vault values its USDG at min(Chainlink, TWAP)), so the price rises by
-    /// the cut. Returns (cut at stake, price rise), both in ppm of the price.
-    function _sweepWithFeedOffset(uint256 offsetBps) internal returns (uint256 cutPpm, uint256 risePpm) {
+    /// Chainlink answer sits `offsetBps` above the pool, inside the vault's 100 bp deviation band. Before the fix the
+    /// totalAssets() cap was the only thing that carried the treasury's cut of pending fees into the oracle, and the
+    /// cap has slack whenever Chainlink is above the TWAP (the vault values its USDG at min(Chainlink, TWAP)), so the
+    /// price rose by the cut. The oracle now subtracts the pending cut itself.
+    /// Returns the cut at stake (ppm of the price), the signed price change across the sweep (ppm of the price before)
+    /// and the oracle's own reading of the pending cut after the sweep (ppm of the price).
+    function _sweepWithFeedOffset(uint256 offsetBps) internal returns (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) {
         _deposit(bob, UNIT());
         _volume(VOL() * 2, 3);
         _advance(600);
         _settle();
         uint256 feedPx = _poolPrice() * (1e4 + offsetBps) / 1e4;
         _setFeed(feedPx);
+        assertEq(oracle.pendingCutUsdg(), 0, "nothing is pending before the sweep");
         cutPpm = _feeShareValue() * 1e6 / oracle.price() * 1000 / 9000;
         uint256 before = oracle.price();
         uint256 dust = vault.totalSupply() / 1e6;
@@ -278,22 +313,50 @@ contract OracleReviewV4 is ShareCollateralV4Test {
         _setFeed(feedPx);
         assertEq(_feeShareValue(), 0, "the exit swept every uncollected fee into idle");
         uint256 afterP = oracle.price();
-        risePpm = afterP > before ? (afterP - before) * 1e6 / before : 0;
+        changePpm = (int256(afterP) - int256(before)) * 1e6 / int256(before);
+        pendingPpm = oracle.pendingCutUsdg() * 1e36 / (vault.totalSupply() + 1e6) * 1e6 / afterP;
         emit log_named_uint("feed above pool, bp", offsetBps);
         emit log_named_uint("treasury cut at stake, ppm of price", cutPpm);
-        emit log_named_uint("price rise after the sweep, ppm", risePpm);
+        emit log_named_uint("pending cut the oracle derived, ppm of price", pendingPpm);
+        emit log_named_int("price change across the sweep, ppm (signed)", changePpm);
     }
 
-    function test_poc_v4PendingCutLeaksWhenFeedAboveTwap() public {
-        (uint256 cutPpm, uint256 risePpm) = _sweepWithFeedOffset(60);
+    /// @dev Chainlink 60 bp above the pool: before the O-L1 fix the price rose 1,319 ppm (the whole cut, 1,318 ppm) across
+    /// the sweep. The rebuilt cut is valued at nav = min(Chainlink, TWAP) (review C-1: valuing it at Chainlink let a spot
+    /// push scale its USDG part without bound), so the stock part of the cut is deducted at TWAP / Chainlink of its value
+    /// and the price can rise by at most `offset x cut`. Measured: +3 ppm of a 1,263 ppm cut (bound 7.6). The bound is the
+    /// accepted residual of the C-1 fix; the leak itself (the whole cut) stays closed.
+    function test_poc_v4PendingCutDoesNotLeakWhenFeedAboveTwap() public {
+        (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) = _sweepWithFeedOffset(60);
         assertGe(cutPpm, 300, "a cut of at least 3 bp is at stake");
-        assertGe(risePpm, cutPpm * 9 / 10, "the price rose by the treasury's cut: the cap did not bind");
+        assertGe(pendingPpm, cutPpm * 9 / 10, "the oracle sees the pending cut");
+        assertLe(changePpm, int256(cutPpm * 60 / 1e4 + 1), "the price rose by more than offset x cut");
+        assertGe(changePpm, -1, "the price fell: the cut was deducted more than once");
+    }
+
+    /// @dev Before the O-L1 change: 204,748 cold and 118,609 warm.
+    function test_measure_priceGasV4() public {
+        uint256 g = gasleft();
+        oracle.price();
+        emit log_named_uint("v4 price() gas, first call", g - gasleft());
+        g = gasleft();
+        oracle.price();
+        emit log_named_uint("v4 price() gas, warm", g - gasleft());
+    }
+
+    /// @dev The edge of the deviation gate (100 bp): same bounds.
+    function test_poc_v4PendingCutDoesNotLeakAtTheEdgeOfTheGate() public {
+        (uint256 cutPpm, int256 changePpm,) = _sweepWithFeedOffset(95);
+        assertLe(changePpm, int256(cutPpm * 95 / 1e4 + 1), "the price rose by more than offset x cut");
+        assertGe(changePpm, -1, "the price fell: the cut was deducted more than once");
     }
 
     function test_poc_v4PendingCutControlFeedAtPool() public {
-        (uint256 cutPpm, uint256 risePpm) = _sweepWithFeedOffset(0);
+        (uint256 cutPpm, int256 changePpm, uint256 pendingPpm) = _sweepWithFeedOffset(0);
         assertGe(cutPpm, 300);
-        assertLe(risePpm, 2, "with Chainlink at the pool the cap binds, as the builder's test shows");
+        assertGe(pendingPpm, cutPpm * 9 / 10, "the oracle sees the pending cut");
+        assertLe(changePpm, 2, "with Chainlink at the pool the cap binds, as the builder's test shows");
+        assertGe(changePpm, -2);
     }
 
     /// @dev Hypothesis tested and refuted for this pool. v4's TWAP is the keeper-fed ring: once the feed is older than
@@ -318,5 +381,29 @@ contract OracleReviewV4 is ShareCollateralV4Test {
         // With the cap reading spot, the cap still sits above the uncapped figure (concavity, USDG at px/min(px,twap)
         // >= 1), so a push can only add the fees it pays, never lower the price.
         assertGe(p1, p0, "a spot push through the TwapUnavailable fallback does not lower the price");
+    }
+}
+
+/// @dev The same pending-cut scenarios on a v4 pool whose Stock Token is currency0 (TSLA, 0.3%, spacing 60): the
+/// oracle's `_sqrtToUsd` has two orientations and PLTR (Stock Token currency1) exercises only one.
+contract OracleReviewV4Token0 is OracleReviewV4 {
+    function STOCK() internal pure override returns (address) {
+        return 0x322F0929c4625eD5bAd873c95208D54E1c003b2d;
+    }
+
+    function FEED() internal pure override returns (address) {
+        return 0x4A1166a659A55625345e9515b32adECea5547C38;
+    }
+
+    function FEE() internal pure override returns (uint24) {
+        return 3000;
+    }
+
+    function SPACING() internal pure override returns (int24) {
+        return 60;
+    }
+
+    function test_token0IsTheStockCurrency() public view {
+        assertTrue(oracle.stockIsToken0(), "the other orientation of _sqrtToUsd");
     }
 }

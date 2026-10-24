@@ -68,26 +68,29 @@ claim() { # label want regex
   done
   [ "$seen" -gt 0 ] || { echo "check-facts: no $label claim found in any public file, the check read nothing"; bad=1; }
 }
-claim mcp.count "$(jq -r .mcp.count docs/facts.json)" "\b($NW|[0-9]+) (MCP )?tools\b"
+claim mcp.count "$(jq -r .mcp.count docs/facts.json)" "\b($NW|[0-9]+) (MCP )?tools([^/]|$)"
 claim reviews.reports_total "$(jq -r .reviews.reports_total docs/facts.json)" "\b($NW|[0-9]+) ((review|security) )?reports?\b|\b($NW|[0-9]+) security reviews\b"
 claim mutations.total "$(jq -r .mutations.total docs/facts.json)" "\b[0-9]+[- ](row )?mutation (checks?|rows?)\b|\b[0-9]+ guards are mutation-tested"
 claim holders.spcx "$(jq -r .holders.spcx docs/facts.json)" "(^|[ (])11[0-9],[0-9]{3}\b"
 # One repo URL.
 REPO="$(jq -r .repo docs/facts.json)"; REPOPATH="${REPO#*hub.com/}"
+OTHER_REPO="kamalbuilds/ava-portfolio-manager-ai-agents" # the founder's earlier project, named in the deck team slide; the only other repo a public file may link
 seen=0
 for f in "${FILES[@]}"; do
   [ -s "$f" ] || continue
-  for u in $(grep -oE "hub\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_-]+" "$f" | sort -u); do
-    seen=$((seen + 1)); [ "${u#hub.com/}" = "$REPOPATH" ] || { echo "$f: repo URL \"$u\", docs/facts.json repo says $REPOPATH"; bad=1; }
+  for u in $(grep -oE "(^|[^.A-Za-z0-9-])github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_-]+" "$f" | sed 's/.*github\.com/hub.com/' | sort -u); do
+    seen=$((seen + 1)); [ "${u#hub.com/}" = "$REPOPATH" ] || [ "${u#hub.com/}" = "$OTHER_REPO" ] || { echo "$f: repo URL \"$u\", docs/facts.json repo says $REPOPATH"; bad=1; }
   done
 done
 [ "$seen" -gt 0 ] || { echo "check-facts: no repo URL found, the check read nothing"; bad=1; }
 # web/public/llms.txt is generated: a hand edit that the generator (keeper/scripts/llms-text.ts) would not produce is drift.
 if command -v bun >/dev/null; then
-  bun -e 'import { readFileSync } from "node:fs"; import { llmsText } from "./keeper/scripts/llms-text.ts"; process.stdout.write(llmsText(JSON.parse(readFileSync("web/lib/vault-universe.json", "utf8"))));' | cmp -s - web/public/llms.txt \
+  bun -e 'import { readFileSync } from "node:fs"; import { llmsText } from "./keeper/scripts/llms-text.ts"; process.stdout.write(llmsText(JSON.parse(readFileSync("web/lib/vault-universe.json", "utf8")), JSON.parse(readFileSync("deployments/4663.json", "utf8"))));' | cmp -s - web/public/llms.txt \
     || { echo "web/public/llms.txt differs from keeper/scripts/llms-text.ts output; fix the generator and regenerate, never edit the file"; bad=1; }
 else echo "check-facts: bun not found, cannot verify web/public/llms.txt against its generator"; bad=1; fi
 # Fee per $1 lost, the off-hours share and the data-fact figures: one sample per sentence, labels in the same block, values from docs/facts.json (scripts/check-claims.mjs).
 node scripts/check-claims.mjs "${FILES[@]}" || bad=1
+# The weekend hedge cost any public file states at $10k is the one weekend_cost.py prints from the tracked JSON.
+python3 spikes/stock-hedge/economics/weekend_cost.py --check README.md docs/SUBMISSION.md deck/index.html web/public/llms.txt || bad=1
 [ $bad = 0 ] && echo "check-facts: ${#FILES[@]} files clean of ${#BANNED[@]} banned strings; $doors door counts match docs/facts.json"
 exit $bad

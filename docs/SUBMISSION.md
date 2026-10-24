@@ -1,6 +1,6 @@
 # Uptick: Founder House Singapore submission
 
-Put your Stock Tokens to work. Deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults launch first), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share on Morpho Blue. Uptick shows what you keep before you sign, and opens a vault only where 3,059,881 replayed swaps say it holds up.
+Put your Stock Tokens to work. Deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults open first, AAPL and PLTR live on Robinhood Chain now), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share on Morpho Blue. Uptick shows what you keep before you sign, and opens a vault only where 3,059,881 replayed swaps say it holds up.
 
 App https://uptick-fi.pages.dev. Launch film https://x.com/uptickfi/status/2112531006792360167. Code https://github.com/kamalbuilds. Deck: `deck/index.html`, 12 slides and an appendix, PDF at `deck/uptick-deck.pdf`. Demo: `docs/DEMO-SCRIPT.md`, 90 seconds.
 
@@ -12,7 +12,7 @@ On 22 October 2026 @RobinhoodCrypto announced that Stock Tokens can now serve as
 
 Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. The pools behind the 17 vaults paid liquidity providers $979.3K in fees over the same 30 days, and what an LP keeps after informed traders is a different number. PLTR's Uniswap v4 1% pool paid 126.8% a year in fees in the held-out half and kept +7.9%; its v3 0.3% pool kept -18.9%; SPCX's pool paid 116.7% and kept -195.4%. The venue for each token is the pool that keeps more in its weaker half: PLTR, SPY and USO sit on Uniswap v4, the other 14 on v3.
 
-Open vaults take any amount: PLTR, AAPL and GOOGL kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY and QQQ, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way. Launch caps total $592,359 across the 12 launching vaults, and the performance fee is 0% at launch, so the kept figure on every vault page is what a depositor keeps.
+Open vaults take any amount: PLTR, AAPL and GOOGL kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY and QQQ, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way. AAPL and PLTR are live on Robinhood Chain, each with a $5,000 deposit cap read back from its contract; the other ten launch at their sized caps, and sized launch caps total $592,359 across the 12 vaults. The performance fee is 0% at launch, so the kept figure on every vault page is what a depositor keeps.
 
 ## 3. Deposit the token, earn what survives, borrow against the same share
 
@@ -28,11 +28,27 @@ Morpho Blue API, chain 4663, 2026-10-23 16:56 UTC: the AAPL/USDG market at a 62.
 
 `scripts/fork-demo.sh` runs the loop end to end on a fork of Robinhood Chain against the real Morpho Blue singleton: factory, router, the PLTR v4 and AAPL v3 vaults, the share oracle, a market at a 62.5% limit, a lender, a borrower using the app's own call encoding (42.6 AAPL deposited, 8,693.07 USDG borrowed against a limit of 9,150.60), a 3% push on the pool, a stale feed, a 12% feed drop and the liquidation. Every transaction hash is in `docs/FORK-DEMO.md`.
 
+<!-- deployed:start -->
+### Deployed addresses
+
+Live on Robinhood Chain mainnet (chain id 4663) through block 96359219. Every address returns bytecode from `cast code`; the factory pins the creation-code hash of StockVault and StockVaultV4, each vault's deposit cap, owner, keeper, pool and feed were read back from the chain after the deploy, and every share oracle is registered in the oracle factory's `isOracle`.
+
+| Contract | Address | Deposit cap |
+|---|---|---|
+| VaultFactory | [`0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a`](https://robinhoodchain.blockscout.com/address/0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a) | |
+| UptickRouter | [`0x599BE83442e02810B501fab280dC2eBD6d0D2c48`](https://robinhoodchain.blockscout.com/address/0x599BE83442e02810B501fab280dC2eBD6d0D2c48) | |
+| UptickShareOracleFactory | [`0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB`](https://robinhoodchain.blockscout.com/address/0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB) | |
+| AAPL vault (Uniswap v3 pool) | [`0x127eCb0e814EF0cC296910DFd5E946050d85534f`](https://robinhoodchain.blockscout.com/address/0x127eCb0e814EF0cC296910DFd5E946050d85534f) | $5,000 |
+| AAPL share oracle | [`0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB`](https://robinhoodchain.blockscout.com/address/0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB) | |
+| PLTR vault (Uniswap v4 pool) | [`0xD769d94E43447937Eaa85Dc6AE291468649085a3`](https://robinhoodchain.blockscout.com/address/0xD769d94E43447937Eaa85Dc6AE291468649085a3) | $5,000 |
+| PLTR share oracle | [`0x613F1250fc27aD51C11C403bd9b5440181D0f9A4`](https://robinhoodchain.blockscout.com/address/0x613F1250fc27aD51C11C403bd9b5440181D0f9A4) | |
+<!-- deployed:end -->
+
 ## 6. Safety
 
 A 3% push on the AAPL pool moved the share's oracle price 0.2 basis points; the control oracle that reads pool spot moved 263, and that step goes red when the control is swapped in. At a 62.5% limit Morpho pays a 12.68% liquidation incentive, and a borrower at the limit leaves bad debt only after a further 29.6% share fall. The worst weekend gap in 123 days of Chainlink rounds on the twelve launching feeds is -7.75% on USO, and -0.68% on AAPL. In the fork liquidation the seized shares exited in kind for 14.9% more than the USDG repaid.
 
-Six review reports sit in `contracts/`: four rounds on StockVault, each re-reading the last round's fixes, with round four closing at SHIP with no Critical, High or Medium finding; one on StockVaultV4, which closes at SHIP after its one Medium was fixed; and an independent review of the share oracle that ran before any market was announced. Round 1 closed 1 High and 3 Medium: a same-block share lock, a spot-to-TWAP band against deploy sandwiches, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and a corporate-action gate on the token's oracle pause and multiplier. 141 security tests run on a fork of the real pools inside 412 contract tests, and 89 mutation checks break a guard, see red, restore and see green. Detail in `contracts/SECURITY.md`.
+Six review reports sit in `contracts/`: four rounds on StockVault, each re-reading the last round's fixes, with round four closing at SHIP with no Critical, High or Medium finding; one on StockVaultV4, which closes at SHIP after its one Medium was fixed; and an independent review of the share oracle that ran before any market was announced. Round 1 closed 1 High and 3 Medium: a same-block share lock, a spot-to-TWAP band against deploy sandwiches, deposits priced at the lowest of Chainlink, TWAP and spot, a 24 hour owner queue, and a corporate-action gate on the token's oracle pause and multiplier. 141 security tests run on a fork of the real pools inside 412 contract tests, and 93 mutation checks break a guard, see red, restore and see green. Detail in `contracts/SECURITY.md`.
 
 ## 7. Competition
 
@@ -46,7 +62,7 @@ Robinhood Chain holds $1.14B, Morpho Blue holds $609.5M of it (53.6%) and Steakh
 
 ## 9. Traction
 
-The app at uptick-fi.pages.dev serves 17 vaults, each with its door and reason, plus `/check`, Earn and borrow and Your loan. The evidence API serves JSON for every vault with the MCP endpoint and `llms.txt`. One MCP endpoint over Streamable HTTP carries nine tools: `list_vaults`, `get_vault_evidence`, `scan_wallet`, `prepare_deposit`, `prepare_withdraw`, `get_collateral_terms`, `check_loan_health`, `prepare_earn_and_borrow` and `prepare_make_safer`. The user signs and sends every transaction, and a closed vault returns its gate reason, so an agent never routes a deposit past the door: `prepare_deposit` for SPCX answers "Closed: the weaker half kept -195.4% a year, below the -20% floor." The factory pins the creation-code hash of StockVault and StockVaultV4, so it registers only the reviewed builds. Outreach to 50 named holders, projects and investors is queued, and `/talk` holds five questions for holders.
+The app at uptick-fi.pages.dev serves 17 vaults, each with its door and reason, plus `/check`, Earn and borrow and Your loan. The evidence API serves JSON for every vault with the MCP endpoint and `llms.txt`. One MCP endpoint over Streamable HTTP carries ten tools: `list_vaults`, `get_vault_evidence`, `scan_wallet`, `prepare_deposit`, `prepare_withdraw`, `get_collateral_terms`, `check_loan_health`, `prepare_earn_and_borrow`, `prepare_make_safer` and `plan_weekend_hedge`, which sizes a weekend short on Lighter's Robinhood Chain exchange from the Stock Tokens a wallet holds and prices it from live Lighter reads. The user signs and sends every transaction, and a closed vault returns its gate reason, so an agent never routes a deposit past the door: `prepare_deposit` for SPCX answers "Closed: the weaker half kept -195.4% a year, below the -20% floor." The factory pins the creation-code hash of StockVault and StockVaultV4, so it registers only the reviewed builds. Outreach to 50 named holders, projects and investors is queued, and `/talk` holds five questions for holders.
 
 ## 10. Team
 
@@ -66,7 +82,7 @@ Section 1: x.com/RobinhoodCrypto/status/2113270580472381515 via api.fxtwitter.co
 Section 2: web/lib/vault-universe.json (12 of 17, 3 open, 9 reduced, 5 closed, depositCapUsd of the 12 launching vaults summing to $592,359, sum of gate.swaps = 3,059,881), web/lib/pool-fees.json ($979,345.29), keeper/data/replay.json held-out half (PLTR v4 1% fees 126.8, kept +7.9; v3 0.3% kept -18.9; SPCX kept -195.4, fees 116.7).
 Section 3: x.com/JohannKerbrat/status/2113272709333536936 (2026-10-22, quoting Morpho's launch post), contracts/src/UptickShareOracle.sol, web/components/earn-borrow.tsx.
 Section 4: blue-api.morpho.org 2026-10-23T16:56:52Z, market 0xdeb4782d... borrowApy 0.24663, supplyAssetsUsd 221,409, utilization 0.9049; AAPL kept web/lib/vault-universe.json (weaker half +2.7, held-out +3.9). 2.7 / 0.5 = 5.4, 3.9 / 0.5 = 7.8, 24.7 - 7.8 = 16.9, 24.7 - 5.4 = 19.3.
-Section 5: web/app/check, web/components/idle-finder.tsx, your-loan.tsx, earn-borrow.tsx, api/src/mcp.ts (check_loan_health, prepare_make_safer), POST /alerts/subscribe; docs/FORK-DEMO.md (fork block 96051421, real Morpho Blue singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010); address read at block 96099041.
+Section 5: web/app/check, web/components/idle-finder.tsx, your-loan.tsx, earn-borrow.tsx, api/src/mcp.ts (check_loan_health, prepare_make_safer, plan_weekend_hedge in api/src/hedge-tools.ts), POST /alerts/subscribe; docs/FORK-DEMO.md (fork block 96051421, real Morpho Blue singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010); address read at block 96099041.
 Section 6: docs/FORK-DEMO.md steps 17 and 19 (386,493 of 19,771,327,025 raw is 0.2 bp; control 520,913,476 is 263 bp), contracts/SECURITY.md (Share oracle: weekend gaps and the LLTV they allow), keeper/data/weekend-gaps.json, contracts/SECURITY-REVIEW-ORACLE-2026-10-23.md, docs/facts.json (412 tests, 141 security, 6 reports).
 Section 7: competitors/autorange-factory/src/STUDY.md, keeper/data/fables-replay.json, cdata llama tvl fables (2026-10-23T16:57:38Z) and autorange (16:57:40Z).
 Section 8: cdata llama chain robinhood, docs/research/founder-house/vaults/VENUES.md (7 days, blocks 87,352,064 to 93,292,983).

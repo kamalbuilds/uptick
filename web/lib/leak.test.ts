@@ -55,7 +55,8 @@ test("yearly dollars follow the rate with its sign", () => {
   assert.equal(yearlyUsd(1800, 1.8), 32.4);
   assert.equal(usdSigned(32.4), "+$32");
   assert.equal(usdSigned(-1204.4), "-$1,204");
-  assert.equal(usdSigned(0.2), "+under $1");
+  assert.equal(usdSigned(0.2), "+$0.20");
+  assert.equal(usdSigned(0.001), "+under $0.01");
 });
 
 test("universe: every vault's headline 'you keep' is the weaker half, and its fee split adds up", () => {

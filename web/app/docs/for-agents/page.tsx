@@ -28,8 +28,9 @@ export default function ForAgentsPage() {
       <TLDR>
         <ul>
           <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
-          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with nine tools.</li>
+          <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with ten tools.</li>
           <li>scan_wallet reads any wallet address and returns its Stock Token holdings in USD with each vault's gate. It is read-only.</li>
+          <li>plan_weekend_hedge sizes a weekend short on Lighter's Robinhood Chain exchange from what a wallet holds and prices it from live Lighter reads. It is read-only and returns no calldata.</li>
           <li>prepare_deposit, prepare_withdraw, prepare_earn_and_borrow and prepare_make_safer return unsigned transactions. The user signs and sends.</li>
         </ul>
       </TLDR>
@@ -91,7 +92,7 @@ export default function ForAgentsPage() {
       <P>
         <Code>POST /mcp</Code> speaks JSON-RPC 2.0 over Streamable HTTP. <Code>initialize</Code> returns
         protocolVersion 2025-06-18, the tools capability, serverInfo, and instructions for how to report a
-        vault. <Code>tools/list</Code> returns the nine tools. <Code>tools/call</Code> runs one. A
+        vault. <Code>tools/list</Code> returns the ten tools. <Code>tools/call</Code> runs one. A
         notification, a message with no id, returns 204. A malformed body returns -32700 and an unknown
         method returns -32601.
       </P>
@@ -124,7 +125,7 @@ export default function ForAgentsPage() {
           ],
           [
             "prepare_earn_and_borrow",
-            "Unsigned transactions in order: approve, deposit, approve shares, supplyCollateral, borrow. The borrow is checked against the loan-to-value limit and the market's liquidity before any calldata returns; otherwise the tool returns the vault's gate or the market's reason in place of calldata.",
+            "Unsigned transactions as two batches: approve and deposit, then approve shares, supplyCollateral and borrow. The vault holds fresh shares until the chain's next block, so batch two goes out about 12 seconds after batch one confirms, and the response says how to check. The borrow is checked against the loan-to-value limit and the market's liquidity before any calldata returns; otherwise the tool returns the vault's gate or the market's reason in place of calldata.",
           ],
           [
             "check_loan_health",
@@ -133,6 +134,10 @@ export default function ForAgentsPage() {
           [
             "prepare_make_safer",
             "The unsigned calls that take that loan to a target health factor, default 1.6, with the least action: approve and repay when the wallet holds the USDG, otherwise rounds of withdrawCollateral, redeemInKind and repay with the USDG leg while the stock leg returns to the wallet. With no market, no position, a loan already at the target or a target out of reach, transactions is empty and reason says why.",
+          ],
+          [
+            "plan_weekend_hedge",
+            "Read-only. Takes a wallet address and a source, wallet or loan (a loan also takes the vault id), and sizes a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from the Stock Tokens the wallet holds, or from the stock leg of its vault shares, using the on-chain ERC-8056 multiplier. Reads Lighter live for funding, order-book slippage at that size and margin terms, and returns the notional, slippage in basis points, whether the short earns or pays funding over the weekend in basis points, the margin cost, whether Lighter accepts the token as margin, the leverage (default 5, up to the market's maximum, 1 / min initial margin; above it the tool returns an error), the close and default unwind times and a hand-off link. It returns no calldata. A Lighter failure returns an error carrying the upstream code, never a zero-cost plan; a wallet with no holding answers with the reason.",
           ],
         ]}
         caption="The vault contract also enforces its deposit cap on-chain against its total, so the cap check in prepare_deposit is an early refusal, not the only one."
@@ -187,7 +192,7 @@ export default function ForAgentsPage() {
           The /vaults, /vaults/:id, /llms.txt and /health routes.
         </SourceRef>
         <SourceRef path="api/src/mcp.ts">
-          The JSON-RPC dispatch, the nine tools, the cap checks and the refusals.
+          The JSON-RPC dispatch, the ten tools, the cap checks and the refusals.
         </SourceRef>
         <SourceRef path="web/public/llms.txt">
           The canonical gate states, caps and endpoint list.

@@ -1,3 +1,9 @@
 {
-  "markets": {}
+  "markets": {
+    "aapl": {
+      "oracle": "0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB",
+      "irm": "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+      "lltv": "625000000000000000"
+    }
+  }
 }

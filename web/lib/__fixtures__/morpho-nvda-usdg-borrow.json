@@ -1,0 +1,222 @@
+{
+ "_source": "POST https://blue-api.morpho.org/graphql with the BORROW_APR_QUERY in lib/hedge-view.ts, variables c=[NVDA token 0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC], l=[USDG 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168], recorded 2026-10-23T23:45:56.882Z",
+ "data": {
+  "markets": {
+   "items": [
+    {
+     "marketId": "0x8b16891f032a93b771347c9cb470a780e6699dd701553d3402aa3cdba6189c3e",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.2233524147648383,
+      "supplyAssetsUsd": 774557.7957637163,
+      "borrowAssetsUsd": 621437.0197241092,
+      "utilization": 0.8023120070870509,
+      "timestamp": 1792796733
+     }
+    },
+    {
+     "marketId": "0x66306c087add8907752320b309934abcc354d21626de8115c79df49d9c214edc",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.007640325759126626,
+      "supplyAssetsUsd": 50591.87630893818,
+      "borrowAssetsUsd": 50374.85017699247,
+      "utilization": 0.9957102573025669,
+      "timestamp": 1792796724
+     }
+    },
+    {
+     "marketId": "0xf5ff7d546af5e72f3912d2aa723088fd0bf66fddc158714995637714d9db6e4c",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.013705343263639475,
+      "supplyAssetsUsd": 1403.6643318650536,
+      "borrowAssetsUsd": 1076.2830386923433,
+      "utilization": 0.7667666793686225,
+      "timestamp": 1792798974
+     }
+    },
+    {
+     "marketId": "0xbe3a53552a5600381ca1d858cc425a2601becbd77c43c753698890a22adbbb0d",
+     "lltv": "385000000000000000",
+     "state": {
+      "borrowApy": 0.0002500312527323614,
+      "supplyAssetsUsd": 100.01467517229867,
+      "borrowAssetsUsd": 0.000002000293463440104,
+      "utilization": 1.99999996e-8,
+      "timestamp": 1792796744
+     }
+    },
+    {
+     "marketId": "0x95312f02c1dae8407b2c80468a5657a9bd19c45ac277f1a61aa52c11444c5314",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.006671288058821778,
+      "supplyAssetsUsd": 1.0016849573934377,
+      "borrowAssetsUsd": 0.91255388095601,
+      "utilization": 0.9110188530040797,
+      "timestamp": 1792796736
+     }
+    },
+    {
+     "marketId": "0x639f19732ce4cd54b9f3509f3acee6e8d5d20ff5e75b7c94c20808f48196d826",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.0003167241885656806,
+      "supplyAssetsUsd": 0.5000803668871481,
+      "borrowAssetsUsd": 0.04001087000246068,
+      "utilization": 0.08000887987568174,
+      "timestamp": 1792796723
+     }
+    },
+    {
+     "marketId": "0x3ce44383b860237d3a78a88caf9edcbec36b040d7be2998ef8222eec8719bd48",
+     "lltv": "860000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0.001000146731720052,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796715
+     }
+    },
+    {
+     "marketId": "0x1484485e9ebcd3c5b70c18ab30369ace2a2807e36962fd46f6c19be79a84a2c4",
+     "lltv": "770000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796705
+     }
+    },
+    {
+     "marketId": "0x21539fb91cac5c218508f89d6bd946eabaeed3b4ff185e802bbb73c2f77c25de",
+     "lltv": "770000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796709
+     }
+    },
+    {
+     "marketId": "0x3ac6e757d6d8ac808dc7f00a389b07b18645d3cbd198a353e6b877194ddda6dc",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796714
+     }
+    },
+    {
+     "marketId": "0xaa5c15428a5532e10f6ef598ff1bfcaffe41f3c3b37247399adb35a1cb5702e2",
+     "lltv": "385000000000000000",
+     "state": {
+      "borrowApy": 0.003613891058454866,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796739
+     }
+    },
+    {
+     "marketId": "0xb74600c27a3424eac0a9288f539d5165a125a5102d08b5313c303e29c0eaf8bf",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796742
+     }
+    },
+    {
+     "marketId": "0xba2956531697f0c0b0b9db7b2d3148581ae69610c136287ba84bf519621a22dd",
+     "lltv": "860000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796743
+     }
+    },
+    {
+     "marketId": "0xc95ee21e79aa9e8dea6cb8ede0bf4deac87bbf6bebaae5356abbd21bbae1b64b",
+     "lltv": "770000000000000000",
+     "state": {
+      "borrowApy": 0.0017896111122012238,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796746
+     }
+    },
+    {
+     "marketId": "0xd7332755b50c2b6224837fbeb97676fccd93a92cc7aa3e319674afae0e802cf9",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.008174430399425933,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796749
+     }
+    },
+    {
+     "marketId": "0xd780a699a2022b90fd14e89b61523e6b6b6fdd3833158fcb701b878a5902255f",
+     "lltv": "770000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796749
+     }
+    },
+    {
+     "marketId": "0xdb33e1291a096be5b9c52aeefec7c8b46cd349d3b8294fcac80bb02b7e2bf5fe",
+     "lltv": "625000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796750
+     }
+    },
+    {
+     "marketId": "0xdba3765947667f0cf485473a3962cf5cf290f05e53946b4b735b70d73da207b8",
+     "lltv": "860000000000000000",
+     "state": {
+      "borrowApy": 0.0013769074343032094,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796750
+     }
+    },
+    {
+     "marketId": "0xf54d700dd3fe889872bfc868788de849e8a5b1adfd73bb3d983c8e264e970604",
+     "lltv": "385000000000000000",
+     "state": {
+      "borrowApy": 0.00025003122118847645,
+      "supplyAssetsUsd": 0,
+      "borrowAssetsUsd": 0,
+      "utilization": 0,
+      "timestamp": 1792796756
+     }
+    }
+   ]
+  }
+ },
+ "extensions": {
+  "complexity": 1900,
+  "maximumComplexity": 1000000
+ }
+}
