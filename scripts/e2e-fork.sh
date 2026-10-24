@@ -848,18 +848,17 @@ pass
 
 # ---------------------------------------------------------------- 13 the share oracle for the AAPL vault, and one for the PLTR vault
 step 13-share-oracles
-oracle_of() { local o; o=$(cd "$APP/contracts" && forge create src/UptickShareOracle.sol:UptickShareOracle --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args "$DFACTORY" "$1" 2>&1) || die "forge create UptickShareOracle failed: $(printf '%s' "$o" | tail -3)"
-  logtx "deploy: UptickShareOracle for the $2 vault" "$(jq -r .transactionHash <<<"$o")"; jq -r .deployedTo <<<"$o"; }
+out=$(cd "$APP/contracts" && forge create src/UptickShareOracleFactory.sol:UptickShareOracleFactory --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args "$DFACTORY" 2>&1) || die "forge create UptickShareOracleFactory failed: $(printf '%s' "$out" | tail -3)"
+ORAF=$(jq -r .deployedTo <<<"$out"); logtx "deploy: UptickShareOracleFactory (the only way to deploy a share oracle)" "$(jq -r .transactionHash <<<"$out")"
+oracle_of() { dsend "UptickShareOracleFactory.createOracle: the $2 vault" "$A0" "$ORAF" 'createOracle(address)' "$1" >/dev/null; call "$ORAF" 'oracleOf(address)(address)' "$1"; }
 ORA=$(oracle_of "$VA" AAPL); ORP=$(oracle_of "$VP" PLTR)
 out=$(cd "$APP/contracts" && forge create test/fixtures/SpotShareOracle.sol:SpotShareOracle --unlocked --from "$A0" --broadcast --json --rpc-url "$R" --constructor-args "$VA" 2>&1) || die "forge create SpotShareOracle failed: $(printf '%s' "$out" | tail -3)"
 SPOTORA=$(jq -r .deployedTo <<<"$out"); logtx "deploy: SpotShareOracle (the control: an oracle that reads pool spot)" "$(jq -r .transactionHash <<<"$out")"
 if [ "${DEMO_ORACLE:-}" = spot ]; then ORA=$SPOTORA; info "DEMO_ORACLE=spot: the AAPL market uses the spot-reading oracle"; fi   # the must-fail switch: step 17 goes red
 chk "the AAPL oracle is wired to the AAPL vault" "'$(call "$ORA" 'vault()(address)' | tr A-Z a-z)' == '$(echo "$VA" | tr A-Z a-z)'"
-INIT="$(cd "$APP/contracts" && forge inspect src/UptickShareOracle.sol:UptickShareOracle bytecode 2>/dev/null)$(cast abi-encode 'constructor(address,address)' "$DFACTORY" "$DROUTER" | cut -c3-)"
-if out=$(cast call -r "$R" --create "$INIT" 2>&1); then die "the oracle accepted the router as a vault: $out"; fi
-rd=$(printf '%s' "$out" | grep -oE '0x[0-9a-fA-F]{8,}' | tail -1 || true)
-info "constructor with a non-vault answered: $(printf '%s' "$out" | tr '\n' ' ' | cut -c1-200)"
-chk "the oracle refuses an address the factory did not deploy (NotRegisteredVault)" "'${rd:0:10}' == '$(cast sig 'NotRegisteredVault()')'"
+rd=$(revdata "$A0" "$ORAF" 'createOracle(address)' "$DROUTER")
+info "createOracle for a non-vault answered: ${rd:0:10}"
+chk "the factory refuses an address the vault factory did not deploy (NotRegisteredVault)" "'${rd:0:10}' == '$(cast sig 'NotRegisteredVault()')'"
 for pair in "AAPL $VA $ORA" "PLTR $VP $ORP"; do
   set -- $pair; sym=$1; vlt=$2; ora=$3
   px=$(d_health "$vlt" 2); op=$(call "$ora" 'price()(uint256)')
