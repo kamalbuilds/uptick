@@ -11,7 +11,7 @@ import { Skeleton } from "./status";
 import { Term } from "./term";
 import { TokenLogo } from "./token-logo";
 import { Button } from "@/components/ui/button";
-import { EXPLORER } from "@/lib/chain";
+import { EXPLORER, addressUrl } from "@/lib/chain";
 import { liveSentence, num, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
 import { usdSigned } from "@/lib/leak";
 import { priceLabel } from "@/lib/price-math";
@@ -27,6 +27,8 @@ const SPLIT = "lg:grid-cols-[minmax(0,1fr)_340px]";
 const COLS = "lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)_minmax(0,1.25fr)_minmax(0,1.2fr)_44px]";
 const STATE_FILL: Record<GateState, string> = { open: "bg-kept", reduced: "bg-caution", closed: "bg-closed" };
 
+/** The deployed vault address for a scan row, or undefined while its vault is launching. */
+const vaultAddress = (id: string) => VAULTS.find((v) => v.id === id)?.vault;
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const MobileLabel = ({ children }: { children: string }) => <p className="text-[13px] leading-4 text-mute lg:hidden">{children}</p>;
@@ -54,6 +56,24 @@ function HeldCell({ r, maxUsd }: { r: ScanRow; maxUsd: number }) {
         <span className="block h-full rounded-full bg-mute" style={{ width: `${share}%` }} />
       </span>
     </div>
+  );
+}
+
+/** Live vaults link to their address on Blockscout; the rest say they are launching. */
+function VaultStatus({ id, symbol }: { id: string; symbol: string }) {
+  const addr = vaultAddress(id);
+  return addr ? (
+    <a
+      className="relative inline-flex min-h-11 items-center text-[13px] leading-4 text-fg underline underline-offset-4 lg:min-h-5"
+      href={addressUrl(addr)}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`${symbol} vault on Blockscout`}
+    >
+      Live at {shortAddress(addr)}
+    </a>
+  ) : (
+    <p className="text-[13px] leading-4 text-mute">Launching</p>
   );
 }
 
@@ -89,6 +109,7 @@ function TakesCell({ r }: { r: ScanRow }) {
       {b.kind === "room" ? (
         <p className="text-[13px] leading-4 text-mute">Borrow up to {money(b.usd)} at the market&rsquo;s {num(b.lltv, 1)}% <Term id="lltv">limit</Term></p>
       ) : null}
+      <VaultStatus id={r.id} symbol={r.symbol} />
     </div>
   );
 }
@@ -117,7 +138,7 @@ function WeakerCell({ r }: { r: ScanRow }) {
 function HoldingRow({ r, block, maxUsd }: { r: ScanRow; block: bigint; maxUsd: number }) {
   const closed = r.state === "closed";
   const href = `/vault/${r.id}`;
-  const label = closed ? `Open the ${r.symbol} vault` : `Put ${r.symbol} to work`;
+  const label = closed || !vaultAddress(r.id) ? `See the ${r.symbol} vault` : `Put ${r.symbol} to work`;
   return (
     <li className="row border-b border-hairline px-3 py-3 lg:py-3">
       <div className={cn("grid grid-cols-2 items-start gap-x-4 gap-y-4 lg:items-center", COLS)}>
@@ -216,42 +237,59 @@ function CopyLink() {
 function Ticket({ s }: { s: WalletScan }) {
   const t = s.totals;
   const taken = s.rows.filter((r) => r.putToWorkUsd !== null);
-  const lead = taken.reduce<ScanRow | undefined>((best, r) => (best === undefined || (r.putToWorkUsd as number) > (best.putToWorkUsd as number) ? r : best), undefined);
-  const by = (st: GateState) => sum(taken.filter((r) => r.state === st).map((r) => r.putToWorkUsd as number));
-  const wh = weakerHalf(s);
+  const isLive = (r: ScanRow) => vaultAddress(r.id) !== undefined;
+  const liveTaken = taken.filter(isLive);
+  // The primary action is a vault the holder can deposit into today: live, open before reduced, the largest holding first. A launching vault is never it.
+  const lead = [...liveTaken].sort((a, b) => Number(b.state === "open") - Number(a.state === "open") || (b.holdingUsd ?? 0) - (a.holdingUsd ?? 0))[0];
+  const leadAddr = lead ? vaultAddress(lead.id) : undefined;
+  const liveUsd = sum(liveTaken.map((r) => r.putToWorkUsd as number));
+  const launchingUsd = sum(taken.filter((r) => !isLive(r)).map((r) => r.putToWorkUsd as number));
+  // With a live vault to open, the weaker half shown is that vault's own; otherwise it is the whole wallet's.
+  const wh = lead && lead.keptPerYearUsd !== null ? { gain: lead.keptPerYearUsd >= 0, usd: Math.abs(lead.keptPerYearUsd) } : weakerHalf(s);
+  const liveSymbols = LIVE_VAULTS.map((v) => v.symbol);
   return (
     <section aria-labelledby="ticket" className="rounded-lg border border-line bg-panel p-5">
-      <h2 id="ticket" className="text-[13px] font-normal leading-5 text-mute">Uptick can put to work</h2>
-      <p className="figure mt-1 text-[32px] font-medium leading-9">{money(t.putToWork.usd)}</p>
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="text-[13px] leading-5 text-mute">of {money(t.idleUsd)} held in {plural(s.rows.length, "token", "tokens")}</p>
-        <MarkStack rows={s.rows} size={24} max={5} />
-      </div>
+      <h2 id="ticket" className="text-[13px] font-normal leading-5 text-mute">{lead ? "You can put to work today" : "Uptick can put to work"}</h2>
+      <p className="figure mt-1 text-[32px] font-medium leading-9">{money(lead ? liveUsd : t.putToWork.usd)}</p>
+      <p className="mt-1 text-[13px] leading-5 text-mute">of {money(t.idleUsd)} held in {plural(s.rows.length, "token", "tokens")}</p>
       <dl className="mt-4 hidden border-t border-hairline lg:block">
-        {by("open") > 0 ? <TRow k="Open vaults take" v={money(by("open"))} /> : null}
-        {by("reduced") > 0 ? <TRow k={<><Term id="reduced">Reduced</Term> vaults take</>} v={money(by("reduced"))} /> : null}
+        {launchingUsd > 0 ? <TRow k="Launching vaults" v={money(launchingUsd)} note="not deployed yet" /> : null}
         {t.refused.tokens > 0 ? <TRow k={<><Term id="closed">Closed</Term> vaults</>} v={money(t.refused.usd)} note="Not taken" /> : null}
         {wh ? (
           <TRow
             k={<Term id="worstHalf">Weaker half</Term>}
             v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`}
             tone={wh.gain ? "text-kept" : "text-loss"}
-            note="annualised, past trades"
+            note={lead ? `${lead.symbol}, annualised` : "annualised, past trades"}
           />
         ) : null}
         {t.putToWork.borrowRoomUsd !== null ? <TRow k={<Term id="borrowRoom">Borrow room</Term>} v={`up to ${money(t.putToWork.borrowRoomUsd)}`} /> : null}
       </dl>
-      {lead ? (
+      {lead && leadAddr ? (
         <>
-          <Button asChild size="lg" className="mt-5 w-full">
+          <div className="mt-5 flex items-center gap-3">
+            <TokenLogo symbol={lead.symbol} size={32} />
+            <div className="min-w-0">
+              <p className="font-medium leading-5">{lead.symbol} vault</p>
+              <a className="figure relative inline-flex min-h-11 items-center text-[13px] leading-4 text-mute underline underline-offset-4 hover:text-fg lg:min-h-5" href={addressUrl(leadAddr)} target="_blank" rel="noreferrer">
+                Live at {shortAddress(leadAddr)}, up to {usdWhole(lead.depositCapUsd)}
+              </a>
+            </div>
+          </div>
+          <Button asChild size="lg" className="mt-3 w-full">
             <Link href={`/vault/${lead.id}`}>Put {lead.symbol} to work</Link>
           </Button>
-          {taken.length > 1 ? <p className="mt-2 text-center text-[13px] leading-5 text-mute">The largest first. {plural(taken.length - 1, "more vault", "more vaults")} in the list.</p> : null}
+          {liveTaken.length > 1 ? <p className="mt-2 text-center text-[13px] leading-5 text-mute">{plural(liveTaken.length - 1, "more live vault", "more live vaults")} in the list.</p> : null}
         </>
       ) : (
-        <Button asChild size="lg" variant="outline" className="mt-5 w-full">
-          <Link href="/vaults">See the vaults</Link>
-        </Button>
+        <>
+          <p className="mt-5 text-[13px] leading-5 text-mute">
+            {liveSymbols.length > 0 ? `${liveSentence(liveSymbols)} This wallet holds none of them, and the vaults for its tokens are launching.` : "The vaults for these tokens are launching."}
+          </p>
+          <Button asChild size="lg" className="mt-3 w-full">
+            <Link href="/vaults">{liveSymbols.length > 0 ? "See the live vaults" : "See the vaults"}</Link>
+          </Button>
+        </>
       )}
       <CopyLink />
     </section>

@@ -19,7 +19,7 @@ test("money is whole dollars from a thousand up and cents below", () => {
 });
 
 test("a vault that keeps a gain is put to work", () => {
-  assert.equal(verdict({ totals: totals() }), "$2,438,135 of Stock Tokens sit idle. Uptick can put $100,000 of it to work.");
+  assert.equal(verdict({ totals: totals() }), "$2,438,135 of Stock Tokens sit idle. Uptick can put $100,000 to work.");
 });
 
 test("a vault whose weaker half lost money takes the deposit, never promises work, and keeps the loss out of the headline", () => {

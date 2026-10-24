@@ -15,7 +15,7 @@ export function verdict(s: Totals): string {
     const head = `${money(idleUsd)} of Stock Tokens sit idle.`;
     return putToWork.keptPerYearUsd < 0
       ? `${head} Uptick can take ${money(putToWork.usd)} of it.`
-      : `${head} Uptick can put ${money(putToWork.usd)} of it to work.`;
+      : `${head} Uptick can put ${money(putToWork.usd)} to work.`;
   }
   return `${money(idleUsd)} of Stock Tokens sit idle. ${refused.tokens === 1 ? "Its vault is" : "Every vault is"} closed, so Uptick puts none of it to work.`;
 }
