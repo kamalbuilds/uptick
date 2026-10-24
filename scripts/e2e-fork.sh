@@ -756,7 +756,7 @@ d_align() {
 step 10-deploy-factory-router-and-two-vaults
 FORK_BLOCK_N=$(cast rpc anvil_nodeInfo -r "$R" | jq -r '.forkConfig.forkBlockNumber')
 chk "the fork has a recorded fork block" "$FORK_BLOCK_N > 0"
-node "$APP/scripts/deploy-list.mjs" 2>/dev/null | jq '[.[] | select(.symbol=="PLTR" or .symbol=="AAPL")]' >"$TMP/demo-list.json"
+node "$APP/scripts/deploy-list.mjs" ${DEMO_CAP_USD:+--cap-usd=$DEMO_CAP_USD} 2>/dev/null | jq '[.[] | select(.symbol=="PLTR" or .symbol=="AAPL")]' >"$TMP/demo-list.json"   # DEMO_CAP_USD=5000 runs the demo under the mainnet launch cap
 chk "the deploy list holds exactly AAPL (v3) and PLTR (v4)" "$(jq length "$TMP/demo-list.json") == 2 and '$(jq -r 'map(.symbol + ":" + .venue) | sort | join(",")' "$TMP/demo-list.json")' == 'AAPL:v3,PLTR:v4'"
 AAPL=$(jq -r '.[] | select(.symbol=="AAPL") | .token' "$TMP/demo-list.json"); PLTR=$(jq -r '.[] | select(.symbol=="PLTR") | .token' "$TMP/demo-list.json")
 AAPL_POOL=$(jq -r '.[] | select(.symbol=="AAPL") | .pool' "$TMP/demo-list.json"); AAPL_FEED=$(jq -r '.[] | select(.symbol=="AAPL") | .feed' "$TMP/demo-list.json")
@@ -812,10 +812,11 @@ for pair in "AAPL $VA $AAPL" "PLTR $VP $PLTR"; do
   set -- $pair; sym=$1; vlt=$2; tok=$3
   chk "$sym vault gate is Ok (status 0)" "$(d_health "$vlt" 1) == 0"
   chk "$sym spot is within the 10 bp band of its TWAP ($(d_off_twap_bps "$vlt") bp)" "$(d_off_twap_bps "$vlt") <= 8"
-  px=$(d_health "$vlt" 2); amt=$(py "5000 * 10**26 // $px")
+  SEED_USD=${DEMO_SEED_USD:-5000}   # the seed must leave room under the cap: a $5,000 cap is filled by a $5,000 seed
+  px=$(d_health "$vlt" 2); amt=$(py "$SEED_USD * 10**26 // $px")
   fund_tok "$tok" "$A0" $(py "$amt + 10**19")
   dsend "$sym: approve seed" "$A0" "$tok" 'approve(address,uint256)' "$vlt" $amt >/dev/null
-  dsend "$sym: seed deposit (5,000 USD of $sym)" "$A0" "$vlt" 'deposit(uint256,address)(uint256)' $amt "$A0" >/dev/null
+  dsend "$sym: seed deposit ($SEED_USD USD of $sym)" "$A0" "$vlt" 'deposit(uint256,address)(uint256)' $amt "$A0" >/dev/null
   chk "$sym seed minted shares" "$(bal "$vlt" "$A0") > 0"
 done
 for pair in "AAPL $VA" "PLTR $VP"; do
@@ -914,7 +915,7 @@ warp $(( $(ts) + 700 ))   # the rebalance swapped in the pool: let the TWAP catc
 chk "AAPL vault gate is Ok (status 0)" "$(d_health "$VA" 1) == 0"
 chk "spot is within the 10 bp band of the TWAP" "$(d_off_twap_bps "$VA") <= 8"
 # the vault's deposit cap (the deploy list sizes it from the pool's depth) bounds what a single user can put in: deposit 60% of what it still accepts
-AP_IN=$(py "$(call "$VA" 'maxDeposit(address)(uint256)' "$USER") * 60 // 100 // 10**17 * 10**17")
+AP_IN=$(py "$(call "$VA" 'maxDeposit(address)(uint256)' "$USER") * ${DEMO_DEPOSIT_PCT:-60} // 100 // 10**17 * 10**17")
 chk "the borrower deposits a non-trivial amount under the cap (at least 10 AAPL)" "$AP_IN >= 10 * 10**18"
 fund_tok "$AAPL" "$USER" $(py "$AP_IN + 10**19")
 quote=$(call "$VA" 'previewDeposit(uint256)(uint256)' $AP_IN)
@@ -1068,11 +1069,13 @@ txs = [l.rstrip("\n").split("\t") for l in open(os.environ["FORK_TXS"]) if l.str
 log = open(os.environ["FORK_LOG"]).read().splitlines()
 res = [l for l in log if l.startswith("PASS 1") or l.startswith("PASS 2") or l.startswith("  info:")]
 b = os.environ["FORK_BLOCK_N"]
+cap, seed, pct = os.environ.get("DEMO_CAP_USD"), os.environ.get("DEMO_SEED_USD", "5000"), os.environ.get("DEMO_DEPOSIT_PCT", "60")
+cap_note = f" Both vaults are deployed with the mainnet launch cap of ${int(cap):,} (DEMO_CAP_USD) and a ${int(seed):,} seed deposit (DEMO_SEED_USD), and the borrower deposits {pct}% of what a vault still accepts (DEMO_DEPOSIT_PCT), under the cap a live vault carries." if cap else ""
 rows = "\n".join(f"| FORK | {lbl} | {int(blk)} | `{h}` |" for lbl, h, blk in txs)
 sec = f"""<!-- fork-demo-txs:start -->
 ## Morpho demo run: every transaction
 
-`scripts/fork-demo.sh` runs the product end to end on an Anvil fork of Robinhood Chain 4663 taken at block {b}: a fresh VaultFactory and UptickRouter, the PLTR (Uniswap v4) and AAPL (Uniswap v3) vaults, an UptickShareOracle on the AAPL share, a market on the real Morpho Blue singleton `0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010`, a lender, a borrower using the app's own call encoding, a 3% pool push, a stale feed, a feed drop and a liquidation. The hashes below exist on that fork only (label FORK), in the order sent, with the block that mined each.
+`scripts/fork-demo.sh` runs the product end to end on an Anvil fork of Robinhood Chain 4663 taken at block {b}: a fresh VaultFactory and UptickRouter, the PLTR (Uniswap v4) and AAPL (Uniswap v3) vaults, an UptickShareOracle on the AAPL share, a market on the real Morpho Blue singleton `0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010`, a lender, a borrower using the app's own call encoding, a 3% pool push, a stale feed, a feed drop and a liquidation.{cap_note} The hashes below exist on that fork only (label FORK), in the order sent, with the block that mined each.
 
 | Network | Step | Block | Hash |
 |---|---|---|---|
