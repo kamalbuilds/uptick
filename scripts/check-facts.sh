@@ -3,7 +3,7 @@
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 2
-FILES=(README.md docs/SUBMISSION.md docs/DEMO-SCRIPT.md deck/index.html deck/handout/index.html web/public/llms.txt)
+FILES=(README.md docs/SUBMISSION.md docs/DEMO-SCRIPT.md deck/index.html deck/pitch/index.html deck/handout/index.html web/public/llms.txt)
 BANNED=("80 of 80" "46 fork" "5.1M" "54 days" "four review" "fourth ends" "10% of collected" "Live and reviewed" "Closed six" "and 8 more" "and 14 more" "Contracts are final")
 # 366 was the test count before the v4 suite; it is allowed only while facts.json still says 366. Word-bounded so a hex address containing 366 is not a hit.
 [ "$(jq -r .tests.total docs/facts.json)" = "366" ] || BANNED+=('\b366\b')
