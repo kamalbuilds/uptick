@@ -48,12 +48,12 @@ export default function DocsPage() {
         reports the result of a replay that anyone can inspect.
       </P>
 
-      <H2>The three parts</H2>
+      <H2>The four parts</H2>
       <P>
-        A vault is the visible part of three systems. The evidence engine decides whether the pool
+        A vault is the visible part of four systems. The evidence engine decides whether the pool
         is worth a vault and how large it can be. The contract holds the position and prices every
         entry and exit. The keeper moves the band and serves the evidence that the app and agents
-        read.
+        read. The borrow layer lets the vault share back a USDG loan.
       </P>
       <DataTable
         columns={["Part", "What it does"]}
@@ -64,11 +64,15 @@ export default function DocsPage() {
           ],
           [
             "StockVault",
-            "Holds one Uniswap v3 position (StockVaultV4: one Uniswap v4 position) in a band around Chainlink chosen per token. Fees accrue to the share price.",
+            "Holds one Uniswap v3 position (StockVaultV4: one Uniswap v4 position) in a band around Chainlink chosen per token. Fees accrue to the share price. UptickRouter takes USDG in and returns the share in one call.",
           ],
           [
             "Keeper and evidence API",
-            "Recentres each vault at 02:00 UTC after each NYSE session, simulates every rebalance before sending it, and serves the JSON evidence and MCP tools.",
+            "Recentres each vault once a day, at a varied minute in a window that opens at 02:00 UTC after the NYSE session, and again when price stays outside the band for 30 minutes (at least 2 hours after the last recentre). Anyone can rebalance a vault after 26 hours. Every rebalance is simulated before it is sent. The API serves the JSON evidence and ten MCP tools, including plan_weekend_hedge, which sizes a weekend short on Lighter.",
+          ],
+          [
+            "Borrow layer",
+            "UptickShareOracle prices the ERC-20 vault share from Chainlink, not from the pool, and a Morpho Blue market takes the share as collateral against USDG. The AAPL share market is live.",
           ],
         ]}
         caption="The 17 eligible Stock Tokens share this pipeline; each has its own vault, pool and gate."
