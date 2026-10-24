@@ -150,4 +150,4 @@ Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture.h
 [^4]: `spikes/capped-hooks/FINDINGS.md`.
 [^5]: 74.5%: Bitquery. 80% of 84K: 0x. $1.2M in 49 hours: `docs/research/founder-house/OUTREACH-fomo-gmgn.md`.
 [^6]: `docs/research/founder-house/vaults/HOOK-DESIGN.md` section A and `docs/research/founder-house/vaults/COMPETITORS.md`.
-[^7]: `spikes/stock-hedge/FINDINGS.md`, `spikes/stock-hedge/economics/` (funding, basis, order book and close-time scripts with their outputs).
+[^7]: `spikes/stock-hedge/EVIDENCE.md` lists each figure with the script and output file in `spikes/stock-hedge/economics/` that produce it (funding, basis, order book, close-time and the weekend cost).

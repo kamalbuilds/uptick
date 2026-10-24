@@ -13,14 +13,7 @@ for key in [("NVDA","0.05%"),("AAPL","0.05%"),("TSLA","0.05%"),("TSLA","0.3%"),(
         pa,aa=p_last(T,P,a); 
         if pa is None or a not in ho: continue
         for lab2,off in (("Mon12:00",64),("Mon13:00",65),("Mon13:30",None),("Mon14:00",66),("Mon15:00",67)):
-            if off is None:
-                b=a+65*3600+1800; q,_=perp_at(sym,F,"mon")
-            else:
-                b=a+(off-1+0)*3600+ (0 if off==65 else 0); b=a+ (off)*3600 - 0*3600
-            if off is not None:
-                b=a+(off-0)*3600-3600*0  # placeholder replaced below
             rows.setdefault(lab2,[])
-            # compute explicit times
             mon=int(dt.datetime(F.year,F.month,F.day,0,tzinfo=U).timestamp())+3*86400
             tt={"Mon12:00":mon+12*3600,"Mon13:00":mon+13*3600,"Mon13:30":mon+13*3600+1800,"Mon14:00":mon+14*3600,"Mon15:00":mon+15*3600}[lab2]
             q0=perp_at(sym,F,"fri")[0]
