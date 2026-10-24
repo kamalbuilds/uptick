@@ -152,7 +152,7 @@ One prompt: "I hold NVDA. What does a weekend hedge cost?"
 | `window` | close 2026-10-23T20:00Z, unwind 2026-10-26T13:00Z | the US close and 30 minutes before the Monday open |
 | `handoffUrl` | https://robinhoodchain.lighter.xyz/trade/NVDA | the market on Lighter, where the holder enters the short |
 
-`source: "loan"` with a `vault` sizes the short from the stock leg of the shares posted as Morpho collateral (the vault's `redeemInKind` simulated for the collateral) and adds the margin interest on the debt as `marginCostBp`. The tool returns no calldata. A wallet with no holding, or a token Lighter lists no perp for (GME, MSTR), answers with the reason. If Lighter does not answer cleanly the result is an error carrying its code and no plan; a missing figure is never returned as zero.
+`source: "loan"` with a `vault` that has a Morpho market configured sizes the short from the stock leg of the shares posted as Morpho collateral (the vault's `redeemInKind` simulated for the collateral) and adds the margin interest on the debt as `marginCostBp`. The tool returns no calldata. A wallet with no holding, or a token Lighter lists no perp for (GME, MSTR), answers with the reason. If Lighter does not answer cleanly the result is an error carrying its code and no plan; a missing figure is never returned as zero.
 
 ## Alternative: add the server to Claude Code
 
