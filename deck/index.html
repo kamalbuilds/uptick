@@ -14,7 +14,7 @@
   --canvas:#0a0b0c;--panel:#16181a;--panel-raised:#1f2124;--hairline:#2a2e31;--border:#42494d;
   --text:#f4f5f5;--mute:#919fa6;--soft:#c3cbd0;--bar:#9aa6ad;--kept:#1fd16b;--kept-dim:#0f3d24;--loss:#ec5e2a;--loss-dim:#3a1d12;
   --caution:#f2b84b;--caution-dim:#352a12;--closed:#6b747a;
-  --font-display:Literata,Georgia,serif;--font-sans:"Hanken Grotesk",system-ui,sans-serif;
+  --font-display:Literata,Georgia,serif;--font-sans:"Hanken Grotesk",system-ui,sans-serif;--font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#000;overflow:hidden;font-family:var(--font-sans);color:var(--text);font-variant-numeric:tabular-nums}
@@ -100,8 +100,12 @@ tr.us td:first-child{padding-left:20px}
 .trk{position:relative;height:14px;border-radius:3px;background:var(--hairline)}
 .trk i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
 .yes,.no{display:inline-block;width:30px;height:30px;border-radius:50%;flex:none}
-.yes{background:var(--kept)}
+.yes{background:var(--text)}
 .no{border:3px solid var(--closed)}
+.term{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:22px 26px;font-family:var(--font-mono);font-size:23px;line-height:1.5;color:var(--soft);white-space:pre-wrap;overflow-wrap:anywhere;letter-spacing:-.01em}
+.term b{color:var(--text);font-weight:600}
+.term .pr{color:var(--mute)}
+.stp{position:absolute;overflow:visible}
 .mx{display:grid;grid-template-columns:380px 1fr 1fr 460px;align-items:center}
 .mx>div{padding:20px 24px 20px 0;border-bottom:1px solid var(--hairline);height:128px;display:flex;align-items:center;gap:18px;font-size:25px;line-height:1.28;letter-spacing:-.005em}
 .mx>div.h{height:60px;font-size:22px;color:var(--mute);border-bottom:1px solid var(--border);align-items:flex-end;padding-bottom:14px}
@@ -119,7 +123,7 @@ tr.us td:first-child{padding-left:20px}
 <!-- 1 TITLE -->
 <section class="slide ttl" data-t="Title">
 <!-- notes:
-Open on the name and the one line. Nothing else is on the slide on purpose. Uptick is a set of vaults on Robinhood Chain (chain 4663, an Arbitrum Orbit chain): the holder deposits the Stock Token itself, the vault places it in a Uniswap pool inside a price band, and every swap fee accrues to depositors. Founder House Singapore, 2026-10-23 to 2026-10-25. Live app uptick-fi.pages.dev, X @uptickfi.
+Open on the mark, the name and the one line. Uptick is a set of vaults on Robinhood Chain (chain 4663, an Arbitrum Orbit chain): the holder deposits the Stock Token itself, the vault places it in a Uniswap pool inside a price band, and every swap fee accrues to depositors. Founder House Singapore, 2026-10-23 to 2026-10-25. Live app uptick-fi.pages.dev, X @uptickfi. Door rings from web/lib/vault-universe.json: 3 open (PLTR, AAPL, GOOGL), 9 reduced, 5 closed. Six tokens (SPY, USO, QQQ, CRCL, MSTR, SPCX) have no published company mark, so each disc carries its ticker, as the app draws them (web/public/tokens/SOURCES.md).
 -->
   <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="p" style="font-size:26px">Founder House Singapore, 2026</div><div class="p" style="font-size:26px">Robinhood Chain 4663</div></div>
   <div style="display:grid;grid-template-columns:860px 1fr;column-gap:72px;margin-top:64px">
@@ -135,9 +139,9 @@ Open on the name and the one line. Nothing else is on the slide on purpose. Upti
         <div class="tkc"><img class="tk ring-o" src="img/tokens/PLTR.png" alt="PLTR">PLTR</div>
         <div class="tkc"><img class="tk ring-o" src="img/tokens/AAPL.png" alt="AAPL">AAPL</div>
         <div class="tkc"><img class="tk ring-o" src="img/tokens/GOOGL.png" alt="GOOGL">GOOGL</div>
-        <div class="tkc"><span class="tk m ring-r">SP</span>SPY</div>
-        <div class="tkc"><span class="tk m ring-r">US</span>USO</div>
-        <div class="tkc"><span class="tk m ring-r">QQ</span>QQQ</div>
+        <div class="tkc"><span class="tk m ring-r" style="font-size:23px">SPY</span>S&amp;P 500</div>
+        <div class="tkc"><span class="tk m ring-r" style="font-size:23px">USO</span>Oil fund</div>
+        <div class="tkc"><span class="tk m ring-r" style="font-size:23px">QQQ</span>Nasdaq</div>
         <div class="tkc"><img class="tk ring-r" src="img/tokens/AMZN.png" alt="AMZN">AMZN</div>
         <div class="tkc"><img class="tk ring-r" src="img/tokens/INTC.png" alt="INTC">INTC</div>
         <div class="tkc"><img class="tk ring-r" src="img/tokens/AMD.png" alt="AMD">AMD</div>
@@ -145,65 +149,73 @@ Open on the name and the one line. Nothing else is on the slide on purpose. Upti
         <div class="tkc"><img class="tk ring-r" src="img/tokens/META.png" alt="META">META</div>
         <div class="tkc"><img class="tk ring-r" src="img/tokens/MU.png" alt="MU">MU</div>
         <div class="tkc"><img class="tk ring-c" src="img/tokens/TSLA.png" alt="TSLA">TSLA</div>
-        <div class="tkc"><span class="tk m ring-c">CR</span>CRCL</div>
-        <div class="tkc"><span class="tk m ring-c">MS</span>MSTR</div>
+        <div class="tkc"><span class="tk m ring-c" style="font-size:23px">CRCL</span>Circle</div>
+        <div class="tkc"><span class="tk m ring-c" style="font-size:23px">MSTR</span>Strategy</div>
         <div class="tkc"><img class="tk ring-c" src="img/tokens/GME.png" alt="GME">GME</div>
-        <div class="tkc"><span class="tk m ring-c">SP</span>SPCX</div>
+        <div class="tkc"><span class="tk m ring-c" style="font-size:23px">SPCX</span>SpaceX</div>
       </div>
     </div>
   </div>
-  <div class="src">uptick-fi.pages.dev, @uptickfi. Kamal, founder, github.com/kamalbuilds. Doors from web/lib/vault-universe.json.</div>
+  <div class="src" style="right:112px">uptick-fi.pages.dev &nbsp;&nbsp; @uptickfi &nbsp;&nbsp; Kamal, founder, github.com/kamalbuilds</div>
 </section>
 
 <!-- 2 PROBLEM: IDLE COLLATERAL -->
 <section class="slide" data-t="Problem: idle collateral">
 <!-- notes:
-Verbatim from the @RobinhoodCrypto post of 2026-10-22 14:05:43 UTC, https://x.com/RobinhoodCrypto/status/2113270580472381515, read through api.fxtwitter.com at 2026-10-23T16:55:38Z: 55,663 views, 596 likes, 66 reposts. The post reads "Robinhood Stock Tokens can now serve as collateral on Morpho: a new use case beyond trading ... Any eligible wallet can plug in and any app can tap into these markets, unlocking a new building block for open lending and borrowing, and a new way to put Stock Tokens to work onchain." It quotes Morpho's own post "Robinhood Stock Tokens are live on Morpho". The slide quotes the clause "Any eligible wallet can plug in and any app can tap into these markets" and the phrase "a new way to put Stock Tokens to work onchain". Holders: 189,012 wallets hold NVDA, Blockscout API v2 /tokens/<addr>, read 2026-10-16 (docs/research/founder-house/PLATFORM-TRUTH.md). Morpho Blue on Robinhood Chain $609,516,356 and chain TVL $1,137,793,061: cdata --json llama chain robinhood (DefiLlama), 2026-10-23T16:55:28Z. Collateral posted to a Morpho Blue market is not lent out by the singleton, so a Stock Token posted as plain collateral earns nothing while the loan runs (Morpho Blue is a two-asset lending primitive: supply the loan token, post collateral, borrow). The demand quotes that used to sit on this slide (Nibel_eth, JackNomadsGOD, WazzCrypto) are in the appendix, slide "Problem: holders".
+Left, a real capture of the @RobinhoodCrypto post of 2026-10-22 14:05:43 UTC, https://x.com/RobinhoodCrypto/status/2113270580472381515, captured 2026-10-24 from x.com in a background tab and cropped above the quoted Morpho post. View count at the earlier API read: 55,663 (api.fxtwitter.com, 2026-10-23T16:55:38Z). The post reads "Robinhood Stock Tokens can now serve as collateral on Morpho ... Any eligible wallet can plug in and any app can tap into these markets, unlocking a new building block for open lending and borrowing, and a new way to put Stock Tokens to work onchain." Morpho Blue on Robinhood Chain $609,516,356 and chain TVL $1,137,793,061: cdata --json llama chain robinhood (DefiLlama), 2026-10-23T16:55:28Z. Collateral posted to a Morpho Blue market is not lent out by the singleton, so a Stock Token posted as plain collateral earns nothing while the loan runs (Morpho Blue is a two-asset lending primitive: supply the loan token, post collateral, borrow). The demand quotes and the NVDA holder count (189,012, Blockscout 2026-10-16) are on the Market slide and in the appendix.
 -->
   <h2 class="v" style="font-size:76px;max-width:1640px">Robinhood just made Stock Tokens collateral on Morpho. Posted there, they earn nothing.</h2>
-  <div class="led" style="margin-top:56px">
-    <div><div class="t" style="font-weight:400;font-size:46px;line-height:1.22;max-width:1696px;font-family:var(--font-display);letter-spacing:-.015em">"Any eligible wallet can plug in and any app can tap into these markets"</div><div class="p" style="font-size:24px;margin-top:12px">@RobinhoodCrypto, X, 2026-10-22, 55,663 views</div></div>
-  </div>
-  <div class="sum" style="grid-template-columns:repeat(3,1fr);margin-top:44px;border-top:0">
-    <div><div class="l" style="font-size:26px;display:flex;align-items:center;gap:14px"><img class="tk" src="img/tokens/NVDA.png" alt="NVDA" style="width:46px;height:46px">NVDA holders on the chain</div><div class="n" style="font-size:96px;margin:14px 0 10px;letter-spacing:-.03em">189,012</div><div class="w" style="font-size:24px;line-height:1.35">Blockscout, 2026-10-16.</div></div>
-    <div><div class="l" style="font-size:26px">Morpho Blue on the chain</div><div class="n" style="font-size:96px;margin:14px 0 10px;letter-spacing:-.03em">$609.5M</div><div class="trk" style="height:18px;margin:0 0 14px"><i style="width:53.6%;background:var(--bar)"></i></div><div class="w" style="font-size:24px;line-height:1.35">of $1.14B chain TVL. DefiLlama, 2026-10-23 16:55 UTC.</div></div>
-    <div><div class="l" style="font-size:26px">Earned by a posted Stock Token</div><div class="n" style="font-size:96px;margin:14px 0 10px;letter-spacing:-.03em">$0</div><div class="trk" style="height:18px;margin:0 0 14px;background:transparent;border:2px dashed var(--border)"></div><div class="w" style="font-size:24px;line-height:1.35">Morpho Blue does not lend collateral out. The holder pays interest and the token sits.</div></div>
+  <div style="display:grid;grid-template-columns:860px 700px;column-gap:136px;margin-top:48px;align-items:start">
+    <div>
+      <figure class="shot"><img src="img/tweet-robinhood.png" width="860" alt="The Robinhood Crypto post: Stock Tokens can now serve as collateral on Morpho, any app can tap into these markets"></figure>
+      <p class="p" style="font-size:24px;margin-top:14px">@RobinhoodCrypto on X, 2026-10-22, 55,663 views.</p>
+    </div>
+    <div>
+      <div class="l" style="font-size:26px;color:var(--mute)">Morpho Blue on Robinhood Chain</div>
+      <div class="fig" style="font-size:104px;margin:12px 0 16px;letter-spacing:-.03em">$609.5M</div>
+      <div class="trk" style="height:20px"><i style="width:53.6%;background:var(--bar)"></i></div>
+      <p class="p" style="font-size:24px;margin-top:12px">53.6% of the chain's $1.14B. DefiLlama, 2026-10-23 16:55 UTC.</p>
+      <div class="l" style="font-size:26px;color:var(--mute);margin-top:54px;display:flex;align-items:center;gap:14px"><img class="tk" src="img/tokens/AAPL.png" alt="AAPL" style="width:44px;height:44px">Earned by a Stock Token posted as collateral</div>
+      <div class="fig" style="font-size:104px;margin:12px 0 16px;letter-spacing:-.03em">$0</div>
+      <div class="trk" style="height:20px;background:transparent;border:2px dashed var(--border)"></div>
+      <p class="p" style="font-size:24px;margin-top:12px">Morpho Blue does not lend collateral out. The holder pays interest and the token sits.</p>
+    </div>
   </div>
   <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:34px;line-height:1.3;color:var(--soft)"><b>The credit rail is open. The collateral on it sits idle.</b></p>
-  <div class="src">Source: x.com/RobinhoodCrypto/status/2113270580472381515 via api.fxtwitter.com, 2026-10-23 16:55 UTC. Blockscout, 2026-10-16. cdata llama chain robinhood, 2026-10-23 16:55 UTC.</div>
+  <div class="src">Source: x.com/RobinhoodCrypto/status/2113270580472381515, captured 2026-10-24. cdata llama chain robinhood, 2026-10-23 16:55 UTC.</div>
 </section>
 
-<!-- 6 INSIGHT: FEES ARE NOT YIELD -->
+<!-- 3 INSIGHT: FEES ARE NOT YIELD -->
 <section class="slide" data-t="Insight: fees are not yield">
 <!-- notes:
-Every figure is the held-out half (15 days, 2026-10-02 to 2026-10-17, annualised) of keeper/data/replay.json, tokens.<SYMBOL>.pools[].test: fee_apr_pct is what the pool paid, edge_apr_pct is what an LP kept after losses to informed traders (1 hour markout) and rebalancing cost, conservative accounting. PLTR v4 1% pool: fees 126.8, kept +7.9% (net of the PoolManager protocol fee). PLTR v3 0.3% pool: fees 99.8, kept -18.9%. GME v3 1% pool: fees 166.0, kept -93.5%. SPCX v3 0.05% pool: fees 116.7, kept -195.4%. Both columns use the same 15 days so the comparison is like for like. Over the full 30 days the PLTR v4 pool paid 167.1% and kept 70.9% (first half +140.9%, held-out +7.9%); the slide uses the held-out half because that is the half the gate reads. The 3,059,881 swaps are the sum of each vault's gate.swaps in web/lib/vault-universe.json (30 days to 2026-10-17, 17 vault pools). The kept figure is the replay's measurement before Uptick's performance share (cost model: pool price impact, fee tier, gas; keeper/data/replay.json cost_model).
+Every figure is the held-out half (15 days, 2026-10-02 to 2026-10-17, annualised) of keeper/data/replay.json, tokens.<SYMBOL>.pools[].test: fee_apr_pct is what the pool paid, edge_apr_pct is what an LP kept after losses to informed traders (1 hour markout) and rebalancing cost, conservative accounting. PLTR v4 1% pool: fees 126.8, kept +7.9% (net of the PoolManager protocol fee). PLTR v3 0.3% pool: fees 99.8, kept -18.9%. GME v3 1% pool: fees 166.0, kept -93.5%. SPCX v3 0.05% pool: fees 116.7, kept -195.4%. Both columns use the same 15 days so the comparison is like for like. Over the full 30 days the PLTR v4 pool paid 167.1% and kept 70.9% (first half +140.9%, held-out +7.9%); the slide uses the held-out half because that is the half the gate reads. The 3,059,881 swaps are the sum of each vault's gate.swaps in web/lib/vault-universe.json (30 days to 2026-10-17, 17 vault pools). The kept figure is the replay's measurement before Uptick's performance share (cost model: pool price impact, fee tier, gas; keeper/data/replay.json cost_model). Bar scale: 2.6 px per point of APR, one scale for both bars.
 -->
   <h2 class="v" style="font-size:76px;max-width:1640px">Fees are not yield. The replay decides which pools deserve capital.</h2>
   <div style="margin-top:52px">
-    <div style="display:grid;grid-template-columns:270px 900px 230px 230px;height:56px;align-items:end;border-bottom:1px solid var(--border);padding-bottom:12px">
+    <div style="display:grid;grid-template-columns:270px 1010px 208px 208px;height:56px;align-items:end;border-bottom:1px solid var(--border);padding-bottom:12px">
       <div class="p" style="font-size:24px">Pool</div>
-      <div class="p" style="font-size:24px"><span style="display:inline-block;width:22px;height:12px;background:var(--bar);border-radius:2px;margin-right:10px"></span>Fees the pool paid &nbsp;&nbsp;<span style="display:inline-block;width:22px;height:12px;background:var(--loss);border-radius:2px;margin-right:10px"></span>What an LP kept</div>
-      <div class="p" style="font-size:24px;text-align:right">Fees</div>
-      <div class="p" style="font-size:24px;text-align:right">Kept</div>
+      <div class="p" style="font-size:24px"><span style="display:inline-block;width:22px;height:12px;background:var(--bar);border-radius:2px;margin-right:10px"></span>Fees the pool paid &nbsp;&nbsp;<span style="display:inline-block;width:22px;height:12px;background:var(--kept);border-radius:2px;margin-right:10px"></span>Kept, a gain &nbsp;&nbsp;<span style="display:inline-block;width:22px;height:12px;background:var(--loss);border-radius:2px;margin-right:10px"></span>Kept, a loss</div>
+      <div class="p" style="font-size:24px;text-align:right">Fees APR</div>
+      <div class="p" style="font-size:24px;text-align:right">Kept APR</div>
     </div>
-    <div style="display:grid;grid-template-columns:270px 900px 230px 230px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
+    <div style="display:grid;grid-template-columns:270px 1010px 208px 208px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
       <div style="display:flex;align-items:center;gap:18px"><img class="tk" src="img/tokens/PLTR.png" alt="PLTR" style="width:52px;height:52px"><div><div class="t" style="font-size:36px">PLTR</div><div class="p" style="font-size:23px">Uniswap v4, 1%</div></div></div>
-      <div style="position:relative;height:84px"><div style="position:absolute;left:450px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:450px;top:6px;height:34px;width:285px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:450px;top:46px;height:34px;width:18px;background:var(--kept);border-radius:2px"></i></div>
+      <div style="position:relative;height:84px"><div style="position:absolute;left:520px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:520px;top:6px;height:34px;width:330px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:520px;top:46px;height:34px;width:21px;background:var(--kept);border-radius:2px"></i></div>
       <div class="fig" style="font-size:40px;text-align:right">126.8%</div><div class="fig kept" style="font-size:40px;text-align:right">+7.9%</div>
     </div>
-    <div style="display:grid;grid-template-columns:270px 900px 230px 230px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
+    <div style="display:grid;grid-template-columns:270px 1010px 208px 208px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
       <div style="display:flex;align-items:center;gap:18px"><img class="tk" src="img/tokens/PLTR.png" alt="PLTR" style="width:52px;height:52px"><div><div class="t" style="font-size:36px">PLTR</div><div class="p" style="font-size:23px">Uniswap v3, 0.3%</div></div></div>
-      <div style="position:relative;height:84px"><div style="position:absolute;left:450px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:450px;top:6px;height:34px;width:225px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:408px;top:46px;height:34px;width:42px;background:var(--loss);border-radius:2px"></i></div>
+      <div style="position:relative;height:84px"><div style="position:absolute;left:520px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:520px;top:6px;height:34px;width:259px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:471px;top:46px;height:34px;width:49px;background:var(--loss);border-radius:2px"></i></div>
       <div class="fig" style="font-size:40px;text-align:right">99.8%</div><div class="fig loss" style="font-size:40px;text-align:right">-18.9%</div>
     </div>
-    <div style="display:grid;grid-template-columns:270px 900px 230px 230px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
+    <div style="display:grid;grid-template-columns:270px 1010px 208px 208px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
       <div style="display:flex;align-items:center;gap:18px"><img class="tk" src="img/tokens/GME.png" alt="GME" style="width:52px;height:52px"><div><div class="t" style="font-size:36px">GME</div><div class="p" style="font-size:23px">Uniswap v3, 1%</div></div></div>
-      <div style="position:relative;height:84px"><div style="position:absolute;left:450px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:450px;top:6px;height:34px;width:374px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:240px;top:46px;height:34px;width:210px;background:var(--loss);border-radius:2px"></i></div>
+      <div style="position:relative;height:84px"><div style="position:absolute;left:520px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:520px;top:6px;height:34px;width:432px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:277px;top:46px;height:34px;width:243px;background:var(--loss);border-radius:2px"></i></div>
       <div class="fig" style="font-size:40px;text-align:right">166.0%</div><div class="fig loss" style="font-size:40px;text-align:right">-93.5%</div>
     </div>
-    <div style="display:grid;grid-template-columns:270px 900px 230px 230px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div style="display:flex;align-items:center;gap:18px"><span class="tk m" style="width:52px;height:52px">SP</span><div><div class="t" style="font-size:36px">SPCX</div><div class="p" style="font-size:23px">Uniswap v3, 0.05%</div></div></div>
-      <div style="position:relative;height:84px"><div style="position:absolute;left:450px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:450px;top:6px;height:34px;width:262px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:10px;top:46px;height:34px;width:440px;background:var(--loss);border-radius:2px"></i></div>
+    <div style="display:grid;grid-template-columns:270px 1010px 208px 208px;height:124px;align-items:center;border-bottom:1px solid var(--hairline)">
+      <div style="display:flex;align-items:center;gap:18px"><span class="tk m" style="width:52px;height:52px;font-size:17px">SPCX</span><div><div class="t" style="font-size:36px">SPCX</div><div class="p" style="font-size:23px">Uniswap v3, 0.05%</div></div></div>
+      <div style="position:relative;height:84px"><div style="position:absolute;left:520px;top:-12px;bottom:-12px;width:1px;background:var(--border)"></div><i style="position:absolute;left:520px;top:6px;height:34px;width:303px;background:var(--bar);border-radius:2px"></i><i style="position:absolute;left:12px;top:46px;height:34px;width:508px;background:var(--loss);border-radius:2px"></i></div>
       <div class="fig" style="font-size:40px;text-align:right">116.7%</div><div class="fig loss" style="font-size:40px;text-align:right">-195.4%</div>
     </div>
   </div>
@@ -214,10 +226,10 @@ Every figure is the held-out half (15 days, 2026-10-02 to 2026-10-17, annualised
 <!-- 4 SOLUTION: BUILT ON TOP -->
 <section class="slide" data-t="Solution">
 <!-- notes:
-Three steps, each in the code. (1) Deposit the Stock Token itself: StockVault and StockVaultV4 are ERC-4626 over a Uniswap v3 and a v4 pool, the vault takes AAPL, PLTR or GOOGL and not a pair (contracts/src, README.md). (2) Earn the fees that survive: every vault page shows fee APR beside kept APR, the replay's measurement of fees less losses to informed traders and rebalancing cost (web/lib/vault-universe.json); exit in kind returns both tokens with no oracle, no swap and no pause (contracts/SECURITY.md, row redeemInKind). (3) Borrow USDG against the same share: UptickShareOracle prices the share from Chainlink alone (contracts/src/UptickShareOracle.sol), the Earn and borrow panel on each vault page sends approve, deposit, approve shares, supplyCollateral and borrow as one confirmation where the wallet batches (web/components/earn-borrow.tsx), and the full path runs on a fork of Robinhood Chain against the real Morpho Blue singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010 (scripts/fork-demo.sh, docs/FORK-DEMO.md). Quote: @JohannKerbrat, 2026-10-22 14:14:11 UTC, https://x.com/JohannKerbrat/status/2113272709333536936, 10,695 views at 2026-10-23T16:55:39Z, quoting Morpho's launch post: "A meaningful step forward for what Stock Tokens can do onchain. Excited to see what gets built on top." The closing line is Uptick's own framing: the quote is about Morpho's launch, not about Uptick.
+Three steps, each in the code. (1) Deposit the Stock Token itself: StockVault and StockVaultV4 are ERC-4626 over a Uniswap v3 and a v4 pool, the vault takes AAPL, PLTR or GOOGL and not a pair (contracts/src, README.md). (2) Earn the fees that survive: every vault page shows fee APR beside kept APR, the replay's measurement of fees less losses to informed traders and rebalancing cost (web/lib/vault-universe.json); exit in kind returns both tokens with no oracle, no swap and no pause (contracts/SECURITY.md, row redeemInKind). (3) Borrow USDG against the same share: UptickShareOracle prices the share from Chainlink alone (contracts/src/UptickShareOracle.sol), the Earn and borrow panel on each vault page sends approve, deposit, approve shares, supplyCollateral and borrow as one confirmation where the wallet batches (web/components/earn-borrow.tsx), and the full path runs against the real Morpho Blue singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010 (scripts/fork-demo.sh, docs/FORK-DEMO.md). Quote: @JohannKerbrat, 2026-10-22 14:14:11 UTC, https://x.com/JohannKerbrat/status/2113272709333536936, captured from x.com 2026-10-24 and cropped above the quoted Morpho post: "A meaningful step forward for what Stock Tokens can do onchain. Excited to see what gets built on top." The closing line is Uptick's own framing: the quote is about Morpho's launch, not about Uptick.
 -->
-  <h2 class="v" style="font-size:72px;max-width:1640px">Deposit the Stock Token. Earn the fees that survive. Borrow USDG against the same share.</h2>
-  <div style="position:relative;height:412px;margin-top:56px">
+  <h2 class="v" style="font-size:72px;max-width:1640px">One deposit does two jobs: it earns in a Uniswap pool and backs a loan on Morpho.</h2>
+  <div style="position:relative;height:412px;margin-top:40px">
     <svg class="arw" width="1696" height="412" viewBox="0 0 1696 412" style="left:0;top:0;fill:none" aria-hidden="true">
       <defs>
         <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 L9 5 L1 9" style="stroke:var(--mute);fill:none;stroke-width:1.8"/></marker>
@@ -240,43 +252,43 @@ Three steps, each in the code. (1) Deposit the Stock Token itself: StockVault an
     <div class="p" style="position:absolute;left:1290px;width:100px;top:12px;font-size:22px;line-height:1.2;text-align:center;color:var(--soft)">Borrow USDG</div>
     <div class="p" style="position:absolute;left:0;width:566px;top:186px;font-size:24px;line-height:1.25;text-align:right">The token goes into a price band</div>
     <div class="p kept" style="position:absolute;left:788px;width:320px;top:186px;font-size:24px;line-height:1.25">Fees accrue to the share</div>
+    <div class="p kept" style="position:absolute;left:862px;top:266px;width:240px;font-size:23px;line-height:1.2">Fees keep reaching the posted share</div>
     <div class="p" style="position:absolute;left:1146px;width:550px;top:262px;font-size:26px;line-height:1.3;color:var(--soft)"><b>The share keeps earning while it is collateral.</b></div>
   </div>
-  <div style="position:absolute;left:112px;right:112px;bottom:96px;border-top:1px solid var(--hairline);padding-top:28px">
-    <div class="t" style="font-weight:400;font-size:44px;line-height:1.2;font-family:var(--font-display);letter-spacing:-.015em">"Excited to see what gets built on top."</div>
-    <div class="p" style="font-size:24px;margin-top:10px">Johann Kerbrat, Robinhood Chain, X, 2026-10-22, on the Morpho launch</div>
-    <p class="p" style="font-size:36px;line-height:1.3;margin-top:22px;color:var(--soft)"><b>Uptick is what gets built on top.</b></p>
+  <div style="position:absolute;left:112px;right:112px;bottom:96px;border-top:1px solid var(--hairline);padding-top:26px;display:grid;grid-template-columns:700px 1fr;column-gap:56px;align-items:center">
+    <figure class="shot"><img src="img/tweet-kerbrat.png" width="700" alt="Johann Kerbrat, Robinhood Chain, on X: Excited to see what gets built on top"></figure>
+    <div><div class="v" style="font-size:52px;line-height:1.12">Uptick is what gets built on top.</div><div class="p" style="font-size:24px;margin-top:12px">Johann Kerbrat, Robinhood Chain, X, 2026-10-22, on the Morpho launch.</div></div>
   </div>
-  <div class="src">Source: x.com/JohannKerbrat/status/2113272709333536936 via api.fxtwitter.com, 2026-10-23 16:55 UTC. contracts/SECURITY.md, scripts/fork-demo.sh.</div>
+  <div class="src">Source: x.com/JohannKerbrat/status/2113272709333536936, captured 2026-10-24. contracts/SECURITY.md, scripts/fork-demo.sh.</div>
 </section>
 
 <!-- 5 THE BORROW COST NUMBER -->
 <section class="slide" data-t="The borrow cost">
 <!-- notes:
-Every figure was read live on 2026-10-23, see .progress/research/win-2026-10-24/LIVE.md. Borrow APY: Morpho Blue API https://blue-api.morpho.org/graphql, markets(first:1000, where:{chainId_in:[4663]}), 2026-10-23T16:56:52Z, market 0xdeb4782d012d5fd3b24962538c2f6559049d70bda4dabd2e4212dacb96c28d45 (AAPL collateral, USDG loan, LLTV 62.5%): borrowApy 0.24663, supplyAssetsUsd 221,409, borrowAssetsUsd 200,354, utilization 90.5%. Kept: AAPL's weaker half +2.7% and held-out half +3.9% a year (web/lib/vault-universe.json, README gates table). Offset at 50% LTV: a borrower who posts $1 of share and borrows $0.50 earns the kept rate on the whole $1 while paying the borrow rate on $0.50, so the income per borrowed dollar is kept / 0.5 = 5.4 to 7.8 points of the 24.7% rate (exact 5.42 and 7.81), and the net borrow cost is about 16.9% to 19.3% (exact 16.85 to 19.25). This is an estimate from one read: the Morpho rate is variable, fee income varies with volume, the share holds about half USDG inside its price range, and the 2.7% and 3.9% are replayed past halves, not a promise. A Stock Token posted as plain AAPL collateral pays the whole 24.7% with nothing coming back (Morpho Blue does not lend collateral out). Bar widths: 900 px is 24.7 points.
+Every figure was read live on 2026-10-23, see .progress/research/win-2026-10-24/LIVE.md. Borrow APY: Morpho Blue API https://blue-api.morpho.org/graphql, markets(first:1000, where:{chainId_in:[4663]}), 2026-10-23T16:56:52Z, market 0xdeb4782d012d5fd3b24962538c2f6559049d70bda4dabd2e4212dacb96c28d45 (AAPL collateral, USDG loan, LLTV 62.5%): borrowApy 0.24663, supplyAssetsUsd 221,409, borrowAssetsUsd 200,354, utilization 90.5%. Kept: AAPL's weaker half +2.7% and held-out half +3.9% a year (web/lib/vault-universe.json, README gates table). Offset at 50% LTV: a borrower who posts $1 of share and borrows $0.50 earns the kept rate on the whole $1 while paying the borrow rate on $0.50, so the income per borrowed dollar is kept / 0.5 = 5.4 to 7.8 points of the 24.7% rate (exact 5.42 and 7.81), and the net borrow cost is about 16.9% to 19.3% (exact 16.85 to 19.25). The slide uses one unit, percent a year, in every row. This is an estimate from one read: the Morpho rate is variable, fee income varies with volume, the share holds about half USDG inside its price range, and the 2.7% and 3.9% are replayed past halves, not a promise. A Stock Token posted as plain AAPL collateral pays the whole 24.7% with nothing coming back (Morpho Blue does not lend collateral out). Bar widths: 900 px is 24.7 percent a year.
 -->
-  <h2 class="v" style="font-size:76px;max-width:1640px">Borrowing USDG against AAPL on Morpho costs 24.7% a year today.</h2>
+  <h2 class="v" style="font-size:76px;max-width:1640px">An Uptick share pays 5.4 to 7.8 points back on a 24.7% loan.</h2>
   <div style="margin-top:58px">
     <div style="display:grid;grid-template-columns:520px 920px 256px;height:48px;align-items:end;border-bottom:1px solid var(--border);padding-bottom:12px">
-      <div class="p" style="font-size:24px">Per year, at 50% loan to value</div><div></div><div class="p" style="font-size:24px;text-align:right">Points</div>
+      <div class="p" style="font-size:24px">AAPL against USDG, 50% loan to value</div><div></div><div class="p" style="font-size:24px;text-align:right">% a year</div>
     </div>
-    <div style="display:grid;grid-template-columns:520px 920px 256px;height:128px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div style="display:flex;align-items:center;gap:16px"><span style="display:flex;flex:none"><img class="tk" src="img/tokens/AAPL.png" alt="AAPL" style="width:52px;height:52px"><img class="tk" src="img/tokens/USDG.png" alt="USDG" style="width:52px;height:52px;margin-left:-14px"></span><div><div class="t" style="font-size:32px">Borrow rate</div><div class="p" style="font-size:23px;margin-top:4px">AAPL/USDG on Morpho Blue</div></div></div>
+    <div style="display:grid;grid-template-columns:520px 920px 256px;height:136px;align-items:center;border-bottom:1px solid var(--hairline)">
+      <div style="display:flex;align-items:center;gap:16px"><span style="display:flex;flex:none"><img class="tk" src="img/tokens/AAPL.png" alt="AAPL" style="width:52px;height:52px"><img class="tk" src="img/tokens/USDG.png" alt="USDG" style="width:52px;height:52px;margin-left:-14px"></span><div><div class="t" style="font-size:32px;margin-left:12px">Borrow rate</div><div class="p" style="font-size:24px;margin-top:4px;margin-left:12px">Morpho Blue market</div></div></div>
       <div style="position:relative;height:48px"><i style="position:absolute;left:0;top:0;height:48px;width:900px;background:var(--bar);border-radius:3px"></i></div>
-      <div class="fig" style="font-size:48px;text-align:right">24.7%</div>
+      <div class="fig" style="font-size:52px;text-align:right">24.7%</div>
     </div>
-    <div style="display:grid;grid-template-columns:520px 920px 256px;height:128px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div style="display:flex;align-items:center;gap:16px"><img src="img/uptick-mark.svg" width="52" height="52" alt="" style="border-radius:12px;flex:none;margin-right:38px"><div><div class="t" style="font-size:32px">Paid back by the share</div><div class="p" style="font-size:23px;margin-top:4px">+2.7% to +3.9% earned while posted</div></div></div>
+    <div style="display:grid;grid-template-columns:520px 920px 256px;height:136px;align-items:center;border-bottom:1px solid var(--hairline)">
+      <div style="display:flex;align-items:center;gap:16px"><img src="img/uptick-mark.svg" width="52" height="52" alt="" style="border-radius:12px;flex:none"><div><div class="t" style="font-size:32px;margin-left:12px">Paid back by the share</div><div class="p" style="font-size:24px;margin-top:4px;margin-left:12px">Fees earned while it is posted</div></div></div>
       <div style="position:relative;height:48px"><i style="position:absolute;left:0;top:0;height:48px;width:197px;background:var(--kept);border-radius:3px 0 0 3px"></i><i style="position:absolute;left:197px;top:0;height:48px;width:87px;background:var(--kept-dim);border-radius:0 3px 3px 0"></i></div>
-      <div class="fig kept" style="font-size:48px;text-align:right">5.4 to 7.8</div>
+      <div class="fig kept" style="font-size:52px;text-align:right">5.4 to 7.8%</div>
     </div>
-    <div style="display:grid;grid-template-columns:520px 920px 256px;height:128px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div style="padding-left:106px"><div class="t" style="font-size:32px">Net cost of the loan</div><div class="p" style="font-size:23px;margin-top:4px">Estimate</div></div>
+    <div style="display:grid;grid-template-columns:520px 920px 256px;height:136px;align-items:center;border-bottom:1px solid var(--hairline)">
+      <div style="display:flex;align-items:center;gap:16px"><img src="img/uptick-mark.svg" width="52" height="52" alt="" style="border-radius:12px;flex:none"><div><div class="t" style="font-size:32px;margin-left:12px">Net cost of the loan</div><div class="p" style="font-size:24px;margin-top:4px;margin-left:12px">An estimate</div></div></div>
       <div style="position:relative;height:48px"><i style="position:absolute;left:0;top:0;height:48px;width:616px;background:var(--text);border-radius:3px 0 0 3px"></i><i style="position:absolute;left:616px;top:0;height:48px;width:87px;background:var(--border);border-radius:0 3px 3px 0"></i></div>
-      <div class="fig" style="font-size:48px;text-align:right">17% to 19%</div>
+      <div class="fig" style="font-size:52px;text-align:right">17 to 19%</div>
     </div>
   </div>
-  <p class="p" style="margin-top:28px;font-size:24px;max-width:1500px">Posted as plain AAPL, the whole 24.7% comes with nothing back. The share earns its kept APR as collateral: kept divided by the 50% loan to value is the offset. One read of the market, 2026-10-23 16:56 UTC. The rate moves and fee income varies.</p>
+  <p class="p" style="margin-top:22px;font-size:24px">One read of the market, 2026-10-23 16:56 UTC. The rate moves and fee income varies.</p>
   <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:34px;line-height:1.3;color:var(--soft)"><b>Posted as an Uptick share, the same collateral pays back a fifth to a third of the interest.</b></p>
   <div class="src">Source: blue-api.morpho.org, chain 4663, market 0xdeb4782d (62.5% LLTV), 2026-10-23 16:56 UTC. AAPL kept: web/lib/vault-universe.json.</div>
 </section>
@@ -284,57 +296,71 @@ Every figure was read live on 2026-10-23, see .progress/research/win-2026-10-24/
 <!-- 6 DEMO -->
 <section class="slide" data-t="Demo">
 <!-- notes:
-Left, two real crops of the app built with npm run build:pages and served locally, read from Robinhood Chain on 2026-10-23: /check?address=0x92d435c96e63c43e12d6d0ab28f6b0b04072f765 (an EOA found from AAPL Transfer logs, blocks 96066736 to 96096736; the scan read block 96099041: $102,325 of Stock Tokens in 17 tokens, $86,791 Uptick would put to work across 12 tokens, $15,533 refused across 5 closed tokens), and the Earn and borrow panel of /vault/aapl. The panel states that borrowing opens with the AAPL market, because no Morpho market on a vault share exists on mainnet yet; the market, the borrow limit and the liquidation price appear in the same panel once it does (web/components/earn-borrow.tsx). Your loan (web/components/your-loan.tsx) appears on the vault page and on Portfolio for a connected wallet that has collateral or debt in an Uptick share market: collateral, accrued debt, health factor, liquidation price in stock terms; Make it safer plans a repay from the wallet, or rounds of withdraw, exit in kind and repay, sent as one EIP-5792 batch with a sequential fallback (web/lib/loan.ts, api/src/mcp.ts check_loan_health and prepare_make_safer). Right, the lines are the real output of scripts/fork-demo.sh as written to docs/FORK-DEMO.md: fork block 96051421, the borrower deposits 42.6 AAPL, posts the shares and borrows 8693.074028 USDG against a limit of 9150.604241 at LLTV 6250 bp.
+Left top, a real capture of /check?address=0x92d435c96e63c43e12d6d0ab28f6b0b04072f765 on https://uptick-fi.pages.dev at 2x, 2026-10-24 (an EOA found from AAPL Transfer logs; the page reads which of the 17 Stock Tokens it holds in one Multicall3 call at block 96,349,430 and prices them with Chainlink: $113,628 idle, $97,723 Uptick would take, weaker half -$3,793 a year on that). Left bottom, the Blockscout transaction page for one real swap in the PLTR / USDG v4 1% pool, block 70152155 (chosen by keeper/scripts/moment.py, see the appendix slide "one real swap"). Right, the real stdout of scripts/fork-demo.sh run on 2026-10-24 against a fork of Robinhood Chain 4663 at block 96347563, after scripts/e2e-fork.sh was changed to deploy the share oracle through UptickShareOracleFactory: every PASS line is an asserted step, the info line is the borrow (42.6 AAPL deposited, 8690.99638 USDG borrowed against a limit of 9148.417243 at LLTV 6250 bp, on the real Morpho Blue singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010). The earlier recorded run with its hashes is docs/FORK-DEMO.md (fork block 96051421). Your loan (web/components/your-loan.tsx) appears on the vault page and on Portfolio for a connected wallet that has collateral or debt in an Uptick share market; Make it safer plans a repay from the wallet, or rounds of withdraw, exit in kind and repay, sent as one EIP-5792 batch with a sequential fallback (web/lib/loan.ts, api/src/mcp.ts check_loan_health and prepare_make_safer).
 -->
-  <h2 class="v" style="font-size:76px;max-width:1640px">From a pasted address to a safer loan.</h2>
-  <div style="display:grid;grid-template-columns:980px 620px;column-gap:96px;margin-top:40px;align-items:start">
+  <h2 class="v" style="font-size:72px;max-width:1640px">From a pasted address to USDG borrowed against the same share.</h2>
+  <div style="display:grid;grid-template-columns:800px 800px;column-gap:96px;margin-top:40px;align-items:start">
     <div>
-      <figure class="shot"><img src="img/check-wallet.png" width="980" height="241" alt="The /check page for a real holder address: it holds $102,325 of Stock Tokens and Uptick would put $86,791 of it to work"></figure>
-      <p class="p" style="font-size:24px;margin-top:12px">/check on any address, read from the chain, no wallet connection.</p>
-      <figure class="shot" style="margin-top:24px"><img src="img/aapl-earn-borrow.png" width="980" height="287" alt="The Earn and borrow panel on the AAPL vault page: deposit, post the share, borrow USDG"></figure>
-      <p class="p" style="font-size:24px;margin-top:12px">Earn and borrow on the AAPL vault page: the share keeps earning while posted.</p>
+      <figure class="shot"><img src="img/check-verdict.png" width="800" height="199" alt="The /check page for a real holder address: it holds $113,628 of Stock Tokens doing nothing and Uptick would take $97,723 of it"></figure>
+      <p class="p" style="font-size:24px;margin-top:12px">/check on any address, read from the chain, nothing to connect or sign.</p>
+      <figure class="shot" style="margin-top:34px"><img src="img/blockscout-swap-2x.png" width="800" height="252" alt="Blockscout: one real swap in the PLTR pool, success, block 70152155"></figure>
+      <p class="p" style="font-size:24px;margin-top:12px">A real PLTR pool swap, block 70152155. The replay counts 3,059,881 of them.</p>
     </div>
     <div>
-      <div class="led">
-        <div style="padding:14px 0"><div class="t" style="font-size:28px">Your loan, Make it safer</div><div class="p" style="font-size:24px;margin-top:4px">Health factor and liquidation price in stock terms, one batch to repair it.</div></div>
-        <div style="padding:14px 0"><div class="t" style="font-size:28px">scripts/fork-demo.sh</div><div class="p" style="font-size:24px;margin-top:4px">The whole loop on a fork of the real Morpho Blue.</div></div>
-      </div>
-      <div class="panel" style="margin-top:22px;padding:20px 26px"><div class="code" style="font-size:24px;line-height:1.45">PASS 16-borrower-earn-and-borrow
-  42.6 AAPL deposited, 8693.07 USDG borrowed
-  against a limit of 9150.60 at LLTV 6250 bp
-PASS 17-pool-push-oracle-holds
-PASS 19-feed-drop-and-liquidation</div></div>
+      <div class="term"><span class="pr">$ scripts/fork-demo.sh</span>
+<b>PASS</b> 14-morpho-market
+<b>PASS</b> 15-lender-supplies-usdg
+  info: 42.6 AAPL deposited, 42090314780946593433734955 share units posted, 8690.99638 USDG borrowed against a limit of 9148.417243 at LLTV 6250 bp
+<b>PASS</b> 16-borrower-earn-and-borrow
+<b>PASS</b> 17-pool-push-oracle-holds
+<b>PASS</b> 18-stale-feed
+<b>PASS</b> 19-feed-drop-and-liquidation
+<b>PASS</b> 20-feed-older-than-97h</div>
+      <p class="p" style="font-size:24px;margin-top:12px">The whole loan on the real Morpho Blue: 42.6 AAPL in, 8,691 USDG borrowed, then a 3% pool push, a stale feed and a liquidation, each step asserted.</p>
     </div>
   </div>
   <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:34px;line-height:1.3;color:var(--soft)"><b>Every screen reads the chain, and one command runs the loan end to end.</b></p>
-  <div class="src">Source: web/ built with build:pages, address 0x92d4...f765 read at block 96099041, 2026-10-23. docs/FORK-DEMO.md (scripts/fork-demo.sh, fork block 96051421).</div>
+  <div class="src">Source: uptick-fi.pages.dev/check, address 0x92d4...f765, block 96,349,430, 2026-10-24. Blockscout tx 0x1e8e2188. scripts/fork-demo.sh, fork block 96347563, 2026-10-24.</div>
 </section>
 
 <!-- 7 SAFETY -->
 <section class="slide" data-t="Safety">
 <!-- notes:
-Oracle: contracts/src/UptickShareOracle.sol prices the share from Chainlink alone. The 0.2 bp figure is step 17 of scripts/fork-demo.sh (docs/FORK-DEMO.md, "pool-push-oracle-holds"): after a 3% push on the AAPL pool the market oracle moved 386,493 USDG raw on a vault of 19,771,327,025 (0.2 bp, bound 14,500,000 of fee income and 3,954,265 of rounding and TWAP drift), while the spot-reading control oracle moved 520,913,476 (263 bp). The control is the must-fail: with DEMO_ORACLE=spot the step goes red. LLTV: contracts/SECURITY.md, section Share oracle: weekend gaps and the LLTV they allow. 62.5% is recommended for every share market; at 62.5% Morpho pays a 12.68% liquidation incentive and a borrower at the limit leaves bad debt only after a further 29.6% share fall (Morpho pays the liquidator 1 / (1 - 0.3 * (1 - LLTV)), the whole debt comes out of the collateral while LLTV * that factor <= 1 - share fall). The worst adverse close-to-open move in 123 days of Chainlink rounds across the twelve launching feeds is -7.75% on USO (49.2 h, 2026-07-31 to 2026-08-03) and -0.68% on AAPL (keeper/data/weekend-gaps.json, 43,198 rounds); the share moves less than the feed, -6.32% for the -7.75% USO gap. Liquidation on the fork (step 19): a 12% feed drop moved the share 11.5%, the liquidator repaid 5,767.44 USDG and the seized shares exited in kind for 6,628.24 USDG, 14.9% over the repayment. Reviews: contracts/ holds six reports (SECURITY-REVIEW-2026-10-20, SECURITY-REREVIEW-2026-10-20, SECURITY-REVIEW-3, SECURITY-REVIEW-4, SECURITY-REVIEW-V4-2026-10-22, SECURITY-REVIEW-ORACLE-2026-10-23; docs/facts.json reports_total 6); the StockVault rounds ended SHIP at round four and the v4 review ended SHIP. 412 contract tests, 141 of them security tests.
+Oracle: contracts/src/UptickShareOracle.sol prices the share from Chainlink alone. The 0.2 bp figure is step 17 of scripts/fork-demo.sh (docs/FORK-DEMO.md, "pool-push-oracle-holds"): after a 3% push on the AAPL pool the market oracle moved 386,493 USDG raw on a vault of 19,771,327,025 (0.2 bp, bound 14,500,000 of fee income and 3,954,265 of rounding and TWAP drift), while the spot-reading control oracle moved 520,913,476 (263 bp). The control is the must-fail: with DEMO_ORACLE=spot the step goes red. LLTV: contracts/SECURITY.md, section Share oracle: weekend gaps and the LLTV they allow. 62.5% is recommended for every share market; at 62.5% Morpho pays a 12.68% liquidation incentive and a borrower at the limit leaves bad debt only after a further 29.6% share fall (Morpho pays the liquidator 1 / (1 - 0.3 * (1 - LLTV)), the whole debt comes out of the collateral while LLTV * that factor <= 1 - share fall). The worst adverse close-to-open move in 123 days of Chainlink rounds across the twelve launching feeds is -7.75% on USO (49.2 h, 2026-07-31 to 2026-08-03) and -0.68% on AAPL (keeper/data/weekend-gaps.json, 43,198 rounds); the share moves less than the feed, -6.32% for the -7.75% USO gap. Liquidation on the fork (step 19): a 12% feed drop moved the share 11.5%, the liquidator repaid 5,767.44 USDG and the seized shares exited in kind for 6,628.24 USDG, 14.9% over the repayment. Reviews: contracts/ holds six reports (SECURITY-REVIEW-2026-10-20, SECURITY-REREVIEW-2026-10-20, SECURITY-REVIEW-3, SECURITY-REVIEW-4, SECURITY-REVIEW-V4-2026-10-22, SECURITY-REVIEW-ORACLE-2026-10-23; docs/facts.json reports_total 6); the StockVault rounds ended with a ship verdict at round four and the v4 review ended with a ship verdict. 412 contract tests, 141 of them security tests. Bar scales: 560 px is 263 bp, 560 px is 29.6%, 19 px per point for the gaps, 560 px is 5,767.44 USDG.
 -->
   <h2 class="v" style="font-size:72px;max-width:1640px">A 3% push on the pool moved the collateral price 0.2 basis points.</h2>
   <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:72px;margin-top:44px">
-    <div style="border-top:1px solid var(--hairline);padding-top:26px">
-      <div class="t" style="font-size:30px">Price moved by the same 3% push on the pool</div>
-      <div class="p" style="font-size:24px;margin-top:22px;color:var(--soft)">Uptick share, priced from Chainlink alone</div>
-      <div style="display:flex;align-items:center;gap:20px;margin-top:10px;height:44px"><i style="display:block;width:5px;height:44px;background:var(--kept);border-radius:2px"></i><span class="fig kept" style="font-size:40px">0.2 bp</span></div>
-      <div class="p" style="font-size:24px;margin-top:22px;color:var(--soft)">Control: an oracle that reads the pool</div>
-      <div style="display:flex;align-items:center;gap:20px;margin-top:10px;height:44px"><i style="display:block;width:560px;height:44px;background:var(--loss);border-radius:3px"></i><span class="fig loss" style="font-size:40px">263 bp</span></div>
+    <div>
+      <div style="border-top:1px solid var(--hairline);padding-top:22px">
+        <div class="t" style="font-size:30px">Price moved by the same 3% push on the pool</div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">Uptick share, priced from Chainlink alone</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:5px;height:44px;background:var(--text);border-radius:2px"></i><span class="fig" style="font-size:40px">0.2 bp</span></div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">Control: an oracle that reads the pool</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:560px;height:44px;background:var(--loss);border-radius:3px"></i><span class="fig loss" style="font-size:40px">263 bp</span></div>
+      </div>
+      <div style="border-top:1px solid var(--hairline);padding-top:22px;margin-top:34px">
+        <div class="t" style="font-size:30px">A liquidator exits in kind and comes out ahead</div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">USDG repaid on the debt</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:560px;height:44px;background:var(--bar);border-radius:3px"></i><span class="fig" style="font-size:36px">5,767</span></div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">USDG the seized shares exit for, 14.9% more</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:644px;height:44px;background:var(--text);border-radius:3px"></i><span class="fig" style="font-size:36px">6,628</span></div>
+      </div>
     </div>
-    <div style="border-top:1px solid var(--hairline);padding-top:26px">
-      <div class="t" style="font-size:30px">Share fall a borrower at the 62.5% limit survives</div>
-      <div class="p" style="font-size:24px;margin-top:22px;color:var(--soft)">Buffer before any bad debt</div>
-      <div style="display:flex;align-items:center;gap:20px;margin-top:10px;height:44px"><i style="display:block;width:560px;height:44px;background:var(--text);border-radius:3px"></i><span class="fig" style="font-size:40px">29.6%</span></div>
-      <div class="p" style="font-size:24px;margin-top:22px;color:var(--soft)">Worst weekend gap in 123 days: USO, then AAPL</div>
-      <div style="display:flex;align-items:center;gap:20px;margin-top:10px;height:44px"><i style="display:block;width:147px;height:44px;background:var(--bar);border-radius:3px"></i><span class="fig" style="font-size:40px">7.75%</span><i style="display:block;width:13px;height:44px;background:var(--bar);border-radius:2px;margin-left:12px"></i><span class="fig" style="font-size:40px">0.68%</span></div>
+    <div>
+      <div style="border-top:1px solid var(--hairline);padding-top:22px">
+        <div class="t" style="font-size:30px">Share fall a borrower at the 62.5% limit survives</div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">Buffer before any bad debt</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:560px;height:44px;background:var(--text);border-radius:3px"></i><span class="fig" style="font-size:40px">29.6%</span></div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">Worst weekend gap in 123 days, USO</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:147px;height:44px;background:var(--bar);border-radius:3px"></i><span class="fig" style="font-size:40px">7.75%</span></div>
+        <div class="p" style="font-size:24px;margin-top:16px;color:var(--soft)">Worst weekend gap in 123 days, AAPL</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;height:44px"><i style="display:block;width:13px;height:44px;background:var(--bar);border-radius:2px"></i><span class="fig" style="font-size:40px">0.68%</span></div>
+      </div>
+      <div style="border-top:1px solid var(--hairline);padding-top:22px;margin-top:34px;display:grid;grid-template-columns:auto 1fr;column-gap:26px;align-items:center">
+        <div class="fig" style="font-size:72px;letter-spacing:-.03em">412</div>
+        <div class="p" style="font-size:24px;line-height:1.3">contract tests, 141 of them security tests, and six independent review reports. Every vault round ended with a ship verdict.</div>
+      </div>
     </div>
-  </div>
-  <div class="sum" style="grid-template-columns:1fr 1fr;margin-top:40px">
-    <div><div class="n" style="font-size:56px;margin:0 0 8px">+14.9%</div><div class="w" style="font-size:24px;line-height:1.35">A liquidator exits in kind. On the fork a 12% feed drop seized shares that exited for 14.9% more than the USDG repaid.</div></div>
-    <div><div class="n" style="font-size:56px;margin:0 0 8px">6 reports, 412 tests</div><div class="w" style="font-size:24px;line-height:1.35">The vault rounds closed at SHIP, and an independent oracle review ran before any market was announced. 141 are security tests.</div></div>
   </div>
   <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:34px;line-height:1.3;color:var(--soft)"><b>Nobody can push the price, and the buffer is several times the worst weekend gap on record.</b></p>
   <div class="src">Source: docs/FORK-DEMO.md steps 17 and 19 (scripts/fork-demo.sh). contracts/SECURITY.md, keeper/data/weekend-gaps.json (2026-06-22 to 2026-10-23). docs/facts.json.</div>
@@ -343,119 +369,163 @@ Oracle: contracts/src/UptickShareOracle.sol prices the share from Chainlink alon
 <!-- 8 COMPETITION -->
 <section class="slide" data-t="Competition">
 <!-- notes:
-AutoRange: competitors/autorange-factory/src/STUDY.md, section Pricing, NAV and oracle: "Because there is no share token, there is no NAV per share", so a vault position has no ERC-20 to post to a Morpho market; DefiLlama TVL $607,887 across six chains (cdata --json llama tvl autorange, 2026-10-23T16:57:40Z). Morpho Blue lending markets: the singleton lends the loan token and holds collateral, it does not lend collateral out, so a Stock Token posted as plain collateral earns nothing while the loan runs; AAPL/USDG at 62.5% LLTV costs 24.7% a year (slide 5). Fables: 13 USDG pools over the tracked tokens (keeper/data/fables-pools.json), replayed at the fee each swap paid with the same engine, band, halves and cost model as the gate (keeper/replay/fables.py, keeper/data/fables-replay.json, generated 2026-10-23T11:37Z), at the size a Fables pool's own depth carries. Weaker half, Fables pool against the pool Uptick chose (web/lib/vault-universe.json gate.worst_half_apr): AAPL -5.0 vs +2.7, AMZN -9.1 vs -1.9, CRCL -122.6 vs -27.8, GME -296.0 vs -93.5, INTC -320.7 vs -2.2, META -32.7 vs -10.5, MSTR -164.0 vs -43.0, MU -33.2 vs -13.9, NVDA -81.8 vs -6.8, SPCX -253.3 vs -195.4, SPY -1.3 vs -0.2: the Uptick pool keeps more on 11 of the 12 tokens a Fables pool can be replayed on. TSLA is the twelfth (Fables -25.3, Uptick -25.8, both below the floor). Fables TVL $25,821,562 (cdata --json llama tvl fables, 2026-10-23T16:57:38Z); its own page claims about $46M, not verified. Uptick: ERC-20 ERC-4626 shares, UptickShareOracle, and the fork run of the real Morpho Blue singleton (docs/FORK-DEMO.md); no Uptick market exists on mainnet yet, so the slide says the share can be borrowed against on the fork. A bare Uniswap position is an NFT and Morpho Blue takes ERC-20 collateral; wrapped LP tokens (scV3 and scV4 in the Morpho API, at most $510 supplied in any market) exist and are not vault shares with a replay behind them.
+AutoRange: competitors/autorange-factory/src/STUDY.md, section Pricing, NAV and oracle: "Because there is no share token, there is no NAV per share", so a vault position has no ERC-20 to post to a Morpho market; DefiLlama TVL $607,887 across six chains (cdata --json llama tvl autorange, 2026-10-23T16:57:40Z). Morpho Blue lending markets: the singleton lends the loan token and holds collateral, it does not lend collateral out, so a Stock Token posted as plain collateral earns nothing while the loan runs; AAPL/USDG at 62.5% LLTV costs 24.7% a year (slide 5). Fables: 13 USDG pools over the tracked tokens (keeper/data/fables-pools.json), replayed at the fee each swap paid with the same engine, band, halves and cost model as the gate (keeper/replay/fables.py, keeper/data/fables-replay.json, generated 2026-10-23T11:37Z), at the size a Fables pool's own depth carries. Weaker half, Fables pool against the pool Uptick chose (web/lib/vault-universe.json gate.worst_half_apr): AAPL -5.0 vs +2.7, AMZN -9.1 vs -1.9, CRCL -122.6 vs -27.8, GME -296.0 vs -93.5, INTC -320.7 vs -2.2, META -32.7 vs -10.5, MSTR -164.0 vs -43.0, MU -33.2 vs -13.9, NVDA -81.8 vs -6.8, SPCX -253.3 vs -195.4, SPY -1.3 vs -0.2: the Uptick pool keeps more on 11 of the 12 tokens a Fables pool can be replayed on. TSLA is the twelfth (Fables -25.3, Uptick -25.8, both below the floor) and is not drawn. Bar scale 1.6 px per point, zero line at x=20, one scale for both bars. Fables TVL $25,821,562 (cdata --json llama tvl fables, 2026-10-23T16:57:38Z); its own page claims about $46M, not verified. A bare Uniswap position is an NFT and Morpho Blue takes ERC-20 collateral; wrapped LP tokens (scV3 and scV4 in the Morpho API, at most $510 supplied in any market) exist and are not vault shares with a replay behind them.
 -->
-  <h2 class="v" style="font-size:72px;max-width:1640px">Each alternative has a piece. An Uptick share earns the fees that survive and can be borrowed against.</h2>
-  <div class="mx" style="margin-top:44px">
-    <div class="h">Alternative</div><div class="h">Earns the pool fees</div><div class="h">Borrow against it</div><div class="h">What it shows you</div>
-    <div class="n">AutoRange</div><div><i class="yes"></i>One position per vault</div><div><i class="no"></i>No share token, so nothing to post</div><div>Fee APR</div>
-    <div class="n">Plain collateral on Morpho</div><div><i class="no"></i>Collateral earns $0</div><div><i class="yes"></i>24.7% a year on AAPL</div><div>Borrow APY</div>
-    <div class="n">Fables pools</div><div><i class="yes"></i>In a hook pool</div><div><i class="no"></i>A v4 position is an NFT</div><div>A Fables pool keeps less than the pool Uptick chose on 11 of 12 tokens</div>
-    <div class="n us" style="padding-left:20px"><img src="img/uptick-mark.svg" width="44" height="44" alt="" style="border-radius:10px;margin-right:14px">Uptick share</div><div class="us"><i class="yes"></i><b style="font-weight:600">The fees that survive</b></div><div class="us"><i class="yes"></i><b style="font-weight:600">An ERC-20 that borrows on a fork of the real Morpho Blue</b></div><div class="us">Fee APR beside what you keep</div>
+  <h2 class="v" style="font-size:72px;max-width:1640px">On 11 of 12 tokens the pool Uptick chose keeps more than a Fables pool.</h2>
+  <div style="display:grid;grid-template-columns:930px 1fr;column-gap:70px;margin-top:34px;align-items:start">
+    <div>
+      <div style="display:grid;grid-template-columns:150px 560px 110px 110px;height:56px;align-items:end;border-bottom:1px solid var(--border);padding-bottom:10px;font-size:22px;color:var(--mute)">
+        <div>% a year</div>
+        <div style="display:flex;gap:22px;align-items:center;padding-left:20px"><span style="display:flex;align-items:center;gap:8px"><i style="display:inline-block;width:26px;height:14px;border:2px solid var(--loss);border-radius:2px"></i>Fables pool, weaker half</span><span style="display:flex;align-items:center;gap:8px"><i style="display:inline-block;width:26px;height:14px;background:var(--loss);border-radius:2px"></i>Uptick pool</span></div>
+        <div style="text-align:right">Fables</div><div style="text-align:right">Uptick</div>
+      </div>
+      <div style="display:grid;grid-template-columns:150px 560px 110px 110px;grid-auto-rows:50px;align-items:center;font-size:24px;border-bottom:1px solid var(--hairline)">
+        <div style="font-weight:600">INTC</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:513px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:4px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-320.7</div><div class="loss" style="text-align:right;font-weight:500">-2.2</div>
+        <div style="font-weight:600">GME</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:474px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:150px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-296.0</div><div class="loss" style="text-align:right;font-weight:500">-93.5</div>
+        <div style="font-weight:600">SPCX</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:405px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:313px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-253.3</div><div class="loss" style="text-align:right;font-weight:500">-195.4</div>
+        <div style="font-weight:600">MSTR</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:262px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:69px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-164.0</div><div class="loss" style="text-align:right;font-weight:500">-43.0</div>
+        <div style="font-weight:600">CRCL</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:196px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:44px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-122.6</div><div class="loss" style="text-align:right;font-weight:500">-27.8</div>
+        <div style="font-weight:600">NVDA</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:131px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:11px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-81.8</div><div class="loss" style="text-align:right;font-weight:500">-6.8</div>
+        <div style="font-weight:600">MU</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:53px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:22px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-33.2</div><div class="loss" style="text-align:right;font-weight:500">-13.9</div>
+        <div style="font-weight:600">META</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:52px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:17px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-32.7</div><div class="loss" style="text-align:right;font-weight:500">-10.5</div>
+        <div style="font-weight:600">AMZN</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:15px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:3px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-9.1</div><div class="loss" style="text-align:right;font-weight:500">-1.9</div>
+        <div style="font-weight:600">AAPL</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:8px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:16px;top:27px;height:16px;width:4px;background:var(--kept);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-5.0</div><div class="kept" style="text-align:right;font-weight:500">+2.7</div>
+        <div style="font-weight:600">SPY</div><div style="position:relative;height:50px"><b style="position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border)"></b><i style="position:absolute;left:20px;top:7px;height:16px;width:4px;border:2px solid var(--loss);border-radius:2px;box-sizing:border-box"></i><i style="position:absolute;left:20px;top:27px;height:16px;width:2px;background:var(--loss);border-radius:2px"></i></div><div class="p" style="font-size:24px;text-align:right">-1.3</div><div class="loss" style="text-align:right;font-weight:500">-0.2</div>
+      </div>
+    </div>
+    <div>
+      <div class="t" style="font-size:30px">Value locked, DefiLlama, 2026-10-23</div>
+      <div style="display:grid;grid-template-columns:150px 1fr 120px;align-items:center;margin-top:22px;height:44px;font-size:24px"><span style="font-weight:600">Fables</span><span style="display:block;height:30px;width:100%;background:var(--bar);border-radius:3px"></span><span class="fig" style="font-size:30px;text-align:right">$25.8M</span></div>
+      <div style="display:grid;grid-template-columns:150px 1fr 120px;align-items:center;margin-top:10px;height:44px;font-size:24px"><span style="font-weight:600">AutoRange</span><span style="display:block;height:30px;width:2.3%;min-width:6px;background:var(--bar);border-radius:3px"></span><span class="fig" style="font-size:30px;text-align:right">$0.6M</span></div>
+      <div class="t" style="font-size:30px;margin-top:40px;line-height:1.25">Earns the pool fees and can be posted as collateral</div>
+      <div style="margin-top:12px;border-top:1px solid var(--hairline)">
+        <div style="display:flex;align-items:center;gap:18px;padding:16px 0;border-bottom:1px solid var(--hairline);background:var(--panel)"><i class="yes" style="margin-left:14px"></i><div style="font-size:25px;line-height:1.25"><b style="font-weight:600">Uptick share.</b> An ERC-20 priced from Chainlink, earning while posted.</div></div>
+        <div style="display:flex;align-items:center;gap:18px;padding:16px 0;border-bottom:1px solid var(--hairline)"><i class="no" style="margin-left:14px"></i><div style="font-size:25px;line-height:1.25"><b style="font-weight:600">AutoRange.</b> One position per vault, no share token to post.</div></div>
+        <div style="display:flex;align-items:center;gap:18px;padding:16px 0;border-bottom:1px solid var(--hairline)"><i class="no" style="margin-left:14px"></i><div style="font-size:25px;line-height:1.25"><b style="font-weight:600">Plain collateral.</b> Posted on Morpho, it earns $0.</div></div>
+        <div style="display:flex;align-items:center;gap:18px;padding:16px 0;border-bottom:1px solid var(--hairline)"><i class="no" style="margin-left:14px"></i><div style="font-size:25px;line-height:1.25"><b style="font-weight:600">Fables.</b> A v4 position is an NFT, so nothing to post.</div></div>
+      </div>
+    </div>
   </div>
-  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>Morpho holds the loans and pays the collateral nothing.</b> Uptick decides which pools deserve capital, then makes the position collateral.</p>
-  <div class="src">Source: competitors/autorange-factory/src/STUDY.md. keeper/data/fables-replay.json against web/lib/vault-universe.json, weaker half. DefiLlama, 2026-10-23: Fables $25.8M, AutoRange $0.6M.</div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>Uptick decides which pools deserve capital,</b> then makes the position collateral.</p>
+  <div class="src">Source: keeper/data/fables-replay.json, web/lib/vault-universe.json, weaker half; TSLA, below the floor in both, not drawn. DefiLlama, 2026-10-23.</div>
 </section>
 
 <!-- 9 MARKET -->
 <section class="slide" data-t="Market">
 <!-- notes:
-Chain and Morpho: cdata --json llama chain robinhood (DefiLlama), 2026-10-23T16:55:28Z: Robinhood Chain TVL $1,137,793,061, Morpho Blue on the chain $609,516,356 (53.6% of the chain), Steakhouse Financial on the chain $537,970,991. LP fees: docs/research/founder-house/vaults/VENUES.md, 7 days, blocks 87,352,064 to 93,292,983 (2026-10-13 to 2026-10-20), public RPC, bounded eth_getLogs: across the 17 eligible tokens Uniswap v3 plus v4 moved $488.40M and paid $623.9k in LP fees (pool fee field times volume, hook skims excluded). Holders: docs/research/founder-house/PLATFORM-TRUTH.md, Blockscout 2026-10-16: NVDA 189,012, SPCX 114,222; about half of top-10 supply sits in AMM pools. No total addressable market is computed: every figure is a measured count, a read of TVL or a measured weekly flow. The loan side is the new part: Morpho Blue holds more than half of the chain's TVL, and a Stock Token posted there earns nothing.
+LP fees: docs/research/founder-house/vaults/VENUES.md, 7 days, blocks 87,352,064 to 93,292,983 (2026-10-13 to 2026-10-20), public RPC, bounded eth_getLogs: across the 17 eligible tokens Uniswap v3 plus v4 moved $488.40M and paid $623.9k in LP fees (pool fee field times volume, hook skims excluded). Annualised: $623.9k x 52 = $32.44M, so "about $32M a year" is one week at the same rate, not a forecast. Holders: docs/research/founder-house/PLATFORM-TRUTH.md, Blockscout 2026-10-16: NVDA 189,012, SPCX 114,222; about half of top-10 supply sits in AMM pools. No total addressable market is computed: every figure is a measured count or a measured weekly flow; the annualised figure is arithmetic on the weekly one.
 -->
-  <h2 class="v" style="font-size:76px;max-width:1640px">Robinhood Chain holds $1.14B, and Morpho Blue holds $609.5M of it.</h2>
-  <div style="margin-top:44px;border-top:1px solid var(--hairline)">
-    <div style="display:grid;grid-template-columns:440px 1000px 256px;height:112px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div><div class="t" style="font-size:32px">Chain TVL</div><div class="p" style="font-size:23px;margin-top:4px">DefiLlama, 2026-10-23 16:55 UTC</div></div>
-      <div style="position:relative;height:52px"><i style="position:absolute;left:0;top:0;height:52px;width:1000px;background:var(--bar);border-radius:3px"></i></div>
-      <div class="fig" style="font-size:56px;text-align:right">$1.14B</div>
+  <h2 class="v" style="font-size:76px;max-width:1640px">Stock Token pools paid liquidity providers $623.9k in a week. That is about $32M a year.</h2>
+  <div style="position:relative;height:330px;margin-top:52px">
+    <svg class="arw" width="1696" height="330" viewBox="0 0 1696 330" style="left:0;top:0;fill:none" aria-hidden="true">
+      <defs><marker id="am" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 L9 5 L1 9" style="stroke:var(--mute);fill:none;stroke-width:1.8"/></marker></defs>
+      <path d="M430 110 H488" style="stroke:var(--mute);stroke-width:3" marker-end="url(#am)"/>
+      <path d="M944 110 H1002" style="stroke:var(--mute);stroke-width:3" marker-end="url(#am)"/>
+      <path d="M1386 110 H1444" style="stroke:var(--mute);stroke-width:3" marker-end="url(#am)"/>
+    </svg>
+    <div class="node" style="left:0;top:0;width:424px;height:220px;flex-direction:column;align-items:flex-start;justify-content:center;gap:14px">
+      <div style="display:flex"><img class="tk" src="img/tokens/PLTR.png" alt="PLTR" style="width:54px;height:54px"><img class="tk" src="img/tokens/AAPL.png" alt="AAPL" style="width:54px;height:54px;margin-left:-12px"><img class="tk" src="img/tokens/NVDA.png" alt="NVDA" style="width:54px;height:54px;margin-left:-12px"><img class="tk" src="img/tokens/GOOGL.png" alt="GOOGL" style="width:54px;height:54px;margin-left:-12px"><img class="tk" src="img/tokens/TSLA.png" alt="TSLA" style="width:54px;height:54px;margin-left:-12px"><img class="tk" src="img/tokens/META.png" alt="META" style="width:54px;height:54px;margin-left:-12px"></div>
+      <div><div class="t">17 Stock Tokens</div><div class="s">Uniswap v3 and v4 pools</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:440px 1000px 256px;height:112px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div><div class="t" style="font-size:32px">Morpho Blue on the chain</div><div class="p" style="font-size:23px;margin-top:4px">53.6% of the chain</div></div>
-      <div style="position:relative;height:52px"><i style="position:absolute;left:0;top:0;height:52px;width:536px;background:var(--text);border-radius:3px"></i></div>
-      <div class="fig" style="font-size:56px;text-align:right">$609.5M</div>
-    </div>
-    <div style="display:grid;grid-template-columns:440px 1000px 256px;height:112px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div><div class="t" style="font-size:32px">Steakhouse, a curator</div><div class="p" style="font-size:23px;margin-top:4px">runs this much of Morpho Blue</div></div>
-      <div style="position:relative;height:52px"><i style="position:absolute;left:0;top:0;height:52px;width:473px;background:var(--border);border-radius:3px"></i></div>
-      <div class="fig" style="font-size:56px;text-align:right">$538.0M</div>
-    </div>
+    <div class="node" style="left:496px;top:0;width:442px;height:220px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px"><div class="fig" style="font-size:72px;letter-spacing:-.03em">$488.40M</div><div class="s" style="margin-top:0">traded in 7 days</div></div>
+    <div class="node" style="left:1010px;top:0;width:370px;height:220px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px"><div class="fig" style="font-size:72px;letter-spacing:-.03em">$623.9k</div><div class="s" style="margin-top:0">paid to LPs in 7 days</div></div>
+    <div class="node" style="left:1452px;top:0;width:244px;height:220px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;background:transparent;border-style:dashed"><div class="fig" style="font-size:72px;letter-spacing:-.03em">$32M</div><div class="s" style="margin-top:0">a year</div></div>
+    <div class="p" style="position:absolute;left:1010px;width:686px;top:242px;font-size:24px;line-height:1.3">One week at the same rate, times 52. Blocks 87,352,064 to 93,292,983.</div>
   </div>
-  <div style="display:grid;grid-template-columns:440px 1fr;align-items:center;margin-top:34px">
-    <div class="fig" style="font-size:88px;letter-spacing:-.03em">$623.9k</div>
-    <div><div class="t" style="font-size:32px">Paid to LPs in 7 days</div><div class="p" style="font-size:26px;margin-top:4px">on $488.40M traded on the 17 vault tokens' Uniswap pools.</div></div>
+  <div style="display:grid;grid-template-columns:auto 1fr;column-gap:34px;align-items:center;margin-top:40px;border-top:1px solid var(--hairline);padding-top:28px">
+    <img class="tk" src="img/tokens/NVDA.png" alt="NVDA" style="width:104px;height:104px">
+    <div><div class="fig" style="font-size:72px;letter-spacing:-.03em">189,012 <span style="font-size:34px;color:var(--soft);font-weight:400;letter-spacing:-.01em">wallets hold NVDA on the chain</span></div><div class="p" style="font-size:24px;margin-top:10px">About half of the top ten tokens' supply already sits in AMM pools. Blockscout, 2026-10-16.</div></div>
   </div>
-  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>189,012 wallets hold NVDA,</b> and about half of the top ten tokens' supply already sits in AMM pools.</p>
-  <div class="src">Source: cdata llama chain robinhood, 2026-10-23 16:55 UTC. PLATFORM-TRUTH.md (Blockscout, 2026-10-16). vaults/VENUES.md (2026-10-13 to 2026-10-20).</div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>The fee flow is measured, and the loan rail on top of it is new.</b></p>
+  <div class="src">Source: docs/research/founder-house/vaults/VENUES.md (2026-10-13 to 2026-10-20), annualised by 52. PLATFORM-TRUTH.md (Blockscout, 2026-10-16).</div>
 </section>
 
-<!-- 5 TRACTION -->
+<!-- 10 TRACTION -->
 <section class="slide" data-t="Traction">
 <!-- notes:
-Shipped items, each checkable. App: https://uptick-fi.pages.dev, vault list from web/lib/vault-universe.json (regenerated 2026-10-23: 17 vaults; 3 open, 9 reduced, 5 closed). /talk returned HTTP 200 and the Worker /talk/count returned {"count":0} on 2026-10-23: the page is live, the interview count starts at zero and moves only when a person answers with a handle (gtm/uptick/EVIDENCE.md). Evidence API and MCP: https://uptick-evidence.earn-shield-alerts.workers.dev (api/src/mcp.ts; tools list_vaults, get_vault_evidence, prepare_deposit, prepare_withdraw); a closed vault returns its gate reason. Security: contracts/SECURITY.md and the four reports in contracts/; round 4 verdict SHIP, no Critical, High or Medium, 141 security tests; contracts final, creation-code hash pinned (SECURITY.md Bytecode size). Outreach: gtm/uptick/PIPELINE.md holds 50 rows at stage queued: 26 holders and LPs and 18 ecosystem projects (gtm/uptick/TARGETS.md) plus 6 investors (docs/research/founder-house/INVESTOR-OUTREACH-2026-10-21.md); nothing in the Sent column yet, so the slide says outreach starts this week. No deposit, user or TVL figure appears anywhere in the deck because none exists to cite. Loan flow row: scripts/fork-demo.sh and docs/FORK-DEMO.md (fork block 96051421, real Morpho Blue singleton 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010, steps 10 to 20). App row: web/app/check, web/components/earn-borrow.tsx, web/components/your-loan.tsx. Agent API row: nine tools in api/src/mcp.ts (list_vaults, get_vault_evidence, scan_wallet, prepare_deposit, prepare_withdraw, get_collateral_terms, check_loan_health, prepare_earn_and_borrow, prepare_make_safer) and POST /alerts/subscribe. Security row: docs/facts.json (412 tests, 141 security, six reports in contracts/).
+Shipped and checkable. Left, a real 2x capture of https://uptick-fi.pages.dev/vaults on 2026-10-24: the vault list read from Robinhood Chain, each row with price, kept APR bar against the -20% floor, fees and door (Open takes any amount, Reduced up to $25,000 a deposit). Right, the nine tool names served by the evidence API and MCP endpoint https://uptick-evidence.earn-shield-alerts.workers.dev (api/src/mcp.ts): list_vaults, get_vault_evidence, scan_wallet, prepare_deposit, prepare_withdraw, get_collateral_terms, check_loan_health, prepare_earn_and_borrow, prepare_make_safer; a closed vault returns its gate reason, and POST /alerts/subscribe adds loan alerts. The Morpho market on each open vault share does not exist on mainnet yet; no deposit, user or TVL figure appears anywhere in the deck because none exists to cite (ledger).
 -->
-  <h2 class="v" style="font-size:76px;max-width:1640px">Reviewed and launching. Outreach to 50 named people starts this week.</h2>
-  <div style="display:grid;grid-template-columns:840px 780px;column-gap:76px;margin-top:48px;align-items:start">
-    <div class="led">
-      <div style="display:grid;grid-template-columns:190px 1fr;align-items:center;padding:20px 0"><div class="fig" style="font-size:64px">17</div><div class="p" style="color:var(--text);font-size:27px;line-height:1.3">vaults in the app with their doors, /check for any address, Earn and borrow, Your loan</div></div>
-      <div style="display:grid;grid-template-columns:190px 1fr;align-items:center;padding:20px 0"><div class="fig" style="font-size:64px">412</div><div class="p" style="color:var(--text);font-size:27px;line-height:1.3">tests, 141 of them security tests. Six review reports, the vault rounds closed at SHIP.</div></div>
-      <div style="display:grid;grid-template-columns:190px 1fr;align-items:center;padding:20px 0"><div class="fig" style="font-size:64px">9</div><div class="p" style="color:var(--text);font-size:27px;line-height:1.3">agent tools on one MCP endpoint, with loan alerts. A closed vault returns its reason.</div></div>
-      <div style="display:grid;grid-template-columns:190px 1fr;align-items:center;padding:20px 0"><div class="fig" style="font-size:64px">50</div><div class="p" style="color:var(--text);font-size:27px;line-height:1.3">named people queued: 26 holders and LPs, 18 projects and 6 investors, each message ready to send. Interviews are open at uptick-fi.pages.dev/talk.</div></div>
+  <h2 class="v" style="font-size:76px;max-width:1640px">The app reads the chain today: 17 vaults priced, nine tools an agent can call.</h2>
+  <div style="display:grid;grid-template-columns:1100px 520px;column-gap:76px;margin-top:40px;align-items:start">
+    <div>
+      <figure class="shot"><img src="img/vault-list.png" width="1100" height="550" alt="The vault list: PLTR, AAPL and GOOGL open with their kept APR, SPY, USO and QQQ reduced"></figure>
+      <p class="p" style="font-size:24px;margin-top:14px">uptick-fi.pages.dev/vaults: price from Chainlink, kept APR against the floor, fees, door.</p>
     </div>
     <div>
-      <figure class="shot" style="width:780px;height:490px"><img src="img/vaults-list.png" width="780" alt="The live vault list: PLTR, AAPL and GOOGL open, the rest reduced, each with kept APR and fees"></figure>
-      <p class="p" style="font-size:24px;margin-top:14px">scripts/fork-demo.sh runs deposit, borrow at 62.5%, a 3% push, a stale feed and a liquidation on a fork of the real Morpho Blue.</p>
+      <div class="t" style="font-size:30px">One MCP endpoint for agents</div>
+      <div class="term" style="margin-top:14px;padding:16px 24px;font-size:24px;line-height:1.42">list_vaults
+get_vault_evidence
+scan_wallet
+prepare_deposit
+prepare_withdraw
+get_collateral_terms
+check_loan_health
+prepare_earn_and_borrow
+prepare_make_safer</div>
+      <p class="p" style="font-size:24px;margin-top:14px">A closed vault answers with its reason.</p>
     </div>
   </div>
-  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>The product is built end to end.</b> The first 50 conversations are queued.</p>
-  <div class="src">Source: code on the integration branch, docs/FORK-DEMO.md, docs/facts.json. contracts/SECURITY.md. gtm/uptick/PIPELINE.md, TARGETS.md, EVIDENCE.md.</div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>A vault list, a wallet scan, a loan check and an agent endpoint,</b> all reading Robinhood Chain.</p>
+  <div class="src">Source: uptick-fi.pages.dev/vaults, captured 2026-10-24. api/src/mcp.ts. web/lib/vault-universe.json.</div>
 </section>
 
 <!-- 11 TEAM -->
 <section class="slide" data-t="Team">
 <!-- notes:
-Team: one builder. Kamal (GitHub kamalbuilds) wrote the contracts, keeper, replay engine, web app and evidence API in this repository (WIN-PATH.md: one author per repo). Contracts: StockVault and StockVaultV4, ERC-4626, 412 tests (141 in the security suite) and the 50-row mutation table in contracts/SECURITY.md. Replay engine: keeper/replay and keeper/src/evidence.ts, 3,059,881 swaps over 17 vault pools (web/lib/vault-universe.json). App: web/, 17 vault pages. Agent API: api/src/mcp.ts, nine tools.
+Team: one builder. Kamal (GitHub kamalbuilds, X @kamalbuilds) wrote the contracts, keeper, replay engine, web app and evidence API in this repository (WIN-PATH.md: one author per repo). The diagram is the repository's data flow: keeper/replay measures every pool and writes web/lib/vault-universe.json (the door and the kept APR of each vault); web/ and api/src/mcp.ts both read it; contracts/src (StockVault, StockVaultV4, UptickShareOracle, UptickRouter) deposit into the Uniswap pools and post shares to Morpho Blue; scripts/fork-demo.sh runs the contracts against the real Morpho Blue singleton.
 -->
-  <h2 class="v" style="font-size:76px;max-width:1640px">One founder built the contracts, the replay engine, the loan flow, the app and the agent API.</h2>
-  <div style="display:flex;align-items:center;gap:28px;margin-top:56px;border-top:1px solid var(--hairline);padding-top:30px">
-    <img src="img/uptick-mark.svg" width="88" height="88" alt="Uptick mark" style="border-radius:20px">
-    <div class="t" style="font-size:56px;font-weight:500;letter-spacing:-.02em">Kamal</div>
-    <div class="p" style="font-size:30px;margin-left:12px">Founder. github.com/kamalbuilds</div>
+  <h2 class="v" style="font-size:76px;max-width:1640px">One founder built every layer, from the replay to the loan.</h2>
+  <div style="position:relative;height:470px;margin-top:44px">
+    <svg class="arw" width="1696" height="470" viewBox="0 0 1696 470" style="left:0;top:0;fill:none" aria-hidden="true">
+      <defs><marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 L9 5 L1 9" style="stroke:var(--mute);fill:none;stroke-width:1.8"/></marker></defs>
+      <path d="M400 70 H494" style="stroke:var(--mute);stroke-width:3" marker-end="url(#at)"/>
+      <path d="M914 70 H1008" style="stroke:var(--mute);stroke-width:3" marker-end="url(#at)"/>
+      <path d="M914 70 H960 V222 H1008" style="stroke:var(--mute);stroke-width:3" marker-end="url(#at)"/>
+      <path d="M400 395 H494" style="stroke:var(--mute);stroke-width:3" marker-end="url(#at)"/>
+      <path d="M914 395 H1008" style="stroke:var(--mute);stroke-width:3" marker-end="url(#at)"/>
+    </svg>
+    <div class="node" style="left:0;top:0;width:394px;height:140px"><div><div class="t">Replay engine</div><div class="s">keeper/replay</div></div></div>
+    <div class="node" style="left:502px;top:0;width:406px;height:140px"><div><div class="t">Door and kept APR</div><div class="s">web/lib/vault-universe.json</div></div></div>
+    <div class="node" style="left:1016px;top:0;width:340px;height:140px"><div><div class="t">Web app</div><div class="s">web/</div></div></div>
+    <div class="node" style="left:1016px;top:152px;width:340px;height:140px"><div><div class="t">Agent API</div><div class="s">api/src/mcp.ts</div></div></div>
+    <div class="node" style="left:0;top:330px;width:394px;height:140px"><img src="img/uptick-mark.svg" width="52" height="52" alt="" style="border-radius:12px;flex:none"><div><div class="t">Vault contracts</div><div class="s">contracts/src</div></div></div>
+    <div class="node" style="left:502px;top:330px;width:406px;height:140px"><div><div class="t">Uniswap v3 and v4</div><div class="s">the pools a vault fills</div></div></div>
+    <div class="node" style="left:1016px;top:330px;width:340px;height:140px"><img class="tk" src="img/tokens/USDG.png" alt="USDG" style="width:52px;height:52px"><div><div class="t">Morpho Blue</div><div class="s">the loan market</div></div></div>
+    <div style="position:absolute;left:1420px;top:0;width:276px"><div class="v" style="font-size:72px;line-height:1.0">Kamal</div><div class="p" style="font-size:26px;margin-top:14px;color:var(--soft)">Founder, blockchain developer</div><div class="p" style="font-size:24px;margin-top:22px;line-height:1.4">github.com/kamalbuilds<br>@kamalbuilds<br>@uptickfi</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(5,316px);column-gap:29px;margin-top:44px">
-    <div class="panel" style="padding:26px 26px 28px;min-height:360px"><div class="t" style="font-size:32px">Contracts</div><div class="fig" style="font-size:72px;margin-top:30px">412</div><div class="p" style="font-size:24px;margin-top:14px">tests, 141 of them security tests, 50 mutation checks. StockVault and StockVaultV4, ERC-4626.</div></div>
-    <div class="panel" style="padding:26px 26px 28px;min-height:360px"><div class="t" style="font-size:32px">Replay engine</div><div class="fig" style="font-size:54px;margin-top:48px">3,059,881</div><div class="p" style="font-size:24px;margin-top:14px">swaps across 17 vault pools.</div></div>
-    <div class="panel" style="padding:26px 26px 28px;min-height:360px"><div class="t" style="font-size:32px">Loan flow</div><div class="fig" style="font-size:34px;line-height:1.15;margin-top:50px">UptickShare<wbr>Oracle</div><div class="p" style="font-size:24px;margin-top:14px">the Morpho Blue market flow and scripts/fork-demo.sh.</div></div>
-    <div class="panel" style="padding:26px 26px 28px;min-height:360px"><div class="t" style="font-size:32px">App</div><div class="fig" style="font-size:72px;margin-top:30px">17</div><div class="p" style="font-size:24px;margin-top:14px">vault pages, /check, Earn and borrow, Your loan.</div></div>
-    <div class="panel" style="padding:26px 26px 28px;min-height:360px"><div class="t" style="font-size:32px">Agent API</div><div class="fig" style="font-size:72px;margin-top:30px">9</div><div class="p" style="font-size:24px;margin-top:14px">tools on one MCP endpoint.</div></div>
-  </div>
-  <div class="src">Source: this repository. contracts/SECURITY.md, web/lib/vault-universe.json, api/src/mcp.ts.</div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:32px;line-height:1.3;color:var(--soft)"><b>One repository, one author,</b> from the measurement of the pool to the loan against the share.</p>
+  <div class="src">Source: this repository. keeper/replay, contracts/src, web/, api/src/mcp.ts, scripts/fork-demo.sh.</div>
 </section>
 
 <!-- 12 ASK -->
 <section class="slide" data-t="Ask">
 <!-- notes:
-Raise size and 12-month target are the founder's ask and goal (set 2026-10-21), not measured figures. The target is tied to the caps: the 12 launching vaults hold at most $592,359 (web/lib/vault-universe.json depositCapUsd), and a cap is the largest vault holding 20% of its pool's in-range liquidity (keeper/src/universe.ts), so $50M of Stock Tokens in vaults needs in-range pool depth of about $200M across the vaulted pools (50M x 4); the 17 eligible pools hold $8.2M in range today (keeper/data/universe.json pool.depth_usd_5pct), which is why the raise buys vaults on more tokens and pools and the caps rise with depth. The supporting items come from the repository's own build and outreach files: first mainnet vault deposits (contracts/script/DeployAll.s.sol, docs/submission/MAINNET-FUNDING.md), the v4 position adapter (VENUES.md build item 1), holder LOIs and integration LOIs (gtm/uptick/EVIDENCE.md, LOI-TEMPLATES.md, INTEGRATIONS.md). Lenders: Zona (@zona_io, DataLust) is the first call, accepting ERC-4626 vault shares as collateral (gtm/uptick/TARGETS.md group B row 1). Curator: Steakhouse Financial (TARGETS.md row 7, INTEGRATIONS.md), which runs $537,970,991 on the chain (cdata llama chain robinhood, 2026-10-23T16:55:28Z), for a Morpho market on an Uptick share. The Morpho market on each open share is the new 12-month item; the fork run (docs/FORK-DEMO.md) shows the flow works against the real singleton. Closing line: the app's home sentence.
+Raise size and 12-month target are the founder's ask and goal (set 2026-10-21), not measured figures. The target is tied to the caps: the 12 launching vaults hold at most $592,359 (web/lib/vault-universe.json depositCapUsd), and a cap is the largest vault holding 20% of its pool's in-range liquidity (keeper/src/universe.ts), so $50M of Stock Tokens in vaults needs in-range pool depth of about $200M across the vaulted pools (50M x 4); the 17 eligible pools hold $8.2M in range today (keeper/data/universe.json pool.depth_usd_5pct), which is why the raise buys vaults on more tokens and pools and the caps rise with depth. The $32M a year anchor is the Market slide: $623.9k of LP fees in 7 days times 52 (VENUES.md), one week at the same rate, not a forecast. The supporting items come from the repository's own build and outreach files: first mainnet vault deposits (contracts/script/DeployAll.s.sol, docs/submission/MAINNET-FUNDING.md), the v4 position adapter (VENUES.md build item 1), holder LOIs and integration LOIs (gtm/uptick/EVIDENCE.md, LOI-TEMPLATES.md, INTEGRATIONS.md). Lenders: Zona (@zona_io, DataLust) is the first call (gtm/uptick/TARGETS.md group B row 1). Curator: Steakhouse Financial (TARGETS.md row 7, INTEGRATIONS.md), which runs $537,970,991 on the chain (cdata llama chain robinhood, 2026-10-23T16:55:28Z). The staircase is the step of the mark: three stops, each one higher than the last. Closing line: the app's home sentence.
 -->
   <h2 class="v" style="font-size:76px;max-width:1640px">We are raising $2M to put every Stock Token on Robinhood Chain to work.</h2>
-  <div style="margin-top:40px;border-top:1px solid var(--hairline)">
-    <div style="display:grid;grid-template-columns:440px 1000px 256px;height:92px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div class="t" style="font-size:30px">Launch caps, 12 vaults</div>
-      <div style="position:relative;height:44px"><i style="position:absolute;left:0;top:0;height:44px;width:13px;background:var(--text);border-radius:3px"></i></div>
-      <div class="fig" style="font-size:44px;text-align:right">$592,359</div>
+  <div style="position:relative;height:560px;margin-top:28px">
+    <svg class="stp" width="1696" height="560" viewBox="0 0 1696 560" style="left:0;top:0;fill:none" aria-hidden="true">
+      <path d="M0 250 H560 V150 H1128 V50 H1696" style="stroke:var(--text);stroke-width:5;stroke-linejoin:round"/>
+      <circle cx="0" cy="250" r="9" style="fill:var(--text)"/><circle cx="568" cy="150" r="9" style="fill:var(--text)"/><circle cx="1136" cy="50" r="9" style="fill:var(--text)"/>
+    </svg>
+    <div style="position:absolute;left:0;top:278px;width:520px">
+      <div style="display:flex;align-items:center"><img class="tk" src="img/tokens/PLTR.png" alt="PLTR" style="width:46px;height:46px"><img class="tk" src="img/tokens/AAPL.png" alt="AAPL" style="width:46px;height:46px;margin-left:-10px"><img class="tk" src="img/tokens/GOOGL.png" alt="GOOGL" style="width:46px;height:46px;margin-left:-10px"><span class="p" style="font-size:24px;margin-left:16px">3 open vaults</span></div>
+      <div class="fig" style="font-size:80px;letter-spacing:-.03em;margin-top:14px">$592,359</div>
+      <div class="p" style="font-size:26px;margin-top:10px;color:var(--soft)">launch caps across the 12 vaults</div>
     </div>
-    <div style="display:grid;grid-template-columns:440px 1000px 256px;height:92px;align-items:center;border-bottom:1px solid var(--hairline)">
-      <div class="t" style="font-size:30px">Earning in 12 months</div>
-      <div style="position:relative;height:44px"><i style="position:absolute;left:0;top:0;height:44px;width:1000px;background:transparent;border:2px dashed var(--bar);border-radius:3px"></i></div>
-      <div class="fig" style="font-size:44px;text-align:right">$50M</div>
+    <div style="position:absolute;left:568px;top:178px;width:520px">
+      <div style="display:flex;align-items:center"><img src="img/uptick-mark.svg" width="46" height="46" alt="" style="border-radius:11px"><span class="p" style="font-size:24px;margin-left:16px">This round</span></div>
+      <div class="fig" style="font-size:80px;letter-spacing:-.03em;margin-top:14px">$2M</div>
+      <div class="p" style="font-size:26px;margin-top:10px;color:var(--soft)">A vault for every Stock Token the day it lists, on v3 and v4 pools. An external audit. Two engineers on the keeper and risk engine.</div>
+    </div>
+    <div style="position:absolute;left:1136px;top:78px;width:560px">
+      <div style="display:flex;align-items:center"><img class="tk" src="img/tokens/USDG.png" alt="USDG" style="width:46px;height:46px"><span class="p" style="font-size:24px;margin-left:16px">In 12 months</span></div>
+      <div class="fig" style="font-size:80px;letter-spacing:-.03em;margin-top:14px">$50M</div>
+      <div class="p" style="font-size:26px;margin-top:10px;color:var(--soft)">of Stock Tokens earning, caps rising as pools deepen, a Morpho market on every open vault share. The chain's pools paid LPs about $32M a year.</div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1.3fr 1fr;column-gap:56px;margin-top:34px">
-    <div><div class="t" style="font-size:36px">$2M pre-seed</div><div class="p" style="color:var(--text);font-size:26px;margin-top:10px">A vault for every Stock Token the day it lists, on v3 and v4 pools, with an external audit and two engineers on the keeper and risk engine.</div></div>
-    <div><div class="t" style="font-size:36px">In 12 months</div><div class="p" style="color:var(--text);font-size:26px;margin-top:10px">Every launching vault at its cap, with caps rising as pools deepen, and a Morpho market on every open vault share so a holder borrows USDG against the token that is earning.</div></div>
-    <div><div class="t" style="font-size:36px">From this room</div><div class="p" style="color:var(--text);font-size:26px;margin-top:10px">Holders who will size a first deposit, a curator such as Steakhouse and a lender such as Zona for the first share market, and the wallets that carry the kept APR.</div></div>
-  </div>
-  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:36px;line-height:1.3;color:var(--soft)">Uptick puts the Stock Token to work, and lets you borrow against it while it works.</p>
-  <div class="src">uptick-fi.pages.dev, @uptickfi, github.com/kamalbuilds.</div>
+  <p class="p" style="position:absolute;left:112px;right:112px;bottom:96px;font-size:34px;line-height:1.3;color:var(--soft)"><b>uptick-fi.pages.dev</b> &nbsp;&nbsp; @uptickfi &nbsp;&nbsp; github.com/kamalbuilds</p>
+  <div class="src">Source: web/lib/vault-universe.json (caps). docs/research/founder-house/vaults/VENUES.md ($623.9k in 7 days, times 52).</div>
 </section>
 
 <!-- A0 APPENDIX -->
