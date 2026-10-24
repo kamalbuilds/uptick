@@ -333,7 +333,7 @@ export function agentInstruction(p: ExecutionProposal): string {
     `Leverage: ${p.leverage.suggested}x ${p.leverage.margin_mode} (the market allows up to ${p.leverage.max}x), about ${p.margin_usdg} USDG of margin`,
     `Valid until: ${p.valid_until} (the book was read at ${p.market_data_at}). After that, ask Uptick for a new plan before placing.`,
     `Exit by: ${p.exit_by}. Check the position every few hours and close by ${p.exit_by} with a reduce-only buy of ${p.exit.size} ${sym}.`,
-    `Estimated: round trip slippage ${fmt(c.slippage_bp, "bp")}, fees ${fmt(c.fees_bp, "bp")}, funding ${c.funding_direction ?? "n/a"} ${fmt(c.funding_bp, "bp")}, margin interest ${c.margin_borrow_bp} bp, liquidation near ${p.estimated_liquidation_price}.`,
+    `Estimated: round trip slippage ${fmt(c.slippage_bp, "bp")}, fees ${fmt(c.fees_bp, "bp")}, funding ${c.funding_direction ?? "n/a"} ${fmt(c.funding_bp, "bp")}, margin interest ${c.margin_borrow_bp} bp, liquidation near ${p.estimated_liquidation_price.toFixed((p.order.limit_price.split(".")[1] ?? "").length)}.`,
     ``,
     `Paper (run from the kit folder, no key needed; use reset in place of init if a paper account already exists):`,
     `python3 scripts/paper.py init --collateral ${p.margin_usdg}${tier}`,

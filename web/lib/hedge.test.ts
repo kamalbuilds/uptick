@@ -483,6 +483,7 @@ test("the agent instruction names market, side, size, leverage, limit and the ex
     `Size: ${x.size.base} NVDA`,
     `limit sell at ${x.order.limit_price} or higher`,
     `Leverage: 5x cross (the market allows up to 20x)`,
+    `liquidation near ${x.estimated_liquidation_price.toFixed(2)}.`,
     `Valid until: ${x.valid_until}`,
     `Exit by: ${x.exit_by}. Check the position every few hours and close by ${x.exit_by}`,
     "Paper trade it first",
