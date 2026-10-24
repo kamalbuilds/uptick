@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptick | How the replay decides every vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,500&display=swap" rel="stylesheet">
+<style>
+:root{--canvas:#0a0b0c;--panel:#16181a;--raised:#1f2124;--hairline:#2a2e31;--border:#42494d;--text:#f4f5f5;--mute:#919fa6;--soft:#c3cbd0;--bar:#9aa6ad;--kept:#1fd16b;--kept-dim:#0f3d24;--loss:#ec5e2a;--loss-dim:#3a1d12;--caution:#e8b84a;
+--display:Literata,Georgia,serif;--sans:"Hanken Grotesk",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--canvas);color:var(--text);font-family:var(--sans)}
+.slide{width:1920px;height:1080px;padding:52px 88px 36px;display:flex;flex-direction:column;gap:24px;margin:0 auto}
+h1{font-family:var(--display);font-weight:500;font-size:54px;line-height:1.08;letter-spacing:-.5px}
+.lede{font-size:26px;line-height:1.35;color:var(--soft);max-width:1500px;margin-top:12px}
+.flow{display:grid;grid-template-columns:1fr 34px 1fr 34px 1.15fr 34px 1fr 34px 1.25fr;align-items:stretch}
+.step{background:var(--panel);border:1px solid var(--hairline);border-radius:14px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px}
+.n{font-size:20px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.t{font-size:28px;font-weight:600;line-height:1.15}
+.d{font-size:22px;line-height:1.35;color:var(--soft)}
+.big{font-family:var(--display);font-size:46px;line-height:1;color:var(--text)}
+.arrow{display:flex;align-items:center;justify-content:center;color:var(--border);font-size:30px}
+.ln{display:flex;gap:10px;font-size:22px;line-height:1.3}
+.ln b{font-weight:600;min-width:20px}
+.plus{color:var(--kept)}.minus{color:var(--loss)}
+.eq{border-top:1px solid var(--border);padding-top:8px;font-weight:600;font-size:23px}
+.door{display:flex;flex-direction:column;gap:9px}
+.dr{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:baseline;font-size:21px;line-height:1.3}
+.chip{display:inline-block;border-radius:999px;padding:3px 12px;font-size:19px;font-weight:600;text-align:center}
+.open{background:var(--kept-dim);color:var(--kept)}.reduced{background:#3b3014;color:var(--caution)}.closed{background:var(--raised);color:var(--bar)}
+.row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px}
+.card{border-top:2px solid var(--border);padding-top:14px}
+.card .k{font-size:21px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.card .v{font-size:26px;line-height:1.3;margin-top:6px}
+.proof{display:grid;grid-template-columns:1.6fr 1fr;gap:26px;margin-top:auto}
+.pbox{background:var(--panel);border:1px solid var(--hairline);border-radius:14px;padding:20px 24px}
+.pt{font-size:23px;color:var(--soft);margin-bottom:12px}
+.stack{display:flex;height:58px;border-radius:8px;overflow:hidden;font-size:21px;font-weight:600}
+.stack div{display:flex;align-items:center;padding:0 12px;white-space:nowrap}
+.legend{display:flex;gap:26px;margin-top:10px;font-size:20px;color:var(--soft)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.spcx{display:flex;align-items:center;gap:22px}
+.spcx .fig{font-family:var(--display);font-size:40px}
+.src{font-size:15px;color:var(--mute);line-height:1.4}
+</style>
+</head>
+<body>
+<section class="slide">
+  <div>
+    <h1>The replay: last month's real trades, with a vault in every pool.</h1>
+    <p class="lede">What a vault would have kept, not the fee rate a pool advertises, decides whether it opens, which pool it uses, how wide it sits and how big it can grow.</p>
+  </div>
+
+  <div class="flow">
+    <div class="step">
+      <div class="n">1 &middot; The tape</div>
+      <div class="big">3,059,881</div>
+      <div class="d">real swaps on the pools of 17 Stock Tokens, over 30 days</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="step">
+      <div class="n">2 &middot; Add a vault</div>
+      <div class="t">Put a pretend vault in each pool</div>
+      <div class="d">Its liquidity sits in a band around the Chainlink price, and it plays the month back swap by swap.</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="step">
+      <div class="n">3 &middot; Score every swap</div>
+      <div class="ln"><b class="plus">+</b><span>its share of the trading fee</span></div>
+      <div class="ln"><b class="minus">&minus;</b><span>loss to fast traders: where the price stood one hour after the trade</span></div>
+      <div class="ln"><b class="minus">&minus;</b><span>cost of moving the band back</span></div>
+      <div class="eq">= what a holder kept</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="step">
+      <div class="n">4 &middot; Fair test</div>
+      <div class="t">Two halves</div>
+      <div class="d">Pick the band on days 1 to 15. Test it on days 16 to 30, which it never saw. The weaker half is the number that counts.</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="step">
+      <div class="n">5 &middot; The door</div>
+      <div class="door">
+        <div class="dr"><span class="chip open">Open</span><span>kept money: PLTR, AAPL, GOOGL</span></div>
+        <div class="dr"><span class="chip reduced">Reduced</span><span>lost a little (0 to &minus;20%): 9 tokens, smaller deposits</span></div>
+        <div class="dr"><span class="chip closed">Closed</span><span>lost more than 20%: SPCX, TSLA, MSTR, GME, CRCL</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card"><div class="k">Which pool</div><div class="v">PLTR's Uniswap v4 pool kept <span class="plus">+7.9%</span>; its v3 pool kept <span class="minus">&minus;18.9%</span>. The vault uses v4.</div></div>
+    <div class="card"><div class="k">How wide the band</div><div class="v">Set per token from the first half: NVDA &plusmn;1.5%, AAPL &plusmn;7.5%.</div></div>
+    <div class="card"><div class="k">How big the vault</div><div class="v">At most 20% of the liquidity near the price, so the vault stays too small to change what the replay measured.</div></div>
+  </div>
+
+  <div class="proof">
+    <div class="pbox">
+      <div class="pt">AAPL: of every $100 in fees the pool paid</div>
+      <div class="stack">
+        <div style="width:17.37%;background:var(--kept);color:#062512">$17.37</div>
+        <div style="width:8.88%;background:var(--bar);color:#111">$8.88</div>
+        <div style="width:73.75%;background:var(--loss);color:#2a0d02">$73.75 went to fast traders</div>
+      </div>
+      <div class="legend"><span><i style="background:var(--kept)"></i>kept by holders</span><span><i style="background:var(--bar)"></i>moving the band</span><span><i style="background:var(--loss)"></i>fast traders</span></div>
+    </div>
+    <div class="pbox spcx">
+      <div>
+        <div class="pt" style="margin:0 0 6px">SPCX: why a high fee rate is not enough</div>
+        <div class="d">The pool paid <b>116.7%</b> a year in fees. Providers kept</div>
+      </div>
+      <div class="fig minus">&minus;195.4%</div>
+      <span class="chip closed" style="font-size:22px;padding:6px 16px">Closed</span>
+    </div>
+  </div>
+  <p class="src">Sources: keeper/replay/replay.py and the replay engine (spikes/stock-vaults/scripts/engine.py: one-hour markout at lines 96 and 237); web/lib/vault-universe.json (doors, weaker halves, 3,059,881 swaps); keeper/data/params.json (bands); scripts/deploy-list.mjs (20% of in-range liquidity); docs/SUBMISSION.md appendix (AAPL split). 30 days to 2026-10-17.</p>
+</section>
+</body>
+</html>
