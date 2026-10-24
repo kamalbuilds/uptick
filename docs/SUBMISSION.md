@@ -1,6 +1,6 @@
 # Uptick: Founder House Singapore submission
 
-Put your Stock Tokens to work. Deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults launch first), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share on Morpho Blue. Uptick shows what you keep before you sign, and opens a vault only where 3,059,881 replayed swaps say it holds up.
+Put your Stock Tokens to work. Deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults open first, AAPL and PLTR live on Robinhood Chain now), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share on Morpho Blue. Uptick shows what you keep before you sign, and opens a vault only where 3,059,881 replayed swaps say it holds up.
 
 App https://uptick-fi.pages.dev. Launch film https://x.com/uptickfi/status/2112531006792360167. Code https://github.com/kamalbuilds. Deck: `deck/index.html`, 12 slides and an appendix, PDF at `deck/uptick-deck.pdf`. Demo: `docs/DEMO-SCRIPT.md`, 90 seconds.
 
@@ -12,7 +12,7 @@ On 22 October 2026 @RobinhoodCrypto announced that Stock Tokens can now serve as
 
 Uptick runs on Robinhood Chain (4663). It tracks 17 Stock Tokens with a Chainlink feed and a USDG pool, replays 3,059,881 swaps over the 30 days to 2026-10-17, and places every vault behind one of three doors. The pools behind the 17 vaults paid liquidity providers $979.3K in fees over the same 30 days, and what an LP keeps after informed traders is a different number. PLTR's Uniswap v4 1% pool paid 126.8% a year in fees in the held-out half and kept +7.9%; its v3 0.3% pool kept -18.9%; SPCX's pool paid 116.7% and kept -195.4%. The venue for each token is the pool that keeps more in its weaker half: PLTR, SPY and USO sit on Uniswap v4, the other 14 on v3.
 
-Open vaults take any amount: PLTR, AAPL and GOOGL kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY and QQQ, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way. Launch caps total $592,359 across the 12 launching vaults, and the performance fee is 0% at launch, so the kept figure on every vault page is what a depositor keeps.
+Open vaults take any amount: PLTR, AAPL and GOOGL kept money in both halves of the replay. Reduced vaults take up to $25,000 a deposit: NVDA, INTC, MU, AMD, META, USO, AMZN, SPY and QQQ, where the weaker half sits between -20% and break-even. Closed vaults take none: GME, MSTR, SPCX, CRCL and TSLA, where the weaker half kept less than the -20% floor. Exit in kind is always open. Both tokens come back, with no oracle, no swap and no pause in the way. AAPL and PLTR are live on Robinhood Chain, each with a $5,000 deposit cap read back from its contract; the other ten launch at their sized caps, and sized launch caps total $592,359 across the 12 vaults. The performance fee is 0% at launch, so the kept figure on every vault page is what a depositor keeps.
 
 ## 3. Deposit the token, earn what survives, borrow against the same share
 

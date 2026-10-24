@@ -3,6 +3,7 @@ import { decodeFunctionData, parseAbi, parseUnits, toFunctionSelector } from "vi
 import worker from "../src/worker";
 import LLMS from "../src/llms";
 import universeData from "../data/vault-universe.json";
+import deployments from "../data/deployments.json";
 
 const ctx = {} as ExecutionContext;
 const RECEIVER = "0x2222222222222222222222222222222222222222";
@@ -207,7 +208,8 @@ describe("GET /llms.txt lists the universe", () => {
   test("every vault's cap and gate state is in the file, and PLTR is on Uniswap v4 with its pool id and PoolManager", () => {
     expect(universeData.vaults.length).toBeGreaterThan(0);
     for (const v of universeData.vaults) {
-      expect(LLMS).toContain(`${v.symbol} $${v.depositCapUsd.toLocaleString("en-US")}`);
+      const cap = (deployments.vaults as Record<string, { capUsd: number }>)[v.symbol]?.capUsd ?? v.depositCapUsd; // a live vault lists the cap it was deployed with
+      expect(LLMS).toContain(`${v.symbol} $${cap.toLocaleString("en-US")}`);
     }
     expect(LLMS).toContain(`PLTR holds its position in the 1% Uniswap v4 pool with id ${pltr.pool}`);
     expect(LLMS).toContain(universeData.poolManager);
