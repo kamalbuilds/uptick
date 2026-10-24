@@ -14,7 +14,7 @@ export const TabsList = ({ className, ...p }: React.ComponentProps<typeof T.List
 export const TabsTrigger = ({ className, ...p }: React.ComponentProps<typeof T.Trigger>) => (
   <T.Trigger
     className={cn(
-      "-mb-px h-10 border-b-2 border-transparent text-[15px] font-medium text-mute transition-colors duration-150 hover:text-fg data-[state=active]:border-fg data-[state=active]:text-fg",
+      "-mb-px h-10 max-lg:h-11 border-b-2 border-transparent text-[15px] font-medium text-mute transition-colors duration-150 hover:text-fg data-[state=active]:border-fg data-[state=active]:text-fg",
       className,
     )}
     {...p}

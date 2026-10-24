@@ -46,7 +46,7 @@ export function PairLogo({ symbol, size = 28 }: { symbol: string; size?: number 
   return (
     <span className="inline-flex shrink-0 items-center" aria-hidden>
       <TokenLogo symbol={symbol} size={size} className="ring-2 ring-canvas" />
-      <TokenLogo symbol="USDG" size={size} className="-ml-2.5 ring-2 ring-canvas" />
+      <TokenLogo symbol="USDG" size={size} className="-ml-2 ring-2 ring-canvas" />
     </span>
   );
 }

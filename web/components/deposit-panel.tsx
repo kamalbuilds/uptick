@@ -346,7 +346,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
           type="button"
           aria-pressed={payWith === mode}
           onClick={() => switchPay(mode)}
-          className={cn("press h-8 rounded-full px-3 text-[13px] font-semibold", side && "flex-1", payWith === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
+          className={cn("touch press h-8 rounded-full px-3 text-[13px] font-semibold", side && "flex-1", payWith === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
         >
           {label}
         </button>
@@ -363,7 +363,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
           aria-pressed={exitKind === mode}
           disabled={busy}
           onClick={() => { setExitKind(mode); setAmount(""); setTx({ phase: "idle" }); }}
-          className={cn("press h-8 rounded-full px-3 text-[13px] font-semibold", side && "flex-1", exitKind === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
+          className={cn("touch press h-8 rounded-full px-3 text-[13px] font-semibold", side && "flex-1", exitKind === mode ? "bg-fg text-canvas" : "text-mute hover:text-fg")}
         >
           {label}
         </button>
@@ -372,7 +372,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
   ) : null;
 
   const amountEl = (
-    <div className={cn("min-w-0", !side && "lg:w-[270px] lg:shrink-0")}>
+    <div className={cn("min-w-0", !side && "max-lg:col-span-2 lg:w-[270px] lg:shrink-0")}>
       <label htmlFor="amount" className="flex items-baseline justify-between text-[13px] leading-5 text-mute">
         <span>{tab === "deposit" ? "To deposit" : inKind ? "Shares to exit" : "To withdraw"}</span>
         {maxIn !== undefined && (
@@ -404,7 +404,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
             disabled={!canFill}
             aria-pressed={activePct === p}
             onClick={() => fill(p)}
-            className={cn("press h-7 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-55", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-panel enabled:hover:text-fg")}
+            className={cn("press h-7 max-lg:h-11 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-55", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-panel enabled:hover:text-fg")}
           >
             {p === 100 ? "Max" : `${p}%`}
           </button>
@@ -535,7 +535,7 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
               {exitEl}
             </div>
             {amountEl}
-            <div className="lg:order-5 lg:shrink-0">{ctaEl}</div>
+            <div className="max-lg:col-span-2 lg:order-5 lg:shrink-0">{ctaEl}</div>
             <div className="col-span-2 lg:order-3 lg:col-auto lg:flex-1">{estimateEl}</div>
             {factsEl}
           </div>

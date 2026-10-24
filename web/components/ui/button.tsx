@@ -12,7 +12,7 @@ const button = cva(
         outline: "border border-line bg-transparent text-fg hover:bg-panel",
         soft: "bg-raised text-fg hover:bg-line/60",
       },
-      size: { md: "h-11 px-6 text-[15px]", lg: "h-12 px-8 text-[15px]", sm: "h-9 px-4 text-[13px]" },
+      size: { md: "h-11 px-6 text-[15px]", lg: "h-12 px-8 text-[15px]", sm: "touch h-9 px-4 text-[13px]" },
     },
     defaultVariants: { variant: "primary", size: "md" },
   },

@@ -164,7 +164,7 @@ function HoldingRow({ r, block, maxUsd }: { r: ScanRow; block: bigint; maxUsd: n
 function MarkStack({ rows, size, max }: { rows: ScanRow[]; size: number; max: number }) {
   return (
     <span className="flex items-center" aria-hidden>
-      {rows.slice(0, max).map((r, i) => <TokenLogo key={r.id} symbol={r.symbol} size={size} className={cn("ring-2 ring-canvas", i > 0 && "-ml-2")} />)}
+      {rows.slice(0, max).map((r, i) => <TokenLogo key={r.id} symbol={r.symbol} size={size} className={cn("ring-2 ring-canvas", i > 0 && "-ml-1.5")} />)}
       {rows.length > max ? <span className="figure ml-2 text-[13px] text-mute">+{rows.length - max}</span> : null}
     </span>
   );
@@ -325,7 +325,7 @@ function NoHoldings({ s, raw }: { s: WalletScan; raw: string }) {
       <div>
         <p className="serif verdict text-[30px] leading-[34px] sm:text-[44px] sm:leading-[48px]">This wallet holds none of the {s.tracked} Stock Tokens.</p>
         <p className="mt-4 max-w-[690px] text-mute">
-          The wallet was read on Robinhood Chain at <a className="-my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>.
+          The wallet was read on Robinhood Chain at <a className="touch -my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>.
           The tokens checked are {VAULTS.map((v) => v.symbol).sort().join(", ")}. A wallet that holds any of them shows here, with what each vault would keep and where a loan opens.
         </p>
         <Button asChild variant="outline" className="mt-6"><Link href="/vaults">See the vaults</Link></Button>
@@ -384,7 +384,7 @@ function Results({ s, raw }: { s: WalletScan; raw: string }) {
             A closed vault takes no deposits. <Term id="inKind">Exit in kind</Term> is never closed. A loan against the vault shares opens with each vault&rsquo;s <Term id="morpho">Morpho Blue</Term> market.
           </p>
           <p className="mt-3 max-w-[690px] text-[13px] leading-5 text-mute">
-            Read from Robinhood Chain in a single call at <a className="-my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>,
+            Read from Robinhood Chain in a single call at <a className="touch -my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>,
             priced by the Chainlink feeds the vaults read. Kept is the weaker 15-day half of the {REPLAY_WINDOW.days}-day replay to {isoDay(REPLAY_WINDOW.end)}, taken on the deposit net of the entry fee.
             It measures past swaps and is not a promise. {LIVE_VAULTS.length ? `${liveSentence(LIVE_VAULTS.map((v) => v.symbol))} The rest are launching, and each row opens its vault page.` : "The vaults are launching, and each row opens its vault page."}
           </p>

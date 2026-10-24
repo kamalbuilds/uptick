@@ -123,7 +123,7 @@ function ActionPanel({ cfg }: { cfg: VaultConfig }) {
   );
 }
 
-const chip = "press h-9 rounded-full border px-4 text-[13px] font-medium";
+const chip = "press h-9 max-lg:h-11 rounded-full border px-4 text-[13px] font-medium";
 
 /** Every eligible vault by what a holder keeps, vaults taking deposits first and the closed ones folded away. A row loads its deposit panel beside the list;
  *  search by ticker or company ("/" jumps to it), filter by pool fee tier. The fee column is the stats API's live figure. */
@@ -206,7 +206,7 @@ export function VaultList() {
           </div>
         ) : (
           <>
-            <p className="mb-8 mt-6 max-w-[690px] text-[13px] leading-5 text-mute [text-wrap:balance]">
+            <p className="mb-8 mt-6 max-w-[690px] text-[13px] leading-5 text-mute max-lg:leading-11 [text-wrap:balance]">
               <Term id="kept" /> is a year of the pool&rsquo;s fees less what leaks, read in the <Term id="worstHalf">weaker half</Term> of a 30-day replay. Each vault is <Term id="open" />, <Term id="reduced" /> or <Term id="closed" />.
             </p>
             <div>
