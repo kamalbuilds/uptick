@@ -59,7 +59,7 @@ export function HedgePlan(p: WalletProps | LoanProps) {
         aria-expanded={open}
         aria-controls={panel}
         onClick={() => setOpen((o) => !o)}
-        className="press -ml-3 inline-flex h-9 items-center gap-2 rounded-full px-3 text-[13px] font-semibold text-mute hover:bg-panel hover:text-fg"
+        className="press -ml-3 inline-flex h-11 items-center lg:h-9 gap-2 rounded-full px-3 text-[13px] font-semibold text-mute hover:bg-panel hover:text-fg"
       >
         {open ? "Hide the hedge plan" : `Hedge ${p.symbol} for the weekend`}
         <CaretDown size={14} weight="bold" aria-hidden className={cn("transition-transform duration-150 ease-out motion-reduce:transition-none", open && "rotate-180")} />

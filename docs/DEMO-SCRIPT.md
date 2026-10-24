@@ -8,7 +8,7 @@ Setup: one browser window, four tabs in order: `/check`, `/vault/pltr`, `/docs/c
 
 ## 0:00 to 0:20 Paste a real holder address, `/check`
 
-Screen: the page "Find your idle Stock Tokens". Paste the holder address and press Find idle tokens. The headline reads "0x92d4...F765 holds $102,325 of Stock Tokens doing nothing. Uptick would put $86,791 of it to work."
+Screen: the page "Find your idle Stock Tokens". Paste the holder address and press Find idle tokens. The headline reads the idle total first and what Uptick can take second, the ticket beside it names the largest vault to open, and the holdings below show a mark, a dollar value and a vault state for each of the 17 tokens.
 Say: "On 22 October Robinhood made Stock Tokens collateral on Morpho and said any app can tap into those markets. Paste any wallet. This one holds a hundred thousand dollars of Stock Tokens that earn nothing. Uptick reads the balances from the chain, prices them with Chainlink, and shows which of the 17 can earn. Twelve can. Five are closed, and the page says why."
 
 ## 0:20 to 0:40 The PLTR vault page
