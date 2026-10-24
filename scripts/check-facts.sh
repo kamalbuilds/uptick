@@ -3,7 +3,7 @@
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 2
-FILES=(README.md docs/SUBMISSION.md docs/DEMO-SCRIPT.md docs/AGENT-DEMO.md deck/index.html deck/handout/index.html web/public/llms.txt web/lib/content.ts)
+FILES=(README.md docs/SUBMISSION.md docs/DEMO-SCRIPT.md docs/AGENT-DEMO.md deck/index.html deck/pitch/index.html deck/handout/index.html web/public/llms.txt web/lib/content.ts)
 # Web copy: every route page. find, not a glob, so a new route is scanned the day it is added.
 while IFS= read -r pg; do FILES+=("$pg"); done < <(find web/app -name page.tsx | sort)
 BANNED=("80 of 80" "46 fork" "5.1M" "54 days" "four review" "fourth ends" "10% of collected" "Live and reviewed" "Closed six" "and 8 more" "and 14 more" "Contracts are final")
@@ -71,6 +71,8 @@ claim() { # label want regex
 claim mcp.count "$(jq -r .mcp.count docs/facts.json)" "\b($NW|[0-9]+) (MCP )?tools([^/]|$)"
 claim reviews.reports_total "$(jq -r .reviews.reports_total docs/facts.json)" "\b($NW|[0-9]+) ((review|security) )?reports?\b|\b($NW|[0-9]+) security reviews\b"
 claim mutations.total "$(jq -r .mutations.total docs/facts.json)" "\b[0-9]+[- ](row )?mutation (checks?|rows?)\b|\b[0-9]+ guards are mutation-tested"
+claim tests.total "$(jq -r .tests.total docs/facts.json)" "\\b[0-9,]+ (contract )?tests\\b"
+claim tests.security "$(jq -r .tests.security docs/facts.json)" "\\b[0-9]+ (of them )?security tests\\b|\\b[0-9]+ security,"
 claim holders.spcx "$(jq -r .holders.spcx docs/facts.json)" "(^|[ (])11[0-9],[0-9]{3}\b"
 # One repo URL.
 REPO="$(jq -r .repo docs/facts.json)"; REPOPATH="${REPO#*hub.com/}"

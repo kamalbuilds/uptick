@@ -228,7 +228,7 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
               disabled={!canFill}
               aria-pressed={activePct === p}
               onClick={() => { const v = shareOfBalance(balance, p); if (v !== undefined) setAmount(formatUnits(v, DECIMALS)); }}
-              className={cn("press h-7 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-55", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-raised enabled:hover:text-fg")}
+              className={cn("press h-7 max-lg:h-11 flex-1 rounded-full border text-[12px] font-semibold disabled:opacity-55", activePct === p ? "border-fg bg-fg text-canvas" : "border-line text-mute enabled:hover:bg-raised enabled:hover:text-fg")}
             >
               {p === 100 ? "Max" : `${p}%`}
             </button>

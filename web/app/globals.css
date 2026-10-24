@@ -56,6 +56,11 @@
   .serif { font-family: var(--font-serif); font-weight: 400; font-optical-sizing: auto; letter-spacing: -0.025em; font-style: normal; text-wrap: balance; }
   .verdict { animation: fade-in 200ms var(--ease-out) both; }
   .term { text-decoration: underline dotted var(--color-mute); text-underline-offset: 4px; }
+  /* A 44px touch target below lg that leaves the element's own size alone: an invisible 44px box centred on it, at least as wide as the element. */
+  @media (max-width: 1023.98px) {
+    .touch { position: relative; }
+    .touch::before { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
+  }
   .press { transition: transform 150ms var(--ease-out), background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out); }
   .press:active { transform: scale(0.97); }
   .row { transition: background-color 150ms var(--ease-out); }

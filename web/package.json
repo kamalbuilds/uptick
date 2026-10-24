@@ -9,7 +9,7 @@
     "start": "next start -p 3000",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test lib/*.test.ts",
-    "sync:deck": "rm -rf public/deck && mkdir -p public/deck && cp -R ../deck/index.html ../deck/img ../deck/uptick-deck.pdf public/deck/"
+    "sync:deck": "rm -rf public/deck && mkdir -p public/deck && cp -R ../deck/index.html ../deck/img ../deck/uptick-deck.pdf public/deck/ && mkdir -p public/deck/pitch && cp ../deck/pitch/index.html ../deck/pitch/uptick-pitch.pdf public/deck/pitch/"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

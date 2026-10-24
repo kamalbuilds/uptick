@@ -31,7 +31,7 @@ export function RealSwap({ symbol, pool }: { symbol: string; pool: string }) {
         <Row k="Transaction">
           <span className="inline-flex items-center gap-3">
             <span title={swap.tx}>{shortAddress(swap.tx)}</span>
-            <a aria-label="Transaction on the explorer" className="-m-2 p-2 text-mute hover:text-fg" href={txUrl(swap.tx)} target="_blank" rel="noreferrer"><ArrowSquareOut size={16} aria-hidden /></a>
+            <a aria-label="Transaction on the explorer" className="touch -m-2 p-2 text-mute hover:text-fg" href={txUrl(swap.tx)} target="_blank" rel="noreferrer"><ArrowSquareOut size={16} aria-hidden /></a>
           </span>
         </Row>
         <Row k="Size">{usd(swap.sizeUsd)}</Row>

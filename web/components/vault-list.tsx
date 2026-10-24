@@ -57,7 +57,7 @@ function Row({ cfg, stats, pending, selected, wide, onSelect }: { cfg: VaultConf
         </button>
         <span className="hidden text-right sm:block"><PriceCell id={cfg.id} /></span>
         <span className="col-start-2 h-8 sm:col-start-auto">
-          <RowBar keep={keep} label={`${cfg.symbol} keeps ${signed(keep)} a year in its worst half`} />
+          <RowBar keep={keep} label={`${cfg.symbol} keeps ${signed(keep)} a year in its weaker half`} />
         </span>
         <span className="text-right text-[17px] font-medium"><Kept value={keep} /></span>
         <span className="hidden text-right text-mute lg:block">
@@ -107,7 +107,7 @@ function ActionPanel({ cfg }: { cfg: VaultConfig }) {
         <div className="mt-4 space-y-1.5">
           <PriceLine id={cfg.id} />
           <p className="text-[13px] leading-5 text-mute">
-            Kept <Kept value={worst} className="font-medium" /> a year in the <Term id="worstHalf">worst half</Term> of the replay.
+            Kept <Kept value={worst} className="font-medium" /> a year in the <Term id="worstHalf">weaker half</Term> of the replay.
           </p>
         </div>
         <div className="mt-5">
@@ -123,7 +123,7 @@ function ActionPanel({ cfg }: { cfg: VaultConfig }) {
   );
 }
 
-const chip = "press h-9 rounded-full border px-4 text-[13px] font-medium";
+const chip = "press h-9 max-lg:h-11 rounded-full border px-4 text-[13px] font-medium";
 
 /** Every eligible vault by what a holder keeps, vaults taking deposits first and the closed ones folded away. A row loads its deposit panel beside the list;
  *  search by ticker or company ("/" jumps to it), filter by pool fee tier. The fee column is the stats API's live figure. */
@@ -206,8 +206,8 @@ export function VaultList() {
           </div>
         ) : (
           <>
-            <p className="mb-8 mt-6 max-w-[690px] text-[13px] leading-5 text-mute [text-wrap:balance]">
-              <Term id="kept" /> is a year of the pool&rsquo;s fees less what leaks, read in the <Term id="worstHalf">worst half</Term> of a 30-day replay. Each vault is <Term id="open" />, <Term id="reduced" /> or <Term id="closed" />.
+            <p className="mb-8 mt-6 max-w-[690px] text-[13px] leading-5 text-mute max-lg:leading-11 [text-wrap:balance]">
+              <Term id="kept" /> is a year of the pool&rsquo;s fees less what leaks, read in the <Term id="worstHalf">weaker half</Term> of a 30-day replay. Each vault is <Term id="open" />, <Term id="reduced" /> or <Term id="closed" />.
             </p>
             <div>
               {taking.length > 0 && (
@@ -226,7 +226,7 @@ export function VaultList() {
                       Closed <span className="ml-1 text-[17px] font-normal text-mute">{closed.length}</span>
                     </h2>
                     <span className="flex items-center gap-2 text-[13px] text-mute">
-                      The worst half kept less than the -20% floor
+                      The weaker half kept less than the -20% floor
                       <span className="inline-flex items-center gap-1 text-fg">
                         <span className="group-open:hidden">Show</span><span className="hidden group-open:inline">Hide</span>
                         <CaretRight size={14} weight="bold" aria-hidden className="transition-transform duration-150 group-open:rotate-90" />

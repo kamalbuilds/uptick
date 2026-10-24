@@ -49,7 +49,7 @@ function PositionRow({ cfg, owner }: { cfg: VaultConfig; owner: `0x${string}` })
       )}
       <div className="text-right sm:text-left">
         <Kept value={cfg.gate.worstHalfApr} className="text-[15px] font-medium" />
-        <p className="text-[12px] text-mute">worst half</p>
+        <p className="text-[12px] text-mute">weaker half</p>
       </div>
       <Button asChild variant="outline" size="sm" className="justify-self-end">
         <Link href={`/vault/${cfg.id}`}>Manage</Link>
@@ -85,7 +85,7 @@ export function Portfolio() {
           <p className="mt-3 text-mute">Balances are read straight from Robinhood Chain. Nothing is stored on a server.</p>
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
             <WalletButton size="lg" />
-            <Link href="/check" className="text-[15px] font-semibold underline underline-offset-4">Or check any address</Link>
+            <Link href="/check" className="touch text-[15px] font-semibold underline underline-offset-4">Or check any address</Link>
           </div>
         </div>
       ) : chainId !== robinhoodChain.id ? (

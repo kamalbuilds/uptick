@@ -19,12 +19,12 @@ One row per interactive element or information unit a direct competitor shows on
 | Amount in USD under the input | Y | - | - | - | - | | build |
 | Wallet balance line | Y | Y | - | - | - | | have |
 | 25/50/75/Max chips | Y | Y | - | - | - | | build |
-| Yield or APY row in the panel | Y | Y | - | - | - | | have: worst-half rate row |
+| Yield or APY row in the panel | Y | Y | - | - | - | | have: weaker-half rate row |
 | Health factor row | Y | - | - | - | - | | have: health factor and the stock-terms liquidation price in an outlined risk box beside the borrow slider |
 | Primary Connect Wallet button | Y | Y | Y | Y | Y | | have |
 | "Trade stock tokens" card | Y | - | - | - | - | | skip: USDG pay-with swaps inside the deposit, so the user does not leave |
 | Isolated tag | Y | - | - | - | - | | skip: every vault is its own contract, nothing is pooled |
-| Definition tooltips on domain words | Y | Y | - | - | Y | | build: Kept, Worst half, Open, Reduced, Closed |
+| Definition tooltips on domain words | Y | Y | - | - | Y | | build: Kept, Weaker half, Open, Reduced, Closed |
 | State filter pills with counts | - | Y | - | Y | Y | | build: "Taking deposits 7" and "Closed 10" group headings with counts |
 | Closed items collapsed | - | - | - | - | - | | build (Uptick's own framing) |
 | Status chip | Y | Y | Y | Y | Y | | have |
