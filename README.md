@@ -11,7 +11,7 @@ App https://uptick-fi.pages.dev, evidence API https://uptick-evidence.earn-shiel
 
 **Put your Stock Tokens to work.**
 
-On 22 October 2026 Robinhood made Stock Tokens collateral on Morpho: "Any eligible wallet can plug in and any app can tap into these markets" ([@RobinhoodCrypto](https://x.com/RobinhoodCrypto/status/2113270580472381515), 55,663 views by 2026-10-23 16:55 UTC). Morpho Blue holds $609.5M of Robinhood Chain's $1.14B in TVL, and a Stock Token posted there earns nothing while the loan accrues interest. Uptick is what gets built on top: deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults launch first), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep, and opens a vault only where past trades say it holds up.
+On 22 October 2026 Robinhood made Stock Tokens collateral on Morpho: "Any eligible wallet can plug in and any app can tap into these markets" ([@RobinhoodCrypto](https://x.com/RobinhoodCrypto/status/2113270580472381515), 55,663 views by 2026-10-23 16:55 UTC). Morpho Blue holds $609.5M of Robinhood Chain's $1.14B in TVL, and a Stock Token posted there earns nothing while the loan accrues interest. Uptick is what gets built on top: deposit AAPL, GOOGL, PLTR and 9 more Stock Tokens (12 of 17 vaults open first, AAPL and PLTR live on Robinhood Chain now), earn the fees that survive losses to fast traders, and borrow USDG against the same vault share. Uptick lists every Stock Token with a Chainlink feed and a USDG pool trading at least $100K a day, shows what you earn and what you keep, and opens a vault only where past trades say it holds up.
 
 Borrowing USDG against AAPL on Morpho cost 24.7% a year at the 2026-10-23 16:56 UTC read (market at a 62.5% loan to value limit, $221,409 supplied). An Uptick AAPL share earns its kept APR while posted, +2.7% to +3.9% a year across the two replay halves, which at a 50% loan to value pays back 5.4 to 7.8 points of that rate. That is an estimate from one read; the rate is variable and fee income varies.
 
@@ -114,6 +114,22 @@ Each address returns bytecode from `cast code` against `https://rpc.mainnet.chai
 | NVDA | `0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC` |
 | SPCX | `0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa` |
 | USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
+
+<!-- deployed:start -->
+## Deployed on Robinhood Chain
+
+Live on Robinhood Chain mainnet (chain id 4663) through block 96359219. Every address returns bytecode from `cast code`; the factory pins the creation-code hash of StockVault and StockVaultV4, each vault's deposit cap, owner, keeper, pool and feed were read back from the chain after the deploy, and every share oracle is registered in the oracle factory's `isOracle`.
+
+| Contract | Address | Deposit cap |
+|---|---|---|
+| VaultFactory | [`0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a`](https://robinhoodchain.blockscout.com/address/0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a) | |
+| UptickRouter | [`0x599BE83442e02810B501fab280dC2eBD6d0D2c48`](https://robinhoodchain.blockscout.com/address/0x599BE83442e02810B501fab280dC2eBD6d0D2c48) | |
+| UptickShareOracleFactory | [`0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB`](https://robinhoodchain.blockscout.com/address/0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB) | |
+| AAPL vault (Uniswap v3 pool) | [`0x127eCb0e814EF0cC296910DFd5E946050d85534f`](https://robinhoodchain.blockscout.com/address/0x127eCb0e814EF0cC296910DFd5E946050d85534f) | $5,000 |
+| AAPL share oracle | [`0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB`](https://robinhoodchain.blockscout.com/address/0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB) | |
+| PLTR vault (Uniswap v4 pool) | [`0xD769d94E43447937Eaa85Dc6AE291468649085a3`](https://robinhoodchain.blockscout.com/address/0xD769d94E43447937Eaa85Dc6AE291468649085a3) | $5,000 |
+| PLTR share oracle | [`0x613F1250fc27aD51C11C403bd9b5440181D0f9A4`](https://robinhoodchain.blockscout.com/address/0x613F1250fc27aD51C11C403bd9b5440181D0f9A4) | |
+<!-- deployed:end -->
 
 ## Run locally
 

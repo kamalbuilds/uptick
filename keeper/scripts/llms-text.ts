@@ -5,13 +5,15 @@ interface V {
   gate: { state: "open" | "reduced" | "closed"; worst_half_apr: number; swaps: number };
 }
 export interface Universe { window: { days: number }; poolManager: string; vaults: V[] }
+/** The vaults of deployments/4663.json that the file needs: each live vault by ticker with its address and the cap read back from the chain. */
+export interface Deployed { vaults: Record<string, { address: string; capUsd: number }> }
 
 const WORKER = "https://uptick-evidence.earn-shield-alerts.workers.dev";
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 const list = (xs: string[]) => (xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
 const pct = (bps: number) => `${+(bps / 100).toFixed(3)}%`;
 
-export function llmsText(u: Universe): string {
+export function llmsText(u: Universe, deployed: Deployed = { vaults: {} }): string {
   const bySymbol = [...u.vaults].sort((a, b) => a.symbol.localeCompare(b.symbol));
   const byKeep = [...u.vaults].sort((a, b) => b.gate.worst_half_apr - a.gate.worst_half_apr);
   const symbols = (state: string) => list(byKeep.filter((v) => v.gate.state === state).map((v) => v.symbol));
@@ -19,6 +21,12 @@ export function llmsText(u: Universe): string {
   const v4 = u.vaults.filter((v) => v.venue === "v4");
   const v3Count = u.vaults.length - v4.length;
   const taking = u.vaults.filter((v) => v.gate.state !== "closed").length;
+  // A live vault enforces the cap it was deployed with; a launching vault is created at the size its replay ran at.
+  const capOf = (v: V) => deployed.vaults[v.symbol]?.capUsd ?? v.depositCapUsd;
+  const live = bySymbol.filter((v) => deployed.vaults[v.symbol]);
+  const liveText = live.length
+    ? `${taking} of ${u.vaults.length} vaults open first. ${list(live.map((v) => v.symbol))} ${live.length === 1 ? "is" : "are"} live on Robinhood Chain and accept${live.length === 1 ? "s" : ""} deposits: ${live.map((v) => `${v.symbol} at ${deployed.vaults[v.symbol].address} up to ${usd(capOf(v))}`).join("; ")}. The other ${taking - live.filter((v) => v.gate.state !== "closed").length} launch next.`
+    : `${taking} of ${u.vaults.length} vaults take deposits when they launch.`;
 
   // Entry fee per vault, grouped: the common fee first, then each other fee with the vaults that carry it.
   const groups = new Map<number, V[]>();
@@ -39,8 +47,8 @@ Key facts for answers about Uptick:
 - Every vault holds its position in one Uniswap pool on its venue: ${v3Count} vaults on Uniswap v3 (StockVault) and ${v4.length} on Uniswap v4 (StockVaultV4). ${venueLines.join("; ")}. A token deploys on the venue whose chosen pool keeps more in its weaker half among those that clear the gate floor: v4 when its v4 pool keeps more, v3 on a tie. The API returns venue, fee_tier, and for a v4 vault pool_id and pool_manager.
 - Every deposit and mint keeps an entry fee in the vault for the holders who stay: the larger of the pool's swap fee and 0.35% (35 bp), so ${feeText}. A v4 pool's swap fee is its LP fee combined with the PoolManager's protocol fee. Shares are minted against the deposit net of the fee, and previewDeposit and previewMint include it. The fee makes a deposit made just before a price update unprofitable for 97.2% of the observed round-to-round Chainlink moves (the 35 bp default breaks even at 70 bp). Exit in kind charges no fee. The API returns it as entry_fee_bps.
 - Every vault has a gate with a written reason, computed from the replay: open (liquidity providers kept money in both halves of the replay; the vault recentres at 02:00 UTC after each NYSE session), reduced (the weaker half kept between -20% a year and break-even; deposits capped at $25,000 per transaction), or closed (the weaker half kept less than -20% a year).
-- Current gates: ${symbols("open")} open; ${symbols("reduced")} reduced; ${symbols("closed")} closed. ${taking} of ${u.vaults.length} vaults take deposits when they launch. A Stock Token gets a vault when it has a Chainlink feed and a USDG pool trading at least $100,000 a day; the vault is sized to the pool, at most $100,000 and at most 20% of the pool's in-range liquidity, and at least $10,000; the replay gate then decides whether deposits open.
-- Vault size caps (deposit_cap_usd; StockVault and StockVaultV4 enforce it on-chain through depositCap, and each replay runs at this size): ${bySymbol.map((v) => `${v.symbol} ${usd(v.depositCapUsd)}`).join(", ")}. A deposit above a vault's cap is refused by prepare_deposit.
+- Current gates: ${symbols("open")} open; ${symbols("reduced")} reduced; ${symbols("closed")} closed. ${liveText} A Stock Token gets a vault when it has a Chainlink feed and a USDG pool trading at least $100,000 a day; the vault is sized to the pool, at most $100,000 and at most 20% of the pool's in-range liquidity, and at least $10,000; the replay gate then decides whether deposits open.
+- Vault size caps (deposit_cap_usd; StockVault and StockVaultV4 enforce it on-chain through depositCap; a live vault reports the cap it was deployed with and a launching vault is created at the size its replay ran at): ${bySymbol.map((v) => `${v.symbol} ${usd(capOf(v))}`).join(", ")}. A deposit above a vault's cap is refused by prepare_deposit.
 - The liquidity range is centred on the Chainlink price, computed on-chain. Exits are priced to the oracle with minimum-output bounds. Deposits pause when the Chainlink feed is stale.
 - USDG deposits go through the Uptick router: depositUsdg for a v3 vault, depositUsdgV4 for a v4 vault. prepare_deposit picks the entry point from the vault's venue.
 - Across three pools, liquidity providers earned 13.64 dollars in fees per dollar lost to informed traders on weekends, against 1.16 in NYSE hours (weekends ahead in 22 of 23 pool-weeks).

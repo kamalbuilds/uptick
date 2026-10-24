@@ -17,7 +17,7 @@ function Metric({ label, value, unit, note, className }: { label: React.ReactNod
   );
 }
 
-/** Four facts from the replay and the vault list, each with its window under it. No deposits or TVL: no vault is on mainnet yet, so there is no figure to show. */
+/** Four facts from the replay and the vault list, each with its window under it. Deposits and TVL are per vault, on each vault page. */
 export function SummaryRow({ className }: { className?: string }) {
   return (
     <dl className={cn("grid grid-cols-2 gap-x-6 gap-y-4 border-y border-hairline py-4 lg:py-5 lg:grid-cols-4 lg:gap-x-0 lg:[&>div+div]:border-l lg:[&>div+div]:border-hairline lg:[&>div+div]:pl-6", className)}>

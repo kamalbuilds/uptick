@@ -9,9 +9,9 @@ import { RowHeader, VaultRow } from "./vault-row";
 import { WalletButton } from "./wallet-button";
 import { Skeleton } from "./status";
 import { REDUCED_CAP_STOCK_USD } from "@/lib/evidence";
-import { num, usdWhole } from "@/lib/format";
+import { liveSentence, num, usdWhole } from "@/lib/format";
 import { useHoldings, type Holdings } from "@/lib/holdings";
-import { BY_KEEP, GATE_COUNTS, REPLAY_WINDOW, VAULTS, isoDay } from "@/lib/vaults";
+import { BY_KEEP, GATE_COUNTS, LIVE_VAULTS, REPLAY_WINDOW, VAULTS, isoDay } from "@/lib/vaults";
 import { Button } from "@/components/ui/button";
 import moment from "@/lib/moment.json";
 
@@ -61,7 +61,7 @@ export function HomeView() {
         <h1 className="serif verdict text-[30px] font-normal leading-[34px] sm:text-[40px] sm:leading-[44px]">Which of your stock tokens can earn, and how much you would keep.</h1>
         <p className="mt-5 text-mute">
           {Math.round(moment.offHours.swapsPct)}% of the swaps in these pools, and {Math.round(moment.offHours.feesPct)}% of the fees they pay liquidity providers, happen while the NYSE is shut, over the {REPLAY_WINDOW.days} days to {isoDay(REPLAY_WINDOW.end)}.
-          Uptick is launching vaults that pay Stock Token holders while Nasdaq sleeps, and shows what each one keeps after losses to fast traders.
+          {" "}{LIVE_VAULTS.length ? "Uptick runs" : "Uptick is launching"} vaults that pay Stock Token holders while Nasdaq sleeps, and shows what each one keeps after losses to fast traders. {liveSentence(LIVE_VAULTS.map((v) => v.symbol))}
         </p>
         <div className="mt-8 max-w-sm border-t border-hairline pt-5">
           <h2 className="text-[17px] font-semibold leading-6">Find your idle Stock Tokens</h2>

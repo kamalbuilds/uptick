@@ -1,5 +1,5 @@
 import replay from "../data/replay.json";
-import { doorFields, handleMcp, UNIVERSE, venueFields, type Env } from "./mcp";
+import { doorFields, handleMcp, liveVaults, UNIVERSE, venueFields, type Env } from "./mcp";
 import LLMS from "./llms";
 import { keeperList, keeperVault } from "./keeper";
 import { postTalk, talkCount } from "./talk";
@@ -70,8 +70,8 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-function listVaults() {
-  return UNIVERSE.vaults.map((vault) => ({
+function listVaults(env: Env) {
+  return liveVaults(env).map((vault) => ({
     id: vault.id,
     ticker: vault.symbol,
     open: vault.open,
@@ -85,8 +85,8 @@ function listVaults() {
   }));
 }
 
-function vaultDetail(id: string): Response {
-  const vault = UNIVERSE.vaults.find((candidate) => candidate.id === id);
+function vaultDetail(id: string, env: Env): Response {
+  const vault = liveVaults(env).find((candidate) => candidate.id === id);
   if (!vault) {
     return json(
       { error: "not_found", id, message: `no vault with id "${id}"` },
@@ -194,7 +194,7 @@ function handleRequest(
   }
 
   if (path === "/vaults") {
-    return json(listVaults());
+    return json(listVaults(env));
   }
 
   // The web app's stats route (keeper/src/stats.ts shape), so the static site needs no keeper process.
@@ -204,7 +204,7 @@ function handleRequest(
 
   const detail = path.match(/^\/vaults\/([^/]+)$/);
   if (detail) {
-    return vaultDetail(decodeURIComponent(detail[1]));
+    return vaultDetail(decodeURIComponent(detail[1]), env);
   }
 
   return json({ error: "not_found", path }, 404);

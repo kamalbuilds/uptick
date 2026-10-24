@@ -13,6 +13,8 @@ import {
 import vaultUniverse from "../data/vault-universe.json";
 import replay from "../data/replay.json";
 import collateralMarkets from "../data/collateral-markets.json";
+import deployments from "../data/deployments.json";
+import { liveCapUsd } from "./shared/live-cap.ts";
 import { parseMarkets } from "./shared/morpho.ts";
 import { RHC_RPCS, parseOwner, scanWallet, type ScanClient, type ScanLltv, type ScanRow, type ScanVault, type WalletScan } from "./shared/scan.ts";
 import type { TalkEnv } from "./talk";
@@ -24,7 +26,7 @@ export interface Env extends TalkEnv, AlertsEnv {
   VAULTS?: string;
   ROUTER?: string;
   NETWORK?: string;
-  /** JSON-RPC endpoint of the chain the VAULTS addresses live on. Unset, /keeper/vaults/:id serves replay figures only, and scan_wallet reads through the public Robinhood Chain endpoints. */
+  /** JSON-RPC endpoint of the chain the VAULTS addresses live on. Unset, /keeper/vaults/:id serves replay figures only. scan_wallet tries it first and falls back to the public Robinhood Chain endpoints. */
   CHAIN_RPC_URL?: string;
   /** StockVaultV4Lens address: the only way to read a v4 vault's value in USDG. Unset, a v4 vault's tvl_usd is null. */
   VAULT_LENS?: string;
@@ -169,8 +171,15 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-function findVault(id: string): Vault | undefined {
-  return UNIVERSE.vaults.find((candidate) => candidate.id === id);
+/** The vault list with each deployed vault's cap set to the cap its contract enforces (deployments/4663.json, synced to data/deployments.json).
+ *  A vault is deployed when VAULTS names it at the address on record; every other vault keeps the launch cap the replay sized it to. */
+export function liveVaults(env: { VAULTS?: string } = {}): Vault[] {
+  const addresses = parseVaults(env.VAULTS);
+  return UNIVERSE.vaults.map((v) => ({ ...v, depositCapUsd: liveCapUsd(v.depositCapUsd, v.symbol, addresses[v.id], deployments) }));
+}
+
+function findVault(id: string, env: { VAULTS?: string } = {}): Vault | undefined {
+  return liveVaults(env).find((candidate) => candidate.id === id);
 }
 
 function gateOf(vault: Vault): Gate {
@@ -228,8 +237,8 @@ function errorResult(message: string): McpToolResult {
   return textResult({ error: message }, true);
 }
 
-function listVaults(): McpToolResult {
-  const vaults = UNIVERSE.vaults.map((vault) => {
+function listVaults(env: Env): McpToolResult {
+  const vaults = liveVaults(env).map((vault) => {
     const gate = gateOf(vault);
     return {
       id: vault.id,
@@ -248,8 +257,8 @@ function listVaults(): McpToolResult {
   return textResult({ vaults });
 }
 
-function getVaultEvidence(id: string): McpToolResult {
-  const vault = findVault(id);
+function getVaultEvidence(env: Env, id: string): McpToolResult {
+  const vault = findVault(id, env);
   if (!vault) return errorResult(`no vault with id "${id}"`);
 
   const token = REPLAY.tokens[vault.symbol];
@@ -390,7 +399,7 @@ function overLimit(vault: Vault, gate: Gate, usd: number, unit: string): string 
 
 function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult {
   const id = typeof args.id === "string" ? args.id : "";
-  const vault = findVault(id);
+  const vault = findVault(id, env);
   if (!vault) return errorResult(`no vault with id "${id}"`);
 
   const gate = gateOf(vault);
@@ -478,7 +487,7 @@ function prepareDeposit(env: Env, args: Record<string, unknown>): McpToolResult 
 
 function prepareWithdraw(env: Env, args: Record<string, unknown>): McpToolResult {
   const id = typeof args.id === "string" ? args.id : "";
-  const vault = findVault(id);
+  const vault = findVault(id, env);
   if (!vault) return errorResult(`no vault with id "${id}"`);
 
   const receiverError = validateReceiver(args.receiver);
@@ -528,8 +537,8 @@ function prepareWithdraw(env: Env, args: Record<string, unknown>): McpToolResult
 const LLTV: ScanLltv = Object.fromEntries(Object.entries(parseMarkets(collateralMarkets)).map(([id, m]) => [id, m.lltv]));
 
 /** The tracked Stock Tokens as the scan reads them: address, feed, the gate the replay wrote, and the vault's size. */
-export function scanVaults(): ScanVault[] {
-  return UNIVERSE.vaults.map((v) => {
+export function scanVaults(env: { VAULTS?: string } = {}): ScanVault[] {
+  return liveVaults(env).map((v) => {
     const gate = gateOf(v);
     return {
       id: v.id,
@@ -544,9 +553,10 @@ export function scanVaults(): ScanVault[] {
   });
 }
 
-/** The configured chain RPC when there is one, else the keyless public endpoints for chain 4663 in order, one retry each. */
+/** The configured chain RPC first when there is one, then the keyless public endpoints for chain 4663 in order, one retry each. */
 function scanClient(env: Env): ScanClient {
-  const transport = env.CHAIN_RPC_URL ? http(env.CHAIN_RPC_URL) : fallback(RHC_RPCS.map((u) => http(u, { retryCount: 1, retryDelay: 500, timeout: 10_000 })));
+  const urls = env.CHAIN_RPC_URL ? [env.CHAIN_RPC_URL, ...RHC_RPCS.filter((u) => u !== env.CHAIN_RPC_URL)] : RHC_RPCS;
+  const transport = fallback(urls.map((u) => http(u, { retryCount: 1, retryDelay: 500, timeout: 10_000 })));
   return createPublicClient({ transport });
 }
 
@@ -612,7 +622,7 @@ async function scanWalletTool(env: Env, args: Record<string, unknown>, client?: 
   if (!owner) return errorResult("address must be a valid 0x wallet address (42 characters; names such as ENS are not resolved)");
   let scan: WalletScan;
   try {
-    scan = await scanWallet(client ?? scanClient(env), owner, scanVaults(), LLTV);
+    scan = await scanWallet(client ?? scanClient(env), owner, scanVaults(env), LLTV);
   } catch (e) {
     return errorResult(`could not read Robinhood Chain: ${String((e as Error).message).split("\n")[0].slice(0, 200)}`);
   }
@@ -973,9 +983,9 @@ async function callTool(
 ): Promise<McpToolResult> {
   switch (name) {
     case "list_vaults":
-      return listVaults();
+      return listVaults(env);
     case "get_vault_evidence":
-      return getVaultEvidence(typeof args.id === "string" ? args.id : "");
+      return getVaultEvidence(env, typeof args.id === "string" ? args.id : "");
     case "scan_wallet":
       return scanWalletTool(env, args, deps.scanClient);
     case "prepare_deposit":
@@ -991,7 +1001,7 @@ async function callTool(
     case "prepare_make_safer":
       return loanTool(env, args, deps.loan ?? {}, (id, d) => prepareMakeSafer(env, id, args.address, args.target_health, d));
     case "plan_weekend_hedge": {
-      const { payload, isError } = await planWeekendHedge({ env, vaults: scanVaults(), defaultClient: () => scanClient(env), deps }, args);
+      const { payload, isError } = await planWeekendHedge({ env, vaults: scanVaults(env), defaultClient: () => scanClient(env), deps }, args);
       return textResult(payload, isError);
     }
     default: {

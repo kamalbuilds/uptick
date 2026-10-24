@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "build:pages": "npm run sync:deck && UPTICK_EXPORT=1 NEXT_PUBLIC_KEEPER_BASE=https://uptick-evidence.earn-shield-alerts.workers.dev/keeper NEXT_PUBLIC_VAULTS= NEXT_PUBLIC_VAULT_NVDA= NEXT_PUBLIC_VAULT_SPCX= NEXT_PUBLIC_ROUTER= NEXT_PUBLIC_RPC_URL= next build",
+    "build:pages": "npm run sync:deck && UPTICK_EXPORT=1 NEXT_PUBLIC_KEEPER_BASE=https://uptick-evidence.earn-shield-alerts.workers.dev/keeper NEXT_PUBLIC_VAULTS='{\"AAPL\":\"0x127eCb0e814EF0cC296910DFd5E946050d85534f\",\"PLTR\":\"0xD769d94E43447937Eaa85Dc6AE291468649085a3\"}' NEXT_PUBLIC_VAULT_NVDA= NEXT_PUBLIC_VAULT_SPCX= NEXT_PUBLIC_ROUTER=0x599BE83442e02810B501fab280dC2eBD6d0D2c48 NEXT_PUBLIC_RPC_URL= next build",
     "start": "next start -p 3000",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test lib/*.test.ts",

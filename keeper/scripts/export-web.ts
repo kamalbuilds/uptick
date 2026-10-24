@@ -45,7 +45,7 @@ const vaults = eligibleTickers(universe, replay)
 const out = new URL("../../web/lib/vault-universe.json", import.meta.url);
 const exported = { chainId: 4663, source: "keeper/data/universe.json + keeper/data/replay.json", universeBlock: universe.block, window: replay.window, poolManager: POOL_MANAGER, vaults };
 writeFileSync(out, JSON.stringify(exported, null, 2) + "\n");
-writeFileSync(new URL("../../web/public/llms.txt", import.meta.url), llmsText(exported as any)); // the agent-facing file reads the same data, so it cannot name a stale gate, cap or venue
+writeFileSync(new URL("../../web/public/llms.txt", import.meta.url), llmsText(exported as any, JSON.parse(readFileSync(new URL("../../deployments/4663.json", import.meta.url), "utf8")))); // the agent-facing file reads the same data, so it cannot name a stale gate, cap or venue
 console.log(`wrote ${vaults.length} vaults: ${vaults.map((v) => v.symbol).join(", ")}`);
 
 // Fee totals the pages show per pool (web/lib/summary.ts sums them over the vault list): the replay's LP income on each vault's gate pool.

@@ -1,5 +1,7 @@
 import { isAddress, type Address } from "viem";
+import deployed from "./deployments.json";
 import universe from "./vault-universe.json";
+import { liveCapUsd } from "./live-cap.ts";
 
 export type VaultConfig = {
   id: string;
@@ -14,7 +16,7 @@ export type VaultConfig = {
   feeTier: string;
   /** Fee kept in the vault on deposit and mint, in bps: the larger of the pool fee tier and 35 bp (StockVault.entryFee default). */
   entryFeeBps: number;
-  /** Vault size in USD, sized to the pool depth so the vault stays within 20% of in-range liquidity; the vault is created with this deposit cap. */
+  /** Vault size in USD: the cap the contract enforces. A deployed vault carries its deployed cap (deployments/4663.json); a launching vault carries the size the replay set from the pool depth (20% of in-range liquidity), which it is created with. */
   depositCapUsd: number;
   /** Half-width of the vault's band around Chainlink in bps, chosen per token (keeper/data/params.json). */
   bandBps: number;
@@ -77,7 +79,7 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   pool: v.pool,
   feeTier: v.feeTier,
   entryFeeBps: v.entryFeeBps,
-  depositCapUsd: v.depositCapUsd,
+  depositCapUsd: liveCapUsd(v.depositCapUsd, v.symbol, asAddress(fromEnv[v.symbol]), deployed),
   bandBps: v.bandBps,
   refPriceUsd: v.refPriceUsd,
   feed: v.feed as Address,
@@ -87,6 +89,9 @@ export const VAULTS: VaultConfig[] = universe.vaults.map((v) => ({
   keep: { feeApr: v.keep.fee_apr_pct, markoutApr: v.keep.markout_apr_pct, costApr: v.keep.cost_apr_pct, keptApr: v.keep.kept_apr_pct, keptFirstHalf: v.keep.kept_first_half, keptSecondHalf: v.keep.kept_second_half },
   feeAprPct: v.feeAprPct,
 }));
+
+/** The vaults with a deployed address: the ones live on Robinhood Chain. */
+export const LIVE_VAULTS: VaultConfig[] = VAULTS.filter((v) => v.vault);
 
 /** Vaults best-kept first: the order every list uses. */
 export const BY_KEEP: VaultConfig[] = [...VAULTS].sort((a, b) => b.gate.worstHalfApr - a.gate.worstHalfApr);

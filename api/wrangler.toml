@@ -3,8 +3,11 @@ main = "src/worker.ts"
 compatibility_date = "2026-10-01"
 
 [vars]
-VAULTS = '{}'
+VAULTS = '{"aapl":"0x127eCb0e814EF0cC296910DFd5E946050d85534f","pltr":"0xD769d94E43447937Eaa85Dc6AE291468649085a3"}'
+ROUTER = "0x599BE83442e02810B501fab280dC2eBD6d0D2c48"
 NETWORK = "robinhood-chain"
+# keyless public endpoint for chain 4663 (eth_chainId 0x1237); the official RPC answers 429 to Cloudflare Workers
+CHAIN_RPC_URL = "https://robinhood-rpc.publicnode.com"
 
 [[kv_namespaces]]
 binding = "TALK"
