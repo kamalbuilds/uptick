@@ -18,7 +18,7 @@ import { priceLabel } from "@/lib/price-math";
 import { parseOwner, type GateState, type ScanRow, type WalletScan } from "@/lib/scan";
 import { useWalletScan } from "@/lib/use-scan";
 import { TERMS } from "@/lib/terms";
-import { money, verdict, weakerHalf } from "@/lib/verdict";
+import { money, names, plan, verdict } from "@/lib/verdict";
 import { LIVE_VAULTS, REPLAY_WINDOW, VAULTS, isoDay } from "@/lib/vaults";
 import { cn } from "@/lib/utils";
 
@@ -82,7 +82,7 @@ function TakesCell({ r }: { r: ScanRow }) {
   if (r.state === "closed") {
     return (
       <div>
-        <MobileLabel>Uptick takes</MobileLabel>
+        <MobileLabel>Can go to work</MobileLabel>
         <p className="text-[15px] leading-6 text-mute">Nothing, vault closed</p>
       </div>
     );
@@ -90,21 +90,22 @@ function TakesCell({ r }: { r: ScanRow }) {
   if (r.putToWorkUsd === null) {
     return (
       <div>
-        <MobileLabel>Uptick takes</MobileLabel>
+        <MobileLabel>Can go to work</MobileLabel>
         <p className="text-[13px] leading-5 text-mute">Waits for a price</p>
       </div>
     );
   }
   const capped = r.holdingUsd !== null && r.putToWorkUsd < r.holdingUsd - 0.5;
+  const full = r.vault !== null && r.putToWorkUsd === 0;
   return (
     <div>
-      <MobileLabel>Uptick takes</MobileLabel>
+      <MobileLabel>Can go to work</MobileLabel>
       <div className="flex flex-wrap items-center gap-x-2">
         <p className="figure text-[17px] font-medium leading-6">{money(r.putToWorkUsd)}</p>
         <StateChip state={r.state} />
       </div>
       <p className="text-[13px] leading-4 text-mute">
-        {r.state === "reduced" ? `Up to ${usdWhole(perDepositLimitUsd(r.depositCapUsd))} a deposit` : capped ? `Vault size ${usdWhole(r.depositCapUsd)}` : "All of it"}
+        {full ? "Full or paused right now" : r.state === "reduced" ? `Up to ${usdWhole(perDepositLimitUsd(r.depositCapUsd))} a deposit` : capped ? (r.roomUsd !== null ? `Room left today ${money(r.roomUsd)}` : `Vault size ${usdWhole(r.depositCapUsd)}`) : "All of it"}
       </p>
       {b.kind === "room" ? (
         <p className="text-[13px] leading-4 text-mute">Borrow up to {money(b.usd)} at the market&rsquo;s {num(b.lltv, 1)}% <Term id="lltv">limit</Term></p>
@@ -195,9 +196,9 @@ function HoldBar({ rows }: { rows: ScanRow[] }) {
   );
 }
 
-function TRow({ k, v, note, tone }: { k: React.ReactNode; v: string; note?: string; tone?: string }) {
+function TRow({ k, v, note, tone, desktop }: { k: React.ReactNode; v: string; note?: string; tone?: string; /** Shown from the large breakpoint up only: the rows below carry the same figure on a phone. */ desktop?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-3">
+    <div className={cn("items-baseline justify-between gap-4 border-b border-hairline py-3", desktop ? "hidden lg:flex" : "flex")}>
       <dt className="text-mute">{k}</dt>
       <dd className="text-right">
         <span className={cn("figure font-medium", tone)}>{v}</span>
@@ -233,37 +234,36 @@ function CopyLink() {
   );
 }
 
-/** The one thing to act on: what Uptick takes, split by what each vault does with it, the weaker half in plain words, and the largest vault to open. */
+/** The one thing to act on, read from the same plan as the headline: what can go to work today, what waits for a launch, the weaker half of the live vault to open, and the way in. */
 function Ticket({ s }: { s: WalletScan }) {
   const t = s.totals;
-  const taken = s.rows.filter((r) => r.putToWorkUsd !== null);
-  const isLive = (r: ScanRow) => vaultAddress(r.id) !== undefined;
-  const liveTaken = taken.filter(isLive);
-  // The primary action is a vault the holder can deposit into today: live, open before reduced, the largest holding first. A launching vault is never it.
-  const lead = [...liveTaken].sort((a, b) => Number(b.state === "open") - Number(a.state === "open") || (b.holdingUsd ?? 0) - (a.holdingUsd ?? 0))[0];
-  const leadAddr = lead ? vaultAddress(lead.id) : undefined;
-  const liveUsd = sum(liveTaken.map((r) => r.putToWorkUsd as number));
-  const launchingUsd = sum(taken.filter((r) => !isLive(r)).map((r) => r.putToWorkUsd as number));
-  // With a live vault to open, the weaker half shown is that vault's own; otherwise it is the whole wallet's.
-  const wh = lead && lead.keptPerYearUsd !== null ? { gain: lead.keptPerYearUsd >= 0, usd: Math.abs(lead.keptPerYearUsd) } : weakerHalf(s);
+  const p = plan(s);
+  // The primary action is the live vault to open, unless what it takes is too small to lead, and then it is the live vault list.
+  const lead = p.tiny ? undefined : p.lead;
+  const leadAddr = lead?.vault ?? undefined;
+  const wh = lead && lead.keptPerYearUsd !== null ? { gain: lead.keptPerYearUsd >= 0, usd: Math.abs(lead.keptPerYearUsd) } : null;
   const liveSymbols = LIVE_VAULTS.map((v) => v.symbol);
+  const aside = p.tiny && p.lead && p.lead.vault ? p.lead : undefined;
+  const tail =
+    p.full.length > 0 && !p.lead
+      ? `${names(p.full)} ${p.full.length === 1 ? "is" : "are"} full or paused right now.`
+      : aside
+        ? "The rest of this wallet is in tokens whose vaults are launching."
+        : p.launching.usd > 0
+          ? "This wallet holds none of them, and the vaults for its tokens are launching."
+          : "This wallet holds none of them, and its tokens' vaults are closed.";
   return (
     <section aria-labelledby="ticket" className="rounded-lg border border-line bg-panel p-5">
-      <h2 id="ticket" className="text-[13px] font-normal leading-5 text-mute">{lead ? "You can put to work today" : "Uptick can put to work"}</h2>
-      <p className="figure mt-1 text-[32px] font-medium leading-9">{money(lead ? liveUsd : t.putToWork.usd)}</p>
+      <h2 id="ticket" className="text-[13px] font-normal leading-5 text-mute">{lead || p.launching.usd === 0 ? "You can put to work today" : "Can go to work when vaults launch"}</h2>
+      <p className="figure mt-1 text-[32px] font-medium leading-9">{money(lead ? p.live.usd : p.launching.usd)}</p>
       <p className="mt-1 text-[13px] leading-5 text-mute">of {money(t.idleUsd)} held in {plural(s.rows.length, "token", "tokens")}</p>
-      <dl className="mt-4 hidden border-t border-hairline lg:block">
-        {launchingUsd > 0 ? <TRow k="Launching vaults" v={money(launchingUsd)} note="not deployed yet" /> : null}
-        {t.refused.tokens > 0 ? <TRow k={<><Term id="closed">Closed</Term> vaults</>} v={money(t.refused.usd)} note="Not taken" /> : null}
-        {wh ? (
-          <TRow
-            k={<Term id="worstHalf">Weaker half</Term>}
-            v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`}
-            tone={wh.gain ? "text-kept" : "text-loss"}
-            note={lead ? `${lead.symbol}, annualised` : "annualised, past trades"}
-          />
+      <dl className="mt-4 border-t border-hairline">
+        {lead && p.launching.usd > 0 ? <TRow k="Launching vaults" v={money(p.launching.usd)} note={names(p.launching.symbols)} /> : null}
+        {t.refused.tokens > 0 ? <TRow k={<><Term id="closed">Closed</Term> vaults</>} v={money(t.refused.usd)} note="No deposits" /> : null}
+        {wh && lead ? (
+          <TRow desktop k={<Term id="worstHalf">Weaker half</Term>} v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`} tone={wh.gain ? "text-kept" : "text-loss"} note={`${lead.symbol}, in the replay, past trades`} />
         ) : null}
-        {t.putToWork.borrowRoomUsd !== null ? <TRow k={<Term id="borrowRoom">Borrow room</Term>} v={`up to ${money(t.putToWork.borrowRoomUsd)}`} /> : null}
+        {t.putToWork.borrowRoomUsd !== null ? <TRow desktop k={<Term id="borrowRoom">Borrow room</Term>} v={`up to ${money(t.putToWork.borrowRoomUsd)}`} /> : null}
       </dl>
       {lead && leadAddr ? (
         <>
@@ -272,23 +272,32 @@ function Ticket({ s }: { s: WalletScan }) {
             <div className="min-w-0">
               <p className="font-medium leading-5">{lead.symbol} vault</p>
               <a className="figure relative inline-flex min-h-11 items-center text-[13px] leading-4 text-mute underline underline-offset-4 hover:text-fg lg:min-h-5" href={addressUrl(leadAddr)} target="_blank" rel="noreferrer">
-                Live at {shortAddress(leadAddr)}, up to {usdWhole(lead.depositCapUsd)}
+                Live at {shortAddress(leadAddr)}, {lead.roomUsd !== null ? `room for ${money(lead.roomUsd)} today` : `up to ${usdWhole(lead.depositCapUsd)}`}
               </a>
             </div>
           </div>
           <Button asChild size="lg" className="mt-3 w-full">
             <Link href={`/vault/${lead.id}`}>Put {lead.symbol} to work</Link>
           </Button>
-          {liveTaken.length > 1 ? <p className="mt-2 text-center text-[13px] leading-5 text-mute">{plural(liveTaken.length - 1, "more live vault", "more live vaults")} in the list.</p> : null}
+          {p.live.symbols.length > 1 ? <p className="mt-2 text-center text-[13px] leading-5 text-mute">{plural(p.live.symbols.length - 1, "more live vault", "more live vaults")} in the list.</p> : null}
         </>
       ) : (
         <>
-          <p className="mt-5 text-[13px] leading-5 text-mute">
-            {liveSymbols.length > 0 ? `${liveSentence(liveSymbols)} This wallet holds none of them, and the vaults for its tokens are launching.` : "The vaults for these tokens are launching."}
-          </p>
+          <p className="mt-5 text-[13px] leading-5 text-mute">{liveSymbols.length > 0 ? `${liveSentence(liveSymbols)} ${tail}` : "The vaults for these tokens are launching."}</p>
           <Button asChild size="lg" className="mt-3 w-full">
             <Link href="/vaults">{liveSymbols.length > 0 ? "See the live vaults" : "See the vaults"}</Link>
           </Button>
+          {aside && aside.putToWorkUsd !== null ? (
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-hairline pt-4">
+              <TokenLogo symbol={aside.symbol} size={32} />
+              <p className="min-w-0 flex-1 text-[15px] leading-5">
+                <span className="figure font-medium">{money(aside.putToWorkUsd)}</span> of {aside.symbol} can go in now
+              </p>
+              <Button asChild variant="outline">
+                <Link href={`/vault/${aside.id}`}>Put {aside.symbol} to work</Link>
+              </Button>
+            </div>
+          ) : null}
         </>
       )}
       <CopyLink />
@@ -330,19 +339,15 @@ function NoHoldings({ s, raw }: { s: WalletScan; raw: string }) {
 function Results({ s, raw }: { s: WalletScan; raw: string }) {
   const t = s.totals;
   if (s.rows.length === 0) return <NoHoldings s={s} raw={raw} />;
-  const wh = weakerHalf(s);
+  const v = verdict(s);
   const maxUsd = Math.max(0, ...s.rows.map((r) => r.holdingUsd ?? 0));
 
   return (
     <>
       <div className={cn("mt-4 grid gap-x-12", SPLIT)}>
         <div className="lg:col-start-1">
-          <p className="serif verdict text-[30px] leading-[34px] sm:text-[44px] sm:leading-[48px]">{verdict(s)}</p>
-          {wh ? (
-            <p className="mt-3 max-w-[690px] text-mute">
-              Replayed over the past {REPLAY_WINDOW.days} days of trades, the <Term id="worstHalf">weaker 15 days</Term> would have {wh.gain ? "kept" : "cost"} {money(wh.usd)} a year on that. Past trades, not a promise.
-            </p>
-          ) : null}
+          <p className="serif verdict text-[30px] leading-[34px] sm:text-[44px] sm:leading-[48px]">{v.main}</p>
+          {v.more ? <p className="mt-3 max-w-[690px] text-[17px] leading-6 text-mute">{v.more}</p> : null}
         </div>
 
         <aside className="mt-8 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mt-0 lg:self-start lg:sticky lg:top-24">
@@ -353,13 +358,13 @@ function Results({ s, raw }: { s: WalletScan; raw: string }) {
         <section aria-labelledby="holds" className="mt-8 lg:col-start-1">
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <h2 id="holds" className="text-2xl font-semibold leading-8 tracking-[-0.2px]">What the wallet holds</h2>
-            <p className="text-[13px] text-mute">{s.rows.length} of {s.tracked} Stock Tokens, largest first</p>
+            <p className="text-[13px] text-mute">{s.rows.length} of {s.tracked} Stock Tokens{s.rows.length > 1 ? ", largest first" : ""}</p>
           </div>
           <HoldBar rows={s.rows} />
           <div className={cn("mt-4 hidden border-b border-hairline px-3 pb-2 text-[13px] leading-5 text-mute lg:grid lg:items-center lg:gap-x-4", COLS)}>
             <span>Token</span>
             <span>Held</span>
-            <span>Uptick takes</span>
+            <span>Can go to work</span>
             <span><Term id="kept">Kept</Term> a year, <Term id="worstHalf">weaker half</Term></span>
             <span />
           </div>
@@ -370,14 +375,14 @@ function Results({ s, raw }: { s: WalletScan; raw: string }) {
           <AnotherWallet raw={raw} className="mb-8 mt-0 border-b lg:hidden" />
           {t.unpriced.length > 0 && (
             <p className="mb-6 max-w-[690px] text-[13px] leading-5 text-mute">
-              No usable Chainlink round for {t.unpriced.join(", ")} in this read, so {t.unpriced.length === 1 ? "it is" : "they are"} left out of every dollar figure above.
+              Chainlink had no usable price for {t.unpriced.join(", ")} in this read, so {t.unpriced.length === 1 ? "it is" : "they are"} left out of every dollar figure above.
             </p>
           )}
           <p className="max-w-[690px] text-[13px] leading-5 text-mute">
             A closed vault takes no deposits. <Term id="inKind">Exit in kind</Term> is never closed. A loan against the vault shares opens with each vault&rsquo;s <Term id="morpho">Morpho Blue</Term> market.
           </p>
           <p className="mt-3 max-w-[690px] text-[13px] leading-5 text-mute">
-            Read from Robinhood Chain in one Multicall3 call at <a className="-my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>,
+            Read from Robinhood Chain in a single call at <a className="-my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>,
             priced by the Chainlink feeds the vaults read. Kept is the weaker 15-day half of the {REPLAY_WINDOW.days}-day replay to {isoDay(REPLAY_WINDOW.end)}, taken on the deposit net of the entry fee.
             It measures past swaps and is not a promise. {LIVE_VAULTS.length ? `${liveSentence(LIVE_VAULTS.map((v) => v.symbol))} The rest are launching, and each row opens its vault page.` : "The vaults are launching, and each row opens its vault page."}
           </p>
