@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 /** `dx` shifts the tooltip from the left edge of its word so the whole box stays inside the viewport: 0 where it fits, negative near the right edge. */
 type Place = { dx: number; y: "below" | "above" };
 
-/** A domain word with a dotted underline and a plain definition. The definition opens on hover and on keyboard focus, stays open while the
+/** A domain word with a dotted underline and a plain definition. The invisible ::before gives the trigger a 44px touch target at any text size without moving or resizing the word. The definition opens on hover and on keyboard focus, stays open while the
  *  pointer is over it, and closes on Escape. It stays in the DOM, hidden, so aria-describedby on the focusable trigger always resolves. */
 export function Term({ id, children, className }: { id: TermId; children?: React.ReactNode; className?: string }) {
   const tipId = useId();
@@ -37,7 +37,7 @@ export function Term({ id, children, className }: { id: TermId; children?: React
 
   return (
     <span ref={wrap} className="relative" onMouseEnter={show} onMouseLeave={() => setOpen(false)}>
-      <button ref={trigger} type="button" aria-describedby={tipId} onFocus={show} onBlur={() => setOpen(false)} className={cn("term inline cursor-help rounded-sm text-left", className)}>
+      <button ref={trigger} type="button" aria-describedby={tipId} onFocus={show} onBlur={() => setOpen(false)} className={cn("term relative inline cursor-help rounded-sm text-left before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-[max(100%,2.75rem)] before:-translate-x-1/2 before:-translate-y-1/2", className)}>
         {children ?? def.label}
       </button>
       <span

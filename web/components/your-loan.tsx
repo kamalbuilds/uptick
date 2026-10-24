@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useBlock, useReadContract, useReadContracts, useSimulateContract } from "wagmi";
 import { CircleNotch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { LoanHedge } from "./hedge-plan";
 import { SectionTitle } from "./ledger";
 import { Skeleton } from "./status";
 import { StepList, runLabel, useStepRunner } from "./step-runner";
@@ -15,7 +16,7 @@ import { robinhoodChain } from "@/lib/chain";
 import { collateralMarket } from "@/lib/collateral-markets";
 import { num, pct, usd } from "@/lib/format";
 import { DEFAULT_TARGET_HEALTH, hasLoan, liquidationInStock, loanView, marketStateOf, planSafer, type LoanView, type SaferPlan } from "@/lib/loan";
-import { MORPHO_BLUE, irmAbi, marketId, morphoAbi, oracleAbi, sharePriceUsd, type MarketParams } from "@/lib/morpho";
+import { MORPHO_BLUE, aprPct, irmAbi, marketId, morphoAbi, oracleAbi, sharePriceUsd, type MarketParams } from "@/lib/morpho";
 import { usePrices } from "@/lib/prices";
 import { cn } from "@/lib/utils";
 import { SHARE_DECIMALS, USDG, type VaultConfig } from "@/lib/vaults";
@@ -84,6 +85,11 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
     query: { enabled: Boolean(state && state.lastUpdate > 0n), refetchInterval: REFRESH_MS },
   });
   const block = useBlock({ chainId: robinhoodChain.id, query: { refetchInterval: REFRESH_MS } });
+  // What this loan pays, in the form the hedge plan prices its margin at.
+  const loanRate = useMemo(
+    () => (rate.data === undefined ? undefined : { pct: aprPct(rate.data), source: `Morpho Blue borrowRateView on ${market.irm}`, fetchedAt: new Date(rate.dataUpdatedAt).toISOString() }),
+    [rate.data], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const collateral = pos?.[2] ?? 0n;
   // What the vault would pay for an in-kind exit of all the collateral, asked as Morpho would ask it. Only the route without USDG in the wallet needs it.
   const quote = useSimulateContract({
@@ -123,7 +129,12 @@ function LoanPanel({ cfg, vault, market, owner }: Live & { owner: Address }) {
   }
   if (!view || !input) return <div aria-busy="true" className="py-6"><Skeleton className="h-8 w-80" /><Skeleton className="mt-4 h-40 w-full" /></div>;
 
-  return <LoanArticle cfg={cfg} view={view} price={input.price} stockPrice={stockPrice} plan={plan} target={target} setTarget={setTarget} runner={runner} />;
+  return (
+    <div>
+      <LoanArticle cfg={cfg} view={view} price={input.price} stockPrice={stockPrice} plan={plan} target={target} setTarget={setTarget} runner={runner} />
+      <LoanHedge className="pb-8" cfg={cfg} vault={vault} owner={owner} collateral={collateral} loanRate={loanRate} healthFactor={view.risk.healthFactor} />
+    </div>
+  );
 }
 
 type LoanArticleProps = {

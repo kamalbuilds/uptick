@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckForm } from "./check-form";
+import { HedgePlan } from "./hedge-plan";
 import { StateChip, toneClass } from "./ledger";
 import { Skeleton } from "./status";
 import { Term } from "./term";
@@ -51,7 +52,7 @@ function TokenCell({ r }: { r: ScanRow }) {
   );
 }
 
-function WorkRow({ r }: { r: ScanRow }) {
+function WorkRow({ r, block }: { r: ScanRow; block: bigint }) {
   const b = r.borrow;
   return (
     <li className={ROW}>
@@ -83,11 +84,12 @@ function WorkRow({ r }: { r: ScanRow }) {
           <Link href={`/vault/${r.id}`} aria-label={`Put ${r.symbol} to work`}>Put to work</Link>
         </Button>
       </div>
+      <HedgePlan className="col-span-2 lg:col-span-6" source="wallet" id={r.id} symbol={r.symbol} token={r.token} balanceRaw={r.balanceRaw} block={block} />
     </li>
   );
 }
 
-function RefusedRow({ r }: { r: ScanRow }) {
+function RefusedRow({ r, block }: { r: ScanRow; block: bigint }) {
   return (
     <li className="row border-b border-hairline px-3 py-4">
       <div className="flex items-center justify-between gap-4">
@@ -98,6 +100,7 @@ function RefusedRow({ r }: { r: ScanRow }) {
         </div>
       </div>
       <p className="mt-2 max-w-[690px] text-mute">{r.reason}</p>
+      <HedgePlan className="mt-2" source="wallet" id={r.id} symbol={r.symbol} token={r.token} balanceRaw={r.balanceRaw} block={block} />
     </li>
   );
 }
@@ -166,7 +169,7 @@ function Results({ s }: { s: WalletScan }) {
           <div className={`hidden px-3 pb-1 pt-3 text-[13px] leading-5 text-mute lg:grid lg:items-center lg:gap-x-4 ${COLS}`}>
             <span>Token</span><span>Holding</span><span>State</span><span><Term id="kept">Kept a year</Term></span><span><Term id="borrowRoom">Borrow room</Term></span><span />
           </div>
-          <ul>{work.map((r) => <WorkRow key={r.id} r={r} />)}</ul>
+          <ul>{work.map((r) => <WorkRow key={r.id} r={r} block={s.block} />)}</ul>
         </section>
       )}
 
@@ -176,7 +179,7 @@ function Results({ s }: { s: WalletScan }) {
             <h2 id="refused" className="text-2xl font-semibold leading-8 tracking-[-0.2px]">Uptick refuses <span className="ml-1 text-[17px] font-normal text-mute">{refused.length}</span></h2>
             <p className="text-[13px] text-mute">A closed vault takes no deposits. <Term id="inKind">Exit in kind</Term> is never closed.</p>
           </div>
-          <ul>{refused.map((r) => <RefusedRow key={r.id} r={r} />)}</ul>
+          <ul>{refused.map((r) => <RefusedRow key={r.id} r={r} block={s.block} />)}</ul>
         </section>
       )}
 

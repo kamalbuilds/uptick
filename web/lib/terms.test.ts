@@ -47,6 +47,8 @@ const WHERE: Array<[TermId, string]> = [
   ["collateral", "components/your-loan.tsx"],
   ["healthFactor", "components/your-loan.tsx"],
   ["liquidationPrice", "components/your-loan.tsx"],
+  ["funding", "components/hedge-plan.tsx"],
+  ["healthFactor", "components/hedge-plan.tsx"],
 ];
 
 test("each screen opens the gloss of the word it leans on", () => {
@@ -57,7 +59,7 @@ test("each screen opens the gloss of the word it leans on", () => {
 });
 
 test("no screen names a gloss that does not exist", () => {
-  const files = ["components/idle-finder.tsx", "components/earn-borrow.tsx", "components/your-loan.tsx", "components/vault-list.tsx"];
+  const files = ["components/idle-finder.tsx", "components/earn-borrow.tsx", "components/your-loan.tsx", "components/vault-list.tsx", "components/hedge-plan.tsx"];
   let seen = 0;
   for (const f of files) {
     for (const m of src(f).matchAll(/<Term id="(\w+)"/g)) {

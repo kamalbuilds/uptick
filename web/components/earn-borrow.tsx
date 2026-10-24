@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { CircleNotch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { LoanHedge } from "./hedge-plan";
 import { SectionTitle, toneClass } from "./ledger";
 import { Term } from "./term";
 import { StepList, runLabel, useStepRunner } from "./step-runner";
@@ -191,8 +192,13 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
   const limitPct = room && room.maxBorrow > 0n ? Math.min(100, Number(((debt + borrow) * 10_000n) / room.maxBorrow) / 100) : 0;
   const capPct = room && room.maxBorrow > 0n ? Math.min(100, Number(((debt + room.cap) * 10_000n) / room.maxBorrow) / 100) : 0;
   const sized = parsed ? `${amount} ${cfg.symbol}` : `1 ${cfg.symbol}`;
+  // Step three reads the settled position: the collateral and debt on Morpho after the borrow, not the amounts typed for the next one.
+  const stepThree = finished && address && heldCollateral > 0n && run?.steps.some((s) => s.id === "borrow") === true;
+  const settledHealth = price !== undefined ? positionRisk({ collateral: heldCollateral, price, lltv: market.lltv, debt }).healthFactor : null;
+  const loanRate = rate.data === undefined ? undefined : { pct: aprPct(rate.data), source: `Morpho Blue borrowRateView on ${market.irm}`, fetchedAt: new Date(rate.dataUpdatedAt).toISOString() };
 
   return (
+    <>
     <div className="mt-6 grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="min-w-0 self-start rounded-lg border border-line bg-panel p-5">
         <label htmlFor="eb-amount" className="flex items-baseline justify-between text-[13px] leading-5 text-mute">
@@ -320,6 +326,16 @@ function Flow({ cfg, vault, market }: { cfg: VaultConfig; vault: `0x${string}`; 
         </p>
       </div>
     </div>
+    {stepThree && address && (
+      <div className="mt-8 border-t border-hairline pt-6" role="region" aria-labelledby="step-three">
+        <h3 id="step-three" className="text-[20px] font-medium leading-7 tracking-[-0.2px]">Step three: hedge it for the weekend</h3>
+        <p className="mt-1 max-w-[690px] text-mute">
+          You earn on the shares and hold the USDG. Before Friday&rsquo;s close, take the planned {cfg.symbol} short to Lighter with its size, side and leverage ready to enter, sized from the {cfg.symbol} behind your shares.
+        </p>
+        <LoanHedge className="mt-3" cfg={cfg} vault={vault} owner={address} collateral={heldCollateral} loanRate={loanRate} healthFactor={settledHealth} />
+      </div>
+    )}
+    </>
   );
 }
 

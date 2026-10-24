@@ -49,5 +49,7 @@ for f in "${FILES[@]}"; do
     if [ -n "$hits" ]; then echo "$f: PLTR called reduced or placed on v3"; echo "$hits" | cut -c1-200; bad=1; fi
   done
 done
+# The weekend hedge cost any public file states at $10k is the one weekend_cost.py prints from the tracked JSON.
+python3 spikes/stock-hedge/economics/weekend_cost.py --check README.md docs/SUBMISSION.md deck/index.html web/public/llms.txt || bad=1
 [ $bad = 0 ] && echo "check-facts: ${#FILES[@]} files clean of ${#BANNED[@]} banned strings; $doors door counts match docs/facts.json"
 exit $bad

@@ -1,7 +1,7 @@
 import { REDUCED_CAP_STOCK_USD } from "./evidence.ts";
 import { usdWhole } from "./format.ts";
 
-export type TermId = "taking" | "kept" | "worstHalf" | "open" | "reduced" | "closed" | "entryFee" | "lltv" | "healthFactor" | "liquidationPrice" | "borrowRoom" | "collateral" | "morpho" | "inKind";
+export type TermId = "taking" | "kept" | "worstHalf" | "open" | "reduced" | "closed" | "entryFee" | "lltv" | "healthFactor" | "liquidationPrice" | "borrowRoom" | "collateral" | "morpho" | "inKind" | "funding";
 
 /** One plain sentence or two for each word the list leans on. Every number is the gate's own: the -20% floor and the per-deposit cap. */
 export const TERMS: Record<TermId, { label: string; text: string }> = {
@@ -60,5 +60,9 @@ export const TERMS: Record<TermId, { label: string; text: string }> = {
   inKind: {
     label: "Exit in kind",
     text: "Withdraw your share of the vault as the two tokens it holds, the stock and USDG, with no swap and no price. It is open in every state, closed included.",
+  },
+  funding: {
+    label: "Funding",
+    text: "The payment between longs and shorts on a perpetual, settled every hour, that keeps its price near the stock's. When longs pay, a short earns it; when shorts pay, a short pays it. Lighter sets the rate and publishes every hour.",
   },
 };
