@@ -335,7 +335,7 @@ export function agentInstruction(p: ExecutionProposal): string {
     `Exit by: ${p.exit_by}. Check the position every few hours and close by ${p.exit_by} with a reduce-only buy of ${p.exit.size} ${sym}.`,
     `Estimated: round trip slippage ${fmt(c.slippage_bp, "bp")}, fees ${fmt(c.fees_bp, "bp")}, funding ${c.funding_direction ?? "n/a"} ${fmt(c.funding_bp, "bp")}, margin interest ${c.margin_borrow_bp} bp, liquidation near ${p.estimated_liquidation_price}.`,
     ``,
-    `Paper (run from the kit folder, no key needed):`,
+    `Paper (run from the kit folder, no key needed; use reset in place of init if a paper account already exists):`,
     `python3 scripts/paper.py init --collateral ${p.margin_usdg}${tier}`,
     `python3 scripts/paper.py order ioc ${sym} --side short --amount ${p.size.base} --price ${p.order.limit_price}`,
     `python3 scripts/paper.py positions --symbol ${sym}`,
