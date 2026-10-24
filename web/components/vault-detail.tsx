@@ -28,16 +28,16 @@ function AddressRow({ label, address, link = true }: { label: string; address: s
   return (
     <div className="flex items-center justify-between gap-4 border-b border-hairline py-3">
       <dt className="text-mute">{label}</dt>
-      <dd className="figure flex items-center gap-3">
+      <dd className="figure flex items-center gap-3 max-lg:gap-7 max-lg:pr-1.5">
         <span title={address}>{shortAddress(address)}</span>
         <button
           aria-label={`Copy ${label} address`}
-          className="-m-2 p-2 text-mute hover:text-fg"
+          className="touch -m-2 p-2 text-mute hover:text-fg"
           onClick={async () => { await navigator.clipboard.writeText(address); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
         >
           {copied ? <span className="text-xs">Copied</span> : <CopySimple size={16} aria-hidden />}
         </button>
-        {link && <a aria-label={`${label} on the explorer`} className="-m-2 p-2 text-mute hover:text-fg" href={addressUrl(address)} target="_blank" rel="noreferrer">
+        {link && <a aria-label={`${label} on the explorer`} className="touch -m-2 p-2 text-mute hover:text-fg" href={addressUrl(address)} target="_blank" rel="noreferrer">
           <ArrowSquareOut size={16} aria-hidden />
         </a>}
       </dd>
@@ -74,7 +74,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
     <>
       <div className="mx-auto max-w-[1280px] px-6 pb-14 pt-8 lg:pt-10">
         <nav aria-label="Breadcrumb" className="text-[13px] text-mute">
-          <Link href="/vaults" className="-my-2 inline-block py-2 hover:text-fg">Vaults</Link> / <span className="text-fg">{cfg.symbol}</span>
+          <Link href="/vaults" className="touch -my-2 inline-block py-2 hover:text-fg">Vaults</Link> / <span className="text-fg">{cfg.symbol}</span>
         </nav>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -89,7 +89,7 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
         {cfg.vault && (
           <p className="mt-1">
             Live on Robinhood Chain at{" "}
-            <a className="figure underline underline-offset-4 hover:text-fg" href={addressUrl(cfg.vault)} target="_blank" rel="noreferrer" title={cfg.vault}>{shortAddress(cfg.vault)}</a>
+            <a className="touch figure underline underline-offset-4 hover:text-fg" href={addressUrl(cfg.vault)} target="_blank" rel="noreferrer" title={cfg.vault}>{shortAddress(cfg.vault)}</a>
           </p>
         )}
         <p className="mt-1"><PriceLine id={cfg.id} /></p>

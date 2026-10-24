@@ -26,7 +26,7 @@ function Items({ prices, hidden }: { prices: Map<string, { usd: number }> | unde
         return (
           <li key={v.id}>
             <Link href={`/vault/${v.id}`} tabIndex={hidden ? -1 : undefined} className="flex h-9 items-center gap-2 px-4 text-[13px] hover:bg-panel">
-              <TokenLogo symbol={v.symbol} size={16} />
+              <TokenLogo symbol={v.symbol} size={20} />
               <span className="font-medium">{v.symbol}</span>
               <span className="figure text-mute">{p ? priceLabel(p.usd) : "n/a"}</span>
             </Link>
