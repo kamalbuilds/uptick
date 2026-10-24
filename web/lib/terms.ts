@@ -1,13 +1,17 @@
 import { REDUCED_CAP_STOCK_USD } from "./evidence.ts";
 import { usdWhole } from "./format.ts";
 
-export type TermId = "taking" | "kept" | "worstHalf" | "open" | "reduced" | "closed" | "entryFee" | "lltv" | "healthFactor" | "liquidationPrice" | "borrowRoom" | "collateral" | "morpho" | "inKind" | "funding";
+export type TermId = "taking" | "feesEarned" | "kept" | "worstHalf" | "open" | "reduced" | "closed" | "entryFee" | "lltv" | "healthFactor" | "liquidationPrice" | "borrowRoom" | "collateral" | "morpho" | "inKind" | "funding";
 
 /** One plain sentence or two for each word the list leans on. Every number is the gate's own: the -20% floor and the per-deposit cap. */
 export const TERMS: Record<TermId, { label: string; text: string }> = {
   taking: {
     label: "Vaults past the gate",
     text: "Open and reduced vaults clear the replay gate and go first, and the ones already deployed are live on Robinhood Chain. A closed vault stays shut until its numbers recover.",
+  },
+  feesEarned: {
+    label: "Fees earned",
+    text: "What the pool paid liquidity providers over the 30-day replay, as a percent a year on the position. It comes before what fast traders, the informed ones, take back after their swaps and before what each recentre costs. The line under it, kept after fast traders, is what is left.",
   },
   kept: {
     label: "Kept",
