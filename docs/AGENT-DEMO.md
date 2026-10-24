@@ -17,11 +17,12 @@ The endpoint speaks MCP over Streamable HTTP: JSON-RPC 2.0 over POST, `Accept: a
 
 | Seconds | Beat | Say |
 |---|---|---|
-| 0 to 10 | tools/list | "Nine tools. Five read, four prepare transactions the holder signs, including borrowing against a vault share and making a loan safer." |
+| 0 to 10 | tools/list | "Ten tools. Six read, including the weekend hedge planner, and four that prepare transactions the holder signs, including borrowing against a vault share and making a loan safer." |
 | 10 to 22 | list_vaults | "17 vaults, 3 open, 9 reduced, 5 closed. PLTR is open, on Uniswap v4." |
 | 22 to 35 | get_vault_evidence pltr | "Venue v4, the pool id, the PoolManager, and the gate reason in the replay's own words." |
 | 35 to 50 | prepare_deposit pltr | "The agent asks for a deposit. It gets the gate and the transactions to sign." |
 | 50 to 60 | prepare_deposit spcx | "SPCX is closed. The agent is refused with the reason, so it tells the holder why." |
+| 60 to 75 | plan_weekend_hedge | "Earn, borrow, hedge. The agent sizes a weekend short from what the wallet holds and reads Lighter live for what it costs. It places nothing." |
 
 ## 1. tools/list
 
@@ -134,6 +135,24 @@ curl -sS "$MCP" "${H[@]}" -d "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/c
 ```
 
 Exits stay open on every vault: `prepare_withdraw` with `mode: "in_kind"` builds `redeemInKind`, which reads no oracle.
+
+## Hedge it for the weekend
+
+One prompt: "I hold NVDA. What does a weekend hedge cost?"
+
+`plan_weekend_hedge {"address":"0x92d435c96e63c43e12d6d0ab28f6b0b04072f765"}` reads the wallet's NVDA balance and the token's on-chain ERC-8056 `uiMultiplier()` at one block, then reads Lighter's Robinhood Chain exchange (`orderBookDetails`, `assetDetails`, `orderBookOrders` for the market and `fundings`) and returns the size and the weekend cost. A run at 2026-10-23T23:33:47Z returned:
+
+| Field | Value | Meaning |
+|---|---|---|
+| `shares` | 96.6378 | 96.563 NVDA tokens times the multiplier 1.000775, floored to the market's four size decimals |
+| `notionalUsd` | 20396.37 | shares at the mid of Lighter's book |
+| `slippageBp` | 1.77 | open into the bids plus close from the asks, walked at that size |
+| `fundingBp`, `fundingDirection` | 5.07, earns | what a short earns over the 65 weekend hours at the mean hourly funding of the weekend hours in the last 28 days (a history, not a forecast) |
+| `marginEligible`, `userCapTokens` | true, 60 | Lighter counts NVDA toward margin, up to 60 tokens an account, read live |
+| `window` | close 2026-10-23T20:00Z, unwind 2026-10-26T13:00Z | the US close and 30 minutes before the Monday open |
+| `handoffUrl` | https://robinhoodchain.lighter.xyz/trade/NVDA | the market on Lighter, where the holder enters the short |
+
+`source: "loan"` with a `vault` sizes the short from the stock leg of the shares posted as Morpho collateral (the vault's `redeemInKind` simulated for the collateral) and adds the margin interest on the debt as `marginCostBp`. The tool returns no calldata. A wallet with no holding, or a token Lighter lists no perp for (GME, MSTR), answers with the reason. If Lighter does not answer cleanly the result is an error carrying its code and no plan; a missing figure is never returned as zero.
 
 ## Alternative: add the server to Claude Code
 

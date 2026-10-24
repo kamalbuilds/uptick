@@ -18,6 +18,7 @@ import { RHC_RPCS, parseOwner, scanWallet, type ScanClient, type ScanLltv, type 
 import type { TalkEnv } from "./talk";
 import type { AlertsEnv } from "./alerts";
 import { checkLoanHealth, prepareMakeSafer, type LoanToolDeps, type LoanToolResult } from "./loan-tools";
+import { planWeekendHedge } from "./hedge-tools";
 
 export interface Env extends TalkEnv, AlertsEnv {
   VAULTS?: string;
@@ -908,6 +909,22 @@ const TOOLS: McpTool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "plan_weekend_hedge",
+    description:
+      "Read-only. Sizes and prices a weekend short of the matching Stock Token perp on Lighter's Robinhood Chain exchange. source wallet sizes it from the Stock Tokens the wallet holds (vault optional, otherwise the largest holding Lighter lists a perp for); source loan sizes it from the stock leg of the vault shares the wallet posted as Morpho collateral (vault required). Shares use the token's on-chain ERC-8056 multiplier. Lighter is read live: funding over the weekend hours (a history of the last 28 days, never a forecast) as fundingBp with fundingDirection earns or pays, order-book slippage at the exact size as slippageBp, margin interest as marginCostBp when the margin is borrowed, whether Lighter accepts the token as margin (marginEligible, userCapTokens), the close (Friday US close) and the default unwind (30 minutes before the Monday US open), and a handoffUrl to the market on Lighter. It places nothing and returns no calldata: the holder enters the short on Lighter. If Lighter does not answer cleanly, isError carries its code and no plan is returned. A wallet with no holding, or one Lighter lists no perp for, answers with the reason.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: { type: "string", description: "0x address of the holder or borrower." },
+        source: { type: "string", enum: ["wallet", "loan"], default: "wallet", description: "wallet: size from Stock Token balances. loan: size from the stock leg of vault shares posted as Morpho collateral." },
+        vault: { type: "string", description: "Vault id, for example nvda. Required for source loan; for source wallet it picks the token." },
+        leverage: { type: "number", minimum: 1, maximum: 20, default: 5, description: "Leverage for the short, capped by the market's minimum initial margin." },
+      },
+      required: ["address"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 interface JsonRpcMessage {
@@ -961,6 +978,10 @@ async function callTool(
       return loanTool(env, args, deps.loan ?? {}, (id, d) => checkLoanHealth(env, id, args.address, d));
     case "prepare_make_safer":
       return loanTool(env, args, deps.loan ?? {}, (id, d) => prepareMakeSafer(env, id, args.address, args.target_health, d));
+    case "plan_weekend_hedge": {
+      const { payload, isError } = await planWeekendHedge({ env, vaults: scanVaults(), defaultClient: () => scanClient(env), deps }, args);
+      return textResult(payload, isError);
+    }
     default: {
       const result = errorResult(`unknown tool: ${String(name)}`);
       return result;
@@ -973,6 +994,10 @@ export interface McpDeps {
   scanClient?: ScanClient;
   /** A client and market list for the loan tools; a test stands in for the node with it. */
   loan?: LoanToolDeps;
+  /** plan_weekend_hedge reads Lighter's Robinhood Chain API through this; the global fetch when absent. */
+  lighterFetch?: typeof fetch;
+  /** Wall clock in ms for plan_weekend_hedge's funding window and weekend; Date.now when absent. */
+  now?: () => number;
 }
 
 export async function handleMcp(request: Request, env: Env, deps: McpDeps = {}): Promise<Response> {
