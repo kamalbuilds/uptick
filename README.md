@@ -115,6 +115,22 @@ Each address returns bytecode from `cast code` against `https://rpc.mainnet.chai
 | SPCX | `0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa` |
 | USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
 
+<!-- deployed:start -->
+## Deployed on Robinhood Chain
+
+Live on Robinhood Chain mainnet (chain id 4663) through block 96359219. Every address returns bytecode from `cast code`; the factory pins the creation-code hash of StockVault and StockVaultV4, each vault's deposit cap, owner, keeper, pool and feed were read back from the chain after the deploy, and every share oracle is registered in the oracle factory's `isOracle`.
+
+| Contract | Address | Deposit cap |
+|---|---|---|
+| VaultFactory | [`0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a`](https://robinhoodchain.blockscout.com/address/0x67AB92446f38F01Ec5a863f6C8e7b8aF39415A1a) | |
+| UptickRouter | [`0x599BE83442e02810B501fab280dC2eBD6d0D2c48`](https://robinhoodchain.blockscout.com/address/0x599BE83442e02810B501fab280dC2eBD6d0D2c48) | |
+| UptickShareOracleFactory | [`0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB`](https://robinhoodchain.blockscout.com/address/0x0334c4A66d40F5c6c2891d3AFD26b4519B6715DB) | |
+| AAPL vault (Uniswap v3 pool) | [`0x127eCb0e814EF0cC296910DFd5E946050d85534f`](https://robinhoodchain.blockscout.com/address/0x127eCb0e814EF0cC296910DFd5E946050d85534f) | $5,000 |
+| AAPL share oracle | [`0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB`](https://robinhoodchain.blockscout.com/address/0x32518De75DFEC2cF07F8B4742cf64f9952D3A0EB) | |
+| PLTR vault (Uniswap v4 pool) | [`0xD769d94E43447937Eaa85Dc6AE291468649085a3`](https://robinhoodchain.blockscout.com/address/0xD769d94E43447937Eaa85Dc6AE291468649085a3) | $5,000 |
+| PLTR share oracle | [`0x613F1250fc27aD51C11C403bd9b5440181D0f9A4`](https://robinhoodchain.blockscout.com/address/0x613F1250fc27aD51C11C403bd9b5440181D0f9A4) | |
+<!-- deployed:end -->
+
 ## Run locally
 
 ```

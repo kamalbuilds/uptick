@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Wires a finished deploy into the repo from deployments/4663.json (written by scripts/deploy-mainnet.sh --broadcast):
+#   web/lib/deployments.json  a copy of the record the web app reads for each live vault's cap (api/data/deployments.json follows via `npm run sync` in api/)
 #   web/package.json   build:pages gets NEXT_PUBLIC_VAULTS and NEXT_PUBLIC_ROUTER   (+ web/.env.local for `npm run dev`)
 #   api/wrangler.toml  the Worker's VAULTS and ROUTER vars
 #   README.md          the "Deployed on Robinhood Chain" address table
@@ -14,7 +15,10 @@ die() { echo "REFUSED: $*" >&2; exit 1; }
 [ -f "$D" ] || die "$D does not exist; run scripts/deploy-mainnet.sh --broadcast first"
 jq -e '.chainId == 4663 and (.vaults | length) > 0 and (.vaults | to_entries | all(.value.address | test("^0x[0-9a-fA-F]{40}$"))) and (.router.address | test("^0x[0-9a-fA-F]{40}$"))' "$D" >/dev/null \
   || die "$D is not a complete 4663 deployment record"
+cp "$D" "$APP/web/lib/deployments.json"
 VAULTS=$(jq -c '.vaults | map_values(.address)' "$D")
+# the Worker keys its VAULTS by vault id (lowercase, "aapl": api/src/mcp.ts parseVaults, findVault); the web app keys by ticker ("AAPL")
+API_VAULTS=$(jq -c '.vaults | with_entries(.key |= ascii_downcase) | map_values(.address)' "$D")
 ROUTER=$(jq -r '.router.address' "$D")
 
 # web: build:pages sets both variables to empty on its own command line, which beats any env file, so the values go there
@@ -39,7 +43,7 @@ while IFS=$'\t' read -r SYM A B; do
 done < <(jq -r '.vaults | to_entries[] | [.key, .value.address, .value.block] | @tsv' "$D")
 
 # api: the Worker's plain vars
-node - "$APP/api/wrangler.toml" "$VAULTS" "$ROUTER" <<'JS'
+node - "$APP/api/wrangler.toml" "$API_VAULTS" "$ROUTER" <<'JS'
 const fs = require("fs");
 const [file, vaults, router] = process.argv.slice(2);
 let t = fs.readFileSync(file, "utf8");
@@ -57,7 +61,7 @@ TABLE=$(jq -r --arg x "$X" '
   + "\n| VaultFactory | \(link(.factory.address)) | |"
   + "\n| UptickRouter | \(link(.router.address)) | |"
   + (if .oracleFactory then "\n| UptickShareOracleFactory | \(link(.oracleFactory.address)) | |" else "" end)
-  + ([.vaults | to_entries[] | "\n| \(.key) vault (\(if .value.venue == "v4" then "Uniswap v4" else "Uniswap v3" end) pool) | \(link(.value.address)) | $\(.value.capUsd) |"
+  + ([.vaults | to_entries[] | "\n| \(.key) vault (\(if .value.venue == "v4" then "Uniswap v4" else "Uniswap v3" end) pool) | \(link(.value.address)) | $\(.value.capUsd | tostring | gsub("(?<=\\d)(?=(\\d{3})+$)"; ",")) |"
       + (if .value.oracle then "\n| \(.key) share oracle | \(link(.value.oracle)) | |" else "" end)] | join(""))' "$D")
 BLOCK=$(jq -r '[.factory.block, (.vaults[].block)] | max' "$D")
 node - "$APP/README.md" "$APP/docs/SUBMISSION.md" "$TABLE" "$BLOCK" <<'JS'
