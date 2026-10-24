@@ -16,6 +16,9 @@ const PAIRS: Array<[string, string]> = [
   ["../../web/lib/hedge.ts", "../src/shared/hedge.ts"],
   ["../../web/lib/hedge-chain.ts", "../src/shared/hedge-chain.ts"],
   ["../../web/lib/in-kind.ts", "../src/shared/in-kind.ts"],
+  ["../../web/lib/live-cap.ts", "../src/shared/live-cap.ts"],
+  ["../../deployments/4663.json", "../../web/lib/deployments.json"],
+  ["../../web/lib/deployments.json", "../data/deployments.json"],
   ["../../web/lib/collateral-markets.json", "../data/collateral-markets.json"],
 ];
 
@@ -24,8 +27,8 @@ const drifted = (pairs: Array<[string, string]>, sourceOf: (p: string) => string
   pairs.filter(([src, copy]) => sourceOf(src) !== read(copy)).map(([src]) => src.split("/").pop() as string);
 
 describe("the Worker's copies of web/lib match their source", () => {
-  test("scan, price-math, morpho, loan, abis, the Lighter reader, the hedge planner and the collateral markets are byte for byte the web files", () => {
-    expect(PAIRS.length).toBe(10);
+  test("scan, price-math, morpho, loan, abis, the Lighter reader, the hedge planner, the deployed-cap rule, the collateral markets and the deployment record are byte for byte the web files", () => {
+    expect(PAIRS.length).toBe(13);
     expect(drifted(PAIRS)).toEqual([]);
   });
 

@@ -13,8 +13,8 @@ Say: "On 22 October Robinhood made Stock Tokens collateral on Morpho and said an
 
 ## 0:20 to 0:40 The PLTR vault page
 
-Screen: `/vault/pltr`, state chip Open, the "Where a year of fees goes" strip and "Why it is open".
-Say: "PLTR kept 7.9% a year in its weaker half on its Uniswap v4 pool. The pool paid 127% in fees. Fees are not yield. We replayed 3,059,881 swaps to see what an LP keeps, and we open a vault only where that number is above break-even."
+Screen: `/vault/pltr`, state chip Open, the line "Live on Robinhood Chain at 0xD769...85a3" linked to Blockscout, the "Where a year of fees goes" strip and "Why it is open".
+Say: "The PLTR vault is live on Robinhood Chain today, with a $5,000 cap. PLTR kept 7.9% a year in its weaker half on its Uniswap v4 pool. The pool paid 127% in fees. Fees are not yield. We replayed 3,059,881 swaps to see what an LP keeps, and we open a vault only where that number is above break-even."
 
 ## 0:40 to 1:00 Earn and borrow
 

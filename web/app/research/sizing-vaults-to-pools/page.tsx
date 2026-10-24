@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Article, DataTable, H2, P, SourceRef, Sources, TLDR, PostFooter } from "@/components/prose";
+import deployed from "@/lib/deployments.json";
 import universe from "@/lib/vault-universe.json";
 
 const usd = (n: number) =>
@@ -122,17 +123,19 @@ export default function SizingVaultsToPoolsPage() {
       <P>
         At block 93099228, 196 tokens are in the registry, 35 have a usable Chainlink feed, 95 have a
         USDG v3 pool, and 17 clear every condition. The table below is generated from the same
-        universe file the vault pages read, so the cap on this page is the cap in the contract.
+        universe file the vault pages read. A launching vault is created at the size in the table; a vault already
+        live on Robinhood Chain enforces the cap it was deployed with, shown in the last column.
       </P>
       <DataTable
-        columns={["Token", "Gate", "Deposit cap"]}
+        columns={["Token", "Gate", "Launch size", "Live cap"]}
         rows={universe.vaults.map((vault) => [
           vault.symbol,
           gateLabel(vault.gate.state),
           usd(vault.depositCapUsd),
+          (deployed.vaults as Record<string, { capUsd: number }>)[vault.symbol] ? usd((deployed.vaults as Record<string, { capUsd: number }>)[vault.symbol].capUsd) : "At launch",
         ])}
-        numeric={[2]}
-        caption="All 17 eligible Stock Tokens at block 93099228. Caps are depositCapUsd, enforced by StockVault. Gates are from the replay."
+        numeric={[2, 3]}
+        caption="All 17 eligible Stock Tokens at block 93099228. Launch size is depositCapUsd, the size the replay ran at. Live cap is the cap on-chain in deployments/4663.json. Gates are from the replay."
       />
       <P>
         {doors.open.length} vaults are open, {doors.reduced.length} are reduced and {doors.closed.length} are
