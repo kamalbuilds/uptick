@@ -6,6 +6,7 @@ import {
   CodeBlock,
   DataTable,
   H2,
+  H3,
   P,
   SourceRef,
   Sources,
@@ -30,7 +31,7 @@ export default function ForAgentsPage() {
           <li>GET /vaults serves every vault with its cap and open flag. GET /vaults/:id adds the gate state, the reason and the per-pool replay. CORS is open.</li>
           <li>POST /mcp is a Streamable HTTP JSON-RPC 2.0 endpoint with ten tools.</li>
           <li>scan_wallet reads any wallet address and returns its Stock Token holdings in USD with each vault's gate. It is read-only.</li>
-          <li>plan_weekend_hedge sizes a weekend short on Lighter's Robinhood Chain exchange from what a wallet holds and prices it from live Lighter reads. It is read-only and returns no calldata.</li>
+          <li>plan_weekend_hedge sizes a weekend short on Lighter's Robinhood Chain exchange from what a wallet holds and prices it from live Lighter reads. It is read-only, returns no calldata, and hands the short to the holder's own agent as an execution_proposal.</li>
           <li>prepare_deposit, prepare_withdraw, prepare_earn_and_borrow and prepare_make_safer return unsigned transactions. The user signs and sends.</li>
         </ul>
       </TLDR>
@@ -137,7 +138,7 @@ export default function ForAgentsPage() {
           ],
           [
             "plan_weekend_hedge",
-            "Read-only. Takes a wallet address and a source, wallet or loan (a loan also takes the vault id), and sizes a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from the Stock Tokens the wallet holds, or from the stock leg of its vault shares, using the on-chain ERC-8056 multiplier. Reads Lighter live for funding, order-book slippage at that size and margin terms, and returns the notional, slippage in basis points, whether the short earns or pays funding over the weekend in basis points, the margin cost, whether Lighter accepts the token as margin, the leverage (default 5, up to the market's maximum, 1 / min initial margin; above it the tool returns an error), the close and default unwind times and a hand-off link. It returns no calldata. A Lighter failure returns an error carrying the upstream code, never a zero-cost plan; a wallet with no holding answers with the reason.",
+            "Read-only. Takes a wallet address and a source, wallet or loan (a loan also takes the vault id), and sizes a short of the matching Stock Token perp on Lighter's Robinhood Chain exchange from the Stock Tokens the wallet holds, or from the stock leg of its vault shares, using the on-chain ERC-8056 multiplier. Reads Lighter live for funding, order-book slippage at that size and margin terms, and returns the notional, slippage in basis points, whether the short earns or pays funding over the weekend in basis points, the margin cost, whether Lighter accepts the token as margin, the leverage (default 5, up to the market's maximum, 1 / min initial margin; above it the tool returns an error), the close and default unwind times and a hand-off link. It also returns execution_proposal, the same short as an order for the holder's own agent (market symbol, sell, base size and notional, a protective limit price from the book walk, suggested and maximum leverage, estimated costs, market_data_at, valid_until, exit_by, liquidation estimate and risk notes), and agent_instruction, the text to paste into an agent that has lighter-agent-kit. It returns no calldata. A Lighter failure returns an error carrying the upstream code, never a zero-cost plan; a wallet with no holding answers with the reason.",
           ],
         ]}
         caption="The vault contract also enforces its deposit cap on-chain against its total, so the cap check in prepare_deposit is an early refusal, not the only one."
@@ -181,6 +182,81 @@ export default function ForAgentsPage() {
   ]
 }`}
       />
+      <H2>Hedge with your own agent</H2>
+      <P>
+        Uptick plans the weekend short and your agent places it. The planner never signs, never holds a key
+        or funds, and does not hedge the vault itself. Your agent runs Lighter&apos;s official{" "}
+        <Code>lighter-agent-kit</Code> with your own Lighter account and your own key.
+      </P>
+      <DataTable
+        columns={["Step", "Who", "What happens"]}
+        rows={[
+          [
+            "1. Plan",
+            "Uptick MCP",
+            "plan_weekend_hedge reads the wallet, the on-chain ERC-8056 multiplier and the live Lighter book, funding and margin terms, then returns the plan with execution_proposal and agent_instruction.",
+          ],
+          [
+            "2. Place",
+            "lighter-agent-kit, with your key",
+            "Your agent takes agent_instruction, rehearses it with scripts/paper.py against the live order book, and places it with scripts/trade.py when you say so. It checks the position every few hours and closes by exit_by.",
+          ],
+        ]}
+        caption="Lighter's Robinhood Chain deployment is selected with LIGHTER_HOST=https://api.rh.lighter.xyz. Use lighter-agent-kit at commit 9798b37 or later."
+      />
+      <H3>Step 1: ask Uptick for the plan</H3>
+      <CodeBlock
+        label="JSON-RPC request"
+        code={`{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "plan_weekend_hedge",
+    "arguments": { "address": "0x28C66690Ae101a4f07546b07a2Ac8Eb439b6C245", "vault": "nvda" }
+  }
+}`}
+      />
+      <P>
+        The payload keeps the plan&apos;s own figures and adds the order. Abbreviated, for 1,275.0913 NVDA read
+        at one block:
+      </P>
+      <CodeBlock
+        label="execution_proposal, abbreviated"
+        code={`{
+  "status": "proposed",
+  "venue": "lighter-robinhood-chain",
+  "market": { "symbol": "NVDA", "market_id": 15, "type": "perp" },
+  "side": "sell",
+  "size": { "base": "1275.0913", "notional_usd": 269222.78 },
+  "order": { "type": "limit", "limit_price": "210.70", "expected_avg_fill_price": "211.04" },
+  "leverage": { "suggested": 5, "max": 20, "margin_mode": "cross" },
+  "estimated_costs": { "slippage_bp": 8.51, "fees_bp": 0, "funding_bp": 3.89, "funding_direction": "earns" },
+  "estimated_liquidation_price": 245.87,
+  "market_data_at": "2026-10-24T10:32:03.290Z",
+  "valid_until": "2026-10-24T10:42:03.290Z",
+  "exit_by": "2026-10-26T13:00:00.000Z"
+}`}
+      />
+      <H3>Step 2: your agent places it</H3>
+      <P>
+        Paste <Code>agent_instruction</Code> into an agent that has the kit. It names the market, side, size,
+        leverage, limit price and exit time, and it opens with paper trading. The Robinhood Chain
+        perpetual is the bare ticker, <Code>NVDA</Code>.
+      </P>
+      <CodeBlock
+        label="Paper, from the kit folder (no key)"
+        code={`export LIGHTER_HOST=https://api.rh.lighter.xyz
+python3 scripts/paper.py init --collateral 53844.56 --tier standard
+python3 scripts/paper.py order ioc NVDA --side short --amount 1275.0913 --price 210.70
+python3 scripts/paper.py positions --symbol NVDA`}
+      />
+      <P>
+        In a paper run against the live Lighter order book on 2026-10-24, that proposal filled in full at an
+        average within 1 basis point of expected_avg_fill_price, with every fill at or above the limit. A size under Lighter&apos;s smallest order returns the
+        reason and no proposal, so there is nothing to paste.
+      </P>
+
       <Callout tone="key" label="The server never signs">
         The prepare tools only build unsigned transactions for the user to sign. Never sign, send, or
         broadcast anything yourself. When you report a vault, cite the gate reason verbatim and state the
@@ -190,6 +266,9 @@ export default function ForAgentsPage() {
       <Sources>
         <SourceRef path="api/src/worker.ts">
           The /vaults, /vaults/:id, /llms.txt and /health routes.
+        </SourceRef>
+        <SourceRef path="web/lib/hedge.ts">
+          proposeExecution and agentInstruction: the order and the text derived from the plan.
         </SourceRef>
         <SourceRef path="api/src/mcp.ts">
           The JSON-RPC dispatch, the ten tools, the cap checks and the refusals.

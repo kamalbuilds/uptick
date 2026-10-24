@@ -10,7 +10,7 @@ import { Term } from "./term";
 import { vaultAbi } from "@/lib/abis";
 import { robinhoodChain } from "@/lib/chain";
 import { ago, num, pct, usd } from "@/lib/format";
-import { DEFAULT_UNWIND_MINUTES, type HedgePlan as Plan } from "@/lib/hedge";
+import { DEFAULT_UNWIND_MINUTES, agentInstruction, type HedgePlan as Plan } from "@/lib/hedge";
 import { STRESS_FALL_PCT, aprText, bpLabel, costSentences, driftFor, DRIFT_SYMBOLS, earnsOrPays, healthAfterFall, lighterTradeUrl, money, orderLines, orderText, utcStamp } from "@/lib/hedge-view";
 import { MORPHO_BLUE } from "@/lib/morpho";
 import { usePrices } from "@/lib/prices";
@@ -149,7 +149,7 @@ function Ready({ p, plan, margin, block, readAt, balanceRaw }: { p: WalletProps 
         </p>
       </div>
 
-      <HandOff className="lg:col-start-2 lg:row-span-2 lg:row-start-1" symbol={p.symbol} shares={shares} leverage={plan.leverage} />
+      <HandOff className="lg:col-start-2 lg:row-span-2 lg:row-start-1" symbol={p.symbol} shares={shares} leverage={plan.leverage} proposal={plan.proposal} />
 
       <div className="min-w-0 lg:col-start-1 lg:row-start-2">
         <dl className="max-w-[690px]" data-testid="hedge-ledger">
@@ -266,16 +266,24 @@ function Margin({ plan, margin, symbol, mc, price }: { plan: Ok; margin: MarginB
   );
 }
 
-function HandOff({ symbol, shares, leverage, className }: { symbol: string; shares: string; leverage: number; className?: string }) {
-  const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
+type Copy = "idle" | "done" | "failed";
+
+function useCopy(text: string) {
+  const [state, setState] = useState<Copy>("idle");
   async function copy() {
     try {
-      await navigator.clipboard.writeText(orderText(symbol, shares, leverage));
-      setCopied("done");
+      await navigator.clipboard.writeText(text);
+      setState("done");
     } catch {
-      setCopied("failed");
+      setState("failed");
     }
   }
+  return [state, copy] as const;
+}
+
+function HandOff({ symbol, shares, leverage, proposal, className }: { symbol: string; shares: string; leverage: number; proposal: Ok["proposal"]; className?: string }) {
+  const [order, copyOrder] = useCopy(orderText(symbol, shares, leverage));
+  const [agent, copyAgent] = useCopy(proposal ? agentInstruction(proposal) : "");
   return (
     <div className={cn("min-w-0 self-start rounded-lg border border-line bg-panel p-5", className)} data-testid="hedge-ticket">
       <p className="text-[15px] font-semibold">Take it to Lighter</p>
@@ -292,13 +300,24 @@ function HandOff({ symbol, shares, leverage, className }: { symbol: string; shar
         <Button asChild size="lg" className="w-full">
           <a href={lighterTradeUrl(symbol)} target="_blank" rel="noreferrer">Open {symbol} on Lighter</a>
         </Button>
-        <Button size="lg" variant="outline" className="w-full" onClick={() => void copy()}>
-          {copied === "done" ? <Check size={18} aria-hidden /> : <Copy size={18} aria-hidden />}
-          {copied === "done" ? "Order copied" : "Copy the order"}
+        {proposal ? (
+          <Button size="lg" variant="outline" className="w-full" onClick={() => void copyAgent()} data-testid="hedge-copy-agent">
+            {agent === "done" ? <Check size={18} aria-hidden /> : <Copy size={18} aria-hidden />}
+            {agent === "done" ? "Instruction copied" : "Copy for your agent"}
+          </Button>
+        ) : null}
+        <Button size="lg" variant="outline" className="w-full" onClick={() => void copyOrder()}>
+          {order === "done" ? <Check size={18} aria-hidden /> : <Copy size={18} aria-hidden />}
+          {order === "done" ? "Order copied" : "Copy the order"}
         </Button>
       </div>
-      {copied === "failed" ? <p role="alert" className="mt-2 text-[13px] leading-5 text-caution">The browser blocked the copy. Select the lines above instead.</p> : null}
-      <p className="mt-3 text-[13px] leading-5 text-mute">You place the order on Lighter and close it there before the unwind time above.</p>
+      {agent === "failed" || order === "failed" ? <p role="alert" className="mt-2 text-[13px] leading-5 text-caution">The browser blocked the copy. Select the lines above instead.</p> : null}
+      {proposal ? (
+        <p className="mt-3 text-[13px] leading-5 text-mute" data-testid="hedge-agent-note">
+          Copy for your agent is a proposed order for your own Lighter agent running lighter-agent-kit: sell {proposal.size.base} {symbol} at {proposal.order.limit_price} or higher, {proposal.leverage.suggested}x, valid until {utcClock(proposal.valid_until)} UTC, closed by {utcStamp(proposal.exit_by)}. It asks the agent to paper trade first. Your agent signs with your key; Uptick holds none.
+        </p>
+      ) : null}
+      <p className="mt-3 text-[13px] leading-5 text-mute">You place the order on Lighter, or your agent does, and close it there before the unwind time above.</p>
     </div>
   );
 }

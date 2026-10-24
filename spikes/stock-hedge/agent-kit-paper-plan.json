@@ -1,0 +1,123 @@
+{
+  "address": "0x28C66690Ae101a4f07546b07a2Ac8Eb439b6C245",
+  "source": "wallet",
+  "vault": "nvda",
+  "symbol": "NVDA",
+  "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+  "block": 96697941,
+  "basis": "sized from the wallet's 1274.103681898413119282 NVDA (balanceOf at block 96697941)",
+  "hedgeable": true,
+  "side": "short",
+  "shares": "1275.0913",
+  "sizedFrom": "wallet_balance",
+  "uiMultiplier": "1000775159164630595",
+  "notionalUsd": 269222.78,
+  "leverage": 5,
+  "marginUsdg": 53844.56,
+  "slippageBp": 8.51,
+  "openSlippageBp": 4.86,
+  "closeSlippageBp": 3.65,
+  "feeBp": 0,
+  "fundingBp": 3.89,
+  "fundingUsd": 104.71,
+  "fundingDirection": "earns",
+  "fundingWeekendRows": 260,
+  "marginCostBp": 0,
+  "marginCostUsd": 0,
+  "marginBorrowed": false,
+  "netBp": -4.62,
+  "netUsd": -124.46,
+  "marginEligible": true,
+  "loanToValue": 0.5,
+  "userCapTokens": 60,
+  "globalRoomTokens": 419.15765122,
+  "window": {
+    "close": "2026-10-23T20:00:00.000Z",
+    "start": "2026-10-24T10:32:03.376Z",
+    "unwind": "2026-10-26T13:00:00.000Z",
+    "open": "2026-10-26T13:30:00.000Z",
+    "hours": 50.5
+  },
+  "handoffUrl": "https://robinhoodchain.lighter.xyz/trade/NVDA",
+  "execution_proposal": {
+    "status": "proposed",
+    "venue": "lighter-robinhood-chain",
+    "api_host": "https://api.rh.lighter.xyz",
+    "market": {
+      "symbol": "NVDA",
+      "market_id": 15,
+      "type": "perp"
+    },
+    "side": "sell",
+    "size": {
+      "base": "1275.0913",
+      "notional_usd": 269222.78
+    },
+    "order": {
+      "type": "limit",
+      "reduce_only": false,
+      "limit_price": "210.70",
+      "limit_basis": "the deepest bid a 269222.78 USD sell walks (210.92) less 10 bp, floored to the tick",
+      "reference_mid": "211.14",
+      "expected_avg_fill_price": "211.04"
+    },
+    "leverage": {
+      "suggested": 5,
+      "max": 20,
+      "margin_mode": "cross"
+    },
+    "margin_usdg": 53844.56,
+    "estimated_costs": {
+      "slippage_bp": 8.51,
+      "slippage_usd": 229.17,
+      "fees_bp": 0,
+      "fees_usd": 0,
+      "funding_bp": 3.89,
+      "funding_usd": 104.71,
+      "funding_direction": "earns",
+      "margin_borrow_bp": 0,
+      "margin_borrow_usd": 0,
+      "net_bp": -4.62,
+      "net_usd": -124.46
+    },
+    "estimated_liquidation_price": 245.87,
+    "market_data_at": "2026-10-24T10:32:03.290Z",
+    "valid_until": "2026-10-24T10:42:03.290Z",
+    "exit_by": "2026-10-26T13:00:00.000Z",
+    "exit": {
+      "side": "buy",
+      "reduce_only": true,
+      "size": "1275.0913"
+    },
+    "risk_notes": [
+      "A proposal for your own agent to place, not an executed hedge: Uptick signs nothing, holds no keys or funds, and has placed nothing. The vault itself is not hedged.",
+      "Estimated liquidation price 245.87 for a short entered near 211.04 at 5x, with the margin set to notional / leverage and 3% maintenance margin. An account with more collateral liquidates higher.",
+      "Funding: past weekends paid a short 3.89 bp over this window. It is the mean of the last 28 days of weekend hours, a history and not a forecast, and the sign can flip.",
+      "The short is closed by 2026-10-26T13:00:00.000Z, before the US open at 2026-10-26T13:30:00.000Z. A stock can gap against a short between checks, so the agent watches the position until then."
+    ]
+  },
+  "agent_instruction": "Place a proposed weekend hedge on Lighter's Robinhood Chain exchange with lighter-agent-kit, from my own Lighter account. Paper trade it first with scripts/paper.py, and place it live with scripts/trade.py only after the paper run looks right and I say so.\n\nHost: LIGHTER_HOST=https://api.rh.lighter.xyz\nMarket: NVDA perp (market_id 15), symbol NVDA\nSide: sell (short)\nSize: 1275.0913 NVDA, about 269222.78 USD notional\nOrder: limit sell at 210.70 or higher (a protective limit below the deepest bid this size walks; expected average fill about 211.04). Cancel any part that does not fill.\nLeverage: 5x cross (the market allows up to 20x), about 53844.56 USDG of margin\nValid until: 2026-10-24T10:42:03.290Z (the book was read at 2026-10-24T10:32:03.290Z). After that, ask Uptick for a new plan before placing.\nExit by: 2026-10-26T13:00:00.000Z. Check the position every few hours and close by 2026-10-26T13:00:00.000Z with a reduce-only buy of 1275.0913 NVDA.\nEstimated: round trip slippage 8.51 bp, fees 0 bp, funding earns 3.89 bp, margin interest 0 bp, liquidation near 245.87.\n\nPaper (run from the kit folder, no key needed; use reset in place of init if a paper account already exists):\npython3 scripts/paper.py init --collateral 53844.56 --tier standard\npython3 scripts/paper.py order ioc NVDA --side short --amount 1275.0913 --price 210.70\npython3 scripts/paper.py positions --symbol NVDA\npython3 scripts/paper.py order market NVDA --side long --amount 1275.0913\n\nLive, only after I confirm:\npython3 scripts/trade.py position leverage NVDA --leverage 5 --margin_mode cross\npython3 scripts/trade.py order limit NVDA --side short --amount 1275.0913 --price 210.70\npython3 scripts/trade.py order market NVDA --side long --amount 1275.0913 --reduce_only\n\nThis is a proposal from Uptick's planner, not an executed hedge. Uptick placed nothing and holds no keys or funds; the key, the order and the funds stay with me.",
+  "sources": [
+    {
+      "url": "https://api.rh.lighter.xyz/api/v1/orderBookDetails",
+      "fetchedAt": "2026-10-24T10:32:01.742Z"
+    },
+    {
+      "url": "https://api.rh.lighter.xyz/api/v1/assetDetails",
+      "fetchedAt": "2026-10-24T10:32:01.864Z"
+    },
+    {
+      "url": "https://api.rh.lighter.xyz/api/v1/orderBookOrders?market_id=15&limit=250",
+      "fetchedAt": "2026-10-24T10:32:03.290Z"
+    },
+    {
+      "url": "https://api.rh.lighter.xyz/api/v1/fundings?market_id=15&resolution=1h&start_timestamp=1790418723&end_timestamp=1792837923&count_back=0",
+      "fetchedAt": "2026-10-24T10:32:03.229Z"
+    },
+    {
+      "url": "eth_call Multicall3 uiMultiplier() on 0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC at block 96697941",
+      "fetchedAt": "2026-10-24T10:32:02.846Z"
+    }
+  ],
+  "note": "Read-only plan: nothing is placed or signed and no calldata is returned. The holder enters the short on Lighter with this size, side and leverage, or hands execution_proposal to their own agent running lighter-agent-kit (agent_instruction is the text to paste; paper trade first). execution_proposal is a proposal and not an executed hedge: Uptick holds no key and places no order. netBp is funding less the round trip through the book, fees and any margin interest, positive when the weekend earns. Funding is the mean of the weekend hours in the last 28 days of Lighter RH funding, a history and not a forecast."
+}
