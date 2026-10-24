@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { FEES_EARNED, KEPT_AFTER, feesLine, feesPerYearUsd, keptLine, yieldLines } from "./fee-lead.ts";
+import { FEES_EARNED, KEPT_AFTER, feesLine, feesPerYearUsd, keptLine, leadsWithFees, yieldLines, yieldOrder } from "./fee-lead.ts";
 import { TERMS } from "./terms.ts";
 
 const src = (p: string) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
@@ -55,4 +55,24 @@ test("the hero and the list's panel can only print the fee through the pair, whi
 test("the gate still reads the weaker half, not the fee", () => {
   assert.match(src("lib/vaults.ts"), /worstHalfApr: v\.gate\.worst_half_apr/);
   for (const f of FEE_SURFACES.slice(0, 3)) assert.ok(!/state[^;\n]*feeApr|feeApr[^;\n]*state/.test(src(f).replace(/\{feeUsd[^\n]*/g, "")), `${f} derives a gate from the fee`);
+});
+
+test("a vault that kept less than nothing never headlines the fee figure; zero and positive kept lead with the fee", () => {
+  const negative = universe.vaults.filter((v) => v.gate.worst_half_apr < 0), nonNegative = universe.vaults.filter((v) => v.gate.worst_half_apr >= 0);
+  assert.ok(negative.length >= 5 && nonNegative.length >= 3, `the rule is exercised on both sides: ${negative.length} negative, ${nonNegative.length} not`);
+  for (const v of negative) assert.deepEqual(yieldOrder(v.gate.worst_half_apr), ["kept", "fees"], `${v.id} kept ${v.gate.worst_half_apr} but leads with the fee`);
+  for (const v of nonNegative) assert.deepEqual(yieldOrder(v.gate.worst_half_apr), ["fees", "kept"], `${v.id} kept ${v.gate.worst_half_apr} but does not lead with the fee`);
+  assert.equal(leadsWithFees(0), true);
+  assert.equal(leadsWithFees(-0.01), false);
+  assert.deepEqual(yieldOrder(byId("nvda").gate.worst_half_apr), ["kept", "fees"]);
+  assert.deepEqual(yieldOrder(byId("aapl").gate.worst_half_apr), ["fees", "kept"]);
+});
+
+test("the pair and the /check cell take their headline from yieldOrder, never a fixed fee-first order", () => {
+  const pair = src("components/yield-pair.tsx"), cell = src("components/idle-finder.tsx");
+  assert.match(pair, /yieldOrder\(keptApr\)/);
+  assert.equal((pair.match(/line\[order\[0\]\]/g) ?? []).length, 2, "hero and side both print order[0] as the headline");
+  assert.match(cell, /yieldOrder\(r\.worstHalfApr\)/);
+  assert.match(cell, /yieldOrder\(lead\.worstHalfApr\)/, "the ticket orders its two rows by the same rule");
+  assert.ok(!/data-lead="fees"/.test(pair + cell), "no fixed fee headline");
 });

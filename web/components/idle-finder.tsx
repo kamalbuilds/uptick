@@ -12,7 +12,7 @@ import { Term } from "./term";
 import { TokenLogo } from "./token-logo";
 import { Button } from "@/components/ui/button";
 import { EXPLORER, addressUrl } from "@/lib/chain";
-import { KEPT_AFTER, feesPerYearUsd } from "@/lib/fee-lead";
+import { KEPT_AFTER, feesPerYearUsd, yieldOrder } from "@/lib/fee-lead";
 import { liveSentence, num, pct, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
 import { usdSigned } from "@/lib/leak";
 import { priceLabel } from "@/lib/price-math";
@@ -119,21 +119,33 @@ function TakesCell({ r }: { r: ScanRow }) {
   );
 }
 
-/** Fees earned a year, with kept after fast traders directly under it: dollars on what the vault takes when the wallet is priced, the percent either way. */
+/** Fees earned and kept after fast traders, one under the other. The fee leads where kept is zero or positive; where kept is negative the kept line is the headline and the fee the smaller line under it.
+ *  Dollars on what the vault takes when the wallet is priced, the percent either way. */
 function YieldCell({ r }: { r: ScanRow }) {
   const feeApr = feeAprOf(r.id);
   const feeUsd = r.putToWorkUsd !== null && r.keptPerYearUsd !== null ? feesPerYearUsd(r.putToWorkUsd, r.entryFeeBps, feeApr) : null;
   const keptUsd = r.keptPerYearUsd;
+  const order = yieldOrder(r.worstHalfApr);
+  const block = {
+    fees: {
+      label: <Term id="feesEarned" />,
+      value: feeUsd !== null ? <>{money(feeUsd)} a year <span className="text-[13px] font-normal text-mute">at {pct(feeApr)}</span></> : <>{pct(feeApr)} a year</>,
+      tone: "",
+    },
+    kept: {
+      label: <Term id="kept">{KEPT_AFTER}</Term>,
+      value: keptUsd !== null ? <>{usdSigned(keptUsd)} a year <span className="text-[13px] font-normal">at {signed(r.worstHalfApr)}</span></> : <>{signed(r.worstHalfApr)} a year</>,
+      tone: toneClass(r.worstHalfApr),
+    },
+  };
   return (
     <div className="text-right lg:text-left">
-      <p className="text-[13px] leading-4 text-mute"><Term id="feesEarned" /></p>
-      <p className="figure text-[17px] font-medium leading-6">
-        {feeUsd !== null ? <>{money(feeUsd)} a year <span className="text-[13px] font-normal text-mute">at {pct(feeApr)}</span></> : <>{pct(feeApr)} a year</>}
-      </p>
-      <p className="mt-1.5 text-[13px] leading-4 text-mute"><Term id="kept">{KEPT_AFTER}</Term></p>
-      <p className={cn("figure text-[15px] font-medium leading-6", toneClass(r.worstHalfApr))}>
-        {keptUsd !== null ? <>{usdSigned(keptUsd)} a year <span className="text-[13px] font-normal">at {signed(r.worstHalfApr)}</span></> : <>{signed(r.worstHalfApr)} a year</>}
-      </p>
+      {order.map((k, i) => (
+        <div key={k} data-lead={i === 0 ? k : undefined} className={i === 0 ? undefined : "mt-1.5"}>
+          <p className="text-[13px] leading-4 text-mute">{block[k].label}</p>
+          <p className={cn("figure leading-6", i === 0 ? "text-[17px] font-medium" : "text-[15px]", block[k].tone)}>{block[k].value}</p>
+        </div>
+      ))}
       {r.state === "closed" ? <p className="text-[13px] leading-4 text-mute">below the floor</p> : keptUsd === null ? <p className="text-[13px] leading-4 text-mute">Dollars wait for a price</p> : null}
     </div>
   );
@@ -266,10 +278,9 @@ function Ticket({ s }: { s: WalletScan }) {
       <dl className="mt-4 border-t border-hairline">
         {lead && p.launching.usd > 0 ? <TRow k="Launching vaults" v={money(p.launching.usd)} note={names(p.launching.symbols)} /> : null}
         {t.refused.tokens > 0 ? <TRow k={<><Term id="closed">Closed</Term> vaults</>} v={money(t.refused.usd)} note="No deposits" /> : null}
-        {fees !== null && lead ? <TRow desktop k={<Term id="feesEarned" />} v={`${money(fees)} a year`} note={`${lead.symbol}, ${REPLAY_WINDOW.days}-day replay, past trades`} /> : null}
-        {wh && lead ? (
-          <TRow desktop k={<Term id="kept">{KEPT_AFTER}</Term>} v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`} tone={wh.gain ? "text-kept" : "text-loss"} note={<>{lead.symbol}, <Term id="worstHalf">weaker half</Term> of the replay</>} />
-        ) : null}
+        {lead ? yieldOrder(lead.worstHalfApr).map((k) => k === "fees" ? (fees !== null ? <TRow key={k} desktop k={<Term id="feesEarned" />} v={`${money(fees)} a year`} note={`${lead.symbol}, ${REPLAY_WINDOW.days}-day replay, past trades`} /> : null) : (wh ? (
+          <TRow key={k} desktop k={<Term id="kept">{KEPT_AFTER}</Term>} v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`} tone={wh.gain ? "text-kept" : "text-loss"} note={<>{lead.symbol}, <Term id="worstHalf">weaker half</Term> of the replay</>} />
+        ) : null)) : null}
         {t.putToWork.borrowRoomUsd !== null ? <TRow desktop k={<Term id="borrowRoom">Borrow room</Term>} v={`up to ${money(t.putToWork.borrowRoomUsd)}`} /> : null}
       </dl>
       {lead && leadAddr ? (

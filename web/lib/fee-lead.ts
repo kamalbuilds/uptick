@@ -16,3 +16,8 @@ export const yieldLines = (feeApr: number, keptApr: number): [string, string] =>
 
 /** Dollars a year the pool's fees pay on `amountUsd`, earned on the deposit net of the entry fee (the base the kept dollars use). */
 export const feesPerYearUsd = (amountUsd: number, entryFeeBps: number, feeApr: number): number => yearlyUsd(netOfEntryFee(amountUsd, entryFeeBps), feeApr);
+
+/** One rule for every surface that stacks the two figures: the fee leads only where kept is zero or positive. A vault that kept less than nothing
+ *  leads with the kept figure, and the fee is the smaller second line, so a losing vault never headlines a big fee number. */
+export const leadsWithFees = (keptApr: number): boolean => keptApr >= 0;
+export const yieldOrder = (keptApr: number): ["fees", "kept"] | ["kept", "fees"] => (leadsWithFees(keptApr) ? ["fees", "kept"] : ["kept", "fees"]);
