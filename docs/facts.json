@@ -13,8 +13,8 @@
     "moment": "web/lib/moment.json"
   },
   "tests": {
-    "total": 412,
-    "security": 141
+    "total": 572,
+    "security": 292
   },
   "reviews": {
     "files": [
