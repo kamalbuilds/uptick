@@ -22,6 +22,9 @@ export const RHC_RPCS = [
 ] as const;
 
 const erc20BalanceAbi = parseAbi(["function balanceOf(address owner) view returns (uint256)"]);
+/** ERC-4626 maxDeposit: StockVault returns its deposit cap less the assets in it, and 0 while it is paused. */
+const maxDepositAbi = parseAbi(["function maxDeposit(address receiver) view returns (uint256)"]);
+const UNCAPPED = 2n ** 256n - 1n;
 const feedAbi = parseAbi([
   "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
   "function decimals() view returns (uint8)",
@@ -29,12 +32,13 @@ const feedAbi = parseAbi([
 
 export type GateState = "open" | "reduced" | "closed";
 
-/** What a scan needs to know about one tracked Stock Token. `depositCapUsd` is the vault's size. */
+/** What a scan needs to know about one tracked Stock Token. `depositCapUsd` is the vault's size; `vault` is its deployed address, absent while it is launching. */
 export type ScanVault = {
   id: string;
   symbol: string;
   name: string;
   token: Address;
+  vault?: Address;
   feed: Address;
   entryFeeBps: number;
   depositCapUsd: number;
@@ -95,7 +99,12 @@ export type ScanRow = {
   worstHalfApr: number;
   entryFeeBps: number;
   depositCapUsd: number;
-  /** The part of the holding the vault takes: the holding, or the vault's size if smaller. Null for a closed vault or an unpriced token. */
+  /** The deployed vault, or null while it is launching. */
+  vault: Address | null;
+  /** What a live vault takes from this wallet right now: its own maxDeposit (the cap less what is in it, 0 when paused) at the token's price. Null while the vault is launching,
+   *  when the read failed, when the vault has no cap, or when the token is unpriced; `putToWorkUsd` then falls back to the vault's size. */
+  roomUsd: number | null;
+  /** The part of the holding the vault takes: the holding, or the room the vault has, whichever is smaller (its size while the room is unknown). Null for a closed vault or an unpriced token. */
   putToWorkUsd: number | null;
   /** Dollars a year at the weaker-half kept APR on `putToWorkUsd` net of the entry fee. Null when `putToWorkUsd` is. */
   keptPerYearUsd: number | null;
@@ -113,8 +122,18 @@ export type WalletScan = {
   totals: {
     /** Value of every priced Stock Token in the wallet. */
     idleUsd: number;
-    /** Open and reduced tokens the vaults take. `usd` is the part they take (vault size caps it), `holdingUsd` the whole holding. */
-    putToWork: { tokens: number; usd: number; holdingUsd: number; keptPerYearUsd: number; borrowRoomUsd: number | null };
+    /** Open and reduced tokens the vaults take. `usd` is the part they take (the room caps it), `holdingUsd` the whole holding. `live` and `launching` split `usd` by whether the vault is deployed,
+     *  so a headline and a ticket read the same two figures; `full` names live vaults that take nothing now because they are at their cap or paused. */
+    putToWork: {
+      tokens: number;
+      usd: number;
+      holdingUsd: number;
+      keptPerYearUsd: number;
+      borrowRoomUsd: number | null;
+      live: { usd: number; symbols: string[] };
+      launching: { usd: number; symbols: string[] };
+      full: string[];
+    };
     /** Closed tokens, with the gate's reason for each. */
     refused: { tokens: number; usd: number; reasons: Array<{ symbol: string; reason: string }> };
     /** Held tokens whose Chainlink feed answered no usable round: counted in no dollar total. */
@@ -132,17 +151,19 @@ export const READ_LAG = 32n;
 
 type Round = readonly [bigint, bigint, bigint, bigint, bigint];
 
-/** One Multicall3 call, pinned to one block, reads every tracked token's balance of `owner` and every Chainlink round and decimals. `batchSize` is raised
+/** One Multicall3 call, pinned to one block, reads every tracked token's balance of `owner`, every Chainlink round and decimals, and each live vault's maxDeposit. `batchSize` is raised
  *  so viem sends one `eth_call`. A call that fails is a row left unpriced, never defaulted; a balance that fails is an error, because an unread balance
  *  is not a zero. */
 export async function scanWallet(client: ScanClient, owner: Address, vaults: readonly ScanVault[], lltvById: ScanLltv = {}): Promise<WalletScan> {
   const block = (await client.getBlockNumber()) - READ_LAG;
+  const live = vaults.filter((v) => v.vault !== undefined);
   const contracts = [
     ...vaults.map((v) => ({ address: v.token, abi: erc20BalanceAbi, functionName: "balanceOf" as const, args: [owner] as const })),
     ...vaults.flatMap((v) => [
       { address: v.feed, abi: feedAbi, functionName: "latestRoundData" as const },
       { address: v.feed, abi: feedAbi, functionName: "decimals" as const },
     ]),
+    ...live.map((v) => ({ address: v.vault as Address, abi: maxDepositAbi, functionName: "maxDeposit" as const, args: [owner] as const })),
   ];
   const res = await client.multicall({ contracts, allowFailure: true, multicallAddress: MULTICALL3, batchSize: 1 << 20, blockNumber: block });
 
@@ -165,7 +186,11 @@ export async function scanWallet(client: ScanClient, owner: Address, vaults: rea
 
     const holding = priceUsd === null ? null : holdingUsd(balanceRaw, STOCK_DECIMALS, priceUsd);
     const taken = v.gate.state !== "closed" && holding !== null;
-    const put = taken ? placeableUsd(holding, v.depositCapUsd) : null;
+    // The room a live vault has today. A launching vault, an unreadable call and an uncapped vault leave it unknown, and the vault's size stands in.
+    const roomCall = v.vault === undefined ? undefined : res[3 * vaults.length + live.indexOf(v)];
+    const roomRaw = roomCall?.status === "success" ? (roomCall.result as bigint) : undefined;
+    const roomUsd = roomRaw === undefined || roomRaw === UNCAPPED || priceUsd === null ? null : holdingUsd(roomRaw, STOCK_DECIMALS, priceUsd);
+    const put = taken ? placeableUsd(holding, roomUsd ?? v.depositCapUsd) : null;
     const lltv = lltvById[v.id];
     rows.push({
       id: v.id,
@@ -182,6 +207,8 @@ export async function scanWallet(client: ScanClient, owner: Address, vaults: rea
       worstHalfApr: v.gate.worstHalfApr,
       entryFeeBps: v.entryFeeBps,
       depositCapUsd: v.depositCapUsd,
+      vault: v.vault ?? null,
+      roomUsd,
       putToWorkUsd: put,
       keptPerYearUsd: put === null ? null : keptPerYearUsd(put, v.entryFeeBps, v.gate.worstHalfApr),
       borrow: v.gate.state === "closed" ? { kind: "none" } : lltv !== undefined && put !== null ? { kind: "room", usd: borrowRoomUsd(put, v.entryFeeBps, lltv), lltv: Number((lltv * 10_000n) / 10n ** 18n) / 100 } : { kind: "opens-with-market" },
@@ -191,7 +218,10 @@ export async function scanWallet(client: ScanClient, owner: Address, vaults: rea
 
   const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
   const priced = rows.filter((r) => r.holdingUsd !== null);
-  const working = rows.filter((r) => r.state !== "closed" && r.putToWorkUsd !== null);
+  const taking = rows.filter((r) => r.state !== "closed" && r.putToWorkUsd !== null);
+  // A live vault at its cap or paused takes nothing now: it is listed as full, not as working.
+  const working = taking.filter((r) => (r.putToWorkUsd as number) > 0);
+  const inVault = (live: boolean) => working.filter((r) => (r.vault !== null) === live);
   const refused = priced.filter((r) => r.state === "closed");
   const rooms = working.map((r) => (r.borrow.kind === "room" ? r.borrow.usd : null));
   return {
@@ -209,6 +239,9 @@ export async function scanWallet(client: ScanClient, owner: Address, vaults: rea
         keptPerYearUsd: sum(working.map((r) => r.keptPerYearUsd as number)),
         // A total only when every working row has a market: a partial sum would read as the whole.
         borrowRoomUsd: rooms.length > 0 && rooms.every((x) => x !== null) ? sum(rooms as number[]) : null,
+        live: { usd: sum(inVault(true).map((r) => r.putToWorkUsd as number)), symbols: inVault(true).map((r) => r.symbol) },
+        launching: { usd: sum(inVault(false).map((r) => r.putToWorkUsd as number)), symbols: inVault(false).map((r) => r.symbol) },
+        full: taking.filter((r) => r.vault !== null && r.putToWorkUsd === 0).map((r) => r.symbol),
       },
       refused: { tokens: refused.length, usd: sum(refused.map((r) => r.holdingUsd as number)), reasons: refused.map((r) => ({ symbol: r.symbol, reason: r.reason })) },
       unpriced: rows.filter((r) => r.holdingUsd === null).map((r) => r.symbol),

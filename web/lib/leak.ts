@@ -1,4 +1,6 @@
-/** Geometry for the to-scale figures on the vault and home pages. No imports, so node's test runner loads it directly. */
+import { dollars } from "./format.ts";
+
+// Geometry for the to-scale figures on the vault and home pages.
 
 export type Leak = { feeApr: number; markoutApr: number; costApr: number; keptApr: number };
 export type LeakSegment = { key: "kept" | "cost" | "markout"; value: number; widthPct: number };
@@ -60,10 +62,10 @@ export function gateScale(worstHalf: number, otherHalf: number, floor: number, a
 /** Dollars a year that `amountUsd` earns (or loses) at a yearly rate in percent. */
 export const yearlyUsd = (amountUsd: number, ratePct: number): number => (amountUsd * ratePct) / 100;
 
-/** The yearly dollar outcome as the ticket prints it: "+$32" or "-$1,204", rounded to the dollar, "under $1" below that. */
+/** The yearly dollar outcome as the ticket and a row print it: "+$32.40" or "-$1,204", on the same money rule as every other figure there (whole dollars from $1,000, cents below). */
 export function usdSigned(n: number): string {
   if (!Number.isFinite(n)) return "n/a";
   const abs = Math.abs(n);
-  if (abs < 0.5) return n === 0 ? "$0" : `${n > 0 ? "+" : "-"}under $1`;
-  return `${n > 0 ? "+" : "-"}$${Math.round(abs).toLocaleString("en-US")}`;
+  if (abs < 0.005) return n === 0 ? "$0" : `${n > 0 ? "+" : "-"}under $0.01`;
+  return `${n > 0 ? "+" : "-"}${dollars(abs)}`;
 }

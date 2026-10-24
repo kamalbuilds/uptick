@@ -15,16 +15,19 @@ const abi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
   "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
   "function decimals() view returns (uint8)",
+  "function maxDeposit(address receiver) view returns (uint256)",
 ]);
 
 export type Seen = { to: string; fn: string; args: readonly unknown[] };
 
-/** `balances` is token address (lowercase) -> base units; `prices` is feed address (lowercase) -> 8-decimal answer, and an absent feed makes its calls fail. */
-export function mockChain(vaults: readonly ScanVault[], balances: Record<string, bigint>, prices: Record<string, bigint>, opts: { failBalanceOf?: string; rpcError?: string } = {}) {
+/** `balances` is token address (lowercase) -> base units; `prices` is feed address (lowercase) -> 8-decimal answer, and an absent feed makes its calls fail.
+ *  `opts.rooms` is deployed vault address (lowercase) -> what its maxDeposit answers, in base units; a deployed vault with no entry has a maxDeposit call that fails. */
+export function mockChain(vaults: readonly ScanVault[], balances: Record<string, bigint>, prices: Record<string, bigint>, opts: { failBalanceOf?: string; rpcError?: string; rooms?: Record<string, bigint> } = {}) {
   const ethCalls: Array<{ to: string; at: unknown; inner: Seen[] }> = [];
   const rpc: string[] = [];
   const tokenAt = new Map(vaults.map((v) => [v.token.toLowerCase(), v]));
   const feedAt = new Map(vaults.map((v) => [v.feed.toLowerCase(), v]));
+  const vaultAt = new Map(vaults.flatMap((v) => (v.vault ? [[v.vault.toLowerCase(), v] as const] : [])));
   const client = createPublicClient({
     transport: custom({
       async request({ method, params }: { method: string; params?: unknown }) {
@@ -47,6 +50,12 @@ export function mockChain(vaults: readonly ScanVault[], balances: Record<string,
             assert.ok(v, `balanceOf sent to an untracked address ${target}`);
             if (opts.failBalanceOf === v.symbol) return { success: false, returnData: "0x" as Hex };
             return { success: true, returnData: encodeFunctionResult({ abi, functionName: "balanceOf", result: balances[v.token.toLowerCase()] ?? 0n }) };
+          }
+          if (call.functionName === "maxDeposit") {
+            const v = vaultAt.get(target);
+            assert.ok(v, `maxDeposit sent to an address that is not a deployed vault ${target}`);
+            const room = opts.rooms?.[target];
+            return room === undefined ? { success: false, returnData: "0x" as Hex } : { success: true, returnData: encodeFunctionResult({ abi, functionName: "maxDeposit", result: room }) };
           }
           const v = feedAt.get(target);
           assert.ok(v, `feed call sent to an untracked address ${target}`);
