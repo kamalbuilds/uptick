@@ -136,6 +136,9 @@ describe("plan_weekend_hedge for a wallet that holds NVDA", () => {
     // the weekend: Friday's US close and the Monday unwind 30 minutes before the open (EDT, so 13:00Z)
     expect(p.window.close).toBe("2026-10-23T20:00:00.000Z");
     expect(p.window.unwind).toBe("2026-10-26T13:00:00.000Z");
+    // the read time is after the close, so the hours and the start run from the read time
+    expect(Date.parse(p.window.start)).toBeGreaterThan(Date.parse(p.window.close));
+    expect(p.window.hours).toBeCloseTo((Date.parse(p.window.unwind) - Date.parse(p.window.start)) / 3_600_000, 1);
     expect(p.handoffUrl).toBe("https://robinhoodchain.lighter.xyz/trade/NVDA");
 
     // returns no calldata, and every Lighter figure names its URL and arrival time
@@ -173,6 +176,14 @@ describe("plan_weekend_hedge for a wallet that holds NVDA", () => {
     expect(r.isError).toBeUndefined();
     expect(r.structuredContent).toMatchObject({ hedgeable: false, min_order_shares: "0.0400" });
     expect(r.structuredContent.reason).toMatch(/smallest NVDA order/);
+  });
+
+  test("a holding over the smallest size but worth under Lighter's $10 minimum order answers with the reason", async () => {
+    const r = await plan({ address: OWNER }, { scanClient: holder({ nvda: (45n * E18) / 1000n }).client as never, lighterFetch: lighter().f });
+    expect(r.isError).toBeUndefined();
+    expect(r.structuredContent).toMatchObject({ hedgeable: false, min_order_usd: 10 });
+    expect(r.structuredContent.reason).toMatch(/worth under Lighter's smallest order of 10 USD/);
+    expect(r.structuredContent.shares).toBeUndefined();
   });
 
   test("the vault argument picks the token among several holdings", async () => {

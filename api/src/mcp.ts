@@ -919,7 +919,7 @@ const TOOLS: McpTool[] = [
         address: { type: "string", description: "0x address of the holder or borrower." },
         source: { type: "string", enum: ["wallet", "loan"], default: "wallet", description: "wallet: size from Stock Token balances. loan: size from the stock leg of vault shares posted as Morpho collateral." },
         vault: { type: "string", description: "Vault id, for example nvda. Required for source loan; for source wallet it picks the token." },
-        leverage: { type: "number", minimum: 1, maximum: 20, default: 5, description: "Leverage for the short, capped by the market's minimum initial margin." },
+        leverage: { type: "number", minimum: 1, maximum: 20, default: 5, description: "Leverage for the short, default 5, up to the market's maximum (1 / min initial margin); above it the tool returns an error." },
       },
       required: ["address"],
       additionalProperties: false,

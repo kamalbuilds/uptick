@@ -176,6 +176,35 @@ test("weekendWindow stays on the current weekend until its unwind has passed", (
   assert.equal(weekendWindow(new Date("2026-10-23T12:00:00Z"), 0).unwindAt.toISOString(), "2026-10-26T13:30:00.000Z");
 });
 
+test("after Friday's close the hours run from now, not from the close", () => {
+  // Saturday 00:08Z: 4 h 8 min after the close, so 65 - 4.1333 = 60.8667 h to Monday 13:00Z
+  const sat = weekendWindow(new Date("2026-10-24T00:08:00Z"));
+  assert.equal(sat.closeAt.toISOString(), "2026-10-23T20:00:00.000Z");
+  assert.equal(sat.startAt.toISOString(), "2026-10-24T00:08:00.000Z");
+  assert.equal(sat.unwindAt.toISOString(), "2026-10-26T13:00:00.000Z");
+  assert.ok(Math.abs(sat.hours - (65 - (4 + 8 / 60))) < 1e-9, `hours ${sat.hours}`);
+  // Sunday 18:00Z: 19 h left
+  const sun = weekendWindow(new Date("2026-10-25T18:00:00Z"));
+  assert.equal(sun.startAt.toISOString(), "2026-10-25T18:00:00.000Z");
+  assert.equal(sun.hours, 19);
+  // before the close the start is the close itself, and a weekend that has not begun is the full 65 h
+  const thu = weekendWindow(new Date("2026-10-22T12:00:00Z"));
+  assert.equal(thu.startAt.toISOString(), thu.closeAt.toISOString());
+  assert.equal(thu.hours, 65);
+});
+
+test("the funding and margin interest of a plan are priced for the hours left, not the hours since the close", () => {
+  const sat = planHedge(input({ now: new Date("2026-10-24T00:08:00Z"), borrowApr: { pct: 25, source: "Morpho borrowRateView via aprPct", fetchedAt: "2026-10-24T00:08:00Z" } }));
+  const thu = planHedge(input({ now: new Date("2026-10-23T12:00:00Z"), borrowApr: { pct: 25, source: "Morpho borrowRateView via aprPct", fetchedAt: "2026-10-23T12:00:00Z" } }));
+  assert.ok(sat.status === "ok" && thu.status === "ok");
+  if (sat.status !== "ok" || thu.status !== "ok") return;
+  assert.equal(thu.window.hours, 65);
+  assert.ok(Math.abs(sat.window.hours - 60.8667) < 1e-3);
+  const ratio = sat.window.hours / thu.window.hours;
+  assert.ok(Math.abs((sat.carry.value!.bp / thu.carry.value!.bp) - ratio) < 1e-9, "funding scales with the hours held");
+  assert.ok(Math.abs((sat.marginCarry.value.bp / thu.marginCarry.value.bp) - ratio) < 1e-9, "margin interest scales with the hours held");
+});
+
 test("isWeekendHour picks the Friday close to the Monday unwind hours", () => {
   const h = (iso: string) => isWeekendHour(Date.parse(iso) / 1000);
   assert.equal(h("2026-10-23T19:00:00Z"), false);
@@ -236,7 +265,10 @@ test("planHedge for 47 NVDA: sized, priced at that size, every line carries its 
   assert.equal(p.marketId, 15);
   assert.equal(p.side, "short");
   assert.equal(p.size.value.shares, "47.0364");
-  assert.equal(p.window.hours, 65);
+  // the default read time, Friday 23:25Z, is after the 20:00Z close: the hours left to Monday 13:00Z, not the 65 from the close
+  assert.equal(p.window.startAt, "2026-10-23T23:25:00.000Z");
+  assert.equal(p.window.closeAt, "2026-10-23T20:00:00.000Z");
+  assert.ok(Math.abs(p.window.hours - (61 + 35 / 60)) < 1e-9, `hours ${p.window.hours}`);
   assert.ok(p.notionalUsd.value > 9_900 && p.notionalUsd.value < 9_960, `notional ${p.notionalUsd.value}`);
   assert.ok(typeof p.slippage.value.roundTripBp === "number" && p.slippage.value.roundTripBp > 1 && p.slippage.value.roundTripBp < 3);
   assert.equal(p.fees.value.bp, 0);
@@ -259,15 +291,33 @@ test("a borrower's plan is cheaper by exactly the margin interest, read from the
   if (own.status !== "ok" || borrowed.status !== "ok") return;
   assert.equal(borrowed.marginCarry.value.borrowed, true);
   assert.equal(borrowed.marginCarry.source, "Morpho borrowRateView via aprPct");
-  const bp = marginCarryBp(own.notionalUsd.value, 5, 25, 65).bp;
+  const bp = marginCarryBp(own.notionalUsd.value, 5, 25, own.window.hours).bp;
   assert.ok(Math.abs(borrowed.marginCarry.value.bp - bp) < 1e-9);
   assert.ok(Math.abs((own.netBp as number) - (borrowed.netBp as number) - bp) < 1e-9);
+});
+
+test("a short over min_base_amount but worth under min_quote_amount ($10) is below_min, and at $10 it is placed", () => {
+  const nvda = perps.find((m) => m.symbol === "NVDA")!;
+  assert.equal(nvda.minQuoteAmount, 10);
+  const mid = midOf(book)!;
+  // 0.0450 shares passes the 0.0400 base minimum and is worth about $9.5
+  const under = planHedge(input({ balanceRaw: 45_000_000_000_000_000n, uiMultiplier: wad("1") }));
+  assert.ok(under.status === "below_min", under.status);
+  if (under.status !== "below_min") return;
+  assert.equal(under.limit, "min_quote_amount");
+  assert.equal(under.minQuoteUsd.value, 10);
+  assert.ok(0.045 * mid < 10 && 0.045 >= Number(nvda.minBaseAmount));
+  // 0.0500 shares is worth about $10.6
+  const over = planHedge(input({ balanceRaw: 50_000_000_000_000_000n, uiMultiplier: wad("1") }));
+  assert.ok(0.05 * mid > 10);
+  assert.equal(over.status, "ok");
 });
 
 test("planHedge refuses what it cannot size or price: no perp, below the minimum, leverage over the market's, a thin history, a nonzero fee of unknown unit", () => {
   assert.deepEqual(planHedge(input({ symbol: "GME" })), { status: "no_perp", symbol: "GME" });
   const small = planHedge(input({ balanceRaw: 10_000_000_000_000_000n }));
   assert.equal(small.status, "below_min");
+  assert.ok(small.status === "below_min" && small.limit === "min_base_amount");
   assert.throws(() => planHedge(input({ leverage: 50 })), /allows 1x to 20x/);
   const thin = planHedge(input({ fundings: { data: parseFundings(nvdaFundFx).slice(-10), ...src(nvdaFundFx) } }));
   assert.ok(thin.status === "ok" && thin.carry.value === null && thin.netBp === null);
@@ -305,7 +355,7 @@ test("fetchers call Lighter RH's keyless GETs and return the URL and the time th
 
 test("a changed shape, a non-200 answer or an HTTP error throws and nothing defaults to zero", async () => {
   const drop = (k: string) => ({ ...obdFx, order_book_details: obdFx.order_book_details.map((m: Record<string, unknown>) => Object.fromEntries(Object.entries(m).filter(([key]) => key !== k))) });
-  for (const k of ["min_base_amount", "size_decimals", "mark_price", "market_id", "taker_fee"]) assert.throws(() => parseOrderBookDetails(drop(k)), /Lighter RH orderBookDetails/, k);
+  for (const k of ["min_base_amount", "min_quote_amount", "size_decimals", "mark_price", "market_id", "taker_fee"]) assert.throws(() => parseOrderBookDetails(drop(k)), /Lighter RH orderBookDetails/, k);
   assert.throws(() => parseAssetDetails({ asset_details: [{ ...assetFx.asset_details[0], loan_to_value: undefined }] }), /loan_to_value/);
   assert.throws(() => parseAssetDetails({ asset_details: [{ ...assetFx.asset_details[0], multiplier: "1,5" }] }), /multiplier/);
   assert.throws(() => parseFundings({ fundings: [{ timestamp: 1, value: "0.1", rate: "0.1", direction: "flat" }] }), /direction/);

@@ -153,7 +153,9 @@ export async function planWeekendHedge(ctx: HedgeToolContext, args: Record<strin
   }
   if (plan.status === "no_perp") return reason({ ...head(owner, source, h), hedgeable: false, reason: `Lighter RH lists no active perp for ${h.symbol}, so there is nothing to short` });
   if (plan.status === "below_min") {
-    return reason({ ...head(owner, source, h), hedgeable: false, reason: `the ${h.sizedFrom === "wallet_balance" ? "holding" : "stock leg of the shares"} is under Lighter's smallest ${h.symbol} order of ${plan.minBase.value} shares, so there is nothing to place`, min_order_shares: plan.minBase.value });
+    const what = h.sizedFrom === "wallet_balance" ? "holding" : "stock leg of the shares";
+    const why = plan.limit === "min_base_amount" ? `is under Lighter's smallest ${h.symbol} order of ${plan.minBase.value} shares` : `is worth under Lighter's smallest order of ${usd(plan.minQuoteUsd.value)} USD`;
+    return reason({ ...head(owner, source, h), hedgeable: false, reason: `the ${what} ${why}, so there is nothing to place`, min_order_shares: plan.minBase.value, min_order_usd: plan.minQuoteUsd.value });
   }
   if (plan.slippage.value.roundTripBp === "unfillable") {
     return refuse(`the ${h.symbol} order book Lighter returned (250 orders a side) cannot fill a ${usd(plan.notionalUsd.value)} USD short and its close, so no cost is returned`, { symbol: h.symbol, requested_notional_usd: usd(plan.notionalUsd.value) });
@@ -197,7 +199,7 @@ export async function planWeekendHedge(ctx: HedgeToolContext, args: Record<strin
       loanToValue: stock.loanToValue,
       userCapTokens: stock.userCapTokens,
       globalRoomTokens: stock.globalRoom,
-      window: { close: plan.window.closeAt, unwind: plan.window.unwindAt, open: plan.window.openAt, hours: Math.round(plan.window.hours * 10) / 10 },
+      window: { close: plan.window.closeAt, start: plan.window.startAt, unwind: plan.window.unwindAt, open: plan.window.openAt, hours: Math.round(plan.window.hours * 10) / 10 },
       handoffUrl: `${LIGHTER_RH.app}/trade/${h.symbol}`,
       sources,
       note: "Read-only plan: nothing is placed or signed and no calldata is returned. The holder enters the short on Lighter with this size, side and leverage. netBp is funding less the round trip through the book, fees and any margin interest, positive when the weekend earns. Funding is the mean of the weekend hours in the last 28 days of Lighter RH funding, a history and not a forecast.",

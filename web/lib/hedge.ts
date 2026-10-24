@@ -98,12 +98,14 @@ export type WeekendWindow = {
   openAt: Date;
   /** The open less the unwind lead: 13:00Z in EDT by default. */
   unwindAt: Date;
-  /** Hours the short is held, close to unwind. */
+  /** The later of `now` and the Friday close: once the close has passed, the short is held from now. */
+  startAt: Date;
+  /** Hours the short is held, start to unwind. */
   hours: number;
 };
 
 /** The next weekend not yet over for `now`: the Friday close and Monday open in America/New_York (daylight saving included), with the short closed `unwindMinutes`
- *  before the open. US market holidays are not in the calendar. */
+ *  before the open. The hours run from the later of `now` and the close, so Saturday morning prices the hours that are left. US market holidays are not in the calendar. */
 export function weekendWindow(now: Date, unwindMinutes = DEFAULT_UNWIND_MINUTES): WeekendWindow {
   const p = nyParts(now.getTime());
   const daysBack = (p.dow - 5 + 7) % 7;
@@ -113,7 +115,10 @@ export function weekendWindow(now: Date, unwindMinutes = DEFAULT_UNWIND_MINUTES)
     const closeMs = nyWallToUtcMs(fri.getUTCFullYear(), fri.getUTCMonth() + 1, fri.getUTCDate(), 16, 0);
     const openMs = nyWallToUtcMs(mon.getUTCFullYear(), mon.getUTCMonth() + 1, mon.getUTCDate(), 9, 30);
     const unwindMs = openMs - unwindMinutes * 60_000;
-    if (unwindMs > now.getTime()) return { closeAt: new Date(closeMs), openAt: new Date(openMs), unwindAt: new Date(unwindMs), hours: (unwindMs - closeMs) / 3_600_000 };
+    if (unwindMs > now.getTime()) {
+      const startMs = Math.max(now.getTime(), closeMs);
+      return { closeAt: new Date(closeMs), openAt: new Date(openMs), unwindAt: new Date(unwindMs), startAt: new Date(startMs), hours: (unwindMs - startMs) / 3_600_000 };
+    }
   }
   throw new Error("unreachable: a weekend is always within the next two Fridays");
 }
@@ -185,13 +190,21 @@ export type Line<T> = { value: T; source: string; fetchedAt: string };
 
 export type HedgePlan =
   | { status: "no_perp"; symbol: string }
-  | { status: "below_min"; symbol: string; marketId: number; minBase: Line<string> }
+  | {
+      status: "below_min";
+      symbol: string;
+      marketId: number;
+      /** Which of Lighter's two floors the short is under: the smallest size, or the smallest order value. */
+      limit: "min_base_amount" | "min_quote_amount";
+      minBase: Line<string>;
+      minQuoteUsd: Line<number>;
+    }
   | {
       status: "ok";
       symbol: string;
       marketId: number;
       side: "short";
-      window: { closeAt: string; openAt: string; unwindAt: string; hours: number };
+      window: { closeAt: string; startAt: string; openAt: string; unwindAt: string; hours: number };
       size: Line<{ shares: string; units: string; multiplier: string }>;
       notionalUsd: Line<number>;
       leverage: number;
@@ -234,7 +247,11 @@ export function planHedge(p: PlanInput): HedgePlan {
   const unwindMinutes = p.unwindMinutes ?? DEFAULT_UNWIND_MINUTES;
 
   const sized = sizeShares(p.balanceRaw, p.tokenDecimals, p.uiMultiplier, perp.sizeDecimals, perp.minBaseAmount);
-  if ("reason" in sized) return { status: "below_min", symbol: p.symbol, marketId: perp.marketId, minBase: { value: perp.minBaseAmount, ...src(p.perps) } };
+  const belowMin = (limit: "min_base_amount" | "min_quote_amount"): HedgePlan => ({
+    status: "below_min", symbol: p.symbol, marketId: perp.marketId, limit,
+    minBase: { value: perp.minBaseAmount, ...src(p.perps) }, minQuoteUsd: { value: perp.minQuoteAmount, ...src(p.perps) },
+  });
+  if ("reason" in sized) return belowMin("min_base_amount");
 
   const leverage = p.leverage ?? DEFAULT_LEVERAGE;
   const maxLeverage = 1e4 / perp.minInitialMarginFraction;
@@ -244,6 +261,7 @@ export function planHedge(p: PlanInput): HedgePlan {
   if (mid === null) throw new RangeError(`${p.symbol} has an empty side in the order book`);
   const shares = Number(sized.shares);
   const notional = shares * mid;
+  if (notional < perp.minQuoteAmount) return belowMin("min_quote_amount");
   const w = weekendWindow(p.now, unwindMinutes);
 
   const open = walkBook(p.book.data.bids, notional, mid, "sell");
@@ -267,7 +285,7 @@ export function planHedge(p: PlanInput): HedgePlan {
     symbol: p.symbol,
     marketId: perp.marketId,
     side: "short",
-    window: { closeAt: w.closeAt.toISOString(), openAt: w.openAt.toISOString(), unwindAt: w.unwindAt.toISOString(), hours: w.hours },
+    window: { closeAt: w.closeAt.toISOString(), startAt: w.startAt.toISOString(), openAt: w.openAt.toISOString(), unwindAt: w.unwindAt.toISOString(), hours: w.hours },
     size: { value: { shares: sized.shares, units: sized.units.toString(), multiplier: p.uiMultiplier.toString() }, ...p.uiMultiplierRead },
     notionalUsd: { value: notional, ...src(p.book) },
     leverage,

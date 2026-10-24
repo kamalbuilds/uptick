@@ -87,6 +87,8 @@ export type PerpMarket = {
   priceDecimals: number;
   /** Decimal string exactly as sent: the smallest order, in base units. */
   minBaseAmount: string;
+  /** The smallest order value in USD (min_quote_amount): a size over the base minimum is still refused when it is worth less than this. */
+  minQuoteAmount: number;
   /** Margin fractions are in 1e-4 units: 500 is 5%, so 20x at most. */
   defaultInitialMarginFraction: number;
   minInitialMarginFraction: number;
@@ -109,6 +111,7 @@ export function parsePerp(v: unknown): PerpMarket {
     sizeDecimals: int(o, "size_decimals", where),
     priceDecimals: int(o, "price_decimals", where),
     minBaseAmount: str(o, "min_base_amount", where),
+    minQuoteAmount: dec(o, "min_quote_amount", where),
     defaultInitialMarginFraction: int(o, "default_initial_margin_fraction", where),
     minInitialMarginFraction: int(o, "min_initial_margin_fraction", where),
     maintenanceMarginFraction: int(o, "maintenance_margin_fraction", where),
