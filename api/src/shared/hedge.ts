@@ -1,4 +1,4 @@
-import type { FundingRow, LighterAsset, Level, OrderBook, PerpMarket, Sourced } from "./lighter.ts";
+import { LIGHTER_RH, type FundingRow, type LighterAsset, type Level, type OrderBook, type PerpMarket, type Sourced } from "./lighter.ts";
 
 /** The weekend hedge planner, pure: balances, the on-chain ERC-8056 multiplier and Lighter RH reads in, a sized short and its cost lines out. Nothing here signs or sends an order.
  *  web/lib/hedge.ts is the one source: `npm run sync` in api/ copies it (with lighter.ts) into api/src/shared. */
@@ -34,22 +34,37 @@ export function sizeShares(balanceRaw: bigint, tokenDecimals: number, uiMultipli
 
 // ---- the book at your size ----------------------------------------------------------------------------------------------------------
 
-/** Cost in basis points versus mid of selling `usd` into the bids ("sell") or buying it from the asks ("buy"), walking the levels best first. "unfillable" when the
- *  side is empty or the levels given are too thin for the size: never zero. */
-export function walkBook(levels: readonly Level[], usd: number, mid: number, side: "sell" | "buy"): number | "unfillable" {
-  if (!(usd > 0) || !(mid > 0)) throw new RangeError("usd and mid must be positive");
+/** One walk down a side of the book, best level first: the average price of `usd` of fills and the price of the last level it reached (the worst price the order would trade at).
+ *  "unfillable" when the side is empty or the levels given are too thin for the size: never zero. */
+function walk(levels: readonly Level[], usd: number, side: "sell" | "buy"): { avg: number; worst: number } | "unfillable" {
+  if (!(usd > 0)) throw new RangeError("usd must be positive");
   const live = levels.filter((l) => l.price > 0 && l.size > 0).sort((a, b) => (side === "sell" ? b.price - a.price : a.price - b.price));
   let rem = usd;
   let base = 0;
+  let worst = 0;
   for (const l of live) {
     const take = Math.min(rem, l.price * l.size);
     base += take / l.price;
     rem -= take;
+    worst = l.price;
     if (rem <= 1e-9) break;
   }
-  if (rem > 1e-9) return "unfillable";
-  const avg = usd / base;
-  return side === "sell" ? ((mid - avg) / mid) * 1e4 : ((avg - mid) / mid) * 1e4;
+  return rem > 1e-9 ? "unfillable" : { avg: usd / base, worst };
+}
+
+/** Cost in basis points versus mid of selling `usd` into the bids ("sell") or buying it from the asks ("buy"), walking the levels best first. "unfillable" when the
+ *  side is empty or the levels given are too thin for the size: never zero. */
+export function walkBook(levels: readonly Level[], usd: number, mid: number, side: "sell" | "buy"): number | "unfillable" {
+  if (!(usd > 0) || !(mid > 0)) throw new RangeError("usd and mid must be positive");
+  const w = walk(levels, usd, side);
+  if (w === "unfillable") return w;
+  return side === "sell" ? ((mid - w.avg) / mid) * 1e4 : ((w.avg - mid) / mid) * 1e4;
+}
+
+/** The price of the deepest level that selling (bids) or buying (asks) `usd` reaches, or "unfillable". */
+export function worstPrice(levels: readonly Level[], usd: number, side: "sell" | "buy"): number | "unfillable" {
+  const w = walk(levels, usd, side);
+  return w === "unfillable" ? w : w.worst;
 }
 
 /** Mid of the best bid and best ask, or null when either side is empty. */
@@ -183,6 +198,158 @@ export function hedgeable(universe: readonly UniverseToken[], perps: readonly Pe
   });
 }
 
+// ---- the hand-off to the holder's own agent -------------------------------------------------------------------------------------------
+
+/** How long a proposal stays good: the book it was priced from is this old at most. */
+export const PROPOSAL_VALID_MINUTES = 10;
+/** The protective limit sits this far below the deepest bid the order walks, so a book that moves a little still fills and one that moves a lot does not. */
+export const PROTECTIVE_BUFFER_BP = 10;
+
+type OkPlan = Omit<Extract<HedgePlan, { status: "ok" }>, "proposal">;
+
+/** A short for the holder's own agent running lighter-agent-kit to place with the holder's own key. Uptick signs nothing, holds no key and places nothing. */
+export type ExecutionProposal = {
+  status: "proposed";
+  venue: "lighter-robinhood-chain";
+  /** The kit's LIGHTER_HOST for this deployment. */
+  api_host: string;
+  /** The symbol is the one lighter-agent-kit takes for a perp: the bare ticker, as Lighter lists it (a spot pair would carry a slash). */
+  market: { symbol: string; market_id: number; type: "perp" };
+  side: "sell";
+  size: { base: string; notional_usd: number };
+  /** A marketable limit: it sells into the bids and never below limit_price. Whatever the book does not take at that price rests, so the agent cancels it. */
+  order: { type: "limit"; limit_price: string; reduce_only: false; limit_basis: string; reference_mid: string; expected_avg_fill_price: string };
+  leverage: { suggested: number; max: number; margin_mode: "cross" };
+  margin_usdg: number;
+  estimated_costs: {
+    slippage_bp: number;
+    slippage_usd: number;
+    /** Null when Lighter's fee strings are not zero: their unit is not read from the API, so no figure is invented. */
+    fees_bp: number | null;
+    fees_usd: number | null;
+    funding_bp: number | null;
+    funding_usd: number | null;
+    funding_direction: "earns" | "pays" | null;
+    margin_borrow_bp: number;
+    margin_borrow_usd: number;
+    net_bp: number | null;
+    net_usd: number | null;
+  };
+  estimated_liquidation_price: number;
+  /** When the book the limit was derived from was read. */
+  market_data_at: string;
+  valid_until: string;
+  exit_by: string;
+  exit: { side: "buy"; reduce_only: true; size: string };
+  risk_notes: string[];
+};
+
+const SAFE_SYMBOL = /^[A-Z0-9]{1,12}$/;
+const r2 = (n: number): number => Math.round(n * 100) / 100;
+
+/** The proposal for a finished plan: the plan's size, leverage, costs and exit time carried over unchanged, plus the two things only the book gives, the protective limit and the
+ *  expected average fill. Null when the book cannot fill the notional and its close. */
+export function proposeExecution(plan: OkPlan, perp: PerpMarket, book: Sourced<OrderBook>): ExecutionProposal | null {
+  if (!SAFE_SYMBOL.test(plan.symbol)) throw new RangeError(`symbol "${plan.symbol}" is not a bare ticker`);
+  const mid = midOf(book.data);
+  if (mid === null) return null;
+  const notional = plan.notionalUsd.value;
+  const w = walk(book.data.bids, notional, "sell");
+  if (w === "unfillable") return null;
+  const rt = plan.slippage.value.roundTripBp;
+  if (rt === "unfillable") return null;
+  const dp = perp.priceDecimals;
+  const scale = 10 ** dp;
+  // A sell limit rounded down to the tick only widens what it accepts, so the order is never refused for price precision.
+  const limit = Math.floor((w.worst * (1 - PROTECTIVE_BUFFER_BP / 1e4)) * scale + 1e-6) / scale;
+  const m = perp.maintenanceMarginFraction / 1e4;
+  const liq = (w.avg * (1 + 1 / plan.leverage)) / (1 + m);
+  const carry = plan.carry.value;
+  const mc = plan.marginCarry.value;
+  const fees = plan.fees.value.bp;
+  const maxLeverage = 1e4 / perp.minInitialMarginFraction;
+  const validMs = Math.min(Date.parse(book.fetchedAt) + PROPOSAL_VALID_MINUTES * 60_000, Date.parse(plan.window.unwindAt));
+  const notes = [
+    "A proposal for your own agent to place, not an executed hedge: Uptick signs nothing, holds no keys or funds, and has placed nothing. The vault itself is not hedged.",
+    `Estimated liquidation price ${liq.toFixed(dp)} for a short entered near ${w.avg.toFixed(dp)} at ${plan.leverage}x, with the margin set to notional / leverage and ${r2(m * 100)}% maintenance margin. An account with more collateral liquidates higher.`,
+    carry === null
+      ? "Lighter returned too few weekend funding rows for a funding figure."
+      : `Funding: past weekends ${carry.bp >= 0 ? "paid a short" : "charged a short"} ${r2(Math.abs(carry.bp))} bp over this window. It is the mean of the last 28 days of weekend hours, a history and not a forecast, and the sign can flip.`,
+    `The short is closed by ${plan.window.unwindAt}, before the US open at ${plan.window.openAt}. A stock can gap against a short between checks, so the agent watches the position until then.`,
+  ];
+  return {
+    status: "proposed",
+    venue: "lighter-robinhood-chain",
+    api_host: LIGHTER_RH.api,
+    market: { symbol: plan.symbol, market_id: plan.marketId, type: "perp" },
+    side: "sell",
+    size: { base: plan.size.value.shares, notional_usd: r2(notional) },
+    order: {
+      type: "limit",
+      reduce_only: false,
+      limit_price: limit.toFixed(dp),
+      limit_basis: `the deepest bid a ${r2(notional)} USD sell walks (${w.worst.toFixed(dp)}) less ${PROTECTIVE_BUFFER_BP} bp, floored to the tick`,
+      reference_mid: mid.toFixed(dp),
+      expected_avg_fill_price: w.avg.toFixed(dp),
+    },
+    leverage: { suggested: plan.leverage, max: maxLeverage, margin_mode: "cross" },
+    margin_usdg: r2(plan.marginUsdg.value),
+    estimated_costs: {
+      slippage_bp: r2(rt),
+      slippage_usd: r2((rt / 1e4) * notional),
+      fees_bp: fees,
+      fees_usd: fees === null ? null : r2((fees / 1e4) * notional),
+      funding_bp: carry === null ? null : r2(carry.bp),
+      funding_usd: carry === null ? null : r2(carry.usd),
+      funding_direction: carry === null ? null : carry.bp >= 0 ? "earns" : "pays",
+      margin_borrow_bp: r2(mc.bp),
+      margin_borrow_usd: r2(mc.usd),
+      net_bp: plan.netBp === null ? null : r2(plan.netBp),
+      net_usd: plan.netUsd === null ? null : r2(plan.netUsd),
+    },
+    estimated_liquidation_price: Number(liq.toFixed(dp)),
+    market_data_at: book.fetchedAt,
+    valid_until: new Date(validMs).toISOString(),
+    exit_by: plan.window.unwindAt,
+    exit: { side: "buy", reduce_only: true, size: plan.size.value.shares },
+    risk_notes: notes,
+  };
+}
+
+/** The proposal as one instruction to paste into an agent that has lighter-agent-kit: paper first, then live only on the holder's word. Every number in it is read from the proposal. */
+export function agentInstruction(p: ExecutionProposal): string {
+  const c = p.estimated_costs;
+  const sym = p.market.symbol;
+  const fmt = (n: number | null, unit: string) => (n === null ? "n/a" : `${n} ${unit}`);
+  const tier = c.fees_bp === 0 ? " --tier standard" : "";
+  return [
+    `Place a proposed weekend hedge on Lighter's Robinhood Chain exchange with lighter-agent-kit, from my own Lighter account. Paper trade it first with scripts/paper.py, and place it live with scripts/trade.py only after the paper run looks right and I say so.`,
+    ``,
+    `Host: LIGHTER_HOST=${p.api_host}`,
+    `Market: ${sym} perp (market_id ${p.market.market_id}), symbol ${sym}`,
+    `Side: sell (short)`,
+    `Size: ${p.size.base} ${sym}, about ${p.size.notional_usd} USD notional`,
+    `Order: limit sell at ${p.order.limit_price} or higher (a protective limit below the deepest bid this size walks; expected average fill about ${p.order.expected_avg_fill_price}). Cancel any part that does not fill.`,
+    `Leverage: ${p.leverage.suggested}x ${p.leverage.margin_mode} (the market allows up to ${p.leverage.max}x), about ${p.margin_usdg} USDG of margin`,
+    `Valid until: ${p.valid_until} (the book was read at ${p.market_data_at}). After that, ask Uptick for a new plan before placing.`,
+    `Exit by: ${p.exit_by}. Check the position every few hours and close by ${p.exit_by} with a reduce-only buy of ${p.exit.size} ${sym}.`,
+    `Estimated: round trip slippage ${fmt(c.slippage_bp, "bp")}, fees ${fmt(c.fees_bp, "bp")}, funding ${c.funding_direction ?? "n/a"} ${fmt(c.funding_bp, "bp")}, margin interest ${c.margin_borrow_bp} bp, liquidation near ${p.estimated_liquidation_price}.`,
+    ``,
+    `Paper (run from the kit folder, no key needed):`,
+    `python3 scripts/paper.py init --collateral ${p.margin_usdg}${tier}`,
+    `python3 scripts/paper.py order ioc ${sym} --side short --amount ${p.size.base} --price ${p.order.limit_price}`,
+    `python3 scripts/paper.py positions --symbol ${sym}`,
+    `python3 scripts/paper.py order market ${sym} --side long --amount ${p.exit.size}`,
+    ``,
+    `Live, only after I confirm:`,
+    `python3 scripts/trade.py position leverage ${sym} --leverage ${p.leverage.suggested} --margin_mode ${p.leverage.margin_mode}`,
+    `python3 scripts/trade.py order limit ${sym} --side short --amount ${p.size.base} --price ${p.order.limit_price}`,
+    `python3 scripts/trade.py order market ${sym} --side long --amount ${p.exit.size} --reduce_only`,
+    ``,
+    `This is a proposal from Uptick's planner, not an executed hedge. Uptick placed nothing and holds no keys or funds; the key, the order and the funds stay with me.`,
+  ].join("\n");
+}
+
 // ---- the plan ---------------------------------------------------------------------------------------------------------------------
 
 /** A figure with where it came from: the URL or call that produced it and the UTC time it arrived. */
@@ -218,6 +385,8 @@ export type HedgePlan =
       /** carry less round-trip slippage, fees and borrow interest, in bp of the notional: positive earns. Null when any part is not a number. */
       netBp: number | null;
       netUsd: number | null;
+      /** The same short as an order for the holder's own agent to place; null when the book cannot fill the size and its close, so no protective limit or cost exists. Nothing in it is placed by Uptick. */
+      proposal: ExecutionProposal | null;
     };
 
 export type PlanInput = {
@@ -280,7 +449,7 @@ export function planHedge(p: PlanInput): HedgePlan {
   const asset = p.assets.data.find((a) => a.l1Address.toLowerCase() === p.token.toLowerCase());
   const net = carry !== null && rt !== "unfillable" && feeBp !== null ? carry - rt - feeBp - mc.bp : null;
 
-  return {
+  const body: OkPlan = {
     status: "ok",
     symbol: p.symbol,
     marketId: perp.marketId,
@@ -306,4 +475,5 @@ export function planHedge(p: PlanInput): HedgePlan {
     netBp: net,
     netUsd: net === null ? null : carryUsd(net, notional),
   };
+  return { ...body, proposal: proposeExecution(body, perp, p.book) };
 }

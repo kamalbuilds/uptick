@@ -198,6 +198,59 @@ describe("plan_weekend_hedge for a wallet that holds NVDA", () => {
   });
 });
 
+describe("plan_weekend_hedge hands the plan to the holder's own agent", () => {
+  const nvdaPerp = details.order_book_details.find((m: any) => m.symbol === "NVDA");
+
+  test("execution_proposal is built from the plan's own fields and names the market the way lighter-agent-kit does", async () => {
+    const r = await plan({ address: OWNER, vault: "nvda", leverage: 4 }, { scanClient: holder({ nvda: 10n * E18 }).client as never, lighterFetch: lighter().f });
+    expect(r.isError).toBeUndefined();
+    const p = r.structuredContent;
+    const x = p.execution_proposal;
+    expect(x).toMatchObject({ status: "proposed", venue: "lighter-robinhood-chain", api_host: "https://api.rh.lighter.xyz", side: "sell" });
+    expect(x.market).toEqual({ symbol: "NVDA", market_id: nvdaPerp.market_id, type: "perp" });
+    // the plan stays the source of truth: size, notional, leverage, exit and cost lines are the plan's
+    expect(x.size).toEqual({ base: p.shares, notional_usd: p.notionalUsd });
+    expect(x.leverage).toEqual({ suggested: 4, max: 1e4 / nvdaPerp.min_initial_margin_fraction, margin_mode: "cross" });
+    expect(x.margin_usdg).toBe(p.marginUsdg);
+    expect(x.exit_by).toBe(p.window.unwind);
+    expect(x.estimated_costs).toMatchObject({ slippage_bp: p.slippageBp, fees_bp: p.feeBp, funding_bp: p.fundingBp, funding_usd: p.fundingUsd, funding_direction: p.fundingDirection, margin_borrow_bp: p.marginCostBp, net_bp: p.netBp, net_usd: p.netUsd });
+    // the book it was priced from is the one the plan read, at the time it arrived
+    const bookSource = (p.sources as Array<{ url: string; fetchedAt: string }>).find((s) => s.url.includes("/orderBookOrders"))!;
+    expect(x.market_data_at).toBe(bookSource.fetchedAt);
+    expect(Date.parse(x.valid_until) - Date.parse(x.market_data_at)).toBe(10 * 60_000);
+    // a sell limit sits at or below the best bid, so it is marketable, and below the expected fill
+    const bestBid = Math.max(...book.bids.map((l: any) => Number(l.price)));
+    expect(Number(x.order.limit_price)).toBeLessThan(bestBid);
+    expect(Number(x.order.limit_price)).toBeLessThan(Number(x.order.expected_avg_fill_price));
+    expect(x.estimated_liquidation_price).toBeGreaterThan(Number(x.order.expected_avg_fill_price));
+    expect(x.risk_notes[0]).toMatch(/not an executed hedge/);
+  });
+
+  test("agent_instruction is the proposal as text: market, side, size, leverage, limit, exit, paper first, nothing claimed as placed", async () => {
+    const r = await plan({ address: OWNER, vault: "nvda" }, { scanClient: holder({ nvda: 10n * E18 }).client as never, lighterFetch: lighter().f });
+    const { execution_proposal: x, agent_instruction: t } = r.structuredContent;
+    expect(typeof t).toBe("string");
+    for (const must of [x.market.symbol, "Side: sell (short)", x.size.base, x.order.limit_price, "5x cross", x.exit_by, `Check the position every few hours and close by ${x.exit_by}`, "Paper trade it first", "scripts/paper.py", "not an executed hedge"]) expect(t).toContain(must);
+    expect(t).not.toMatch(/ \u2014 | -- /);
+    expect(r.structuredContent.note).toMatch(/lighter-agent-kit/);
+    // nothing in the payload is calldata or a signature
+    expect(r.structuredContent.transactions).toBeUndefined();
+    expect(JSON.stringify(r.structuredContent)).not.toMatch(/calldata":|"signature"|privateKey/i);
+  });
+
+  test("below the smallest order the answer is the reason alone: no execution_proposal and no agent_instruction", async () => {
+    for (const held of [E18 / 1000n, (45n * E18) / 1000n]) {
+      const r = await plan({ address: OWNER }, { scanClient: holder({ nvda: held }).client as never, lighterFetch: lighter().f });
+      expect(r.isError).toBeUndefined();
+      expect(r.structuredContent.hedgeable).toBe(false);
+      expect(r.structuredContent.reason).toMatch(/nothing to place/);
+      expect(r.structuredContent.execution_proposal).toBeUndefined();
+      expect(r.structuredContent.agent_instruction).toBeUndefined();
+      expect("execution_proposal" in r.structuredContent).toBe(false);
+    }
+  });
+});
+
 describe("plan_weekend_hedge with no holding or bad input", () => {
   test("an address that holds none of the tracked tokens returns an explicit reason", async () => {
     const r = await plan({ address: OWNER }, { scanClient: holder({}).client as never, lighterFetch: lighter().f });
@@ -256,7 +309,7 @@ describe("plan_weekend_hedge with no holding or bad input", () => {
 describe("plan_weekend_hedge when Lighter does not answer cleanly", () => {
   const deps = () => ({ scanClient: holder({ nvda: 10n * E18 }).client as never });
   const noPlan = (p: Record<string, any>) => {
-    for (const k of ["shares", "fundingBp", "slippageBp", "netBp", "notionalUsd", "handoffUrl", "sources"]) expect(p[k]).toBeUndefined();
+    for (const k of ["shares", "fundingBp", "slippageBp", "netBp", "notionalUsd", "handoffUrl", "sources", "execution_proposal", "agent_instruction"]) expect(p[k]).toBeUndefined();
   };
 
   test("the geo gate in the body of a 200 is an error carrying code 20558, never a zero-cost plan", async () => {
@@ -351,6 +404,16 @@ describe("plan_weekend_hedge from a loan", () => {
     expect(p.marginCostUsd).toBeCloseTo((p.notionalUsd / 5) * apr * (hours / 8760), 1);
     expect(p.netBp).toBeCloseTo(p.fundingBp - p.slippageBp - p.feeBp - p.marginCostBp, 1);
     expect(p.transactions).toBeUndefined();
+  });
+
+  test("the loan plan carries a proposal too, with the margin interest in its costs", async () => {
+    const r = await loanCall({ address: BORROWER, source: "loan", vault: "nvda" }, freshChain());
+    expect(r.isError).toBeUndefined();
+    const x = r.structuredContent.execution_proposal;
+    expect(x.size.base).toBe(r.structuredContent.shares);
+    expect(x.estimated_costs.margin_borrow_bp).toBe(r.structuredContent.marginCostBp);
+    expect(x.estimated_costs.margin_borrow_bp).toBeGreaterThan(0);
+    expect(r.structuredContent.agent_instruction).toContain("Side: sell (short)");
   });
 
   test("a wallet with no shares posted answers with the reason", async () => {

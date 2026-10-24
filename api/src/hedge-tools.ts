@@ -1,6 +1,6 @@
 import type { Address, PublicClient } from "viem";
 import { vaultAbi } from "./shared/abis.ts";
-import { DEFAULT_LEVERAGE, planHedge, type HedgePlan } from "./shared/hedge.ts";
+import { DEFAULT_LEVERAGE, agentInstruction, planHedge, type HedgePlan } from "./shared/hedge.ts";
 import { readMultipliers } from "./shared/hedge-chain.ts";
 import { LIGHTER_RH, fetchAssetDetails, fetchFundings, fetchOrderBookDetails, fetchOrderBookOrders, type LighterOpts, type Sourced } from "./shared/lighter.ts";
 import { hasLoan } from "./shared/loan.ts";
@@ -8,7 +8,7 @@ import { MORPHO_BLUE, aprPct, type MarketEntry } from "./shared/morpho.ts";
 import { READ_LAG, parseOwner, scanWallet, type ScanClient, type ScanRow, type ScanVault } from "./shared/scan.ts";
 import { MARKETS, makeClient, marketOf, readMarketSide, readPosition } from "./loan-chain";
 
-/** plan_weekend_hedge: sizes and prices a weekend short of the matching Stock Token perp on Lighter's Robinhood Chain exchange. Read-only: it signs nothing, places nothing and returns no calldata. */
+/** plan_weekend_hedge: sizes and prices a weekend short of the matching Stock Token perp on Lighter's Robinhood Chain exchange and proposes it as an order for the holder's own agent. Read-only: it signs nothing, places nothing and returns no calldata. */
 
 export interface HedgeToolEnv {
   VAULTS?: string;
@@ -166,6 +166,7 @@ export async function planWeekendHedge(ctx: HedgeToolContext, args: Record<strin
 
   const carry = plan.carry.value;
   const stock = plan.stockMargin.value;
+  if (plan.proposal === null) return refuse(`the ${h.symbol} order book Lighter returned cannot give a protective limit price for this size, so no order is proposed`, { symbol: h.symbol });
   const sources = [
     ...[perps, assets, book, fundings].map((s) => ({ url: s.url, fetchedAt: s.fetchedAt })),
     { url: plan.size.source, fetchedAt: plan.size.fetchedAt },
@@ -201,8 +202,10 @@ export async function planWeekendHedge(ctx: HedgeToolContext, args: Record<strin
       globalRoomTokens: stock.globalRoom,
       window: { close: plan.window.closeAt, start: plan.window.startAt, unwind: plan.window.unwindAt, open: plan.window.openAt, hours: Math.round(plan.window.hours * 10) / 10 },
       handoffUrl: `${LIGHTER_RH.app}/trade/${h.symbol}`,
+      execution_proposal: plan.proposal,
+      agent_instruction: agentInstruction(plan.proposal),
       sources,
-      note: "Read-only plan: nothing is placed or signed and no calldata is returned. The holder enters the short on Lighter with this size, side and leverage. netBp is funding less the round trip through the book, fees and any margin interest, positive when the weekend earns. Funding is the mean of the weekend hours in the last 28 days of Lighter RH funding, a history and not a forecast.",
+      note: "Read-only plan: nothing is placed or signed and no calldata is returned. The holder enters the short on Lighter with this size, side and leverage, or hands execution_proposal to their own agent running lighter-agent-kit (agent_instruction is the text to paste; paper trade first). execution_proposal is a proposal and not an executed hedge: Uptick holds no key and places no order. netBp is funding less the round trip through the book, fees and any margin interest, positive when the weekend earns. Funding is the mean of the weekend hours in the last 28 days of Lighter RH funding, a history and not a forecast.",
     },
   };
 }

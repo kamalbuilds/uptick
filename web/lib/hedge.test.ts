@@ -4,7 +4,7 @@ import { test } from "node:test";
 import type { Address } from "viem";
 import { MULTICALL3 } from "./scan.ts";
 import { readMultipliers, stockLegOfShares } from "./hedge-chain.ts";
-import { carryBp, carryUsd, hedgeable, isWeekendHour, marginCarryBp, midOf, planHedge, roundTripBp, sizeShares, walkBook, weekendWindow, type PlanInput } from "./hedge.ts";
+import { PROPOSAL_VALID_MINUTES, PROTECTIVE_BUFFER_BP, agentInstruction, carryBp, carryUsd, hedgeable, isWeekendHour, marginCarryBp, midOf, planHedge, proposeExecution, roundTripBp, sizeShares, walkBook, weekendWindow, worstPrice, type PlanInput } from "./hedge.ts";
 import {
   fetchAssetDetails,
   fetchFundings,
@@ -327,6 +327,176 @@ test("planHedge refuses what it cannot size or price: no perp, below the minimum
   assert.throws(empty, /empty side/);
   const thick = planHedge(input({ balanceRaw: 100_000_000_000_000_000_000_000n }));
   assert.ok(thick.status === "ok" && thick.slippage.value.roundTripBp === "unfillable" && thick.netBp === null);
+});
+
+// ---- the hand-off to the holder's own agent ------------------------------------------------------------------------------------
+
+/** The deepest bid a sell of `usd` reaches, walked here from the recorded book and not by the planner. */
+function deepestBid(usd: number): number {
+  let rem = usd;
+  let last = NaN;
+  for (const l of [...book.bids].sort((a, b) => b.price - a.price)) {
+    rem -= l.price * l.size;
+    last = l.price;
+    if (rem <= 0) return last;
+  }
+  throw new Error("recorded book too thin for this size");
+}
+
+const okPlan = (over: Partial<PlanInput> = {}) => {
+  const p = planHedge(input(over));
+  assert.ok(p.status === "ok", p.status);
+  return p;
+};
+
+test("the proposal carries the plan's size, leverage, costs and exit time unchanged, and names the market the way lighter-agent-kit does", () => {
+  const p = okPlan();
+  const x = p.proposal;
+  assert.ok(x !== null);
+  assert.equal(x.status, "proposed");
+  assert.equal(x.venue, "lighter-robinhood-chain");
+  assert.equal(x.api_host, "https://api.rh.lighter.xyz");
+  // the kit takes a perp as the bare ticker Lighter lists; a spot pair would carry a slash
+  assert.deepEqual(x.market, { symbol: "NVDA", market_id: 15, type: "perp" });
+  assert.ok(!x.market.symbol.includes("/"));
+  assert.equal(x.side, "sell");
+  assert.equal(x.size.base, p.size.value.shares);
+  assert.equal(x.size.base, "47.0364");
+  assert.equal(x.size.notional_usd, Math.round(p.notionalUsd.value * 100) / 100);
+  assert.deepEqual(x.leverage, { suggested: 5, max: 20, margin_mode: "cross" });
+  assert.equal(x.margin_usdg, Math.round(p.marginUsdg.value * 100) / 100);
+  assert.equal(x.exit_by, p.window.unwindAt);
+  assert.equal(x.exit_by, "2026-10-26T13:00:00.000Z");
+  assert.deepEqual(x.exit, { side: "buy", reduce_only: true, size: "47.0364" });
+  const c = x.estimated_costs;
+  assert.equal(c.slippage_bp, Math.round((p.slippage.value.roundTripBp as number) * 100) / 100);
+  assert.equal(c.fees_bp, 0);
+  assert.equal(c.funding_bp, Math.round(p.carry.value!.bp * 100) / 100);
+  assert.equal(c.funding_direction, p.carry.value!.bp >= 0 ? "earns" : "pays");
+  assert.equal(c.margin_borrow_bp, 0);
+  assert.equal(c.net_bp, Math.round(p.netBp! * 100) / 100);
+  assert.ok(Math.abs(c.net_bp! - (c.funding_bp! - c.slippage_bp - c.fees_bp! - c.margin_borrow_bp)) < 0.02);
+});
+
+test("the protective limit is the deepest bid the order walks less the buffer, floored to the tick, and sits below the expected fill", () => {
+  const p = okPlan();
+  const x = p.proposal!;
+  const worst = deepestBid(p.notionalUsd.value);
+  const expected = (Math.floor(worst * (1 - PROTECTIVE_BUFFER_BP / 1e4) * 100 + 1e-6) / 100).toFixed(2);
+  assert.equal(x.order.limit_price, expected);
+  assert.match(x.order.limit_price, /^\d+\.\d{2}$/, "NVDA quotes two price decimals");
+  assert.equal(worstPrice(book.bids, p.notionalUsd.value, "sell"), worst);
+  const mid = midOf(book)!;
+  assert.equal(x.order.reference_mid, mid.toFixed(2));
+  assert.ok(Number(x.order.limit_price) < Number(x.order.expected_avg_fill_price));
+  assert.ok(Number(x.order.expected_avg_fill_price) <= mid);
+  // the average fill is the one slippage.openBp prices: mid less open bp
+  const openBp = p.slippage.value.openBp as number;
+  assert.ok(Math.abs(Number(x.order.expected_avg_fill_price) - mid * (1 - openBp / 1e4)) < 0.006);
+  assert.equal(x.order.type, "limit");
+  assert.equal(x.order.reduce_only, false);
+});
+
+test("a size that walks many levels gets a deeper limit than a size that fits in the first one", () => {
+  const small = okPlan({ balanceRaw: 1_000_000_000_000_000_000n }).proposal!;
+  const big = okPlan({ balanceRaw: 1_200_000_000_000_000_000_000n });
+  assert.ok(big.slippage.value.roundTripBp !== "unfillable", "the recorded 250 levels cover about 1,200 shares");
+  const b = big.proposal!;
+  const bestBid = Math.max(...book.bids.map((l) => l.price));
+  assert.ok(Number(small.order.limit_price) > Number(b.order.limit_price));
+  assert.ok(Number(b.order.limit_price) < bestBid * (1 - PROTECTIVE_BUFFER_BP / 1e4) - 0.005, "deeper than the buffer alone");
+  assert.equal(b.order.limit_price, (Math.floor(deepestBid(big.notionalUsd.value) * (1 - PROTECTIVE_BUFFER_BP / 1e4) * 100 + 1e-6) / 100).toFixed(2));
+  assert.ok(b.estimated_costs.slippage_bp > small.estimated_costs.slippage_bp);
+});
+
+test("the liquidation estimate is above the entry for a short, solves equity = maintenance margin, and falls as leverage rises", () => {
+  const five = okPlan().proposal!;
+  const ten = okPlan({ leverage: 10 }).proposal!;
+  const one = okPlan({ leverage: 1 }).proposal!;
+  const entry = Number(five.order.expected_avg_fill_price);
+  const m = perps.find((q) => q.symbol === "NVDA")!.maintenanceMarginFraction / 1e4;
+  assert.equal(m, 0.03);
+  // equity at the liquidation price: margin less the loss on the short, against maintenance margin on the position then worth
+  const equity = (liq: number, lev: number) => entry / lev - (liq - entry);
+  assert.ok(Math.abs(equity(five.estimated_liquidation_price, 5) - m * five.estimated_liquidation_price) < 0.01);
+  assert.ok(five.estimated_liquidation_price > entry * 1.15 && five.estimated_liquidation_price < entry * 1.25);
+  assert.ok(ten.estimated_liquidation_price < five.estimated_liquidation_price);
+  assert.ok(one.estimated_liquidation_price > five.estimated_liquidation_price);
+  assert.equal(ten.leverage.suggested, 10);
+  assert.ok(five.risk_notes.some((n) => n.includes(five.estimated_liquidation_price.toFixed(2))));
+});
+
+test("valid_until is ten minutes after the book was read, and never later than the exit", () => {
+  const x = okPlan().proposal!;
+  assert.equal(PROPOSAL_VALID_MINUTES, 10);
+  assert.equal(x.market_data_at, bookFx._source.fetchedAt);
+  assert.equal(Date.parse(x.valid_until) - Date.parse(x.market_data_at), 10 * 60_000);
+  const late = "2026-10-26T12:55:00Z";
+  const l = okPlan({ now: new Date(late), book: { data: book, url: bookFx._source.url, fetchedAt: late } }).proposal!;
+  assert.equal(l.valid_until, "2026-10-26T13:00:00.000Z");
+  assert.equal(l.valid_until, l.exit_by);
+});
+
+test("risk notes say it is a proposal, give the funding sign and the exit, and a nonzero fee string leaves the fee figure null", () => {
+  const x = okPlan().proposal!;
+  assert.match(x.risk_notes[0], /not an executed hedge/);
+  assert.match(x.risk_notes[0], /holds no keys/);
+  assert.ok(x.risk_notes.some((n) => n.startsWith("Funding: past weekends") && /paid a short|charged a short/.test(n)));
+  assert.ok(x.risk_notes.some((n) => n.includes(x.exit_by)));
+  const fee = okPlan({ perps: { data: perps.map((m) => (m.symbol === "NVDA" ? { ...m, takerFee: "0.0200" } : m)), ...src(obdFx) } }).proposal!;
+  assert.equal(fee.estimated_costs.fees_bp, null);
+  assert.equal(fee.estimated_costs.fees_usd, null);
+  assert.equal(fee.estimated_costs.net_bp, null);
+  assert.ok(!agentInstruction(fee).includes("--tier standard"), "paper keeps its own fee tier when Lighter's fee is not zero");
+});
+
+test("no proposal where there is nothing to place: below the minimum has no proposal field at all, a book that cannot fill the size has a null one", () => {
+  const small = planHedge(input({ balanceRaw: 10_000_000_000_000_000n }));
+  assert.equal(small.status, "below_min");
+  assert.ok(!("proposal" in small));
+  const quote = planHedge(input({ balanceRaw: 45_000_000_000_000_000n, uiMultiplier: wad("1") }));
+  assert.equal(quote.status, "below_min");
+  assert.ok(!("proposal" in quote));
+  assert.deepEqual(planHedge(input({ symbol: "GME" })), { status: "no_perp", symbol: "GME" });
+  const thick = planHedge(input({ balanceRaw: 100_000_000_000_000_000_000_000n }));
+  assert.ok(thick.status === "ok" && thick.proposal === null);
+  // only the close side too thin: the sell fills but the buy back does not, so the cost and the proposal are both withheld
+  const noAsks = planHedge(input({ book: { data: { bids: book.bids, asks: book.asks.slice(0, 1) }, ...src(bookFx) } }));
+  assert.ok(noAsks.status === "ok" && noAsks.slippage.value.roundTripBp === "unfillable" && noAsks.proposal === null);
+});
+
+test("a symbol that is not a bare ticker is refused before it can reach an instruction", () => {
+  const p = okPlan();
+  for (const bad of ["NVDA/USDG", "NVDA; rm -rf ~", "nvda", "", "A".repeat(13)]) {
+    assert.throws(() => proposeExecution({ ...p, symbol: bad }, perps.find((q) => q.symbol === "NVDA")!, input().book), /bare ticker/, JSON.stringify(bad));
+  }
+});
+
+test("the agent instruction names market, side, size, leverage, limit and the exit, tells the agent to paper trade first, and claims nothing was executed", () => {
+  const x = okPlan().proposal!;
+  const t = agentInstruction(x);
+  for (const must of [
+    "lighter-agent-kit",
+    "LIGHTER_HOST=https://api.rh.lighter.xyz",
+    "NVDA perp (market_id 15)",
+    "Side: sell (short)",
+    `Size: ${x.size.base} NVDA`,
+    `limit sell at ${x.order.limit_price} or higher`,
+    `Leverage: 5x cross (the market allows up to 20x)`,
+    `Valid until: ${x.valid_until}`,
+    `Exit by: ${x.exit_by}. Check the position every few hours and close by ${x.exit_by}`,
+    "Paper trade it first",
+    `scripts/paper.py init --collateral ${x.margin_usdg} --tier standard`,
+    `scripts/paper.py order ioc NVDA --side short --amount ${x.size.base} --price ${x.order.limit_price}`,
+    `scripts/trade.py order limit NVDA --side short --amount ${x.size.base} --price ${x.order.limit_price}`,
+    "--reduce_only",
+    "only after I confirm",
+    "not an executed hedge",
+    "Uptick placed nothing and holds no keys",
+  ]) assert.ok(t.includes(must), `missing: ${must}`);
+  assert.ok(!/\bwas executed\b|\bhas been placed\b|\bfilled\b/i.test(t));
+  assert.ok(!t.includes(" \u2014 ") && !t.includes(" -- "), "no dash punctuation");
+  assert.equal(agentInstruction(x), t, "deterministic");
 });
 
 // ---- the reads -------------------------------------------------------------------------------------------------------------
