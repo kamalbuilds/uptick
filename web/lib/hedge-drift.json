@@ -1,0 +1,12 @@
+{
+  "_source": "spikes/stock-hedge/economics/closetime.json (script closetime.py, same folder), recorded 2026-10-23: for each Friday 20:00 UTC from 2026-08-21, the change in the 0.05% Uniswap pool price less the change in the Lighter RH perp price, Friday close to the named Monday UTC time, in basis points. Reduced here by node to the population standard deviation and the largest absolute gap. Past weekends in daylight time, not a forecast.",
+  "points": {
+    "unwind": "Mon13:00",
+    "open": "Mon13:30"
+  },
+  "symbols": {
+    "NVDA": { "Mon13:00": { "n": 9, "sdBp": 6.4, "maxAbsBp": 14.7 }, "Mon13:30": { "n": 9, "sdBp": 17.8, "maxAbsBp": 41.3 } },
+    "AAPL": { "Mon13:00": { "n": 9, "sdBp": 9.5, "maxAbsBp": 29.5 }, "Mon13:30": { "n": 9, "sdBp": 15, "maxAbsBp": 34.8 } },
+    "TSLA": { "Mon13:00": { "n": 7, "sdBp": 10.1, "maxAbsBp": 17.8 }, "Mon13:30": { "n": 7, "sdBp": 24.5, "maxAbsBp": 71.2 } }
+  }
+}

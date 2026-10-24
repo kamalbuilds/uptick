@@ -11,7 +11,7 @@ import { VAULTS } from "./vaults";
 const primary = process.env.NEXT_PUBLIC_RPC_URL || robinhoodChain.rpcUrls.default.http[0];
 const urls = [primary, ...RHC_RPCS.filter((u) => u !== primary)];
 
-const client = createPublicClient({
+export const client = createPublicClient({
   chain: robinhoodChain,
   transport: fallback(urls.map((u) => http(u, { retryCount: 1, retryDelay: 400, timeout: 12_000 }))),
 });
