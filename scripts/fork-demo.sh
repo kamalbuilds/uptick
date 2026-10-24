@@ -2,4 +2,5 @@
 # One command: forks Robinhood Chain 4663 from the public RPC, runs the whole Uptick product on it (factory, router, PLTR v4 and AAPL v3 vaults,
 # share oracle, Morpho Blue market, lender, borrower, 3% pool push, stale feed, feed drop, liquidation) and writes every transaction to docs/FORK-DEMO.md.
 # Exits non-zero at the first step that fails. FORK_BLOCK=<n> pins the fork block; DEMO_ORACLE=spot swaps in the spot-reading oracle (step 17 must go red).
+# DEMO_CAP_USD=5000 DEMO_SEED_USD=450 DEMO_DEPOSIT_PCT=88 runs the whole demo under the mainnet launch cap of $5,000 a vault.
 exec env E2E_ONLY=demo "$(cd "$(dirname "$0")" && pwd)/e2e-fork.sh" "$@"
