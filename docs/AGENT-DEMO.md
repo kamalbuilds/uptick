@@ -154,13 +154,17 @@ One prompt: "Put 10 NVDA to work and borrow 1,000 USDG against it."
 1. `get_collateral_terms {"id":"nvda"}` returns the market (loan token USDG, collateral token the NVDA vault share, oracle, IRM, LLTV) and its Morpho Blue market id. The agent quotes the LLTV to the user.
 2. `prepare_earn_and_borrow {"id":"nvda","amount":"10","borrow_usdg":"1000","receiver":"0x..."}` returns:
 
-| # | To | Call |
-|---|---|---|
-| 1 | NVDA Stock Token | `approve(vault, amount)` |
-| 2 | NVDA vault | `deposit(amount, receiver)` |
-| 3 | NVDA vault | `approve(Morpho Blue, shares)` |
-| 4 | Morpho Blue | `supplyCollateral(marketParams, shares, receiver, "")` |
-| 5 | Morpho Blue | `borrow(marketParams, borrow_usdg, 0, receiver, receiver)` |
+Two batches, in order:
+
+| Batch | # | To | Call |
+|---|---|---|---|
+| 1 | 1 | NVDA Stock Token | `approve(vault, amount)` |
+| 1 | 2 | NVDA vault | `deposit(amount, receiver)` |
+| 2 | 3 | NVDA vault | `approve(Morpho Blue, shares)` |
+| 2 | 4 | Morpho Blue | `supplyCollateral(marketParams, shares, receiver, "")` |
+| 2 | 5 | Morpho Blue | `borrow(marketParams, borrow_usdg, 0, receiver, receiver)` |
+
+The vault holds shares in the block they are minted, and on Robinhood Chain that block is the parent chain's, about 12 seconds apart. `wait_between_batches` tells the agent in plain words to send batch 2 after the next block: read Multicall3 `getBlockNumber()` as of the deposit's block, then poll it at the latest block until it is higher.
 
 Every amount in calls 3 to 5 comes from chain reads at request time: `previewDeposit` on the vault for the share mint, `price()` on the market oracle, and `market(id)` on Morpho Blue for free liquidity. The collateral amount is the previewed mint minus 0.1%, so a price move between preview and mining cannot revert the supply. The response carries `shares_preview`, `collateral_shares`, `max_borrow_usdg`, `lltv_pct` and `market_id`.
 

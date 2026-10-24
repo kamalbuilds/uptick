@@ -103,6 +103,19 @@ async function callTool(name: string, args: Record<string, unknown>, env: Env = 
   return ((await res.json()) as { result: ToolResult }).result;
 }
 
+async function listTools(): Promise<{ name: string; description: string }[]> {
+  const res = await worker.fetch(
+    new Request("https://uptick-evidence.test/mcp", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    }),
+    base(),
+    ctx,
+  );
+  return ((await res.json()) as { result: { tools: { name: string; description: string }[] } }).result.tools;
+}
+
 const earn = (over: Record<string, unknown> = {}) => ({
   id: "nvda",
   amount: "10",
@@ -180,11 +193,16 @@ describe("get_collateral_terms", () => {
 });
 
 describe("prepare_earn_and_borrow", () => {
-  test("returns approve, deposit, approve shares, supplyCollateral, borrow and every call decodes", async () => {
+  test("returns two batches, approve and deposit then approve shares, supplyCollateral and borrow, and every call decodes", async () => {
     rpcCalls = [];
     const r = await callTool("prepare_earn_and_borrow", earn());
     expect(r.isError).toBeUndefined();
-    const txs = r.structuredContent.transactions as Tx[];
+    const batches = r.structuredContent.batches as { step: number; name: string; transactions: Tx[] }[];
+    expect(batches.map((b) => b.step)).toEqual([1, 2]);
+    expect(batches.map((b) => b.transactions.map((t) => t.to))).toEqual([[STOCK, VAULT], [VAULT, MORPHO, MORPHO]]);
+    // the flat list is gone, so no agent can send the deposit and supplyCollateral together by accident
+    expect(r.structuredContent.transactions).toBeUndefined();
+    const txs = batches.flatMap((b) => b.transactions);
     expect(txs.length).toBe(5);
     expect(txs.every((t) => t.value === "0" && t.chainId === 4663)).toBe(true);
     expect(txs.map((t) => t.to)).toEqual([STOCK, VAULT, VAULT, MORPHO, MORPHO]);
@@ -244,6 +262,7 @@ describe("prepare_earn_and_borrow", () => {
     expect(r.isError).toBe(true);
     expect(r.content[0].text).toContain("no Morpho market configured for nvda");
     expect(r.structuredContent.transactions).toBeUndefined();
+    expect(r.structuredContent.batches).toBeUndefined();
     expect(JSON.stringify(r)).not.toContain('"data"');
   });
 
@@ -284,7 +303,20 @@ describe("prepare_earn_and_borrow", () => {
   test("a borrow equal to the market liquidity is allowed", async () => {
     const r = await callTool("prepare_earn_and_borrow", earn({ borrow_usdg: "1100" }));
     expect(r.isError).toBeUndefined();
-    expect((r.structuredContent.transactions as unknown[]).length).toBe(5);
+    expect((r.structuredContent.batches as { transactions: unknown[] }[]).flatMap((b) => b.transactions).length).toBe(5);
+  });
+
+  test("the wait between the batches is in plain words: about 12 seconds, the parent chain's block, Multicall3", async () => {
+    const r = await callTool("prepare_earn_and_borrow", earn());
+    const wait = String(r.structuredContent.wait_between_batches);
+    expect(wait).toContain("about 12 seconds");
+    expect(wait).toContain("parent chain");
+    expect(wait).toContain("getBlockNumber()");
+    expect(wait).toContain("0xcA11bde05977b3631167028862bE2a173976CA11");
+    expect(wait).toContain("Never put the deposit and supplyCollateral in one batch");
+    const tool = (await listTools()).find((t) => t.name === "prepare_earn_and_borrow");
+    expect(tool?.description).toContain("two batches");
+    expect(tool?.description).toContain("12 seconds");
   });
 
   test("no RPC means no calldata", async () => {

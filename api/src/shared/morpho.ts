@@ -152,24 +152,30 @@ export type FlowPlan = {
   shareAllowance: bigint;
 };
 
-/** The calls of the flow, in order: approve token, deposit, approve share, supplyCollateral, borrow. Approvals are for the exact amount and skipped when the allowance already covers it.
- *  Zero borrow stops after the deposit. */
-export function earnAndBorrowSteps(p: FlowPlan): Step[] {
+/** Seconds between the two phases: the vault refuses to move shares minted in the current `block.number`, and inside a contract on Robinhood Chain that is the parent
+ *  chain's block (about 12 s), not the L2 block. */
+export const PARENT_BLOCK_SECONDS = 12;
+
+/** The flow in two phases, each a list of calls: [approve token, deposit] then [approve share, supplyCollateral, borrow]. The second phase must start in a later parent-chain
+ *  block than the deposit (web/lib/parent-block.ts), or the vault reverts SharesLocked. Approvals are for the exact amount and skipped when the allowance already covers it.
+ *  Zero borrow is the earn-only deposit: one phase. */
+export function earnAndBorrowSteps(p: FlowPlan): Step[][] {
   if (p.deposit <= 0n) throw new Error("deposit must be positive");
-  const steps: Step[] = [];
+  const earn: Step[] = [];
   if (p.tokenAllowance < p.deposit) {
-    steps.push({ id: "approve-token", label: `Approve ${p.symbol}`, call: { to: p.token, data: encodeFunctionData({ abi: erc20Approve, functionName: "approve", args: [p.vault, p.deposit] }) } });
+    earn.push({ id: "approve-token", label: `Approve ${p.symbol}`, call: { to: p.token, data: encodeFunctionData({ abi: erc20Approve, functionName: "approve", args: [p.vault, p.deposit] }) } });
   }
-  steps.push({ id: "deposit", label: `Deposit ${p.symbol} into the vault`, call: { to: p.vault, data: encodeFunctionData({ abi: vault4626, functionName: "deposit", args: [p.deposit, p.account] }) } });
-  if (p.borrow === 0n) return steps;
+  earn.push({ id: "deposit", label: `Deposit ${p.symbol} into the vault`, call: { to: p.vault, data: encodeFunctionData({ abi: vault4626, functionName: "deposit", args: [p.deposit, p.account] }) } });
+  if (p.borrow === 0n) return [earn];
   if (p.collateral <= 0n) throw new Error("collateral must be positive to borrow");
   if (p.market.collateralToken.toLowerCase() !== p.vault.toLowerCase()) throw new Error("market collateral is not this vault's share");
+  const borrow: Step[] = [];
   if (p.shareAllowance < p.collateral) {
-    steps.push({ id: "approve-shares", label: "Approve the shares to Morpho", call: { to: p.vault, data: encodeFunctionData({ abi: erc20Approve, functionName: "approve", args: [MORPHO_BLUE, p.collateral] }) } });
+    borrow.push({ id: "approve-shares", label: "Approve the shares to Morpho", call: { to: p.vault, data: encodeFunctionData({ abi: erc20Approve, functionName: "approve", args: [MORPHO_BLUE, p.collateral] }) } });
   }
-  steps.push({ id: "supply-collateral", label: "Post the shares as collateral", call: { to: MORPHO_BLUE, data: encodeFunctionData({ abi: morphoAbi, functionName: "supplyCollateral", args: [p.market, p.collateral, p.account, "0x"] }) } });
-  steps.push({ id: "borrow", label: "Borrow USDG", call: { to: MORPHO_BLUE, data: encodeFunctionData({ abi: morphoAbi, functionName: "borrow", args: [p.market, p.borrow, 0n, p.account, p.account] }) } });
-  return steps;
+  borrow.push({ id: "supply-collateral", label: "Post the shares as collateral", call: { to: MORPHO_BLUE, data: encodeFunctionData({ abi: morphoAbi, functionName: "supplyCollateral", args: [p.market, p.collateral, p.account, "0x"] }) } });
+  borrow.push({ id: "borrow", label: "Borrow USDG", call: { to: MORPHO_BLUE, data: encodeFunctionData({ abi: morphoAbi, functionName: "borrow", args: [p.market, p.borrow, 0n, p.account, p.account] }) } });
+  return [earn, borrow];
 }
 
 /** EIP-5792 `wallet_getCapabilities` result for one chain: atomic batching is usable when the wallet reports it supported, or ready (a smart-account upgrade it offers on first use). */

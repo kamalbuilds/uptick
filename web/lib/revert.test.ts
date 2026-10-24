@@ -11,7 +11,7 @@ test("each known selector, nested in the cause chain, maps to its own sentence",
 
 test("the two new vault errors read as the spec says", () => {
   assert.equal(revertCopy(wrap("0xe16ad561")), "The pool price is moving. Deposits reopen when it settles, usually within minutes.");
-  assert.equal(revertCopy(wrap("0x7a1cb75d")), "Shares minted in this block can be withdrawn from the next block.");
+  assert.equal(revertCopy(wrap("0x7a1cb75d")), "Fresh shares can move from the next block, about 12 seconds after the deposit. Try again in a moment.");
 });
 
 test("a wallet that relays only text still gets the sentence by error name", () => {

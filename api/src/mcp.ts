@@ -138,6 +138,13 @@ export const ROUTER_ABI = parseAbi([
 const MORPHO_BLUE = "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010";
 // supplyCollateral gets this much less than the previewed shares so a small price move between preview and mining cannot revert it.
 const SHARE_HAIRCUT_BPS = 10n;
+/** The vault refuses to move shares minted in the current `block.number`. On Robinhood Chain (an Arbitrum Orbit chain) that is the parent chain's block, about 12 seconds
+ *  apart, not the L2 block. Multicall3 is deployed at its canonical address and its getBlockNumber() returns the number the vault sees. */
+const SHARES_LOCK_WAIT =
+  "Send batch 1, wait for it to confirm, then wait for the chain's next block, about 12 seconds, before sending batch 2. The vault holds shares in the block they are minted, and " +
+  "on Robinhood Chain that block is the parent chain's, not the one eth_blockNumber shows. Read the deposit's block number with Multicall3 (0xcA11bde05977b3631167028862bE2a173976CA11) " +
+  "getBlockNumber() as of the block batch 1 was mined in, then poll it at the latest block until it is higher. Batch 2 sent sooner reverts, and Morpho reports it as 'transferFrom reverted'. " +
+  "Never put the deposit and supplyCollateral in one batch.";
 const MARKET_PARAMS = "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv)";
 const MORPHO_ABI = parseAbi([
   `function supplyCollateral(${MARKET_PARAMS} marketParams, uint256 assets, address onBehalf, bytes data)`,
@@ -745,8 +752,8 @@ async function prepareEarnAndBorrow(env: Env, args: Record<string, unknown>): Pr
   }
 
   const params = marketTuple(market);
-  const transactions: Tx[] = [
-    ...(deposit.structuredContent.transactions as Tx[]),
+  const depositBatch = deposit.structuredContent.transactions as Tx[];
+  const loanBatch: Tx[] = [
     tx(
       vaultAddress,
       encodeFunctionData({ abi: ERC20_ABI, functionName: "approve", args: [MORPHO_BLUE, collateral] }),
@@ -766,7 +773,11 @@ async function prepareEarnAndBorrow(env: Env, args: Record<string, unknown>): Pr
 
   const payload: Record<string, unknown> = {
     ...deposit.structuredContent,
-    transactions,
+    batches: [
+      { step: 1, name: "deposit", transactions: depositBatch },
+      { step: 2, name: "post the shares and borrow", transactions: loanBatch },
+    ],
+    wait_between_batches: SHARES_LOCK_WAIT,
     sender_must_be: receiver,
     shares_preview: formatUnits(previewShares, SHARES_DECIMALS),
     collateral_shares: formatUnits(collateral, SHARES_DECIMALS),
@@ -776,6 +787,7 @@ async function prepareEarnAndBorrow(env: Env, args: Record<string, unknown>): Pr
     lltv_pct: Number(formatUnits(BigInt(market.lltv), 16)),
   };
   delete payload.asset;
+  delete payload.transactions;
   return textResult(payload);
 }
 
@@ -880,7 +892,7 @@ const TOOLS: McpTool[] = [
   {
     name: "prepare_earn_and_borrow",
     description:
-      "Build the unsigned transactions to deposit a stock token into an open vault, supply the shares as Morpho Blue collateral and borrow USDG, in order: approve, deposit, approve shares, supplyCollateral, borrow. The collateral amount is the previewed share mint minus 0.1%, and the borrow is refused above what the LLTV allows or the market holds. No deployed vault, no configured market or no RPC means no calldata and a reason. The receiver must sign every transaction. The user signs and sends.",
+      "Build the unsigned transactions to deposit a stock token into an open vault, supply the shares as Morpho Blue collateral and borrow USDG, as two batches: batch 1 is approve and deposit, batch 2 is approve shares, supplyCollateral and borrow. The vault holds fresh shares until the chain's next block, so batch 2 goes out about 12 seconds after batch 1 confirms; wait_between_batches says how to check. The collateral amount is the previewed share mint minus 0.1%, and the borrow is refused above what the LLTV allows or the market holds. No deployed vault, no configured market or no RPC means no calldata and a reason. The receiver must sign every transaction. The user signs and sends.",
     inputSchema: {
       type: "object",
       properties: {
