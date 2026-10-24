@@ -40,7 +40,7 @@ export function VaultRow({ cfg, held }: { cfg: VaultConfig; held?: number }) {
       </span>
       <span className="hidden text-right sm:block"><PriceCell id={cfg.id} /></span>
       <span className="col-start-2 h-8 sm:col-start-auto">
-        <RowBar keep={keep} label={`${cfg.symbol} keeps ${signed(keep)} a year in its worst half, drawn on a scale from ${pct(-20, 0)} to +5%`} />
+        <RowBar keep={keep} label={`${cfg.symbol} keeps ${signed(keep)} a year in its weaker half, drawn on a scale from ${pct(-20, 0)} to +5%`} />
       </span>
       <span className="text-right text-[17px] font-medium"><Kept value={keep} /></span>
       <span className="hidden justify-self-end sm:block"><StateChip state={cfg.gate.state} /></span>

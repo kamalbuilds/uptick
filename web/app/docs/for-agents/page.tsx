@@ -50,7 +50,7 @@ export default function ForAgentsPage() {
           ],
           [
             "GET /vaults/:id",
-            "The full detail: token, venue, pool, fee tier, feed, the per-pool replay, and the gate with its rule, reason, worst half and swap count.",
+            "The full detail: token, venue, pool, fee tier, feed, the per-pool replay, and the gate with its rule, reason, weaker half and swap count.",
           ],
           [
             "GET /llms.txt",

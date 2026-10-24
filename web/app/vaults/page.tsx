@@ -4,7 +4,7 @@ import { VaultList } from "@/components/vault-list";
 
 export const metadata: Metadata = {
   title: "Vaults | Uptick",
-  description: "Every Stock Token vault on Robinhood Chain, ordered by what a holder keeps in the worst half of the replay, with the deposit panel beside the list.",
+  description: "Every Stock Token vault on Robinhood Chain, ordered by what a holder keeps in the weaker half of the replay, with the deposit panel beside the list.",
 };
 
 export default function VaultsPage() {

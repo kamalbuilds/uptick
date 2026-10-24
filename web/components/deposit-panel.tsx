@@ -46,7 +46,7 @@ function parse(v: string, decimals = DECIMALS): bigint | null {
 const txError = (err: unknown): string => knownRevert(err)?.copy ?? errMessage(err);
 
 /** The docked deposit ticket: one bar pinned to the bottom of the vault page. It carries the amount, what that amount earns at the
- *  worst-half rate, the vault size and the per-deposit limit, and opens a "before you sign" panel above itself once there is an amount. */
+ *  weaker-half rate, the vault size and the per-deposit limit, and opens a "before you sign" panel above itself once there is an amount. */
 export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "dock" is the bar pinned to the bottom of the vault page; "side" is the same form stacked in a column for the list page. */ layout?: "dock" | "side" }) {
   const { address, isConnected, chainId } = useAccount();
   const client = usePublicClient({ chainId: robinhoodChain.id });
@@ -429,12 +429,12 @@ export function DepositPanel({ cfg, layout = "dock" }: { cfg: VaultConfig; /** "
         parsedAmount ? (
           <>
             <p className="text-[15px] font-medium"><span className="figure">{num(amountNum, 4)} {unit}</span> <span className="text-mute">≈</span> <span className={cn("figure", toneClass(yearly))}>{usdSigned(yearly)} a year</span></p>
-            <p className="text-mute">at the <Term id="worstHalf">worst-half</Term> rate, <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span>, on <span className="figure">{usd(netUsd, { compact: false })}</span> after the entry fee</p>
+            <p className="text-mute">at the <Term id="worstHalf">weaker-half</Term> rate, <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span>, on <span className="figure">{usd(netUsd, { compact: false })}</span> after the entry fee</p>
             <p className="text-mute"><Term id="entryFee" /> <span className="figure">{feeText}</span>, kept in the vault for existing holders</p>
           </>
         ) : (
           <>
-            <p className="text-[15px] font-medium"><Term id="worstHalf">Worst-half</Term> rate <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span> a year</p>
+            <p className="text-[15px] font-medium"><Term id="worstHalf">Weaker-half</Term> rate <span className={cn("figure", toneClass(rate))}>{signed(rate)}</span> a year</p>
             <p className="text-mute">Enter an amount to see it in dollars. <Term id="entryFee" /> <span className="figure">{feeText}</span>, kept in the vault for existing holders.</p>
           </>
         )

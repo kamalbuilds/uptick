@@ -413,7 +413,7 @@ function StateKey() {
   return (
     <section aria-labelledby="state-key" className="border-t border-hairline pt-6 lg:border-t-0 lg:pt-1">
       <h2 id="state-key" className="text-2xl font-semibold leading-8 tracking-[-0.2px]">What a result tells you</h2>
-      <p className="mt-2 text-mute">Each token the wallet holds lands in one of three states. The replay of the vault&rsquo;s pool splits 30 days into two halves of 15, and the worse half decides.</p>
+      <p className="mt-2 text-mute">Each token the wallet holds lands in one of three states. The replay of the vault&rsquo;s pool splits 30 days into two halves of 15, and the weaker half decides.</p>
       <dl className="mt-4 border-t border-hairline">
         {(["open", "reduced", "closed"] as const).map((state) => (
           <div key={state} className="flex flex-col gap-2 border-b border-hairline py-4">

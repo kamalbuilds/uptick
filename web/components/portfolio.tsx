@@ -49,7 +49,7 @@ function PositionRow({ cfg, owner }: { cfg: VaultConfig; owner: `0x${string}` })
       )}
       <div className="text-right sm:text-left">
         <Kept value={cfg.gate.worstHalfApr} className="text-[15px] font-medium" />
-        <p className="text-[12px] text-mute">worst half</p>
+        <p className="text-[12px] text-mute">weaker half</p>
       </div>
       <Button asChild variant="outline" size="sm" className="justify-self-end">
         <Link href={`/vault/${cfg.id}`}>Manage</Link>

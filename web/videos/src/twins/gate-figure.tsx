@@ -43,7 +43,7 @@ export function GateFigureTwin({ cfg, a }: { cfg: Vault; a: GateAnim }) {
           className={cn("absolute top-0 whitespace-nowrap text-[13px] font-medium", edge === "mid" && "-translate-x-1/2", edge === "right" && "-translate-x-full")}
           style={{ left: edge === "left" ? 0 : `${s.worstPct}%`, opacity: a.worst }}
         >
-          Worst half <span className={cn("figure", toneClass(gate.worstHalfApr))}>{signed(gate.worstHalfApr)}</span>
+          Weaker half <span className={cn("figure", toneClass(gate.worstHalfApr))}>{signed(gate.worstHalfApr)}</span>
         </span>
         <span className="absolute top-[22px] h-12 w-0.5 -translate-x-1/2 bg-fg" style={{ left: `${s.worstPct}%`, opacity: a.worst, scale: `1 ${a.worst}`, transformOrigin: "50% 100%" }} aria-hidden />
         <span className="absolute top-[34px] size-3 -translate-x-1/2 rounded-full border-2 border-fg bg-canvas" style={{ left: `${s.otherPct}%`, opacity: a.other, scale: String(0.4 + 0.6 * a.other) }} aria-hidden />

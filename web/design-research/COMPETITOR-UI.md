@@ -31,7 +31,7 @@ Sources: refs/zona-*, refs/hh-*, refs/saffron-*, refs/autorange-*, refs/kamino-l
 5. A docked action panel beside the list where a row click loads that vault's deposit form (Zona). It removes the page hop between choosing a vault and depositing. The existing deposit component is reused, so the signing path is unchanged.
 6. 25/50/75/Max chips under the amount (Zona, HedgeHood). Both competitors ship them; typing a 18-decimal stock amount by hand is the slow part of a deposit.
 7. "Taking deposits 7" as the primary frame, Closed collapsed (HedgeHood's counted pills, Zona's grouping). Open and Reduced both accept deposits, so the first thing a visitor should see is the count of doors that are open, not three states.
-8. Definition tooltips on Kept, Worst half, Reduced, Closed (Zona's "Collateral only", Coinbase's glossary, already in REFS.md entry 10). Uptick's vocabulary is its own; every competitor defines its own terms inline. Keyboard focusable and dismissible with Escape.
+8. Definition tooltips on Kept, Weaker half, Reduced, Closed (Zona's "Collateral only", Coinbase's glossary, already in REFS.md entry 10). Uptick's vocabulary is its own; every competitor defines its own terms inline. Keyboard focusable and dismissible with Escape.
 
 ## Not adopted, with why
 

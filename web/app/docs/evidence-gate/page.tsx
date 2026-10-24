@@ -95,7 +95,7 @@ export default function EvidenceGatePage() {
       </P>
       <P>
         This is deliberately asymmetric. A vault that kept 30% in a quiet fortnight and lost 4% in a
-        busy one is recorded at -4%, not at the average. The state describes the worse half because
+        busy one is recorded at -4%, not at the average. The state describes the weaker half because
         that is the half a new depositor has not seen yet.
       </P>
       <Callout label="Selection and reporting use different pools and different windows">

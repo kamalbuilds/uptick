@@ -87,7 +87,7 @@ export function HomeView() {
                 Closed <span className="ml-1 text-[17px] font-normal text-mute">{closed.length}</span>
               </h2>
               <span className="flex items-center gap-2 text-[13px] text-mute">
-                The worst half kept less than the -20% floor
+                The weaker half kept less than the -20% floor
                 <span className="inline-flex items-center gap-1 text-fg">
                   <span className="group-open:hidden">Show</span><span className="hidden group-open:inline">Hide</span>
                   <CaretRight size={14} weight="bold" aria-hidden className="transition-transform duration-150 group-open:rotate-90" />
