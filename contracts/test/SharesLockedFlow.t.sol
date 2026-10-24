@@ -9,6 +9,7 @@ import {IMorpho, MarketParams} from "./ShareCollateral.t.sol";
 import {StockVault} from "../src/StockVault.sol";
 import {VaultFactory} from "../src/VaultFactory.sol";
 import {UptickShareOracle, IUptickVault, IVaultFactory} from "../src/UptickShareOracle.sol";
+import {UptickShareOracleFactory} from "../src/UptickShareOracleFactory.sol";
 
 /// @dev The one-click Earn and borrow flow against the real Morpho Blue singleton on a fork of Robinhood Chain. The vault refuses to
 /// move shares minted in the current block.number (StockVault._update), and on this Orbit chain block.number inside a contract is the
@@ -51,7 +52,7 @@ contract SharesLockedFlowTest is Base {
         vault = StockVault(factory.createVault(code, NVDA, POOL, FEED, 0));
         _instant();
         _deposit(alice, 200e18); // a seeded vault, so the share price is not the first-depositor price
-        oracle = new UptickShareOracle(IVaultFactory(address(factory)), IUptickVault(address(vault)));
+        oracle = UptickShareOracle(new UptickShareOracleFactory(IVaultFactory(address(factory))).createOracle(IUptickVault(address(vault))));
         mp = MarketParams(USDG, address(vault), address(oracle), IRM, LLTV);
         id = keccak256(abi.encode(mp));
         MORPHO.createMarket(mp);
