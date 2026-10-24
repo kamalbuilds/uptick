@@ -7,13 +7,12 @@ import { CaretRight, MagnifyingGlass } from "@phosphor-icons/react";
 import { DepositPanel } from "./deposit-panel";
 import { Kept, RowAxis, RowBar, SectionTitle, StateChip, GATE_LABEL } from "./ledger";
 import { PriceCell, PriceLine } from "./price";
-import { FetchError, Skeleton } from "./status";
+import { YieldPair } from "./yield-pair";
 import { Term } from "./term";
 import { PairLogo, TokenLogo } from "./token-logo";
 import { REDUCED_CAP_STOCK_USD } from "@/lib/evidence";
+import { KEPT_AFTER } from "@/lib/fee-lead";
 import { pct, signed, usdWhole } from "@/lib/format";
-import { type VaultStats } from "@/lib/keeper";
-import { useVaultList } from "@/lib/vault-list";
 import { countLine, filterVaults, tiersOf } from "@/lib/vault-filter";
 import { BY_KEEP, VAULTS, type VaultConfig } from "@/lib/vaults";
 import { cn } from "@/lib/utils";
@@ -31,13 +30,15 @@ const useWide = () =>
     () => false,
   );
 
-/** Columns by width. Under 640px: vault, bar, keep. 640px and up: price, state and the page link join. 1024px and up, beside the panel: the live fee figure too. */
+/** Columns by width. Under 640px: vault, fees earned, kept after fast traders. 640px and up: price, state and the page link join. The bar sits between price and fees where the row has the room (768 to 1023px, and 1280px and up beside the panel). */
 const GRID =
-  "grid items-center gap-x-4 grid-cols-[minmax(0,1fr)_88px_60px] sm:grid-cols-[minmax(0,1fr)_76px_minmax(90px,140px)_60px_72px_32px] lg:grid-cols-[minmax(0,1fr)_80px_minmax(90px,1fr)_60px_56px_72px_32px]";
+  "grid items-center gap-x-4 grid-cols-[minmax(0,1fr)_72px_100px] sm:grid-cols-[minmax(0,1fr)_76px_84px_100px_72px_32px] md:grid-cols-[minmax(0,1fr)_76px_minmax(80px,100px)_84px_100px_72px_32px] lg:grid-cols-[minmax(0,1fr)_76px_84px_100px_72px_32px] xl:grid-cols-[minmax(0,1fr)_80px_minmax(90px,1fr)_84px_100px_72px_32px]";
+const BAR_SHOWN = "hidden md:block lg:hidden xl:block";
 
-function Row({ cfg, stats, pending, selected, wide, onSelect }: { cfg: VaultConfig; stats: VaultStats | undefined; pending: boolean; selected: boolean; wide: boolean; onSelect: () => void }) {
+function Row({ cfg, selected, wide, onSelect }: { cfg: VaultConfig; selected: boolean; wide: boolean; onSelect: () => void }) {
   const router = useRouter();
   const keep = cfg.gate.worstHalfApr;
+  const fee = cfg.keep.feeApr;
   return (
     <li data-selected={wide && selected} className="row relative border-b border-hairline has-[button:focus-visible]:shadow-[inset_0_0_0_2px_var(--color-fg)]">
       <div className={`${GRID} min-h-[60px] py-2 pl-3 pr-3`}>
@@ -56,13 +57,11 @@ function Row({ cfg, stats, pending, selected, wide, onSelect }: { cfg: VaultConf
           </span>
         </button>
         <span className="hidden text-right sm:block"><PriceCell id={cfg.id} /></span>
-        <span className="col-start-2 h-8 sm:col-start-auto">
+        <span className={`${BAR_SHOWN} h-8`}>
           <RowBar keep={keep} label={`${cfg.symbol} keeps ${signed(keep)} a year in its weaker half`} />
         </span>
-        <span className="text-right text-[17px] font-medium"><Kept value={keep} /></span>
-        <span className="hidden text-right text-mute lg:block">
-          {stats ? <span className="figure text-fg">{pct(stats.feeAprPct, 0)}</span> : pending ? <Skeleton className="ml-auto h-5 w-10" /> : "n/a"}
-        </span>
+        <span className="figure text-right text-[17px] font-medium leading-6"><span className="sr-only">Fees earned </span>{pct(fee)}</span>
+        <span className="text-right text-[15px] leading-6"><span className="sr-only">{KEPT_AFTER} </span><Kept value={keep} /></span>
         <span className="hidden justify-self-end sm:block"><StateChip state={cfg.gate.state} /></span>
         <Link
           href={`/vault/${cfg.id}`}
@@ -78,12 +77,12 @@ function Row({ cfg, stats, pending, selected, wide, onSelect }: { cfg: VaultConf
 
 function ColumnHeads() {
   return (
-    <div className={`${GRID} px-3 pb-1 pt-3 text-[13px] leading-5 text-mute`}>
-      <span className="col-span-2 sm:col-span-1">Vault</span>
+    <div className={`${GRID} items-end px-3 pb-1 pt-3 text-[13px] leading-4 text-mute`}>
+      <span>Vault</span>
       <span className="hidden text-right sm:block">Price</span>
-      <span className="hidden sm:block"><RowAxis /></span>
-      <span className="text-right"><Term id="kept" /></span>
-      <span className="hidden text-right lg:block">Fees</span>
+      <span className={BAR_SHOWN}><RowAxis /></span>
+      <span className="text-right"><Term id="feesEarned" /></span>
+      <span className="text-right"><Term id="kept">{KEPT_AFTER}</Term></span>
       <span className="hidden text-right sm:block">State</span>
       <span className="hidden sm:block" />
     </div>
@@ -106,9 +105,7 @@ function ActionPanel({ cfg }: { cfg: VaultConfig }) {
         </div>
         <div className="mt-4 space-y-1.5">
           <PriceLine id={cfg.id} />
-          <p className="text-[13px] leading-5 text-mute">
-            Kept <Kept value={worst} className="font-medium" /> a year in the <Term id="worstHalf">weaker half</Term> of the replay.
-          </p>
+          <YieldPair feeApr={cfg.keep.feeApr} keptApr={worst} size="side" />
         </div>
         <div className="mt-5">
           <DepositPanel key={cfg.id} cfg={cfg} layout="side" />
@@ -125,10 +122,9 @@ function ActionPanel({ cfg }: { cfg: VaultConfig }) {
 
 const chip = "press h-9 max-lg:h-11 rounded-full border px-4 text-[13px] font-medium";
 
-/** Every eligible vault by what a holder keeps, vaults taking deposits first and the closed ones folded away. A row loads its deposit panel beside the list;
- *  search by ticker or company ("/" jumps to it), filter by pool fee tier. The fee column is the stats API's live figure. */
+/** Every eligible vault, vaults taking deposits first and the closed ones folded away, each section in order of what a holder keeps. A row leads with the fees the pool paid
+ *  and puts kept after fast traders beside it; it loads its deposit panel beside the list. Search by ticker or company ("/" jumps to it), filter by pool fee tier. */
 export function VaultList() {
-  const q = useVaultList();
   const wide = useWide();
   const [query, setQuery] = useState("");
   const [tier, setTier] = useState("all");
@@ -136,7 +132,6 @@ export function VaultList() {
   const [selectedId, setSelectedId] = useState(() => (BY_KEEP.find((v) => v.gate.state !== "closed") ?? BY_KEEP[0]).id);
   const search = useRef<HTMLInputElement>(null);
   const tiers = useMemo(() => tiersOf(VAULTS), []);
-  const stats = useMemo(() => new Map((q.data ?? []).map((s) => [s.id, s])), [q.data]);
   const shown = filterVaults(BY_KEEP, query, tier);
   const taking = shown.filter((v) => v.gate.state !== "closed");
   const closed = shown.filter((v) => v.gate.state === "closed");
@@ -155,7 +150,7 @@ export function VaultList() {
   }, []);
 
   const rows = (list: VaultConfig[]) =>
-    list.map((v) => <Row key={v.id} cfg={v} stats={stats.get(v.id)} pending={q.isPending} selected={v.id === selectedId} wide={wide} onSelect={() => setSelectedId(v.id)} />);
+    list.map((v) => <Row key={v.id} cfg={v} selected={v.id === selectedId} wide={wide} onSelect={() => setSelectedId(v.id)} />);
 
   return (
     <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -195,8 +190,6 @@ export function VaultList() {
           </div>
         )}
 
-        {q.isError && <div className="mt-6"><FetchError what="the live fee figures" onRetry={() => q.refetch()} /></div>}
-
         {shown.length === 0 ? (
           <div className="mt-6 border-y border-hairline py-8">
             <p className="font-semibold">No vault matches{query.trim() ? ` "${query.trim()}"` : ""}{tier !== "all" ? ` in the ${tier} pool tier` : ""}.</p>
@@ -207,7 +200,7 @@ export function VaultList() {
         ) : (
           <>
             <p className="mb-8 mt-6 max-w-[690px] text-[13px] leading-5 text-mute max-lg:leading-11 [text-wrap:balance]">
-              <Term id="kept" /> is a year of the pool&rsquo;s fees less what leaks, read in the <Term id="worstHalf">weaker half</Term> of a 30-day replay. Each vault is <Term id="open" />, <Term id="reduced" /> or <Term id="closed" />.
+              <Term id="feesEarned" /> is what the pool paid liquidity providers over a year. <Term id="kept">{KEPT_AFTER}</Term> is those fees less what informed traders take back and what recentring costs, read in the <Term id="worstHalf">weaker half</Term> of a 30-day replay. Each vault is <Term id="open" />, <Term id="reduced" /> or <Term id="closed" />.
             </p>
             <div>
               {taking.length > 0 && (

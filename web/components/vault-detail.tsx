@@ -11,16 +11,17 @@ import { YourLoans } from "./your-loan";
 import { ExitPreview } from "./exit-preview";
 import { GateFigure } from "./gate-scale";
 import { LeakFigure } from "./leak-bar";
-import { SectionTitle, StateChip, toneClass } from "./ledger";
+import { SectionTitle, StateChip } from "./ledger";
 import { PriceLine } from "./price";
 import { Term } from "./term";
 import { PairLogo } from "./token-logo";
 import { RealSwap } from "./real-swap";
 import { FetchError, Skeleton } from "./status";
 import { WhyThisPool } from "./why-this-pool";
+import { YieldPair } from "./yield-pair";
 import { useVaultStats } from "@/lib/hooks";
 import { addressUrl } from "@/lib/chain";
-import { entryFeePct, perDepositLimitUsd, shortAddress, signed, usd, usdWhole } from "@/lib/format";
+import { entryFeePct, perDepositLimitUsd, shortAddress, usd, usdWhole } from "@/lib/format";
 import { POOL_MANAGER, REPLAY_WINDOW, USDG, isoDay, type VaultConfig } from "@/lib/vaults";
 
 function AddressRow({ label, address, link = true }: { label: string; address: string; link?: boolean }) {
@@ -94,9 +95,11 @@ export function VaultDetail({ cfg }: { cfg: VaultConfig }) {
         )}
         <p className="mt-1"><PriceLine id={cfg.id} /></p>
 
-        <p className="serif verdict mt-8 max-w-[900px] text-[30px] font-normal leading-[34px] sm:text-[44px] sm:leading-[48px]">
-          {cfg.symbol} kept <span className={toneClass(worst)}>{signed(worst)}</span> a year in its <span className="whitespace-nowrap"><Term id="worstHalf">weaker half</Term>.</span> {doorSentence(cfg)}
+        <YieldPair className="mt-8" feeApr={cfg.keep.feeApr} keptApr={worst} size="hero" />
+        <p className="mt-3 max-w-[690px] text-[13px] leading-5 text-mute">
+          Fees are the pool&rsquo;s over the whole {REPLAY_WINDOW.days}-day replay to {isoDay(REPLAY_WINDOW.end)}. Kept is the replay&rsquo;s <Term id="worstHalf">weaker half</Term>, the figure that decides whether deposits are open.
         </p>
+        <p className="mt-5 text-[20px] leading-7">{doorSentence(cfg)}</p>
 
         <div className="mt-12 space-y-14">
           <LeakFigure cfg={cfg} />

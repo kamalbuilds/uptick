@@ -12,7 +12,8 @@ import { Term } from "./term";
 import { TokenLogo } from "./token-logo";
 import { Button } from "@/components/ui/button";
 import { EXPLORER, addressUrl } from "@/lib/chain";
-import { liveSentence, num, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
+import { KEPT_AFTER, feesPerYearUsd } from "@/lib/fee-lead";
+import { liveSentence, num, pct, perDepositLimitUsd, shortAddress, signed, tokenBalance, usdWhole } from "@/lib/format";
 import { usdSigned } from "@/lib/leak";
 import { priceLabel } from "@/lib/price-math";
 import { parseOwner, type GateState, type ScanRow, type WalletScan } from "@/lib/scan";
@@ -24,11 +25,14 @@ import { cn } from "@/lib/utils";
 
 /** One grid on every /check screen: the answer on the left, the thing you act on, 340px wide, on the right. */
 const SPLIT = "lg:grid-cols-[minmax(0,1fr)_340px]";
-const COLS = "lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)_minmax(0,1.25fr)_minmax(0,1.2fr)_44px]";
+const COLS = "lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.5fr)_44px]";
 const STATE_FILL: Record<GateState, string> = { open: "bg-kept", reduced: "bg-caution", closed: "bg-closed" };
 
 /** The deployed vault address for a scan row, or undefined while its vault is launching. */
 const vaultAddress = (id: string) => VAULTS.find((v) => v.id === id)?.vault;
+/** The replay's fee APR for a scan row's vault. The scan carries only the kept figure, so the fee figure comes from the universe the scan was built from; an id outside it prints "n/a". */
+const FEE_APR = new Map(VAULTS.map((v) => [v.id, v.keep.feeApr]));
+const feeAprOf = (id: string): number => FEE_APR.get(id) ?? Number.NaN;
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const MobileLabel = ({ children }: { children: string }) => <p className="text-[13px] leading-4 text-mute lg:hidden">{children}</p>;
@@ -115,23 +119,22 @@ function TakesCell({ r }: { r: ScanRow }) {
   );
 }
 
-function WeakerCell({ r }: { r: ScanRow }) {
+/** Fees earned a year, with kept after fast traders directly under it: dollars on what the vault takes when the wallet is priced, the percent either way. */
+function YieldCell({ r }: { r: ScanRow }) {
+  const feeApr = feeAprOf(r.id);
+  const feeUsd = r.putToWorkUsd !== null && r.keptPerYearUsd !== null ? feesPerYearUsd(r.putToWorkUsd, r.entryFeeBps, feeApr) : null;
+  const keptUsd = r.keptPerYearUsd;
   return (
     <div className="text-right lg:text-left">
-      <MobileLabel>Weaker half</MobileLabel>
-      {r.keptPerYearUsd !== null ? (
-        <>
-          <p className={cn("figure text-[17px] font-medium leading-6", toneClass(r.keptPerYearUsd))}>{usdSigned(r.keptPerYearUsd)} a year</p>
-          <p className="text-[13px] leading-4 text-mute">{signed(r.worstHalfApr)} on the deposit</p>
-        </>
-      ) : r.state === "closed" ? (
-        <>
-          <p className="figure text-[17px] font-medium leading-6 text-loss">{signed(r.worstHalfApr)} a year</p>
-          <p className="text-[13px] leading-4 text-mute">below the floor</p>
-        </>
-      ) : (
-        <p className="text-[13px] leading-5 text-mute">Waits for a price</p>
-      )}
+      <p className="text-[13px] leading-4 text-mute"><Term id="feesEarned" /></p>
+      <p className="figure text-[17px] font-medium leading-6">
+        {feeUsd !== null ? <>{money(feeUsd)} a year <span className="text-[13px] font-normal text-mute">at {pct(feeApr)}</span></> : <>{pct(feeApr)} a year</>}
+      </p>
+      <p className="mt-1.5 text-[13px] leading-4 text-mute"><Term id="kept">{KEPT_AFTER}</Term></p>
+      <p className={cn("figure text-[15px] font-medium leading-6", toneClass(r.worstHalfApr))}>
+        {keptUsd !== null ? <>{usdSigned(keptUsd)} a year <span className="text-[13px] font-normal">at {signed(r.worstHalfApr)}</span></> : <>{signed(r.worstHalfApr)} a year</>}
+      </p>
+      {r.state === "closed" ? <p className="text-[13px] leading-4 text-mute">below the floor</p> : keptUsd === null ? <p className="text-[13px] leading-4 text-mute">Dollars wait for a price</p> : null}
     </div>
   );
 }
@@ -146,7 +149,7 @@ function HoldingRow({ r, block, maxUsd }: { r: ScanRow; block: bigint; maxUsd: n
         <TokenCell r={r} />
         <HeldCell r={r} maxUsd={maxUsd} />
         <TakesCell r={r} />
-        <WeakerCell r={r} />
+        <YieldCell r={r} />
         <Button asChild variant="outline" className="col-span-2 lg:hidden">
           <Link href={href}>{label}</Link>
         </Button>
@@ -196,7 +199,7 @@ function HoldBar({ rows }: { rows: ScanRow[] }) {
   );
 }
 
-function TRow({ k, v, note, tone, desktop }: { k: React.ReactNode; v: string; note?: string; tone?: string; /** Shown from the large breakpoint up only: the rows below carry the same figure on a phone. */ desktop?: boolean }) {
+function TRow({ k, v, note, tone, desktop }: { k: React.ReactNode; v: string; note?: React.ReactNode; tone?: string; /** Shown from the large breakpoint up only: the rows below carry the same figure on a phone. */ desktop?: boolean }) {
   return (
     <div className={cn("items-baseline justify-between gap-4 border-b border-hairline py-3", desktop ? "hidden lg:flex" : "flex")}>
       <dt className="text-mute">{k}</dt>
@@ -242,6 +245,7 @@ function Ticket({ s }: { s: WalletScan }) {
   const lead = p.tiny ? undefined : p.lead;
   const leadAddr = lead?.vault ?? undefined;
   const wh = lead && lead.keptPerYearUsd !== null ? { gain: lead.keptPerYearUsd >= 0, usd: Math.abs(lead.keptPerYearUsd) } : null;
+  const fees = lead && lead.putToWorkUsd !== null && lead.keptPerYearUsd !== null ? feesPerYearUsd(lead.putToWorkUsd, lead.entryFeeBps, feeAprOf(lead.id)) : null;
   const liveSymbols = LIVE_VAULTS.map((v) => v.symbol);
   const aside = p.tiny && p.lead && p.lead.vault ? p.lead : undefined;
   // With only a tiny live holding, the big number is the launching rest, so the primary action opens the largest launching vault it holds.
@@ -262,8 +266,9 @@ function Ticket({ s }: { s: WalletScan }) {
       <dl className="mt-4 border-t border-hairline">
         {lead && p.launching.usd > 0 ? <TRow k="Launching vaults" v={money(p.launching.usd)} note={names(p.launching.symbols)} /> : null}
         {t.refused.tokens > 0 ? <TRow k={<><Term id="closed">Closed</Term> vaults</>} v={money(t.refused.usd)} note="No deposits" /> : null}
+        {fees !== null && lead ? <TRow desktop k={<Term id="feesEarned" />} v={`${money(fees)} a year`} note={`${lead.symbol}, ${REPLAY_WINDOW.days}-day replay, past trades`} /> : null}
         {wh && lead ? (
-          <TRow desktop k={<Term id="worstHalf">Weaker half</Term>} v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`} tone={wh.gain ? "text-kept" : "text-loss"} note={`${lead.symbol}, in the replay, past trades`} />
+          <TRow desktop k={<Term id="kept">{KEPT_AFTER}</Term>} v={`${wh.gain ? "+" : "-"}${money(wh.usd)} a year`} tone={wh.gain ? "text-kept" : "text-loss"} note={<>{lead.symbol}, <Term id="worstHalf">weaker half</Term> of the replay</>} />
         ) : null}
         {t.putToWork.borrowRoomUsd !== null ? <TRow desktop k={<Term id="borrowRoom">Borrow room</Term>} v={`up to ${money(t.putToWork.borrowRoomUsd)}`} /> : null}
       </dl>
@@ -367,7 +372,7 @@ function Results({ s, raw }: { s: WalletScan; raw: string }) {
             <span>Token</span>
             <span>Held</span>
             <span>Can go to work</span>
-            <span><Term id="kept">Kept</Term> a year, <Term id="worstHalf">weaker half</Term></span>
+            <span><Term id="feesEarned" /> a year, <Term id="kept">kept after fast traders</Term></span>
             <span />
           </div>
           <ul className="border-t border-hairline lg:border-t-0">{s.rows.map((r) => <HoldingRow key={r.id} r={r} block={s.block} maxUsd={maxUsd} />)}</ul>
@@ -385,7 +390,7 @@ function Results({ s, raw }: { s: WalletScan; raw: string }) {
           </p>
           <p className="mt-3 max-w-[690px] text-[13px] leading-5 text-mute">
             Read from Robinhood Chain in a single call at <a className="touch -my-3 inline-block py-3 underline underline-offset-4" href={`${EXPLORER}/block/${s.block}`} target="_blank" rel="noreferrer">block {s.block.toLocaleString("en-US")}</a>,
-            priced by the Chainlink feeds the vaults read. Kept is the weaker 15-day half of the {REPLAY_WINDOW.days}-day replay to {isoDay(REPLAY_WINDOW.end)}, taken on the deposit net of the entry fee.
+            priced by the Chainlink feeds the vaults read. Fees earned is the pool&rsquo;s fees over the {REPLAY_WINDOW.days}-day replay to {isoDay(REPLAY_WINDOW.end)}, and kept after fast traders is that replay&rsquo;s weaker 15-day half, both taken on the deposit net of the entry fee.
             It measures past swaps and is not a promise. {LIVE_VAULTS.length ? `${liveSentence(LIVE_VAULTS.map((v) => v.symbol))} The rest are launching, and each row opens its vault page.` : "The vaults are launching, and each row opens its vault page."}
           </p>
         </div>
