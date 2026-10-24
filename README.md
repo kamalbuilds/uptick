@@ -7,7 +7,7 @@ App https://uptick-fi.pages.dev, evidence API https://uptick-evidence.earn-shiel
 1. `curl -s https://uptick-evidence.earn-shield-alerts.workers.dev/vaults | jq '[.[] | select(.open)] | length'` prints how many of the 17 vaults accept deposits.
 2. `cd contracts && forge test --match-test test_realFeedUnmocked -j 1` reads the live NVDA Chainlink feed and Uniswap pool on a fork of Robinhood Chain, unmocked.
 3. `cast code 0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010 --rpc-url https://rpc.mainnet.chain.robinhood.com` prints the bytecode of the Morpho Blue singleton that takes a vault share as collateral.
-4. `scripts/forge-pinned.sh` forks Robinhood Chain at block 93,694,185 (Tue 2026-10-20 15:30 ET, inside the NYSE session) and runs all 38 forge suites: 412 passed, 0 failed, 0 skipped (log: `contracts/test-logs/forge-ad07be8-93694185.txt`).
+4. `scripts/forge-pinned.sh` forks Robinhood Chain at block 93,694,185 (Tue 2026-10-20 15:30 ET, inside the NYSE session) and runs all 51 forge suites: 572 passed, 0 failed, 0 skipped (log: `contracts/test-logs/forge-8e64222-93694185.txt`).
 
 **Put your Stock Tokens to work.**
 

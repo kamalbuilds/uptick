@@ -1,0 +1,64 @@
+commit:     8e64222d349110e7fa3e31bf97fd1588be410a9c
+fork block: 93694185 (Tue 2026-10-20 15:30:56 EDT, unix 1792524656)
+rpc:        https://robinhood.drpc.org
+command:    cd contracts && FORK_URL=https://robinhood.drpc.org ETH_RPC_URL=https://robinhood.drpc.org FORK_BLOCK=93694185 forge test -j 2 --fork-block-number 93694185 --fork-retries 5 --fork-retry-backoff 500 --no-rpc-rate-limit
+forge:      forge Version: 1.6.0-nightly; recorded pass 1
+
+suite                                                      pass   fail    skip
+test/DeployAll.t.sol:DeployAllTest                            6      0       0
+test/DustExit.t.sol:DustExitTest                              6      0       0
+test/hook/UptickHook.t.sol:UptickHookTest                    20      0       0
+test/MinOut.t.sol:MinOutTest                                  8      0       0
+test/security/Hardening.t.sol:HardeningTest                  20      0       0
+test/security/InKindArb.t.sol:InKindArbTest                   9      0       0
+test/security/oracle/FreshReview.t.sol:FreshReviewV4          7      0       0
+test/security/oracle/FreshReview.t.sol:FreshReviewV4Token0      8      0       0
+test/security/oracle/OracleReview.t.sol:OracleReviewDepth      1      0       0
+test/security/oracle/OracleReview.t.sol:OracleReviewV3       21      0       0
+test/security/oracle/OracleReview.t.sol:OracleReviewV3Pending     19      0       0
+test/security/oracle/OracleReview.t.sol:OracleReviewV4        8      0       0
+test/security/oracle/OracleReview.t.sol:OracleReviewV4Token0      9      0       0
+test/security/oracle/R1_accounting.t.sol:R1AccountingV4      12      0       0
+test/security/oracle/R1_accounting.t.sol:R1AccountingV4Token0     12      0       0
+test/security/oracle/R1_liveness_and_trust.t.sol:R1LivenessV3     18      0       0
+test/security/oracle/R1_liveness_and_trust.t.sol:R1LivenessV4      8      0       0
+test/security/oracle/R1_liveness_and_trust.t.sol:R1LivenessV4Token0      8      0       0
+test/security/oracle/R1_liveness_and_trust.t.sol:R1ResidualV4      8      0       0
+test/security/oracle/R1_spot_and_twap.t.sol:R1SpotTwapV4     17      0       0
+test/security/oracle/R1_spot_and_twap.t.sol:R1SpotTwapV4Token0     18      0       0
+test/security/ReReview.t.sol:ReReviewPltrTest                 8      0       0
+test/security/ReReviewFloor.t.sol:ReReviewFloorTest           3      0       0
+test/security/Review3.t.sol:Review3ExitTierTest               6      0       0
+test/security/Review3.t.sol:Review3NvdaTest                   5      0       0
+test/security/Review3.t.sol:Review3PltrTest                  12      0       0
+test/security/Review3.t.sol:Review3TicksTest                  1      0       0
+test/security/Review4.t.sol:Review4FloorTest                  5      0       0
+test/security/Review4.t.sol:Review4NvdaTest                  12      0       0
+test/security/Review4.t.sol:Review4PltrTest                  13      0       0
+test/security/Round2.t.sol:Round2Test                        11      0       0
+test/security/Round3.t.sol:Round3Test                         5      0       0
+test/security/v4/ReReviewV4.t.sol:ReReviewV4PltrTest          3      0       0
+test/security/v4/ReviewV4.t.sol:ReviewV4PltrTest              5      0       0
+test/ShareCollateral.t.sol:ShareCollateralTest               17      0       0
+test/ShareCollateral.t.sol:ShareCollateralV4Test              3      0       0
+test/SharesLockedFlow.t.sol:SharesLockedFlowTest              3      0       0
+test/StockVault.t.sol:StockVaultTest                         17      0       0
+test/StockVaultFuzz.t.sol:StockVaultFuzzTest                  3      0       0
+test/StockVaultInvariant.t.sol:StockVaultInvariantTest        7      0       0
+test/StockVaultSafety.t.sol:StockVaultSafetyTest             17      0       0
+test/StockVaultSpcx.t.sol:StockVaultSpcxTest                  2      0       0
+test/UptickRouter.t.sol:UptickRouterTest                     12      0       0
+test/v4/StockVaultV4.t.sol:StockVaultV4PltrTest              49      0       0
+test/v4/StockVaultV4.t.sol:StockVaultV4TslaTest              49      0       0
+test/v4/TickOracleV4.t.sol:TickOracleV4Test                  10      0       0
+test/v4/V4Registry.t.sol:V4RegistryPltrTest                  14      0       0
+test/v4/V4Registry.t.sol:V4RegistryTslaTest                  14      0       0
+test/v4/VaultMathV4.t.sol:VaultMathV4Test                     3      0       0
+test/VaultFactory.t.sol:VaultFactoryTest                     14      0       0
+test/WeekendCollateral.t.sol:WeekendCollateralTest            6      0       0
+TOTAL                                                       572      0       0
+
+failing tests:
+(none)
+
+forge exit code: 0
